@@ -92,6 +92,21 @@ class RDKitMol(object):
         rw_mol = openbabel_mol_to_rdkit_mol(ob_mol, remove_h, sanitize)
         return cls(rw_mol)
 
+    @classmethod
+    def FromMol(cls,
+                mol: Union[Mol, RWMol],
+                ) -> 'RDKitMol':
+        """
+        Convert a RDKit Chem.rdchem.Mol molecule to RDKitMol Molecule.
+
+        Args:
+            rdmol (Union[Mol, RWMol]): The RDKit Chem.rdchem.Mol / RWMol molecule to be converted.
+
+        Returns:
+            RDKitMol: An RDKitMol molecule.
+        """
+        return cls(mol)
+
     @ classmethod
     def FromSmiles(cls,
                    smiles: str,
@@ -153,6 +168,24 @@ class RDKitMol(object):
             atom = self.GetAtomWithIdx(ind)
             atom.SetProp('molAtomMapNumber', str(atom.GetIdx()))
 
+    def ToOBMol(self):
+        """
+        Convert RDKitMol to a OBMol.
+
+        Returns:
+            OBMol: The corresponding openbabel OBMol.
+        """
+        return rdkit_mol_to_openbabel_mol(self)
+
+    def ToRWMol(self) -> RWMol:
+        """
+        Convert the RDKitMol Molecule back to a RDKit Chem.rdchem.RWMol.
+
+        returns:
+            RWMol: A RDKit Chem.rdchem.RWMol molecule.
+        """
+        return self._mol
+
     def ToSmiles(self,
                  stereo: bool = True,
                  kekule: bool = False,
@@ -184,15 +217,6 @@ class RDKitMol(object):
                                            isomericSmiles=stereo,
                                            kekuleSmiles=kekule,
                                            canonical=canonical)
-
-    def ToOBMol(self):
-        """
-        Convert RDKitMol to a OBMol.
-
-        Returns:
-            OBMol: The corresponding openbabel OBMol.
-        """
-        return rdkit_mol_to_openbabel_mol(self)
 
 
 def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
