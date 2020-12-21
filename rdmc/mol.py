@@ -218,6 +218,12 @@ class RDKitMol(object):
                                            kekuleSmiles=kekule,
                                            canonical=canonical)
 
+    def ToSDFFile(self, path):
+        writer = Chem.rdmolfiles.SDWriter(path)
+        # Not sure what may cause exceptions and errors here
+        # If any issues found, add try...except...finally
+        writer.write(self._mol)
+        writer.close()
 
 def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
                                remove_h: bool = False,
