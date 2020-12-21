@@ -21,6 +21,7 @@ from rdkit.Chem.rdchem import BondType, Mol, RWMol
 # openbabel - 2.4.1 from rmg channel does not work
 import openbabel as ob
 
+
 # Keep the representation method from rdchem.Mol
 KEEP_RDMOL_ATTRIBUTES = ['_repr_html_',
                          '_repr_png_',
@@ -32,6 +33,12 @@ ORDERS = {1: BondType.SINGLE, 2: BondType.DOUBLE, 3: BondType.TRIPLE, 1.5: BondT
           4: BondType.QUADRUPLE,
           'S': BondType.SINGLE, 'D': BondType.DOUBLE, 'T': BondType.TRIPLE, 'B': BondType.AROMATIC,
           'Q': BondType.QUADRUPLE}
+
+# The rotational bond definition in RDkit
+# It is the same as rdkit.Chem.Lipinski import RotatableBondSmarts
+ROTATABLE_BOND_SMARTS = Chem.MolFromSmarts('[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]')
+ROTATABLE_BOND_SMARTS_WO_METHYL = Chem.MolFromSmarts(
+    '[!$(*#*)&!D1!H3]-&!@[!$(*#*)&!D1&!H3]')
 
 
 class RDKitMol(object):
@@ -131,6 +138,21 @@ class RDKitMol(object):
             Chem.SanitizeMol(mol)
         return cls(mol)
 
+    def GetTorsionalModes(self,
+                          exclude_methyl: bool = False,
+                          ) -> list:
+        """
+        Get all of the torsional modes (rotors) from the molecule.
+
+        Args:
+            exclude_methyl (bool): Whether exclude the torsions with methyl groups.
+
+        Returns:
+            list: A list of four-atom-indice to indicating the torsional modes.
+        """
+        return find_internal_torsions(self._rd_mol,
+                                      exclude_methyl=exclude_methyl)
+
     def PrepareOutputMol(self,
                           remove_h: bool = False,
                           sanitize: bool = True,
@@ -224,6 +246,60 @@ class RDKitMol(object):
         # If any issues found, add try...except...finally
         writer.write(self._mol)
         writer.close()
+
+
+def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
+                                             atom2: 'rdkit.Chem.rdchem.Atom',
+                                             ) -> int:
+    """
+    Determine the smallest atom index in mol connected to ``atom1`` which is not ``atom2``.
+    Returns a heavy atom if available, otherwise a hydrogen atom.
+    Useful for deterministically determining the indices of four atom in a torsion.
+    This function assumes there ARE additional atoms connected to ``atom1``, and that ``atom2`` is not a hydrogen atom.
+
+    Args:
+        atom1 (Atom): The atom who's neighbors will be searched.
+        atom2 (Atom): An atom connected to ``atom1`` to exclude (a pivotal atom).
+
+    Returns:
+        int: The smallest atom index (1-indexed) connected to ``atom1`` which is not ``atom2``.
+    """
+    neighbor = [a for a in atom1.GetNeighbors() if a.GetIdx()
+                != atom2.GetIdx()]
+    atomic_num_list = sorted([nb.GetAtomicNum() for nb in neighbor])
+    min_atomic, max_atomic = atomic_num_list[0], atomic_num_list[-1]
+    if min_atomic == max_atomic or min_atomic > 1:
+        return min([nb.GetIdx() for nb in neighbor])
+    else:
+        return min([nb.GetIdx() for nb in neighbor if nb.GetAtomicNum() != 1])
+
+
+def find_internal_torsions(mol: Union[Mol, RWMol],
+                           exclude_methyl: bool = False,
+                           ) -> list:
+    """
+    Find the internal torsions from RDkit molecule.
+
+    Args:
+        mol (Union[Mol, RWMol]): RDKit molecule.
+        exclude_methyl (bool): Whether exclude the torsions with methyl groups.
+
+    Returns:
+        list: A list of internal torsions.
+    """
+    torsions = list()
+    smarts = ROTATABLE_BOND_SMARTS if not exclude_methyl \
+        else ROTATABLE_BOND_SMARTS_WO_METHYL
+    rot_atom_pairs = mol.GetSubstructMatches(smarts)
+
+    for atoms_ind in rot_atom_pairs:
+        pivots = [mol.GetAtomWithIdx(i) for i in atoms_ind]
+        first_atom_ind = determine_smallest_atom_index_in_torsion(*pivots)
+        pivots.reverse()
+        last_atom_ind = determine_smallest_atom_index_in_torsion(*pivots)
+        torsions.append([first_atom_ind, *atoms_ind, last_atom_ind])
+    return torsions
+
 
 def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
                                remove_h: bool = False,
