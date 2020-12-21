@@ -49,5 +49,16 @@ class RDKitMol(object):
             elif attr in KEEP_RDMOL_ATTRIBUTES:
                 setattr(self, attr, getattr(self._mol, attr,))
 
+        # Set atom map number
+        self.SetAtomMapNumbers()
+
         # Perceive rings
         Chem.GetSymmSSSR(self._mol)
+
+    def SetAtomMapNumbers(self):
+        """
+        Set the atom index to atom map number, so atom indexes are shown when plotting the molecule in a 2D graph.
+        """
+        for ind in range(self.GetNumAtoms()):
+            atom = self.GetAtomWithIdx(ind)
+            atom.SetProp('molAtomMapNumber', str(atom.GetIdx()))
