@@ -79,6 +79,21 @@ class RDKitMol(object):
         # Perceive rings
         Chem.GetSymmSSSR(self._mol)
 
+    def EmbedConformer(self):
+        """
+        Embed a conformer to the RDKitMol. This will overwrite current conformers.
+        """
+        Chem.AllChem.EmbedMolecule(self._mol)
+
+    def EmbedMultipleConfs(self, n: int = 1):
+        """
+        Embed conformers to the RDKitMol. This will overwrite current conformers.
+
+        Args:
+            n (int): The number of conformers to be embedded. The default is 1.
+        """
+        Chem.AllChem.EmbedMultipleConfs(self._mol, numConfs=n)
+
     @ classmethod
     def FromOBMol(cls,
                   ob_mol: 'openbabel.OBMol',
