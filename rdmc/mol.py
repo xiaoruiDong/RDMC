@@ -153,6 +153,25 @@ class RDKitMol(object):
             Chem.SanitizeMol(mol)
         return cls(mol)
 
+    def GetAtomicNumbers(self):
+        """
+        Get the Atomic numbers of the molecules. The atomic numbers are sorted by the atom indexes.
+
+        Returns:
+            list: A list of atomic numbers.
+        """
+        return [atom.GetAtomicNum() for atom in self.GetAtoms()]
+
+    def GetElementSymbols(self):
+        """
+        Get the element symbols of the molecules. The element symbols are sorted by the atom indexes.
+
+        Returns:
+            list: A list of element symbols.
+        """
+        pt = Chem.GetPeriodicTable()
+        return [pt.GetElementSymbol(atom.GetAtomicNum()) for atom in self.GetAtoms()]
+
     def GetDistanceMatrix(self, id: int = 0) -> np.ndarray:
         return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
 
