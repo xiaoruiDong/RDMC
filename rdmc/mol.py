@@ -154,6 +154,16 @@ class RDKitMol(object):
             Chem.SanitizeMol(mol)
         return cls(mol)
 
+    @classmethod
+    def FromRMGMol(cls,
+                   rmgmol: 'rmgpy.molecule.Molecule',
+                   remove_h: bool = False,
+                   sanitize: bool = True,
+                   ) -> 'RWMol':
+        return cls(rmg_mol_to_rdkit_mol(rmgmol,
+                                        remove_h,
+                                        sanitize))
+
     def GetAtomicNumbers(self):
         """
         Get the Atomic numbers of the molecules. The atomic numbers are sorted by the atom indexes.
@@ -424,3 +434,63 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union[Mol, RWMol, RDKitMol]):
     obmol.AssignSpinMultiplicity(True)
 
     return obmol
+
+def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
+                         remove_h: bool = False,
+                         sanitize: bool = True,
+                         ) -> 'RWMol':
+    """
+    Convert a RMG molecular structure to an RDKit Mol object. Uses
+    `RDKit <http://rdkit.org/>`_ to perform the conversion.
+    Perceives aromaticity.
+    Adopted from rmgpy/molecule/converter.py
+
+    Args:
+        rmgmol (Molecule): An RMG Molecule object for the conversion.
+        remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+        sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
+
+    Returns:
+        RWMol: An RWMol molecule object corresponding to the input RMG Molecule object.
+    """
+    atom_id_map = dict()
+
+    # only manipulate a copy of ``mol``
+    mol_copy = rmgmol.copy(deep=True)
+    if not mol_copy.atom_ids_valid():
+        mol_copy.assign_atom_ids()
+    for i, atom in enumerate(mol_copy.atoms):
+        # keeps the original atom order before sorting
+        atom_id_map[atom.id] = i
+    atoms_copy = mol_copy.vertices
+
+    rwmol = Chem.rdchem.RWMol()
+    for rmg_atom in atoms_copy:
+        rd_atom = Chem.rdchem.Atom(rmg_atom.element.symbol)
+        if rmg_atom.element.isotope != -1:
+            rd_atom.SetIsotope(rmg_atom.element.isotope)
+        rd_atom.SetNumRadicalElectrons(rmg_atom.radical_electrons)
+        rd_atom.SetFormalCharge(rmg_atom.charge)
+        if rmg_atom.element.symbol == 'C' and rmg_atom.lone_pairs == 1 and mol_copy.multiplicity == 1:
+            # hard coding for carbenes
+            rd_atom.SetNumRadicalElectrons(2)
+        if not (remove_h and rmg_atom.symbol == 'H'):
+            rwmol.AddAtom(rd_atom)
+
+    # Add the bonds
+    for atom1 in atoms_copy:
+        for atom2, bond12 in atom1.edges.items():
+            if bond12.is_hydrogen_bond():
+                continue
+            if atoms_copy.index(atom1) < atoms_copy.index(atom2):
+                rwmol.AddBond(
+                    atom_id_map[atom1.id],
+                    atom_id_map[atom2.id],
+                    ORDERS[bond12.get_order_str()])
+
+    # Rectify the molecule
+    if remove_h:
+        rw_mol = Chem.RemoveHs(rwmol, sanitize=sanitize)
+    elif sanitize:
+        Chem.SanitizeMol(rwmol)
+    return rwmol
