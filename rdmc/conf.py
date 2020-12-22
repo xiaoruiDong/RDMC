@@ -148,6 +148,16 @@ class RDKitConf(object):
         else:
             raise ValueError('Not a valid molecule')
 
+    def SetPositions(self,
+                     coords: Union[tuple, list]):
+        """
+        Set the Positions of atoms of the conformer.
+
+        Args:
+            coords: a list of tuple of atom coordinates.
+        """
+        set_conformer_coordinates(self._conf, coords)
+
     def SetTorsionDeg(self,
                       torsion: list,
                       degree: Union[float, int]):
