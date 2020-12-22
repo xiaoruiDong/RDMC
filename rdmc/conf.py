@@ -11,7 +11,7 @@ import numpy as np
 from rdkit.Chem import rdMolTransforms as rdMT
 from rdkit.Chem.rdchem import Conformer
 
-from rdmc.utils import find_internal_torsions
+from rdmc.utils import find_internal_torsions, set_conformer_coordinates
 
 
 class RDKitConf(object):
@@ -215,25 +215,3 @@ class RDKitConf(object):
             self._torsions = torsions
         else:
             raise ValueError('Invalid torsional mode input.')
-
-
-def set_conformer_coordinates(conf: Union[Conformer, 'RDKitConf'],
-                              coords: Union[tuple, list, np.ndarray]):
-    """
-    Set the Positions of atoms of the conformer.
-
-    Args:
-        conf (Union[Conformer, 'RDKitConf']): The conformer to be set.
-        coords (Union[tuple, list, np.ndarray]): The coordinates to be set.
-
-    Raises:
-        ValueError: Not a valid ``coords`` input, when giving something else.
-    """
-    try:
-        num_atoms = coords.shape[0]
-    except AttributeError:
-        coords = np.array(coords)
-        num_atoms = coords.shape[0]
-    finally:
-        for i in range(num_atoms):
-            conf.SetAtomPosition(i, coords[i, :])

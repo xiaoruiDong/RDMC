@@ -7,7 +7,9 @@ This module provides methods that can directly apply to RDKit Mol/RWMol.
 
 from typing import Union
 
+import numpy as np
 from rdkit import Chem
+from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import BondType, Mol, RWMol
 
 import openbabel as ob
@@ -79,13 +81,15 @@ def find_internal_torsions(mol: Union['Mol', 'RWMol'],
 def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
                                remove_h: bool = False,
                                sanitize: bool = True,
+                               embed: bool = True,
                                ) -> 'RWMol':
     """
     Convert a OpenBabel molecular structure to a Chem.rdchem.RWMol object.
     Args:
         ob_mol (Molecule): An OpenBabel Molecule object for the conversion.
-        remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to True.
+        remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to False.
         sanitize (bool, optional): Whether to sanitize the RDKit molecule. Defaults to True.
+        embed (bool, optional): Whether to embeb 3D conformer from OBMol. Defaults to True.
 
     Returns:
         RWMol: A writable RDKit RWMol instance.
@@ -121,6 +125,14 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         rw_mol = Chem.RemoveHs(rw_mol, sanitize=sanitize)
     elif sanitize:
         Chem.SanitizeMol(rw_mol)
+
+    # If OBMol has 3D information, it can be embed to the RDKit Mol
+    if embed and obmol.Has3D():
+        coords = []
+        for obatom in ob.OBMolAtomIter(obmol):
+            coords.append([obatom.GetX(), obatom.GetY(), obatom.GetZ()])
+        AllChem.EmbedMolecule(rw_mol)
+        set_conformer_coordinates(rw_mol.GetConformer(), np.array(coords))
     return rw_mol
 
 
@@ -216,3 +228,25 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
     elif sanitize:
         Chem.SanitizeMol(rwmol)
     return rwmol
+
+
+def set_conformer_coordinates(conf: Union['Conformer', 'RDKitConf'],
+                              coords: Union[tuple, list, np.ndarray]):
+    """
+    Set the Positions of atoms of the conformer.
+
+    Args:
+        conf (Union[Conformer, 'RDKitConf']): The conformer to be set.
+        coords (Union[tuple, list, np.ndarray]): The coordinates to be set.
+
+    Raises:
+        ValueError: Not a valid ``coords`` input, when giving something else.
+    """
+    try:
+        num_atoms = coords.shape[0]
+    except AttributeError:
+        coords = np.array(coords)
+        num_atoms = coords.shape[0]
+    finally:
+        for i in range(num_atoms):
+            conf.SetAtomPosition(i, coords[i, :])

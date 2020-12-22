@@ -23,6 +23,7 @@ from rdkit.Chem.rdchem import Mol, RWMol
 # openbabel - 2.4.1 from rmg channel does not work
 import openbabel as ob
 
+from rdmc.conf import RDKitConf
 from rdmc.utils import *
 
 # Keep the representation method from rdchem.Mol
@@ -88,19 +89,21 @@ class RDKitMol(object):
                   ob_mol: 'openbabel.OBMol',
                   remove_h: bool = False,
                   sanitize: bool = True,
+                  embed: bool = True,
                   ) -> 'RDKitMol':
         """
         Convert a OpenBabel molecular structure to an RDKit RDMol object.
 
         Args:
             ob_mol (Molecule): An OpenBabel Molecule object for the conversion.
-            remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to True.
+            remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to False.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule. Defaults to True.
+            embed (bool, optional): Whether to embeb 3D conformer from OBMol. Defaults to True.
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the input OpenBabel Molecule object.
         """
-        rw_mol = openbabel_mol_to_rdkit_mol(ob_mol, remove_h, sanitize)
+        rw_mol = openbabel_mol_to_rdkit_mol(ob_mol, remove_h, sanitize, embed)
         return cls(rw_mol)
 
     @classmethod
