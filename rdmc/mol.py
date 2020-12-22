@@ -171,6 +171,68 @@ class RDKitMol(object):
         pt = Chem.GetPeriodicTable()
         return [pt.GetElementSymbol(atom.GetAtomicNum()) for atom in self.GetAtoms()]
 
+    def GetConformer(self,
+                     id: int = 0) -> 'RDKitConf':
+        """
+        Get the embedded conformer according to ID. The relationship:
+                       mol
+            RDKitMol ======== RWMol
+           owing ||           || owing
+             mol ||           || mol
+            RDKitConf ====== Conformer
+                     conformer
+        Args:
+            id (int): The ID of the conformer to be obtained. The default is 0.
+
+        Raises:
+            ValueError: Bad id assigned.
+
+        Returns:
+            RDKitConf: A conformer corresponding to the ID.
+        """
+        try:
+            conformer = self._mol.GetConformer(id)
+        except ValueError as e:
+            raise ValueError(f"{e}: {id}")
+        rdkitconf = RDKitConf(conformer)
+        rdkitconf.SetOwningMol(self)
+        return rdkitconf
+
+    def GetConformers(self,
+                      ids: Union[list, tuple] = [0],
+                      ) -> List['RDKitConf']:
+        """
+        Get the embedded conformers according to IDs.
+
+        Args:
+            ids (Union[list, tuple]): The ids of the conformer to be obtained.
+                                      The default is [0].
+
+        Raises:
+            ValueError: Bad id assigned.
+
+        Returns:
+            List[RDKitConf]: A list of conformers corresponding to the IDs.
+        """
+        conformers = list()
+        for id in ids:
+            try:
+                conformer = self.GetConformer(id)
+            except ValueError as e:
+                raise
+            else:
+                conformers.append(conformer)
+        return conformers
+
+    def GetAllConformers(self) -> List['RDKitConf']:
+        """
+        Get all of the embedded conformers.
+
+        Returns:
+            List['RDKitConf']: A list all of conformers.
+        """
+        return self.GetConformers(list(range(self.GetNumConformers())))
+
     def GetDistanceMatrix(self, id: int = 0) -> np.ndarray:
         return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
 

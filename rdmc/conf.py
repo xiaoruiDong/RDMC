@@ -61,6 +61,23 @@ class RDKitConf(object):
         """
         return cls(mol.GetConformer(id))
 
+    @classmethod
+    def FromRDKitMol(cls,
+                     rdkitmol: 'RDKitMol',
+                     id: int = 0,
+                     ) -> 'RDkitConf':
+        """
+        Get a RDKitConf instance from a RDKitMol instance. The owning molecule
+        of the generated conformer is RDKitMol instead of Chem.rdchem.Mol.
+
+        Args:
+            rdkitmol (RDKitMol): a Molecule in RDKitMol.
+            id (int): The id of the conformer to be extracted from the molecule.
+
+        Returns:
+            RDKitConf: A Conformer in RDKitConf of the given molecule
+        """
+        return rdkitmol.GetConformer(id)
 
     def GetAllTorsionsDeg(self) -> list:
         """
