@@ -153,6 +153,9 @@ class RDKitMol(object):
             Chem.SanitizeMol(mol)
         return cls(mol)
 
+    def GetDistanceMatrix(self, id: int = 0) -> np.ndarray:
+        return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
+
     def GetTorsionalModes(self,
                           exclude_methyl: bool = False,
                           ) -> list:
