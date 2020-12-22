@@ -5,10 +5,11 @@
 This module provides class and methods for dealing with RDKit RWMol, Mol.
 """
 
-from typing import Union
+from typing import List, Union
 
 import numpy as np
 from rdkit import Chem
+from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import BondType, Mol, RWMol
 
 # openbabel import is currently put behind rdkit.
@@ -84,7 +85,7 @@ class RDKitMol(object):
         """
         Embed a conformer to the RDKitMol. This will overwrite current conformers.
         """
-        Chem.AllChem.EmbedMolecule(self._mol)
+        AllChem.EmbedMolecule(self._mol)
 
     def EmbedMultipleConfs(self, n: int = 1):
         """
@@ -93,7 +94,7 @@ class RDKitMol(object):
         Args:
             n (int): The number of conformers to be embedded. The default is 1.
         """
-        Chem.AllChem.EmbedMultipleConfs(self._mol, numConfs=n)
+        AllChem.EmbedMultipleConfs(self._mol, numConfs=n)
 
     @ classmethod
     def FromOBMol(cls,
@@ -130,7 +131,7 @@ class RDKitMol(object):
         """
         return cls(mol)
 
-    @ classmethod
+    @classmethod
     def FromSmiles(cls,
                    smiles: str,
                    remove_h: bool = False,
