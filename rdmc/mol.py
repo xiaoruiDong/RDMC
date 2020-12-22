@@ -7,6 +7,7 @@ This module provides class and methods for dealing with RDKit RWMol, Mol.
 
 from typing import Union
 
+import numpy as np
 from rdkit import Chem
 from rdkit.Chem.rdchem import BondType, Mol, RWMol
 
@@ -187,7 +188,7 @@ class RDKitMol(object):
         Returns:
             list: A list of four-atom-indice to indicating the torsional modes.
         """
-        return find_internal_torsions(self._rd_mol,
+        return find_internal_torsions(self._mol,
                                       exclude_methyl=exclude_methyl)
 
     def PrepareOutputMol(self,
@@ -245,6 +246,19 @@ class RDKitMol(object):
         """
         return self._mol
 
+    def ToSDFFile(self, path: str):
+        """
+        Write molecule information to .sdf file.
+
+        Args:
+            path (str): The path to save the .sdf file.
+        """
+        writer = Chem.rdmolfiles.SDWriter(path)
+        # Not sure what may cause exceptions and errors here
+        # If any issues found, add try...except...finally
+        writer.write(self._mol)
+        writer.close()
+
     def ToSmiles(self,
                  stereo: bool = True,
                  kekule: bool = False,
@@ -277,13 +291,6 @@ class RDKitMol(object):
                                            kekuleSmiles=kekule,
                                            canonical=canonical)
 
-    def ToSDFFile(self, path):
-        writer = Chem.rdmolfiles.SDWriter(path)
-        # Not sure what may cause exceptions and errors here
-        # If any issues found, add try...except...finally
-        writer.write(self._mol)
-        writer.close()
-
 
 def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
                                              atom2: 'rdkit.Chem.rdchem.Atom',
@@ -311,7 +318,7 @@ def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
         return min([nb.GetIdx() for nb in neighbor if nb.GetAtomicNum() != 1])
 
 
-def find_internal_torsions(mol: Union[Mol, RWMol],
+def find_internal_torsions(mol: Union[Mol, RWMol, RDKitMol],
                            exclude_methyl: bool = False,
                            ) -> list:
     """
@@ -386,7 +393,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
     return rw_mol
 
 
-def rdkit_mol_to_openbabel_mol(rdmol: Union[Mol, RWMol]):
+def rdkit_mol_to_openbabel_mol(rdmol: Union[Mol, RWMol, RDKitMol]):
     """
     Convert a Mol/RWMol to a Openbabel mol.
     Args:
