@@ -275,6 +275,54 @@ class RDKitMol(object):
     def GetDistanceMatrix(self, id: int = 0) -> np.ndarray:
         return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
 
+    def GetSubstructMatch(self,
+                          query: Union['RDKitMol', 'RWMol', 'Mol'],
+                          useChirality: bool = False,
+                          useQueryQueryMatches: bool = False
+                          ) -> tuple:
+        """
+        Returns the indices of the molecule's atoms that match a substructure query.
+
+        Args:
+            query (Mol): a Molecule.
+            useChirality (bool, optional): enables the use of stereochemistry in the matching. Defaults to False.
+            useQueryQueryMatches (bool, optional): use query-query matching logic. Defaults to False.
+
+        Returns:
+            tuple: A tuple of matched indices.
+        """
+        try:
+            return self._mol.GetSubstructMatch(query.ToRWMol(), useChirality, useQueryQueryMatches)
+        except AttributeError:
+            return self._mol.GetSubstructMatch(query, useChirality, useQueryQueryMatches)
+
+    def GetSubstructMatches(self,
+                            query: Union['RDKitMol', 'RWMol', 'Mol'],
+                            uniquify: bool = True,
+                            useChirality: bool = False,
+                            useQueryQueryMatches: bool = False,
+                            maxMatches: int = 1000,
+                            ) -> tuple:
+        """
+        Returns tuples of the indices of the molecule's atoms that match a substructure query.
+
+        Args:
+            query (Mol): a Molecule.
+            uniquify (bool, optional): determines whether or not the matches are uniquified. Defaults to True.
+            useChirality (bool, optional): enables the use of stereochemistry in the matching. Defaults to False.
+            useQueryQueryMatches (bool, optional): use query-query matching logic. Defaults to False.
+            maxMatches: The maximum number of matches that will be returned to prevent a combinatorial explosion.
+
+        Returns:
+            tuple: A tuple of tuples of matched indices.
+        """
+        try:
+            return self._mol.GetSubstructMatches(query.ToRWMol(), uniquify, useChirality,
+                                                 useQueryQueryMatches, maxMatches)
+        except AttributeError:
+            return self._mol.GetSubstructMatches(query, uniquify, useChirality,
+                                                 useQueryQueryMatches, maxMatches)
+
     def GetTorsionalModes(self,
                           exclude_methyl: bool = False,
                           ) -> list:
