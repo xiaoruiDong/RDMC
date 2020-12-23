@@ -22,6 +22,7 @@ from rdkit.Chem.rdchem import Mol, RWMol
 # rdkit - 2020.03.3 from rdkit channel
 # openbabel - 2.4.1 from rmg channel does not work
 import openbabel as ob
+import pybel
 
 from rdmc.conf import RDKitConf
 from rdmc.utils import *
@@ -165,6 +166,30 @@ class RDKitMol(object):
         return cls(rmg_mol_to_rdkit_mol(rmgmol,
                                         remove_h,
                                         sanitize))
+
+    @classmethod
+    def FromXYZ(cls,
+                xyz: str,
+                backend: str = 'pybel'):
+        """
+        Convert xyz string to RDKitMol.
+
+        Args:
+            xyz (str): A XYZ String.
+            backend (str): The backend used to perceive molecule. Defaults to "pybel".
+                           Currently, we only support "pybel".
+
+        Returns:
+            RDKitMol: An RDKit molecule object corresponding to the xyz.
+        """
+        if backend.lower() == 'pybel':
+            try:
+                obmol = pybel.readstring('xyz', xyz).OBMol
+            except OSError:
+                obmol = pybel.readstring('xyz', f"{len(xyz.splitlines())}\n\n{xyz}").OBMol
+            return cls.FromOBMol(obmol)
+        else:
+            raise NotImplementedError('Backend ({backend}) is not supported.')
 
     def GetAtomicNumbers(self):
         """
@@ -364,3 +389,23 @@ class RDKitMol(object):
                                            isomericSmiles=stereo,
                                            kekuleSmiles=kekule,
                                            canonical=canonical)
+
+    def ToXYZ(self,
+              conf_id: int = -1,
+              header: bool = True,
+              ) -> str:
+        """
+        Convert RDKitMol to a SMILES string.
+
+        Args:
+            conf_id (int): The conformer ID to be exported.
+            header (bool, optional): Whether to include header (first two lines).
+                                     Defaults to True.
+
+        Returns
+            str: The xyz of the molecule.
+        """
+        xyz = Chem.MolToXYZBlock(self._mol, conf_id)
+        if not header:
+            xyz = '\n'.join(xyz.splitlines()[2:])
+        return xyz
