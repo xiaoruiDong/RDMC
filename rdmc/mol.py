@@ -150,7 +150,18 @@ class RDKitMol(object):
                    rmgmol: 'rmgpy.molecule.Molecule',
                    remove_h: bool = False,
                    sanitize: bool = True,
-                   ) -> 'RWMol':
+                   ) -> 'RDKitMol':
+        """
+        Convert an RMG Molecule to an RDkit Mol object.
+
+        Args:
+            smiles (str): An RMG Molecule instance.
+            remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+            sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
+
+        Returns:
+            RDKitMol: An RDKit molecule object corresponding to the RMG Molecule.
+        """
         return cls(rmg_mol_to_rdkit_mol(rmgmol,
                                         remove_h,
                                         sanitize))
