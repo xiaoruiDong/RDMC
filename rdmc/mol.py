@@ -70,6 +70,15 @@ class RDKitMol(object):
         # Perceive rings
         Chem.GetSymmSSSR(self._mol)
 
+    def Copy(self) -> 'RDKitMol':
+        """
+        Make a copy of the RDKitMol.
+
+        Returns:
+            RDKitMol: a copied molecule
+        """
+        return self.RenumberAtoms(list(range(self.GetNumAtoms())))
+
     def EmbedConformer(self):
         """
         Embed a conformer to the RDKitMol. This will overwrite current conformers.
@@ -366,6 +375,22 @@ class RDKitMol(object):
         elif sanitize:
             Chem.rdmolops.SanitizeMol(mol)  # mol is modified in place
         return mol
+
+    def RenumberAtoms(self,
+                      newOrder: list):
+        """
+        Return a new copy of RDKitMol that has atom reordered.
+
+        Args:
+            newOrder (list): the new ordering the atoms (should be numAtoms long). E.g,
+                             if newOrder is [3,2,0,1], then atom 3 in the original molecule
+                             will be atom 0 in the new one.
+
+        Returns:
+            RDKitMol: Molecule with reordered atoms.
+        """
+        rwmol = Chem.rdmolops.RenumberAtoms(self._mol, newOrder)
+        return RDKitMol(rwmol)
 
     def SetAtomMapNumbers(self):
         """
