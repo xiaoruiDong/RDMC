@@ -1,0 +1,10 @@
+name: rdmc_env
+channels:
+  - defaults
+  - rdkit
+  - rmg
+  - conda-forge
+dependencies:
+  - numpy
+  - rdkit::rdkit
+  - openbabel
