@@ -70,6 +70,45 @@ class RDKitMol(object):
         # Perceive rings
         Chem.GetSymmSSSR(self._mol)
 
+    def AlignMol(self,
+                 refMol: Union['RDKitMol', 'RWMol', 'Mol'],
+                 confid: int = 0,
+                 refCid: int = 0,
+                 reflect: bool = False,
+                 atomMap: list = [],
+                 maxIters: int = 1000,
+                 ) -> float:
+        """
+        Align molecules based on a reference molecule.
+
+        Args:
+            refMol (Mol): RDKit molecule as a reference.
+            confid (int, optional): The conformer id to be aligned. Defaults to 0.
+            refCid (int, optional): The id of reference conformer. Defaults to 0.
+            reflect (bool, optional): Whether to reflect the conformation of the probe molecule.
+                                      Defaults to False.
+            atomMap (list, optional): a vector of pairs of atom IDs (probe AtomId, ref AtomId)
+                                      used to compute the alignments. If this mapping is not
+                                      specified an attempt is made to generate on by substructure matching.
+            maxIters (int, optional): maximum number of iterations used in mimizing the RMSD. Defaults to 1000.
+        """
+        try:
+            return Chem.rdMolAlign.AlignMol(prbMol=self._mol,
+                                            refMol=refMol.ToRWMol(),
+                                            prbCid=confid,
+                                            refCid=refCid,
+                                            atomMap=atomMap,
+                                            reflect=reflect,
+                                            maxIters=maxIters)
+        except AttributeError:
+            return Chem.rdMolAlign.AlignMol(prbMol=self._mol,
+                                            refMol=refMol,
+                                            prbCid=confid,
+                                            refCid=refCid,
+                                            atomMap=atomMap,
+                                            reflect=reflect,
+                                            maxIters=maxIters)
+
     def Copy(self) -> 'RDKitMol':
         """
         Make a copy of the RDKitMol.
