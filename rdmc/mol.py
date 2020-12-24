@@ -26,6 +26,7 @@ import pybel
 
 from rdmc.conf import RDKitConf
 from rdmc.utils import *
+from rdmc.external.xyz2mol import int_atom, xyz2mol
 
 # Keep the representation method from rdchem.Mol
 KEEP_RDMOL_ATTRIBUTES = ['_repr_html_',
@@ -218,26 +219,56 @@ class RDKitMol(object):
     @classmethod
     def FromXYZ(cls,
                 xyz: str,
-                backend: str = 'pybel'):
+                backend: str = 'pybel',
+                header: bool = True,
+                **kwargs):
         """
         Convert xyz string to RDKitMol.
 
         Args:
             xyz (str): A XYZ String.
             backend (str): The backend used to perceive molecule. Defaults to "pybel".
-                           Currently, we only support "pybel".
+                           Currently, we only support "pybel" and "jensen".
+            header (bool, optional): If lines of the number of atoms and title are included.
+                                     Defaults to True.
+            supported kwargs:
+                jensen: - charge: The charge of the species. Defaults to 0.
+                        - allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to False.
+                        - use_graph: ``True`` to use networkx module for accelerate. Defaults to True.
+                        - use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
+                        - embed_chiral: ``True`` to embed chiral information. Defaults to True.
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the xyz.
         """
+        if not header:
+            xyz = f"{len(xyz.splitlines())}\n\n{xyz}"
+
+        # Pybel support read xyz and perceive atom connectivities
         if backend.lower() == 'pybel':
-            try:
-                obmol = pybel.readstring('xyz', xyz).OBMol
-            except OSError:
-                obmol = pybel.readstring('xyz', f"{len(xyz.splitlines())}\n\n{xyz}").OBMol
+            obmol = pybel.readstring('xyz', xyz).OBMol
             return cls.FromOBMol(obmol)
+
+        # https://github.com/jensengroup/xyz2mol/blob/master/xyz2mol.py
+        # provides an approach to convert xyz to mol
+        elif backend.lower() == 'jensen':
+            atoms, coords = [], []
+            for line in xyz.splitlines()[2:]:
+                sections = line.split()
+                atoms.append(int_atom(sections[0]))
+                coords.append([float(i) for i in sections[1:]])
+            if 'allow_charged_fragments' not in kwargs:
+                kwargs['allow_charged_fragments'] = False
+            try:
+                mol = xyz2mol(atoms, coords, **kwargs)[0]
+            except IndexError:
+                raise ValueError(f'Cannot perceive the xyz by the backend ({backend}).')
+            else:
+                return cls(mol)
+
         else:
-            raise NotImplementedError('Backend ({backend}) is not supported.')
+            raise NotImplementedError(f'Backend ({backend}) is not supported. Only `pybel` and `jensen`'
+                                      f' are supported.')
 
     def GetAtomicNumbers(self):
         """
