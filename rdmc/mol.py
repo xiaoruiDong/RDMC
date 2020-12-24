@@ -10,7 +10,7 @@ from typing import List, Union
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from rdkit.Chem.rdchem import Mol, RWMol
+from rdkit.Chem.rdchem import Mol, RWMol, Conformer
 
 # openbabel import is currently put behind rdkit.
 # This relates to https://github.com/rdkit/rdkit/issues/2292
@@ -552,3 +552,35 @@ class RDKitMol(object):
         if not header:
             xyz = '\n'.join(xyz.splitlines()[2:])
         return xyz
+
+
+class RDKitTS(RDKitMol):
+    """
+    This is a wrapper for Chem.rdchem.Mol / Chem.rdchem.RWMol to deal with Transition States
+    specifically. Since transition states are those cannot be sanitized, EmbedConformer method
+    is not feasible. Modifications on ``Chem.AllChem.EmbedMolecule()`` and ``Chem.All.EmbedMultipleConfs``
+    allows user assign xyz coordinates mannually. Generally, not recommended to use unless you have to do it.
+    """
+
+    def EmbedConformer(self):
+        """
+        Embed a conformer to the RDKitMol. This will overwrite current conformers.
+        The coordinates will be initialized to zeros.
+        """
+        self.EmbedMultipleConfs()
+
+    def EmbedMultipleConfs(self, n: int = 1):
+        """
+        Embed conformers to the RDKitMol. This will overwrite current conformers.
+        All coordinates will be initialized to zeros.
+
+        Args:
+            n (int): The number of conformers to be embedded. Defaults to 1.
+        """
+        self._mol.RemoveAllConformers()
+        num_atoms = self._mol.GetNumAtoms()
+        for i in range(n):
+            conf = Conformer()
+            set_conformer_coordinates(conf, np.zeros((num_atoms, 3)))
+            conf.SetId(i)
+            self._mol.AddConformer(conf)
