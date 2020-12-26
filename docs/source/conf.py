@@ -35,7 +35,6 @@ extensions = [
     'sphinx.ext.napoleon',  # support for NumPy and Google style docstrings
     'sphinx.ext.todo',  # include to do
     'sphinx.ext.coverage',
-    'sphinx_automodapi.automodapi'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

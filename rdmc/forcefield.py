@@ -23,15 +23,36 @@ class RDKitFF(object):
     """
     A wrapper to deal with Force field in RDKit.
     """
-    def __init__(self, force_field:str = 'mmff94s'):
+    def __init__(self, force_field: str = 'mmff94s'):
+        """
+        Initiate the ``RDKitFF`` by given the name of the force field.
+
+        Args:
+            force_field: The name of the force field. Supporting:
+                - MMFF94s (default)
+                - MMFF94
+                - UFF
+        """
         self.ForceField = force_field
 
     @property
     def ForceField(self):
+        """
+        Return the force field backend.
+        """
         return self._ff
 
     @ForceField.setter
     def ForceField(self, force_field):
+        """
+        Reset the force field backend.
+
+        Args:
+            force_field: The name of the force field. Supporting:
+                - MMFF94s (default)
+                - MMFF94
+                - UFF
+        """
         force_field = force_field.lower()
         if not force_field in ['mmff94s', 'mmff94', 'uff']:
             raise ValueError(f'RDKit does not support {force_field}')
@@ -58,13 +79,14 @@ class RDKitFF(object):
                         mol: 'RDKitMol',
                         inplace: bool = False):
         """
-        Make the molecule able to be optimized by the force field.
-        1. it is known that RO[O] is not optimizable by MMFF. By changing -O[O] to -OF,
+        Make the molecule able to be optimized by the force field. Known problematic molecules:
+
+        1. RO[O] is not optimizable by MMFF. By changing -O[O] to -OF,
            it allows the geometry to be optimized yielding reasonable results.
 
         Args:
             mol ('Mol'): Molecule to be changed.
-            inplace (bool, optional): Whether to make the change inplace. Defaults to False.
+            inplace (bool, optional): Whether to make the change inplace. Defaults to ``False``.
 
         Returns:
             ('Mol', dict): A modified molecule and approaches to modify this molecule.
@@ -110,7 +132,7 @@ class RDKitFF(object):
         Args:
             mol ('Mol'): Molecule to be changed.
             edits (dict): A dict of approach to modify this molecule
-            inplace (bool, optional): Whether to make the change inplace. Defaults to True.
+            inplace (bool, optional): Whether to make the change inplace. Defaults to ``True``.
 
         Returns:
             'Mol' A recovered molecule.
@@ -143,8 +165,8 @@ class RDKitFF(object):
 
         Args:
             mol ('Mol'): A molecule to be optimized.
-            maxIters (int, optional): max iterations. Defaults to 200.
-            numThreads (int, optional): number of threads to use. Defaults to 0 for all.
+            maxIters (int, optional): max iterations. Defaults to ``200``.
+            numThreads (int, optional): number of threads to use. Defaults to ``0`` for all.
 
         Returns:
             - int: 0 for optimization done; 1 for not optimized; -1 for not optimizable.
@@ -175,10 +197,10 @@ class RDKitFF(object):
 
         Args:
             mol ('Mol'): A molecule to be optimized.
-            maxIters (int, optional): max iterations. Defaults to 200.
-            numThreads (int, optional): number of threads to use. Defaults to 0 for all.
+            maxIters (int, optional): max iterations. Defaults to ``200``.
+            numThreads (int, optional): number of threads to use. Defaults to ``0`` for all.
             maxCycles (int, optional): number of outer cycle. Check convergence after maxIters.
-                                       Defaults to 20.
+                                       Defaults to ``20``.
 
         Returns:
             - int: 0 for optimization done; 1 for not optimized; -1 for not optimizable.

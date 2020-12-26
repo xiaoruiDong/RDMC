@@ -19,3 +19,6 @@ formats: all
 # Optionally set the version of Python and requirements required to build your docs
 conda:
   environment: environment.yml
+
+build:
+  image: stable
