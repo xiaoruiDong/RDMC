@@ -69,7 +69,7 @@ class RDKitMol(object):
         self.SetAtomMapNumbers()
 
         # Perceive rings
-        Chem.GetSymmSSSR(self._mol)
+        self.GetSymmSSSR()
 
     def AlignMol(self,
                  refMol: Union['RDKitMol', 'RWMol', 'Mol'],
@@ -349,6 +349,15 @@ class RDKitMol(object):
 
     def GetDistanceMatrix(self, id: int = 0) -> np.ndarray:
         return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
+
+    def GetSymmSSSR(self):
+        """
+        Get a symmetrized SSSR for a molecule.
+
+        Returns:
+            tuple: a sequence of sequences containing the rings found as atom ids
+        """
+        return Chem.GetSymmSSSR(self._mol)
 
     def GetSubstructMatch(self,
                           query: Union['RDKitMol', 'RWMol', 'Mol'],
