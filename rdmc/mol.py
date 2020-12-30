@@ -73,7 +73,7 @@ class RDKitMol(object):
 
     def AlignMol(self,
                  refMol: Union['RDKitMol', 'RWMol', 'Mol'],
-                 confid: int = 0,
+                 prbCid: int = 0,
                  refCid: int = 0,
                  reflect: bool = False,
                  atomMap: list = [],
@@ -84,7 +84,7 @@ class RDKitMol(object):
 
         Args:
             refMol (Mol): RDKit molecule as a reference.
-            confid (int, optional): The conformer id to be aligned. Defaults to ``0``.
+            prbCid (int, optional): The conformer id to be aligned. Defaults to ``0``.
             refCid (int, optional): The id of reference conformer. Defaults to ``0``.
             reflect (bool, optional): Whether to reflect the conformation of the probe molecule.
                                       Defaults to ``False``.
@@ -92,23 +92,21 @@ class RDKitMol(object):
                                       used to compute the alignments. If this mapping is not
                                       specified an attempt is made to generate on by substructure matching.
             maxIters (int, optional): maximum number of iterations used in mimizing the RMSD. Defaults to ``1000``.
+
+        Returns:
+            float: RMSD value.
         """
         try:
-            return Chem.rdMolAlign.AlignMol(prbMol=self._mol,
-                                            refMol=refMol.ToRWMol(),
-                                            prbCid=confid,
-                                            refCid=refCid,
-                                            atomMap=atomMap,
-                                            reflect=reflect,
-                                            maxIters=maxIters)
+            ref_mol = refMol.ToRWMol()
         except AttributeError:
-            return Chem.rdMolAlign.AlignMol(prbMol=self._mol,
-                                            refMol=refMol,
-                                            prbCid=confid,
-                                            refCid=refCid,
-                                            atomMap=atomMap,
-                                            reflect=reflect,
-                                            maxIters=maxIters)
+            ref_mol = refMol
+        return Chem.rdMolAlign.AlignMol(prbMol=self._mol,
+                                        refMol=ref_mol,
+                                        prbCid=prbCid,
+                                        refCid=refCid,
+                                        atomMap=atomMap,
+                                        reflect=reflect,
+                                        maxIters=maxIters)
 
     def Copy(self) -> 'RDKitMol':
         """
@@ -279,6 +277,72 @@ class RDKitMol(object):
             list: A list of atomic numbers.
         """
         return [atom.GetAtomicNum() for atom in self.GetAtoms()]
+
+    def GetBestAlign(self,
+                     refMol,
+                     prbCid: int = 0,
+                     refCid: int = 0,
+                     atomMap: list = [],
+                     maxIters: int = 1000,
+                     keepBestConformer: bool = True):
+        """
+        This is a wrapper function for calling `AlignMol` twice, with ``reflect`` to ``True``
+        and ``False``, respectively.
+
+        Args:
+            refMol (Mol): RDKit molecule as a reference.
+            prbCid (int, optional): The conformer id to be aligned. Defaults to ``0``.
+            refCid (int, optional): The id of reference conformer. Defaults to ``0``.
+            reflect (bool, optional): Whether to reflect the conformation of the probe molecule.
+                                      Defaults to ``False``.
+            atomMap (list, optional): a vector of pairs of atom IDs ``(probe AtomId, ref AtomId)``
+                                      used to compute the alignments. If this mapping is not
+                                      specified an attempt is made to generate on by substructure matching.
+            maxIters (int, optional): maximum number of iterations used in mimizing the RMSD. Defaults to ``1000``.
+            keepBestConformer (bool, optional): Whether to keep the best Conformer structure. Defaults to ``True``.
+                                                This is less helpful when you are comparing different atom mappings.
+
+        Returns:
+            float: RMSD value.
+            bool: if reflected conformer gives a better result.
+        """
+        # Align without refection
+        rmsd = self.AlignMol(refMol=refMol,
+                             prbCid=prbCid,
+                             refCid=refCid,
+                             atomMap=atomMap,
+                             maxIters=maxIters)
+
+        # Align with refection
+        rmsd_r = self.AlignMol(refMol=refMol,
+                               prbCid=prbCid,
+                               refCid=refCid,
+                               atomMap=atomMap,
+                               maxIters=maxIters,
+                               reflect=True)
+
+        # The conformation is reflected, now reflect back
+        self.AlignMol(refMol=refMol,
+                      prbCid=prbCid,
+                      refCid=refCid,
+                      atomMap=atomMap,
+                      maxIters=1,
+                      reflect=True)
+
+        reflect = True if rmsd > rmsd_r else False
+
+        # Make sure the resulted conformer is the one with the lowest RMSD
+        if keepBestConformer:
+            rmsd = self.AlignMol(refMol=refMol,
+                                 prbCid=prbCid,
+                                 refCid=refCid,
+                                 atomMap=atomMap,
+                                 maxIters=maxIters,
+                                 reflect=reflect,)
+        else:
+            rmsd = rmsd if rmsd <= rmsd_r else rmsd_r
+
+        return rmsd, reflect
 
     def GetElementSymbols(self):
         """
