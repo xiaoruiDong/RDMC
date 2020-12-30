@@ -108,6 +108,46 @@ class RDKitMol(object):
                                         reflect=reflect,
                                         maxIters=maxIters)
 
+    def CombineMol(self,
+                   molFrag: 'Mol',
+                   offset: Union[list, tuple, float] = 0,
+                   ) -> 'RDKitMol':
+        """
+        A function to combine the current molecule with the given ``molFrag`` (another molecule
+        or fragment). It will return a new RDKitMol instance without changing the input molecules.
+
+        Args:
+            molFrag (Mol): the molecule or fragment to be combined into the current one.
+            offset:
+                - (list, tuple): A 3D vector used to define the offset.
+                - (float): An ratio times the distance vector between the two centroids as the offset.
+
+        Returns:
+            RDKitMol: The combined molecule.
+        """
+        try:
+            mol = molFrag.ToRWMol()
+        except AttributeError:
+            mol = molFrag
+
+        # Manually assign a 3D vector for offset
+        if isinstance(offset, (list, tuple)) and len(offset) == 3:
+            vector = Point3D()
+            for i, coord in enumerate(['x', 'y', 'z']):
+                setattr(vector, coord, offset[i])
+
+        # Assign an offset according to the centroid vector
+        elif isinstance(offset, float):
+            conf = self.GetConformer()
+            conf_from_mol = mol.GetConformer()
+            vector = Chem.rdMolTransforms.ComputeCentroid(conf_from_mol, ignoreHs=False) - \
+                     Chem.rdMolTransforms.ComputeCentroid(conf.ToConformer(), ignoreHs=False)
+            for coord in ['x', 'y', 'z']:
+                setattr(vector, coord, getattr(vector, coord) * offset)
+
+        combined = Chem.rdmolops.CombineMols(self._mol, mol, vector)
+        return RDKitMol(combined)
+
     def Copy(self) -> 'RDKitMol':
         """
         Make a copy of the RDKitMol.

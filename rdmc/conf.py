@@ -215,3 +215,12 @@ class RDKitConf(object):
             self._torsions = torsions
         else:
             raise ValueError('Invalid torsional mode input.')
+
+    def ToConformer(self) -> 'Conformer':
+        """
+        Get its backend RDKit Conformer object.
+
+        Returns:
+            Conformer: The backend conformer
+        """
+        return self._conf
