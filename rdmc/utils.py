@@ -127,7 +127,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         Chem.SanitizeMol(rw_mol)
 
     # If OBMol has 3D information, it can be embed to the RDKit Mol
-    if embed and obmol.Has3D():
+    if embed and obmol.HasNonZeroCoords():
         coords = []
         for obatom in ob.OBMolAtomIter(obmol):
             coords.append([obatom.GetX(), obatom.GetY(), obatom.GetZ()])
