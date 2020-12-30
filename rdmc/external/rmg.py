@@ -126,7 +126,7 @@ def find_reaction_family(database: 'RMGDatabase',
     for family in database.kinetics.families.values():
         family.save_order = False
     reaction_list = database.kinetics.generate_reactions(reactants=[mol.copy() for mol in reactants],
-                                                        products=[mol.copy() for mol in products])
+                                                         products=[mol.copy() for mol in products])
     # Get reaction information
     for rxn in reaction_list:
         family = rxn.family
@@ -139,13 +139,14 @@ def find_reaction_family(database: 'RMGDatabase',
             print('Doesn\'t match any RMG reaction family!')
 
 
-def renumber_product_atom_by_reaction(database: 'RMGDatabase',
-                                      reactants: list,
-                                      products: list,
-                                      verbose: bool = True,
-                                      ) -> List['Molecule']:
+def generate_product_complex(database: 'RMGDatabase',
+                             reactants: list,
+                             products: list,
+                             verbose: bool = True,
+                             ) -> List['Molecule']:
     """
-    Renumber the product atom indexes according to RMG reaction family.
+    Generate a product complex according to RMG reaction family. Currently,
+    this function is only valid for reaction with a single reactant.
 
     Args:
         database (RMGDatabase): An RMG database instance.
@@ -154,38 +155,87 @@ def renumber_product_atom_by_reaction(database: 'RMGDatabase',
         verbose (bool, optional): Whether to print results. Defaults to print.
 
     Returns:
-        list of Molecules: Product molecules with correct atom indexes.
+        Molecule: a product complex with consistent atom indexing as in the reactant.
     """
+    # Find the reaction in the RMG database
     try:
         family_label, forward = find_reaction_family(database,
                                                     reactants,
                                                     products)
     except TypeError:
+        # Cannot find any matches
         return
 
     # Make the reaction family preserver atom orders
     family = database.kinetics.families[family_label]
     family.save_order = True
 
-    # Get reaction template
+    # Get reaction template and species number
     template = family.forward_template if forward else family.reverse_template
     reactant_num = family.reactant_num if forward else family.product_num
+    product_num = family.product_num if forward else family.reactant_num
+
+    # The following block copied from rmgpy.data.kinetics.family
+    # Its actual role is not clear
     if family.auto_generated and reactant_num != len(reactants):
         raise NotImplementedError
 
-    # 1 <=> 1 reactions
-    if len(reactants) == len(products) == 1:
+    # A <=> B or A <=> B + C reactions
+    if len(reactants) == 1:
+        # Find all possible mappings
         mappings = family._match_reactant_to_template(reactants[0],
                                                       template.reactants[0].item)
+        # Apply each mapping to the reactant
         for mapping in mappings:
-            try:
-                product_structures = family._generate_product_structures(
-                    reactants, [mapping], forward)
-            except ForbiddenStructureException:
-                pass
+            # Clear * labels
+            reactants[0].clear_labeled_atoms()
+            # Reassign * labels
+            for reactant_atom, template_atom in mapping.items():
+                reactant_atom.label = template_atom.label
+            # Apply reaction recipe
+            reactant_structure = reactants[0].copy(deep=True)
+            if forward:
+                family.forward_recipe.apply_forward(reactant_structure, unique=True)
             else:
-                # isomorphic changes the atom index
-                if product_structures[0].copy().is_isomorphic(products[0]):
-                    return (product_structures)
+                family.reverse_recipe.apply_forward(reactant_structure, unique=True)
+
+            # The product complex is stored in `product_structure`
+            # `reactant_structure` will be used to check isomorphism
+            product_structure = reactant_structure.copy(deep=True)
+            reactant_structures = reactant_structure.split()
+            for struct in reactant_structures:
+                struct.update()
+            match = check_isomorphic_molecules(reactant_structures,
+                                               products)
+            if match:
+                return product_structure
     else:
         raise NotImplementedError
+
+
+def check_isomorphic_molecules(mols_1: List['Molecule'],
+                               mols_2: List['Molecule'],
+                               ) -> bool:
+    """
+    Check if two lists share the same set of molecules.
+
+    Args:
+        mols_1 (list): The first set of molecules.
+        mols_2 (list): The second set of molecules.
+
+    Returns:
+        bool: If both sets share exactly same molecules.
+    """
+    if len(mols_1) != len(mols_2):
+        return False
+
+    match = False
+    for mol1 in mols_1:
+        for mol2 in mols_2:
+            if mol1.is_isomorphic(mol2):
+                match = True
+                break
+        # an element in mols_1 does not match any element in mols_2
+        else:
+            return False
+    return True
