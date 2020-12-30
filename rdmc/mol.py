@@ -11,6 +11,7 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import Mol, RWMol, Conformer
+from rdkit.Geometry.rdGeometry import Point3D
 
 # openbabel import is currently put behind rdkit.
 # This relates to https://github.com/rdkit/rdkit/issues/2292
