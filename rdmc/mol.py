@@ -510,12 +510,22 @@ class RDKitMol(object):
         Returns:
             Mol: A Mol instance used for output purpose.
         """
-        mol = self.GetMol()
         if remove_h:
-            mol = Chem.rdmolops.RemoveHs(mol, sanitize=sanitize)
+            mol = self.RemoveHs(sanitize=sanitize)
         elif sanitize:
+            mol = self.GetMol()
             Chem.rdmolops.SanitizeMol(mol)  # mol is modified in place
         return mol
+
+    def RemoveHs(self,
+                 sanitize: bool=True):
+        """
+        Remove H atoms. Useful when trying to match heavy atoms.py
+
+        Args:
+            sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
+        """
+        return Chem.rdmolops.RemoveHs(self._mol, sanitize=sanitize)
 
     def RenumberAtoms(self,
                       newOrder: list):
