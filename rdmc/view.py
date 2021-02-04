@@ -74,6 +74,7 @@ def mol_viewer(obj: str,
     viewer.zoomTo(viewer=viewer_loc)
     return viewer
 
+
 def freq_viewer(obj: str,
                 model: str = 'xyz',
                 frames: int = 10,
@@ -109,3 +110,25 @@ def freq_viewer(obj: str,
     animate = {'loop': 'backAndForth'}
     return mol_viewer(obj, model, model_extra, animate, atom_index,
                       style_spec, viewer, viewer_size, viewer_loc)
+
+
+def grid_viewer(viewer_grid: tuple,
+                linked: bool = False,
+                viewer_size: Optional[tuple] = None,
+                ) -> py3Dmol.view:
+    """
+    Create a empty grid viewer.
+
+    Args:
+        viewer_grid (tuple): The layout of the grid, e.g., (1, 4) or (2, 2).
+        linked (bool, optional): Whether changes in different sub viewers are linked. Defaults to False.
+        viewer_size (tuple, optional): The size of the viewer in (width, height). By Default, each block
+                                       is 250 width and 400 height.
+    """
+    if viewer_size:
+        width, height = viewer_size
+    else:
+        width = viewer_grid[1] * 250
+        height = viewer_grid[1] * 400
+
+    return py3Dmol.view(width=width, height=height, linked=linked, viewergrid=viewer_grid)
