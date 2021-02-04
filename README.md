@@ -11,6 +11,7 @@ Hopefully, this repository can make life easier and let people know how to make 
 * numpy
 * openbabel
 * rdkit
+* py3dmol
 
 ## Demos
 Feel free to check demos in the `ipython/` to learn some basic use of RDMC repository
