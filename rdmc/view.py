@@ -106,7 +106,7 @@ def freq_viewer(obj: str,
     Returns:
         py3Dmol.view: The molecule frequence viewer.
     """
-    model_extra = {'vibrate': {'frames': frames,'amplitude': amplitude}},
+    model_extra = {'vibrate': {'frames': frames,'amplitude': amplitude}}
     animate = {'loop': 'backAndForth'}
     return mol_viewer(obj, model, model_extra, animate, atom_index,
                       style_spec, viewer, viewer_size, viewer_loc)
