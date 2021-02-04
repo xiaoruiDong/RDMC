@@ -660,7 +660,7 @@ class RDKitMol(object):
               header: bool = True,
               ) -> str:
         """
-        Convert RDKitMol to a SMILES string.
+        Convert RDKitMol to a xyz string.
 
         Args:
             conf_id (int): The conformer ID to be exported.
@@ -674,6 +674,20 @@ class RDKitMol(object):
         if not header:
             xyz = '\n'.join(xyz.splitlines()[2:])
         return xyz
+
+    def ToMolBlock(self,
+                   conf_id: int = -1,
+                   ) -> str:
+        """
+        Convert RDKitMol to a mol block string.
+
+        Args:
+            conf_id (int): The conformer ID to be exported.
+
+        Returns:
+            str: The mol block of the molecule.
+        """
+        return Chem.MolToMolBlock(self._mol, confId=conf_id)
 
 
 class RDKitTS(RDKitMol):
