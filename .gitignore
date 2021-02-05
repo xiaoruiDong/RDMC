@@ -125,3 +125,7 @@ dmypy.json
 
 # .DS_Store file in MacOS
 .DS_Store
+
+# sdf / xyz in ipython
+ipython/*.sdf
+ipython/*.xyz
