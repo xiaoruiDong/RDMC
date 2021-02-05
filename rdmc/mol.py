@@ -5,7 +5,7 @@
 This module provides class and methods for dealing with RDKit RWMol, Mol.
 """
 
-from typing import List, Union
+from typing import List, Optional, Sequence, Union
 
 import numpy as np
 from rdkit import Chem
@@ -42,12 +42,17 @@ class RDKitMol(object):
     shortcuts, so that a user doesn't need to refer to other RDKit modules.
     """
 
-    def __init__(self, mol: Union[Mol, RWMol]):
+    def __init__(self,
+                 mol: Union[Mol, RWMol],
+                 keepAtomMap: bool=True):
         """
         Generate an RDKitMol Molecule instance from a RDKit ``Chem.rdchem.Mol`` or ``RWMol`` molecule.
 
         Args:
             mol (Union[Mol, RWMol]): The RDKit ``Chem.rdchem.Mol`` / ``RWmol`` molecule to be converted.
+            keepAtomMap (bool, optional): Whether keep the original atom mapping. Defaults to True.
+                                          If no atom mapping is stored in the molecule, atom mapping will
+                                          be created based on atom indexes.
         """
         # keep the link to original molecule so we can easily recover it if needed.
         if isinstance(mol, Mol):
@@ -67,7 +72,12 @@ class RDKitMol(object):
                 setattr(self, attr, getattr(self._mol, attr,))
 
         # Set atom map number
-        self.SetAtomMapNumbers()
+        if keepAtomMap:
+            if not np.any(self.GetAtomMapNumbers()):
+                # No stored atom mapping, so set it anyway
+                self.SetAtomMapNumbers()
+        else:
+            self.SetAtomMapNumbers()
 
         # Perceive rings
         self.GetSymmSSSR()
@@ -213,8 +223,10 @@ class RDKitMol(object):
     @classmethod
     def FromSmiles(cls,
                    smiles: str,
-                   remove_h: bool = False,
+                   removeHs: bool = False,
                    sanitize: bool = True,
+                   allowCXSMILES: bool = True,
+                   keepAtomMap: bool = True,
                    ) -> 'RDKitMol':
         """
         Convert a SMILES to an ``RDkitMol`` object.
@@ -227,12 +239,12 @@ class RDKitMol(object):
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the SMILES.
         """
-        mol = Chem.MolFromSmiles(smiles)
-        if not remove_h:
-            mol = Chem.AddHs(mol)
-        if sanitize:
-            Chem.SanitizeMol(mol)
-        return cls(mol)
+        params = Chem.SmilesParserParams()
+        params.removeHs = removeHs
+        params.sanitize = sanitize
+        params.allowCXSMILES = allowCXSMILES
+        mol = Chem.MolFromSmiles(smiles, params)
+        return cls(mol, keepAtomMap=keepAtomMap)
 
     @classmethod
     def FromRMGMol(cls,
@@ -584,13 +596,40 @@ class RDKitMol(object):
         rwmol = Chem.rdmolops.RenumberAtoms(self._mol, newOrder)
         return RDKitMol(rwmol)
 
-    def SetAtomMapNumbers(self):
+    def Sanitize(self):
         """
-        Set the atom index to atom map number, so atom indexes are shown when plotting the molecule in a 2D graph.
+        Sanitize the molecule
         """
-        for ind in range(self.GetNumAtoms()):
-            atom = self.GetAtomWithIdx(ind)
-            atom.SetProp('molAtomMapNumber', str(atom.GetIdx()))
+        Chem.rdmolops.SanitizeMol(self._mol)
+
+    def SetAtomMapNumbers(self,
+                          atomMap: Optional[Sequence[int]] = None,):
+        """
+        Set the atom mapping number. By defaults, atom indexes are used. It can be helpful
+        when plotting the molecule in a 2D graph.
+
+        Args:
+            atomMap(list, tuple, optional): A sequence of integers for atom mapping.
+        """
+        num_atoms = self.GetNumAtoms()
+        if atomMap:
+            assert len(atomMap) == num_atoms, \
+                   ValueError('Invalid atomMap provided. It should have the same length as atom numbers.')
+        else:
+            atomMap = list(range(num_atoms))
+
+        for idx in range(num_atoms):
+            atom = self.GetAtomWithIdx(idx)
+            atom.SetProp('molAtomMapNumber', str(atomMap[idx]))
+
+    def GetAtomMapNumbers(self):
+        """
+        Get the atom mapping.
+
+        Returns:
+            tuple: atom mapping numbers in the sequence of atom index.
+        """
+        return (atom.GetAtomMapNum() for atom in self.GetAtoms())
 
     def ToOBMol(self):
         """
