@@ -51,8 +51,10 @@ def from_rdkit_mol(rdkitmol,
 
     # Add hydrogen atoms to complete molecule if needed
     rdkitmol.UpdatePropertyCache(strict=False)
-    Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
-
+    try:
+        Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
+    except Exception:  # hope to only catch Boost.Python.ArgumentError. Haven't find a easy way
+        Chem.rdmolops.Kekulize(rdkitmol._mol, clearAromaticFlags=True)
     # iterate through atoms in rdkitmol
     for i in range(rdkitmol.GetNumAtoms()):
         rdkitatom = rdkitmol.GetAtomWithIdx(i)
