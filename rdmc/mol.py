@@ -476,6 +476,20 @@ class RDKitMol(object):
     def GetDistanceMatrix(self, id: int = 0) -> np.ndarray:
         return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
 
+    def GetPositions(self, id: int = 0) -> np.ndarray:
+        """
+        Get atom positions of the embeded conformer.
+
+        Args:
+            id (int, optional): The conformer ID to extract atom positions from.
+                                Defaults to ``0``.
+
+        Returns:
+            np.ndarray: a 3 x N matrix containing atom coordinates.
+        """
+        conf = self.GetConformer(id=id)
+        return conf.GetPositions()
+
     def GetSymmSSSR(self):
         """
         Get a symmetrized SSSR for a molecule.
@@ -639,6 +653,26 @@ class RDKitMol(object):
             tuple: atom mapping numbers in the sequence of atom index.
         """
         return tuple(atom.GetAtomMapNum() for atom in self.GetAtoms())
+
+    def SetPositions(self,
+                     coords: Sequence,
+                     id: int = 0):
+        """
+        Set the atom positions to one of the conformer.
+
+        Args:
+            coords (sequence): A tuple/list/ndarray containing atom positions.
+            id (int, optional): Conformer ID to assign the Positions to.
+        """
+        try:
+            conf = self.GetConformer(id=id)
+        except ValueError as e:
+            if id == 0:
+                self.EmbedConformer()
+                conf = self.GetConformer()
+            else:
+                raise
+        conf.SetPositions(coords)
 
     def ToOBMol(self) -> 'openbabel.OBMol':
         """
