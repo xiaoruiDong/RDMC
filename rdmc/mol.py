@@ -629,7 +629,7 @@ class RDKitMol(object):
         Returns:
             tuple: atom mapping numbers in the sequence of atom index.
         """
-        return (atom.GetAtomMapNum() for atom in self.GetAtoms())
+        return tuple(atom.GetAtomMapNum() for atom in self.GetAtoms())
 
     def ToOBMol(self):
         """
