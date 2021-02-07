@@ -114,20 +114,20 @@ class RDKitConf(object):
         return rdMT.GetDihedralDeg(self._conf, *torsion)
 
     def GetTorsionalModes(self,
-                          indexed_1: bool = False):
+                          indexed1: bool = False):
         """
         Get all of the torsional modes (rotors) of the Conformer. This information
         is obtained from its owning molecule.
 
         Args:
-            indexed_1: The atom index in RDKit starts from 0. If you want to have
+            indexed1: The atom index in RDKit starts from 0. If you want to have
                        indexed 1 atom indexes, please set this argument to ``True``.
 
         Returns:
             Optinal[list]: A list of four-atom-indice to indicating the torsional modes.
         """
         try:
-            return self._torsions if not not indexed_1 \
+            return self._torsions if not not indexed1 \
                 else [[ind + 1 for ind in tor] for tor in self._torions]
         except AttributeError:
             self._torsions = find_internal_torsions(self._owning_mol)
@@ -145,22 +145,22 @@ class RDKitConf(object):
         return False
 
     def SetOwningMol(self,
-                     owning_mol: Union['RDKitMol',
-                                       'Mol',
-                                       'RWMol']):
+                     owningMol: Union['RDKitMol',
+                                      'Mol',
+                                      'RWMol']):
         """
         Set the owning molecule of the conformer. It can be either RDKitMol
         or Chem.rdchem.Mol.
 
         Args:
-            owning_mol: Union[RDKitMol, Chem.rdchem.Mol] The owning molecule of the conformer.
+            owningMol: Union[RDKitMol, Chem.rdchem.Mol] The owning molecule of the conformer.
 
         Raises:
             ValueError: Not a valid ``owning_mol`` input, when giving something else.
         """
-        if not hasattr(owning_mol, 'GetConformer'):
+        if not hasattr(owningMol, 'GetConformer'):
             raise ValueError('Provided an invalid molecule object.')
-        self._owning_mol = owning_mol
+        self._owning_mol = owningMol
 
     def SetPositions(self,
                      coords: Union[tuple, list]):
