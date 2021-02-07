@@ -79,7 +79,7 @@ def find_internal_torsions(mol: Union['Mol', 'RWMol'],
 
 
 def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
-                               remove_h: bool = False,
+                               removeHs: bool = False,
                                sanitize: bool = True,
                                embed: bool = True,
                                ) -> 'RWMol':
@@ -87,7 +87,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
     Convert a OpenBabel molecular structure to a Chem.rdchem.RWMol object.
     Args:
         ob_mol (Molecule): An OpenBabel Molecule object for the conversion.
-        remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to False.
+        removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to False.
         sanitize (bool, optional): Whether to sanitize the RDKit molecule. Defaults to True.
         embed (bool, optional): Whether to embeb 3D conformer from OBMol. Defaults to True.
 
@@ -107,7 +107,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
             # TODO: Not sure if singlet and triplet are distinguished
             atom.SetNumRadicalElectrons(2)
         atom.SetFormalCharge(obatom.GetFormalCharge())
-        if not (remove_h and obatom.GetAtomicNum == 1):
+        if not (removeHs and obatom.GetAtomicNum == 1):
             rw_mol.AddAtom(atom)
 
     for bond in ob.OBMolBondIter(obmol):
@@ -121,7 +121,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         rw_mol.AddBond(atom1_idx, atom2_idx, ORDERS[bond_order])
 
     # Rectify the molecule
-    if remove_h:
+    if removeHs:
         rw_mol = Chem.RemoveHs(rw_mol, sanitize=sanitize)
     elif sanitize:
         Chem.SanitizeMol(rw_mol)
@@ -170,7 +170,7 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol']):
 
 
 def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
-                         remove_h: bool = False,
+                         removeHs: bool = False,
                          sanitize: bool = True,
                          ) -> 'RWMol':
     """
@@ -181,7 +181,7 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
 
     Args:
         rmgmol (Molecule): An RMG Molecule object for the conversion.
-        remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+        removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
         sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
 
     Returns:
@@ -208,7 +208,7 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
         if rmg_atom.element.symbol == 'C' and rmg_atom.lone_pairs == 1 and mol_copy.multiplicity == 1:
             # hard coding for carbenes
             rd_atom.SetNumRadicalElectrons(2)
-        if not (remove_h and rmg_atom.symbol == 'H'):
+        if not (removeHs and rmg_atom.symbol == 'H'):
             rwmol.AddAtom(rd_atom)
 
     # Add the bonds
@@ -223,7 +223,7 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
                     ORDERS[bond12.get_order_str()])
 
     # Rectify the molecule
-    if remove_h:
+    if removeHs:
         rw_mol = Chem.RemoveHs(rwmol, sanitize=sanitize)
     elif sanitize:
         Chem.SanitizeMol(rwmol)
