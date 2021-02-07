@@ -148,13 +148,16 @@ class RDKitMol(object):
                 setattr(vector, coord, offset[i])
 
         # Assign an offset according to the centroid vector
-        elif isinstance(offset, float):
+        elif isinstance(offset, (int, float)):
             conf = self.GetConformer()
             conf_from_mol = mol.GetConformer()
             vector = Chem.rdMolTransforms.ComputeCentroid(conf_from_mol, ignoreHs=False) - \
                      Chem.rdMolTransforms.ComputeCentroid(conf.ToConformer(), ignoreHs=False)
             for coord in ['x', 'y', 'z']:
                 setattr(vector, coord, getattr(vector, coord) * offset)
+
+        else:
+            raise ValueError(f'Invalid input for offset. Got: {offset}')
 
         combined = Chem.rdmolops.CombineMols(self._mol, mol, vector)
         return RDKitMol(combined)
