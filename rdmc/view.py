@@ -129,6 +129,6 @@ def grid_viewer(viewer_grid: tuple,
         width, height = viewer_size
     else:
         width = viewer_grid[1] * 250
-        height = viewer_grid[1] * 400
+        height = viewer_grid[0] * 400
 
     return py3Dmol.view(width=width, height=height, linked=linked, viewergrid=viewer_grid)
