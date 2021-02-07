@@ -77,7 +77,7 @@ class RDKitFF(object):
 
     def MakeOptimizable(self,
                         mol: 'RDKitMol',
-                        inplace: bool = False):
+                        in_place: bool = False):
         """
         Make the molecule able to be optimized by the force field. Known problematic molecules:
 
@@ -86,7 +86,7 @@ class RDKitFF(object):
 
         Args:
             mol ('Mol'): Molecule to be changed.
-            inplace (bool, optional): Whether to make the change inplace. Defaults to ``False``.
+            in_place (bool, optional): Whether to make the change inplace. Defaults to ``False``.
 
         Returns:
             ('Mol', dict): A modified molecule and approaches to modify this molecule.
@@ -97,7 +97,7 @@ class RDKitFF(object):
         if self._ff == 'uff' or self.IsOptimizable(mol):
             return mol, {}
 
-        if not inplace:
+        if not in_place:
             # Try to make a backup of the molecule if possible
             try:
                 mol_copy = mol.Copy()
@@ -125,14 +125,14 @@ class RDKitFF(object):
     def RecoverMol(self,
                    mol: 'Mol',
                    edits: dict,
-                   inplace: bool = True):
+                   in_place: bool = True):
         """
         Recover the molecule from modifications.
 
         Args:
             mol ('Mol'): Molecule to be changed.
             edits (dict): A dict of approach to modify this molecule
-            inplace (bool, optional): Whether to make the change inplace. Defaults to ``True``.
+            in_place (bool, optional): Whether to make the change inplace. Defaults to ``True``.
 
         Returns:
             'Mol' A recovered molecule.
@@ -140,7 +140,7 @@ class RDKitFF(object):
         Raises:
             NotImplementedError: Conversion strategy has not been implemented.
         """
-        if not inplace:
+        if not in_place:
             # Try to make a backup of the molecule if possible
             try:
                 mol_copy = mol.Copy()
@@ -158,15 +158,15 @@ class RDKitFF(object):
 
     def _OptimizeConfs(self,
                   mol: 'Mol',
-                  maxIters: int = 200,
-                  numThreads: int = 0) -> int:
+                  max_iters: int = 200,
+                  num_threads: int = 0) -> int:
         """
         A wrapper for force field optimization.
 
         Args:
             mol ('Mol'): A molecule to be optimized.
-            maxIters (int, optional): max iterations. Defaults to ``200``.
-            numThreads (int, optional): number of threads to use. Defaults to ``0`` for all.
+            max_iters (int, optional): max iterations. Defaults to ``200``.
+            num_threads (int, optional): number of threads to use. Defaults to ``0`` for all.
 
         Returns:
             - int: 0 for optimization done; 1 for not optimized; -1 for not optimizable.
@@ -174,32 +174,32 @@ class RDKitFF(object):
         """
         if self._ff == 'mmff94s':
             return rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(mol,
-                                                                 numThreads=numThreads,
-                                                                 maxIters=maxIters,
+                                                                 numThreads=num_threads,
+                                                                 maxIters=max_iters,
                                                                  mmffVariant='MMFF94s')
         elif self._ff == 'mmff94':
             return rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(mol,
-                                                                 numThreads=numThreads,
-                                                                 maxIters=maxIters,
+                                                                 numThreads=num_threads,
+                                                                 maxIters=max_iters,
                                                                 mmffVariant='MMFF94')
         else:
             return rdForceFieldHelpers.UFFOptimizeMoleculeConfs(mol,
-                                                                numThreads=numThreads,
-                                                                maxIters=maxIters,)
+                                                                numThreads=num_threads,
+                                                                maxIters=max_iters,)
 
     def OptimizeConfs(self,
                       mol: 'Mol',
-                      maxIters: int = 200,
-                      numThreads: int = 0,
-                      maxCycles: int = 20):
+                      max_iters: int = 200,
+                      num_threads: int = 0,
+                      max_cycles: int = 20):
         """
         A wrapper for force field optimization.
 
         Args:
             mol ('Mol'): A molecule to be optimized.
-            maxIters (int, optional): max iterations. Defaults to ``200``.
-            numThreads (int, optional): number of threads to use. Defaults to ``0`` for all.
-            maxCycles (int, optional): number of outer cycle. Check convergence after maxIters.
+            max_iters (int, optional): max iterations. Defaults to ``200``.
+            num_threads (int, optional): number of threads to use. Defaults to ``0`` for all.
+            max_cycles (int, optional): number of outer cycle. Check convergence after maxIters.
                                        Defaults to ``20``.
 
         Returns:
@@ -209,8 +209,8 @@ class RDKitFF(object):
         mol = mol.ToRWMol() if isinstance(mol, RDKitMol) else mol
 
         i = 0
-        while i < maxCycles:
-            results = self._OptimizeConfs(mol, maxIters, numThreads)
+        while i < max_cycles:
+            results = self._OptimizeConfs(mol, max_iters, num_threads)
             not_converged = [result[0] for result in results]
             if 1 not in not_converged:
                 return results
