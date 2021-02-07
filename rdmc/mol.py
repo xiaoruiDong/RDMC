@@ -185,7 +185,7 @@ class RDKitMol(object):
 
     @ classmethod
     def FromOBMol(cls,
-                  ob_mol: 'openbabel.OBMol',
+                  obMol: 'openbabel.OBMol',
                   removeHs: bool = False,
                   sanitize: bool = True,
                   embed: bool = True,
@@ -194,7 +194,7 @@ class RDKitMol(object):
         Convert a OpenBabel Mol to an RDKitMol object.
 
         Args:
-            ob_mol (Molecule): An OpenBabel Molecule object for the conversion.
+            obMol (Molecule): An OpenBabel Molecule object for the conversion.
             removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to ``False``.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule. Defaults to ``True``.
             embed (bool, optional): Whether to embeb 3D conformer from OBMol. Defaults to ``True``.
@@ -202,7 +202,7 @@ class RDKitMol(object):
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the input OpenBabel Molecule object.
         """
-        rw_mol = openbabel_mol_to_rdkit_mol(ob_mol, removeHs, sanitize, embed)
+        rw_mol = openbabel_mol_to_rdkit_mol(obMol, removeHs, sanitize, embed)
         return cls(rw_mol)
 
     @classmethod
@@ -235,6 +235,9 @@ class RDKitMol(object):
             smiles (str): A SMILES representation of the molecule.
             removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
+            allowCXSMILES (bool, optional): Whether to recognize and parse CXSMILES. Defaults to ``True``.
+            keepAtomMap (bool, optional): Whether to keep the Atom mapping contained in the SMILES. Defaults
+                                          Defaults to ``True``.
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the SMILES.
@@ -254,7 +257,7 @@ class RDKitMol(object):
 
     @classmethod
     def FromRMGMol(cls,
-                   rmgmol: 'rmgpy.molecule.Molecule',
+                   rmgMol: 'rmgpy.molecule.Molecule',
                    removeHs: bool = False,
                    sanitize: bool = True,
                    ) -> 'RDKitMol':
@@ -262,14 +265,14 @@ class RDKitMol(object):
         Convert an RMG ``Molecule`` to an ``RDkitMol`` object.
 
         Args:
-            smiles (str): An RMG ``Molecule`` instance.
+            rmgMol ('rmg.molecule.Molecule'): An RMG ``Molecule`` instance.
             removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the RMG Molecule.
         """
-        return cls(rmg_mol_to_rdkit_mol(rmgmol,
+        return cls(rmg_mol_to_rdkit_mol(rmgMol,
                                         removeHs,
                                         sanitize))
 
@@ -531,19 +534,19 @@ class RDKitMol(object):
                                                  useQueryQueryMatches, maxMatches)
 
     def GetTorsionalModes(self,
-                          exclude_methyl: bool = False,
+                          excludeMethyl: bool = False,
                           ) -> list:
         """
         Get all of the torsional modes (rotors) from the molecule.
 
         Args:
-            exclude_methyl (bool): Whether exclude the torsions with methyl groups. Defaults to ``False``.
+            excludeMethyl (bool): Whether exclude the torsions with methyl groups. Defaults to ``False``.
 
         Returns:
             list: A list of four-atom-indice to indicating the torsional modes.
         """
         return find_internal_torsions(self._mol,
-                                      exclude_methyl=exclude_methyl)
+                                      exclude_methyl=excludeMethyl)
 
     def PrepareOutputMol(self,
                           removeHs: bool = False,
@@ -604,7 +607,7 @@ class RDKitMol(object):
 
     def Sanitize(self):
         """
-        Sanitize the molecule
+        Sanitize the molecule.
         """
         Chem.rdmolops.SanitizeMol(self._mol)
 
@@ -628,7 +631,7 @@ class RDKitMol(object):
             atom = self.GetAtomWithIdx(idx)
             atom.SetProp('molAtomMapNumber', str(atomMap[idx]))
 
-    def GetAtomMapNumbers(self):
+    def GetAtomMapNumbers(self) -> tuple:
         """
         Get the atom mapping.
 
@@ -637,7 +640,7 @@ class RDKitMol(object):
         """
         return tuple(atom.GetAtomMapNum() for atom in self.GetAtoms())
 
-    def ToOBMol(self):
+    def ToOBMol(self) -> 'openbabel.OBMol':
         """
         Convert RDKitMol to a OBMol.
 
@@ -672,7 +675,7 @@ class RDKitMol(object):
                  stereo: bool = True,
                  kekule: bool = False,
                  canonical: bool = True,
-                 mapid: bool = False,
+                 RemoveAtomMap: bool = True,
                  removeHs: bool = True,
                  ) -> str:
         """
@@ -682,7 +685,7 @@ class RDKitMol(object):
             stereo (bool, optional): Whether keep stereochemistry information. Defaults to ``True``.
             kekule (bool, optional): Whether use Kekule form. Defaults to ``False``.
             canonical (bool, optional): Whether generate a canonical SMILES. Defaults to ``True``.
-            mapid (bool, optional): Whether to keep map id information in the SMILES. Defaults to ``False``.
+            removeAtomMap (bool, optional): Whether to remove map id information in the SMILES. Defaults to ``True``.
             removeHs (bool, optional): Whether to remove H atoms to make obtained SMILES clean. Defaults to ``True``.
 
         Returns:
@@ -691,7 +694,7 @@ class RDKitMol(object):
         mol = self.PrepareOutputMol(removeHs=removeHs, sanitize=True)
 
         # Remove atom map numbers, otherwise the smiles string is long and non-readable
-        if not mapid:
+        if RemoveAtomMap:
             for atom in mol.GetAtoms():
                 atom.SetAtomMapNum(0)
 
@@ -701,38 +704,38 @@ class RDKitMol(object):
                                            canonical=canonical)
 
     def ToXYZ(self,
-              conf_id: int = -1,
+              confId: int = -1,
               header: bool = True,
               ) -> str:
         """
         Convert RDKitMol to a xyz string.
 
         Args:
-            conf_id (int): The conformer ID to be exported.
+            confId (int): The conformer ID to be exported.
             header (bool, optional): Whether to include header (first two lines).
                                      Defaults to ``True``.
 
         Returns:
             str: The xyz of the molecule.
         """
-        xyz = Chem.MolToXYZBlock(self._mol, conf_id)
+        xyz = Chem.MolToXYZBlock(self._mol, confId)
         if not header:
             xyz = '\n'.join(xyz.splitlines()[2:])
         return xyz
 
     def ToMolBlock(self,
-                   conf_id: int = -1,
+                   confId: int = -1,
                    ) -> str:
         """
         Convert RDKitMol to a mol block string.
 
         Args:
-            conf_id (int): The conformer ID to be exported.
+            confId (int): The conformer ID to be exported.
 
         Returns:
             str: The mol block of the molecule.
         """
-        return Chem.MolToMolBlock(self._mol, confId=conf_id)
+        return Chem.MolToMolBlock(self._mol, confId=confId)
 
 
 class RDKitTS(RDKitMol):
