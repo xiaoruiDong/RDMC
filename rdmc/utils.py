@@ -136,11 +136,14 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
     return rw_mol
 
 
-def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol']):
+def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
+                               embed: bool = True,
+                               ) -> 'openbabel.OBMol':
     """
     Convert a Mol/RWMol to a Openbabel mol.
     Args:
-        rdmol: The RDKit Mol/RWMol object to be converted.
+        rdmol (Mol): The RDKit Mol/RWMol object to be converted.
+        embed (bool, optional): Whether to embed conformer into the OBMol. Defaults to True.
 
     Returns:
         OBMol: An openbabel OBMol instance.
@@ -165,6 +168,17 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol']):
         obmol.AddBond(atom1_idx, atom2_idx, order)
 
     obmol.AssignSpinMultiplicity(True)
+
+    if embed:
+        try:
+            conf = rdmol.GetConformer()
+        except ValueError:
+            # No conformer
+            pass
+        else:
+            coords = conf.GetPositions()
+            for atom_idx, atom in enumerate(ob.OBMolAtomIter(obmol)):
+                atom.SetVector(ob.vector3(*coords[atom_idx].tolist()))
 
     return obmol
 
