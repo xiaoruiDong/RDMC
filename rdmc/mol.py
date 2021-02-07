@@ -186,7 +186,7 @@ class RDKitMol(object):
     @ classmethod
     def FromOBMol(cls,
                   ob_mol: 'openbabel.OBMol',
-                  remove_h: bool = False,
+                  removeHs: bool = False,
                   sanitize: bool = True,
                   embed: bool = True,
                   ) -> 'RDKitMol':
@@ -195,14 +195,14 @@ class RDKitMol(object):
 
         Args:
             ob_mol (Molecule): An OpenBabel Molecule object for the conversion.
-            remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to ``False``.
+            removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to ``False``.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule. Defaults to ``True``.
             embed (bool, optional): Whether to embeb 3D conformer from OBMol. Defaults to ``True``.
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the input OpenBabel Molecule object.
         """
-        rw_mol = openbabel_mol_to_rdkit_mol(ob_mol, remove_h, sanitize, embed)
+        rw_mol = openbabel_mol_to_rdkit_mol(ob_mol, removeHs, sanitize, embed)
         return cls(rw_mol)
 
     @classmethod
@@ -233,7 +233,7 @@ class RDKitMol(object):
 
         Args:
             smiles (str): A SMILES representation of the molecule.
-            remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+            removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
 
         Returns:
@@ -255,7 +255,7 @@ class RDKitMol(object):
     @classmethod
     def FromRMGMol(cls,
                    rmgmol: 'rmgpy.molecule.Molecule',
-                   remove_h: bool = False,
+                   removeHs: bool = False,
                    sanitize: bool = True,
                    ) -> 'RDKitMol':
         """
@@ -263,14 +263,14 @@ class RDKitMol(object):
 
         Args:
             smiles (str): An RMG ``Molecule`` instance.
-            remove_h (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+            removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the RMG Molecule.
         """
         return cls(rmg_mol_to_rdkit_mol(rmgmol,
-                                        remove_h,
+                                        removeHs,
                                         sanitize))
 
     @classmethod
@@ -546,14 +546,14 @@ class RDKitMol(object):
                                       exclude_methyl=exclude_methyl)
 
     def PrepareOutputMol(self,
-                          remove_h: bool = False,
+                          removeHs: bool = False,
                           sanitize: bool = True,
                           ) -> Mol:
         """
         Generate a RDKit Mol instance for output purpose, to ensure that the original molecule is not modified.
 
         Args:
-            remove_h (bool, optional): Remove less useful explicity H atoms. E.g., When output SMILES, H atoms,
+            removeHs (bool, optional): Remove less useful explicity H atoms. E.g., When output SMILES, H atoms,
                 if explicitly added, will be included and reduce the readablity. Defaults to ``False``.
                 Note, following Hs are not removed:
 
@@ -569,7 +569,7 @@ class RDKitMol(object):
         Returns:
             Mol: A Mol instance used for output purpose.
         """
-        if remove_h:
+        if removeHs:
             mol = self.RemoveHs(sanitize=sanitize)
         elif sanitize:
             mol = self.GetMol()
@@ -673,7 +673,7 @@ class RDKitMol(object):
                  kekule: bool = False,
                  canonical: bool = True,
                  mapid: bool = False,
-                 remove_h: bool = True,
+                 removeHs: bool = True,
                  ) -> str:
         """
         Convert RDKitMol to a SMILES string.
@@ -683,12 +683,12 @@ class RDKitMol(object):
             kekule (bool, optional): Whether use Kekule form. Defaults to ``False``.
             canonical (bool, optional): Whether generate a canonical SMILES. Defaults to ``True``.
             mapid (bool, optional): Whether to keep map id information in the SMILES. Defaults to ``False``.
-            remove_h (bool, optional): Whether to remove H atoms to make obtained SMILES clean. Defaults to ``True``.
+            removeHs (bool, optional): Whether to remove H atoms to make obtained SMILES clean. Defaults to ``True``.
 
         Returns:
             str: The smiles string of the molecule.
         """
-        mol = self.PrepareOutputMol(remove_h=remove_h, sanitize=True)
+        mol = self.PrepareOutputMol(removeHs=removeHs, sanitize=True)
 
         # Remove atom map numbers, otherwise the smiles string is long and non-readable
         if not mapid:
