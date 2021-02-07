@@ -252,7 +252,7 @@ class RDKitMol(object):
         # (e.g., [C+:1]#[C:2][C:3]1=[C:7]([H:10])[N-:6][O:5][C:4]1([H:8])[H:9]),
         # no hydrogens are automatically added. So, we need to add H atoms.
         if not removeHs:
-            Chem.rdmolops.AddHs(mol)
+            mol = Chem.rdmolops.AddHs(mol)
         return cls(mol, keepAtomMap=keepAtomMap)
 
     @classmethod
