@@ -5,7 +5,7 @@
 This module provides class and methods for dealing with RDKit Conformer.
 """
 
-from typing import Union
+from typing import Sequence, Union
 
 import numpy as np
 from rdkit.Chem import rdMolTransforms as rdMT
@@ -78,6 +78,51 @@ class RDKitConf(object):
             RDKitConf: A Conformer in RDKitConf of the given molecule
         """
         return rdkitmol.GetConformer(id)
+
+    def GetBondLength(self,
+                      atomIds: Sequence[int],
+                     ) -> float:
+        """
+        Get the bond length between atoms in Angstrom.
+
+        Args:
+            atomIds (Sequence): A 3-element sequence object containing atom indexes.
+
+        Returns:
+            float: Bond length in Angstrom.
+        """
+        assert len(atomIds) == 2, ValueError(f'Invalid atomIds. It should be a sequence with a length of 2. Got {atomIds}')
+        return rdMT.GetBondLength(self._conf, *atomIds)
+
+    def GetAngleDeg(self,
+                    atomIds: Sequence[int],
+                    ) -> float:
+        """
+        Get the angle between atoms in degrees.
+
+        Args:
+            atomIds (Sequence): A 3-element sequence object containing atom indexes.
+
+        Returns:
+            float: Angle value in degrees.
+        """
+        assert len(atomIds) == 3, ValueError(f'Invalid atomIds. It should be a sequence with a length of 3. Got {atomIds}.')
+        return rdMT.GetAngleDeg(self._conf, *atomIds)
+
+    def GetAngleRad(self,
+                    atomIds: Sequence[int],
+                    ) -> float:
+        """
+        Get the angle between atoms in rads.
+
+        Args:
+            atomIds (Sequence): A 3-element sequence object containing atom indexes.
+
+        Returns:
+            float: Angle value in rads.
+        """
+        assert len(atomIds) == 3, ValueError(f'Invalid atomIds. It should be a sequence with a length of 3. Got {atomIds}')
+        return rdMT.GetAngleRad(self._conf, *atomIds)
 
     def GetAllTorsionsDeg(self) -> list:
         """
@@ -171,6 +216,48 @@ class RDKitConf(object):
             coords: a list of tuple of atom coordinates.
         """
         set_conformer_coordinates(self._conf, coords)
+
+    def SetBondLength(self,
+                      atomIds: Sequence[int],
+                      value: Union[int, float],
+                     ) -> float:
+        """
+        Set the bond length between atoms in Angstrom.
+
+        Args:
+            atomIds (Sequence): A 3-element sequence object containing atom indexes.
+            value (int or float, optional): Bond length in Angstrom.
+        """
+        assert len(atomIds) == 2, ValueError(f'Invalid atomIds. It should be a sequence with a length of 2. Got {atomIds}')
+        return rdMT.SetBondLength(self._conf, *atomIds, value)
+
+    def SetAngleDeg(self,
+                    atomIds: Sequence[int],
+                    value: Union[int, float],
+                    ) -> float:
+        """
+        Set the angle between atoms in degrees.
+
+        Args:
+            atomIds (Sequence): A 3-element sequence object containing atom indexes.
+            value (int or float, optional): Bond angle in degrees.
+        """
+        assert len(atomIds) == 3, ValueError(f'Invalid atomIds. It should be a sequence with a length of 3. Got {atomIds}.')
+        return rdMT.SetAngleDeg(self._conf, *atomIds, value)
+
+    def SetAngleRad(self,
+                    atomIds: Sequence[int],
+                    value: Union[int, float],
+                    ) -> float:
+        """
+        Set the angle between atoms in rads.
+
+        Args:
+            atomIds (Sequence): A 3-element sequence object containing atom indexes.
+            value (int or float, optional): Bond angle in rads.
+        """
+        assert len(atomIds) == 3, ValueError(f'Invalid atomIds. It should be a sequence with a length of 3. Got {atomIds}')
+        return rdMT.SetAngleRad(self._conf, *atomIds, value)
 
     def SetTorsionDeg(self,
                       torsion: list,
