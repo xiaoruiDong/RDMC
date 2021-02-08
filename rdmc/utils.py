@@ -264,3 +264,36 @@ def set_conformer_coordinates(conf: Union['Conformer', 'RDKitConf'],
     finally:
         for i in range(num_atoms):
             conf.SetAtomPosition(i, coords[i, :])
+
+
+def parse_xyz_by_openbabel(xyz: str,
+                           correct_CO: bool = True):
+    """
+    Perceive a xyz str using openbabel and generate the corresponding OBMol.
+
+    Args:
+        xyz (str): A str in xyz format containing atom positions.
+        correctCO (bool, optional): It is known that openbabel will parse carbon monoxide
+                                    as [C]=O instead of [C-]#[O+]. This function contains
+                                    a patch to correct that. Defaults to ``True``.
+
+    Returns:
+        ob.OBMol: An openbabel molecule from the xyz
+    """
+    obconversion = ob.OBConversion()
+    obconversion.SetInFormat('xyz')
+    obmol = ob.OBMol()
+    success = obconversion.ReadString(obmol, xyz)
+    assert success, ValueError('Unable to parse the provided xyz.')
+
+    if correct_CO and obmol.GetFormula() == 'CO':
+        obmol.GetBond(1, 2).SetBondOrder(3)
+        for atom in ob.OBMolAtomIter(obmol):
+            if atom.GetAtomicNum() == 6:
+                atom.SetFormalCharge(-1)
+                atom.SetSpinMultiplicity(0)
+            elif atom.GetAtomicNum() == 8:
+                atom.SetFormalCharge(+1)
+                atom.SetSpinMultiplicity(0)
+
+    return obmol

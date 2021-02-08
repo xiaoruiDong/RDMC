@@ -13,7 +13,14 @@ from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import Mol, RWMol, Conformer
 from rdkit.Geometry.rdGeometry import Point3D
 
-# openbabel import is currently put behind rdkit.
+from rdmc.conf import RDKitConf
+from rdmc.utils import *
+from rdmc.external.xyz2mol import parse_xyz_by_jensen
+
+
+# Additional notes:
+# Although current .py does not contain openbabel, but actually
+# openbabel import is put behind rdkit looking globally
 # This relates to https://github.com/rdkit/rdkit/issues/2292
 # For Mac, with anaconda build:
 # rdkit -  2020.03.2.0 from rdkit channel
@@ -22,12 +29,7 @@ from rdkit.Geometry.rdGeometry import Point3D
 # For Linux,
 # rdkit - 2020.03.3 from rdkit channel
 # openbabel - 2.4.1 from rmg channel does not work
-import openbabel as ob
-import pybel
 
-from rdmc.conf import RDKitConf
-from rdmc.utils import *
-from rdmc.external.xyz2mol import int_atom, xyz2mol
 
 # Keep the representation method from rdchem.Mol
 KEEP_RDMOL_ATTRIBUTES = ['_repr_html_',
@@ -282,16 +284,17 @@ class RDKitMol(object):
     @classmethod
     def FromXYZ(cls,
                 xyz: str,
-                backend: str = 'pybel',
+                backend: str = 'openbabel',
                 header: bool = True,
+                correctCO: bool = True,
                 **kwargs):
         """
         Convert xyz string to RDKitMol.
 
         Args:
             xyz (str): A XYZ String.
-            backend (str): The backend used to perceive molecule. Defaults to ``pybel``.
-                           Currently, we only support ``pybel`` and ``jensen``.
+            backend (str): The backend used to perceive molecule. Defaults to ``openbabel``.
+                           Currently, we only support ``openbabel`` and ``jensen``.
             header (bool, optional): If lines of the number of atoms and title are included.
                                      Defaults to ``True.``
             supported kwargs:
@@ -308,30 +311,19 @@ class RDKitMol(object):
         if not header:
             xyz = f"{len(xyz.splitlines())}\n\n{xyz}"
 
-        # Pybel support read xyz and perceive atom connectivities
-        if backend.lower() == 'pybel':
-            obmol = pybel.readstring('xyz', xyz).OBMol
+        # Openbabel support read xyz and perceive atom connectivities
+        if backend.lower() == 'openbabel':
+            obmol = parse_xyz_by_openbabel(xyz, correct_CO=correctCO)
             return cls.FromOBMol(obmol)
 
         # https://github.com/jensengroup/xyz2mol/blob/master/xyz2mol.py
         # provides an approach to convert xyz to mol
         elif backend.lower() == 'jensen':
-            atoms, coords = [], []
-            for line in xyz.splitlines()[2:]:
-                sections = line.split()
-                atoms.append(int_atom(sections[0]))
-                coords.append([float(i) for i in sections[1:]])
-            if 'allow_charged_fragments' not in kwargs:
-                kwargs['allow_charged_fragments'] = False
-            try:
-                mol = xyz2mol(atoms, coords, **kwargs)[0]
-            except IndexError:
-                raise ValueError(f'Cannot perceive the xyz by the backend ({backend}).')
-            else:
-                return cls(mol)
+            mol = parse_xyz_by_jensen(xyz, correct_CO=correctCO, **kwargs)
+            return cls(mol)
 
         else:
-            raise NotImplementedError(f'Backend ({backend}) is not supported. Only `pybel` and `jensen`'
+            raise NotImplementedError(f'Backend ({backend}) is not supported. Only `openbabel` and `jensen`'
                                       f' are supported.')
 
     def GetAtomicNumbers(self):

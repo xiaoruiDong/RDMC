@@ -729,6 +729,49 @@ def xyz2mol(atoms, coordinates,
     return new_mols
 
 
+def parse_xyz_by_jensen(xyz: str,
+                        charge: int = 0,
+                        allow_charged_fragments: bool = False,
+                        use_graph: bool = True,
+                        use_huckel: bool = False,
+                        embed_chiral: bool = True,
+                        correct_CO: bool = True,
+                        ) -> 'Mol':
+    """
+    Perceive a xyz str using `xyz2mol` by Jensen et al. and generate the corresponding RDKit Mol.
+
+    Args:
+        charge: The charge of the species. Defaults to ``0``.
+        allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to False.
+        use_graph: ``True`` to use networkx module for accelerate. Defaults to True.
+        use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
+        embed_chiral: ``True`` to embed chiral information. Defaults to True.
+        correctCO (bool, optional): Defaults to ``True``.
+                                    In order to get correct RDKit molecule for carbon monoxide
+                                    ([C-]#[O+]), allow_charged_fragments should be forced to ``True``.
+                                    This function contains a patch to correct that.
+
+    Returns:
+        Mol: A RDKit Mol corresponding to the xyz.
+    """
+    atoms, coords = [], []
+    for line in xyz.splitlines()[2:]:
+        sections = line.split()
+        atoms.append(int_atom(sections[0]))
+        coords.append([float(i) for i in sections[1:]])
+    if correct_CO and (atoms == [6, 8] or atoms == [8, 6]):
+        allow_charged_fragments = True
+    try:
+        mol = xyz2mol(atoms, coords, charge=charge,
+                      allow_charged_fragments=allow_charged_fragments,
+                      use_graph=use_graph, use_huckel=use_huckel,
+                      embed_chiral=embed_chiral)[0]
+    except IndexError:
+        raise ValueError(f'Cannot perceive the xyz by Jensen et al. method')
+    else:
+        return mol
+
+
 def main():
 
 
