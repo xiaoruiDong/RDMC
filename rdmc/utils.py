@@ -219,7 +219,8 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
             rd_atom.SetIsotope(rmg_atom.element.isotope)
         rd_atom.SetNumRadicalElectrons(rmg_atom.radical_electrons)
         rd_atom.SetFormalCharge(rmg_atom.charge)
-        if rmg_atom.element.symbol == 'C' and rmg_atom.lone_pairs == 1 and mol_copy.multiplicity == 1:
+        if rmg_atom.element.symbol == 'C' and rmg_atom.lone_pairs == 1 \
+                and not rmg_atom.charge and mol_copy.multiplicity == 1:
             # hard coding for carbenes
             rd_atom.SetNumRadicalElectrons(2)
         if not (remove_hs and rmg_atom.symbol == 'H'):

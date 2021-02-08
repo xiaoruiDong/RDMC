@@ -201,6 +201,8 @@ def generate_product_complex(database: 'RMGDatabase',
                 family.forward_recipe.apply_forward(reactant_structure, unique=True)
             else:
                 family.reverse_recipe.apply_forward(reactant_structure, unique=True)
+            for atom in reactant_structure.atoms:
+                atom.update_charge()
 
             # The product complex is stored in `product_structure`
             # `reactant_structure` will be used to check isomorphism
