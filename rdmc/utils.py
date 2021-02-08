@@ -238,7 +238,7 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
 
     # Rectify the molecule
     if remove_hs:
-        rw_mol = Chem.RemoveHs(rwmol, sanitize=sanitize)
+        rwmol = Chem.RemoveHs(rwmol, sanitize=sanitize)
     elif sanitize:
         Chem.SanitizeMol(rwmol)
     return rwmol
