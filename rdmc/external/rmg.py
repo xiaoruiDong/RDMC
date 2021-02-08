@@ -162,8 +162,9 @@ def generate_product_complex(database: 'RMGDatabase',
     # Find the reaction in the RMG database
     try:
         family_label, forward = find_reaction_family(database,
-                                                    reactants,
-                                                    products)
+                                                     reactants,
+                                                     products,
+                                                     verbose=verbose)
     except TypeError:
         # Cannot find any matches
         return
