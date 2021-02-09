@@ -116,7 +116,9 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         atom2_idx = bond.GetEndAtomIdx() - 1
         # Get the bond order. For aromatic molecules, the bond order is not
         # 1.5 but 1 or 2. Manually set them to 1.5
-        bond_order = bond.GetBondOrder() if not bond.IsAromatic() else 1.5
+        bond_order = bond.GetBondOrder()
+        if bond_order not in [1, 2, 3, 4] or bond.IsAromatic():
+            bond_order = 1.5
 
         rw_mol.AddBond(atom1_idx, atom2_idx, ORDERS[bond_order])
 
