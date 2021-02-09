@@ -137,12 +137,45 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         set_conformer_coordinates(rw_mol.GetConformer(), np.array(coords))
     return rw_mol
 
-
 def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
                                embed: bool = True,
                                ) -> 'openbabel.OBMol':
     """
-    Convert a Mol/RWMol to a Openbabel mol.
+    Convert a Mol/RWMol to a Openbabel mol. This a temporary replace of
+    ``rdkit_mol_to_openbabel_mol_manual``.
+
+    Args:
+        rdmol (Mol): The RDKit Mol/RWMol object to be converted.
+        embed (bool, optional): Whether to embed conformer into the OBMol. Defaults to True.
+
+    Returns:
+        OBMol: An openbabel OBMol instance.
+    """
+    try:
+        # RDKitMol
+        sdf_str = rdmol.ToMolBlock()
+    except AttributeError:
+        # RDKit Mol or RWMol
+        sdf_str = Chem.MolToMolBlock(rdmol)
+    obconv = ob.OBConversion()
+    obconv.SetInFormat('sdf')
+    obmol = ob.OBMol()
+    obconv.ReadString(obmol, sdf_str)
+
+    if not embed:
+        for atom in ob.OBMolAtomIter(obmol):
+            atom.SetVector(ob.vector3(0, 0, 0))
+
+    return obmol
+
+def rdkit_mol_to_openbabel_mol_manual(rdmol: Union['Mol', 'RWMol'],
+                                      embed: bool = True,
+                                      ) -> 'openbabel.OBMol':
+    """
+    Convert a Mol/RWMol to a Openbabel mol. This function has a problem converting
+    aromatic molecules. Example: 'c1nc[nH]n1'. Currently use a workaround, converting an
+    RDKit Mol to sdf string and read by openbabel.
+
     Args:
         rdmol (Mol): The RDKit Mol/RWMol object to be converted.
         embed (bool, optional): Whether to embed conformer into the OBMol. Defaults to True.
@@ -168,6 +201,10 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
         atom2_idx = bond.GetEndAtomIdx() + 1
         order = bond_type_dict[bond.GetBondType()]
         obmol.AddBond(atom1_idx, atom2_idx, order)
+
+    # Note: aromatic is not correctly handeled for
+    # heteroatom involved rings in the current molecule buildup.
+    # May need to update in the future
 
     obmol.AssignSpinMultiplicity(True)
 
