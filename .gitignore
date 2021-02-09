@@ -126,6 +126,8 @@ dmypy.json
 # .DS_Store file in MacOS
 .DS_Store
 
-# sdf / xyz in ipython
+# outputs in ipython
 ipython/*.sdf
 ipython/*.xyz
+ipython/nul
+ipython/*.out
