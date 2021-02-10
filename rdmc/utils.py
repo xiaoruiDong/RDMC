@@ -135,9 +135,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
 
     # If OBMol has 3D information, it can be embed to the RDKit Mol
     if embed and obmol.HasNonZeroCoords():
-        coords = []
-        for obatom in ob.OBMolAtomIter(obmol):
-            coords.append([obatom.GetX(), obatom.GetY(), obatom.GetZ()])
+        coords = get_obmol_coords(obmol)
         AllChem.EmbedMolecule(rw_mol)
         set_rdconf_coordinates(rw_mol.GetConformer(), coords)
     return rw_mol
@@ -222,8 +220,7 @@ def rdkit_mol_to_openbabel_mol_manual(rdmol: Union['Mol', 'RWMol'],
             pass
         else:
             coords = conf.GetPositions()
-            for atom_idx, atom in enumerate(ob.OBMolAtomIter(obmol)):
-                atom.SetVector(ob.vector3(*coords[atom_idx].tolist()))
+            set_obmol_coords(obmol, coords)
 
     return obmol
 
