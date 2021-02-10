@@ -25,6 +25,11 @@ ORDERS = {1: BondType.SINGLE, 2: BondType.DOUBLE, 3: BondType.TRIPLE, 1.5: BondT
 ROTATABLE_BOND_SMARTS = Chem.MolFromSmarts('[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]')
 ROTATABLE_BOND_SMARTS_WO_METHYL = Chem.MolFromSmarts('[!$(*#*)&!D1!H3]-&!@[!$(*#*)&!D1&!H3]')
 
+# When perceiving molecules, openbabel will always perceive carbon monoxide as [C]=O
+# Needs to correct it by [C-]#[O+]
+CO_OPENBABEL_PATTERN = ob.OBSmartsPattern()
+CO_OPENBABEL_PATTERN.Init('[C;v2]=[O]')
+
 def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
                                              atom2: 'rdkit.Chem.rdchem.Atom',
                                              ) -> int:
@@ -326,14 +331,17 @@ def parse_xyz_by_openbabel(xyz: str,
     success = obconversion.ReadString(obmol, xyz)
     assert success, ValueError('Unable to parse the provided xyz.')
 
-    if correct_CO and obmol.GetFormula() == 'CO':
-        obmol.GetBond(1, 2).SetBondOrder(3)
-        for atom in ob.OBMolAtomIter(obmol):
-            if atom.GetAtomicNum() == 6:
-                atom.SetFormalCharge(-1)
-                atom.SetSpinMultiplicity(0)
-            elif atom.GetAtomicNum() == 8:
-                atom.SetFormalCharge(+1)
-                atom.SetSpinMultiplicity(0)
+    if correct_CO and CO_OPENBABEL_PATTERN.Match(obmol):
+        index_pairs = [x for x in CO_OPENBABEL_PATTERN.GetUMapList()]
+        for pair in index_pairs:
+            obmol.GetBond(*pair).SetBondOrder(3)
+            for idx in pair:
+                atom = obmol.GetAtom(idx)
+                if atom.GetAtomicNum() == 6:
+                    atom.SetSpinMultiplicity(0)
+                    atom.SetFormalCharge(-1)
+                elif atom.GetAtomicNum() == 8:
+                    atom.SetSpinMultiplicity(0)
+                    atom.SetFormalCharge(+1)
 
     return obmol
