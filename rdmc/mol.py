@@ -542,6 +542,37 @@ class RDKitMol(object):
             return self._mol.GetSubstructMatches(query, uniquify, useChirality,
                                                  useQueryQueryMatches, maxMatches)
 
+    def GetMolFrags(self,
+                    asMols: bool = False,
+                    sanitize: bool = True,
+                    frags: Optional[list] = None,
+                    fragsMolAtomMapping: Optional[list] = None,
+                    ) -> tuple:
+        """
+        Finds the disconnected fragments from a molecule. For example, for the molecule ‘CC(=O)[O-].[NH3+]C’,
+        this function will split the molecules into a list of ‘CC(=O)[O-]' and '[NH3+]C'. By defaults,
+        this function will return a list of atom mapping, but options are available for getting mols.
+
+        Args:
+            asMols (bool, optional): Whether the fragments will be returned as molecules instead of atom ids.
+                                     Defaults to ``True``.
+            sanitize (bool, optional): Whether the fragments molecules will be sanitized before returning them.
+                                       Defaults to ``True``.
+            frags (list, optional): If this is provided as an empty list, the result will be mol.GetNumAtoms()
+                                    long on return and will contain the fragment assignment for each Atom.
+            fragsMolAtomMapping (list, optional): If this is provided as an empty list, the result will be a
+                                                  numFrags long list on return, and each entry will contain the
+                                                  indices of the Atoms in that fragment: [(0, 1, 2, 3), (4, 5)].values
+
+        Returns:
+            tuple: a tuple of atom mapping or a tuple of split molecules (RDKitMol).
+        """
+        frags = Chem.rdmolops.GetMolFrags(self._mol, asMols=asMols, sanitizeFrags=sanitize,
+                                          frags=frags, fragsMolAtomMapping=fragsMolAtomMapping)
+        if asMols:
+            return tuple(RDKitMol(mol) for mol in frags)
+        return frags
+
     def GetTorsionalModes(self,
                           excludeMethyl: bool = False,
                           ) -> list:
