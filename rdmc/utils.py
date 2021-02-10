@@ -311,6 +311,37 @@ def set_conformer_coordinates(conf: Union['Conformer', 'RDKitConf'],
             conf.SetAtomPosition(i, coords[i, :])
 
 
+def get_obmol_coords(obmol: ob.OBMol):
+    """
+    Get the atom coordinates from an openbabel molecule. If all coordinates are zero,
+    None will be returned.
+
+    Args:
+        obmol (OBMol): The openbabel OBMol to get coordinates from.
+
+    Returns:
+        np.array: The coordinates.
+    """
+    coords = []
+    for obatom in ob.OBMolAtomIter(obmol):
+        coords.append([obatom.GetX(), obatom.GetY(), obatom.GetZ()])
+    return np.array(coords)
+
+
+def set_obmol_coords(obmol: ob.OBMol,
+                     coords: np.array):
+    """
+    Get the atom coordinates from an openbabel molecule. If all coordinates are zero,
+    It will return None
+
+    Args:
+        obmol (OBMol): The openbabel OBMol to get coordinates from.
+        coords (np.array): The coordinates to set.
+    """
+    for atom_idx, atom in enumerate(ob.OBMolAtomIter(obmol)):
+        atom.SetVector(ob.vector3(*coords[atom_idx].tolist()))
+
+
 def parse_xyz_by_openbabel(xyz: str,
                            correct_CO: bool = True):
     """
