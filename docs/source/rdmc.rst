@@ -19,5 +19,5 @@ rdmc
    rdmc.conf
    rdmc.forcefield
    rdmc.mol
-   rdmc.rdk
    rdmc.utils
+   rdmc.view
