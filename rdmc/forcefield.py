@@ -23,6 +23,9 @@ class RDKitFF(object):
     """
     A wrapper to deal with Force field in RDKit.
     """
+
+    available_force_field = ['mmff94s', 'mmff94', 'uff']
+
     def __init__(self, force_field: str = 'mmff94s'):
         """
         Initiate the ``RDKitFF`` by given the name of the force field.
@@ -33,30 +36,29 @@ class RDKitFF(object):
                 - MMFF94
                 - UFF
         """
-        self.ForceField = force_field
+        self.type = force_field
 
     @property
-    def ForceField(self):
+    def type(self):
         """
         Return the force field backend.
         """
-        return self._ff
+        return self._type
 
-    @ForceField.setter
-    def ForceField(self, force_field):
+    @type.setter
+    def type(self, force_field: str):
         """
         Reset the force field backend.
 
         Args:
-            force_field: The name of the force field. Supporting:
+            force_field (str): The name of the force field. Supporting:
                 - MMFF94s (default)
                 - MMFF94
                 - UFF
         """
         force_field = force_field.lower()
-        if not force_field in ['mmff94s', 'mmff94', 'uff']:
-            raise ValueError(f'RDKit does not support {force_field}')
-        self._ff = force_field
+        assert force_field in self.available_force_field, ValueError(f'RDKit does not support {force_field}')
+        self._type = force_field
 
     def IsOptimizable(self, mol: 'Mol'):
         """
@@ -70,7 +72,7 @@ class RDKitFF(object):
         """
         mol = mol.ToRWMol() if isinstance(mol, RDKitMol) else mol
 
-        if self._ff in ['mmff94', 'mmff94s']:
+        if self.type in ['mmff94', 'mmff94s']:
             return rdForceFieldHelpers.MMFFHasAllMoleculeParams(mol)
         else:
             return rdForceFieldHelpers.UFFHasAllMoleculeParams(mol)
@@ -94,7 +96,7 @@ class RDKitFF(object):
         Raises:
             NotImplementedError: Conversion strategy has not been implemented.
         """
-        if self._ff == 'uff' or self.IsOptimizable(mol):
+        if self.type == 'uff' or self.IsOptimizable(mol):
             return mol, {}
 
         if not in_place:
@@ -172,12 +174,12 @@ class RDKitFF(object):
             - int: 0 for optimization done; 1 for not optimized; -1 for not optimizable.
             - float: energy
         """
-        if self._ff == 'mmff94s':
+        if self.type == 'mmff94s':
             return rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(mol,
                                                                  numThreads=num_threads,
                                                                  maxIters=max_iters,
                                                                  mmffVariant='MMFF94s')
-        elif self._ff == 'mmff94':
+        elif self.type == 'mmff94':
             return rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(mol,
                                                                  numThreads=num_threads,
                                                                  maxIters=max_iters,
