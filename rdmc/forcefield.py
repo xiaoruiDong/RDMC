@@ -5,10 +5,16 @@
 A module used to deal with force field supported by RDKit.
 """
 
+from typing import Optional, Sequence, Union
+
 from rdkit import Chem
 from rdkit.Chem import rdForceFieldHelpers
+import openbabel as ob
 
 from rdmc.mol import RDKitMol
+from rdmc.utils import (rdkit_mol_to_openbabel_mol,
+                        get_obmol_coords,
+                        set_rdconf_coordinates)
 
 
 ROO_TEMPLATE = Chem.MolFromSmarts('[OH0][OH0]')
@@ -220,6 +226,216 @@ class RDKitFF(object):
         else:
             # Hasn't been optimized
             return results
+
+
+class OpenBabelFF:
+    """
+    A wrapper to deal with Force field of Openbabel. It can handle both RDKit Mol and OBMol
+    as input. We suggest to use this class for small scale calculations, due to its slowness.
+    """
+
+    available_force_field = ['mmff94s', 'mmff94', 'uff', 'gaff']
+    available_solver = ['ConjugateGradients', 'SteepestDescent']
+
+    def __init__(self, force_field: str = 'mmff94s'):
+        """
+        Initiate the ``OpenbabelFF`` by given the name of the force field.
+
+        Args:
+            force_field: The name of the force field. Supporting:
+                - MMFF94s (default)
+                - MMFF94
+                - UFF
+                - GAFF
+        """
+        self.type = force_field
+        self.ff = ob.OBForceField.FindForceField(self.type)
+        self.solver_type = 'ConjugateGradients'
+
+    @property
+    def type(self):
+        """
+        Return the force field backend.
+        """
+        return self._type
+
+    @type.setter
+    def type(self, force_field: str):
+        """
+        Reset the force field backend.
+
+        Args:
+            force_field (str): The name of the force field. Supporting:
+                - MMFF94s (default)
+                - MMFF94
+                - UFF
+        """
+        force_field = force_field.lower()
+        assert force_field in self.available_force_field, ValueError(f'RDKit does not support {force_field}')
+        self._type = force_field
+
+    def _initialize_constraints(self):
+        """
+        Initialize openbabel constraints object.
+        """
+        setattr(self,
+                'constraints',
+                getattr(self, 'constraints', ob.OBFFConstraints()))
+
+    def add_distance_constraint(self,
+                                atoms: Sequence,
+                                value: Union[int, float]):
+        """
+        Add a distance constraint to the force field.
+
+        Args:
+            atoms (Sequence): a length-2 sequence indicate the atom index.
+            value (int or float): The distance value in Angstrom.
+        """
+        assert len(atoms) == 2, ValueError('Invalid `atoms` arguments. Should have a length of 2.')
+        self._initialize_constraints()
+        atoms = self.update_atom_idx(atoms)
+        self.constraints.AddDistanceConstraint(*atoms, value)
+
+    def add_angle_constraint(self,
+                             atoms: Sequence,
+                             angle: Union[int, float]):
+        """
+        Add a angle constraint to the force field.
+
+        Args:
+            atoms (Sequence): a length-3 sequence indicate the atom index.
+            value (int or float): The degree value of the bond angle.
+        """
+        assert len(atoms) == 3, ValueError('Invalid `atoms` arguments. Should have a length of 3.')
+        self._initialize_constraints()
+        atoms = self.update_atom_idx(atoms)
+        self.constraints.AddAngleConstraint(*atoms, angle)
+
+    def add_torsion_constraint(self,
+                               atoms: Sequence,
+                               angle: Union[int, float]):
+        """
+        Add torsion constraint to the force field.
+
+        Args:
+            atoms (Sequence): a length-4 sequence indicate the atom index.
+            value (int or float): The degree value of the torsion angle.
+        """
+        assert len(atoms) == 4, ValueError('Invalid `atoms` arguments. Should have a length of 4.')
+        self._initialize_constraints()
+        self.constraints.AddTorsionConstraint(*atoms, angle)
+
+    def fix_atom(self,
+                 atom_idx: int):
+        """
+        Fix the coordinates of an atom given by its index.
+
+        Args:
+            atom_idx (int): The atom index of the atom to fix.
+        """
+        self._initialize_constraints()
+        atom_idx = self.update_atom_idx([atom_idx])[0]
+        self.constraints.AddAtomConstraint(atom_idx)
+
+    @property
+    def mol(self):
+        """
+        The molecule to be optimized.
+        """
+        return self._mol
+
+    @mol.setter
+    def mol(self,
+            mol: Union['Mol', 'RDKitMol', 'OBMol']):
+        """
+        Set the molecule to be optimized.
+
+        Args:
+            mol ('Mol', 'RDKitMol', 'OBMol'): The molecule to be optimized. Currently,
+                                              it supports RDKit Mol and OBMol.
+        """
+        if isinstance(mol, (Chem.Mol, RDKitMol)):
+            self.mol_type = 'rdkit'
+            self.obmol = rdkit_mol_to_openbabel_mol(mol)
+            self._mol = mol
+        elif isinstance(mol, ob.OBMol):
+            self.mol_type = 'openbabel'
+            self.obmol = mol
+            self._mol = self.obmol
+        else:
+            raise NotImplementedError
+
+    def update_atom_idx(self,
+                        atoms: Sequence,
+                        ) -> list:
+        """
+        Update_atom_idx if a rdkit mol atom index is provided.
+
+        Args:
+            atoms (Sequence):
+        """
+        try:
+            type = self.mol_type
+        except AttributeError:
+            # No molecule information
+            return atoms
+
+        if self.mol_type == 'rdkit':
+            return [idx + 1 for idx in atoms]
+        elif self.mol_type == 'openbabel':
+            return atoms
+        else:
+            raise NotImplementedError
+
+    def setup(self,
+              mol: Optional[Union['Mol', 'RDKitMol', 'OBMol']] = None,
+              constraints: Optional['ob.OBFFConstraints'] = None,
+              ):
+        """
+        Setup the force field and get ready to be optimized.
+        """
+        if mol:
+            self.mol = mol
+        elif not self.mol:
+            RuntimeError('You need to set up a molecule to optimize first! '
+                         'Either by `OpenBabelFF.mol = <molecule>`, or '
+                         'by `Openbabel.setup(mol = <molecule>`.')
+
+        if constraints:
+            self.constraints = constraints
+
+        if self.constraints:
+            return self.ff.Setup(self.obmol, self.constraints)
+        else:
+            return self.ff.Setup(self.obmol)
+
+    def set_solver(self,
+                   solver_type: str):
+        assert solver_type in self.available_solver, \
+            ValueError(f'Invalid solver. Got {solver_type}. '
+                       f'Should be chose from {self.available_solver}')
+
+    def optimize(self,
+                 max_step: int = 100000,
+                 tol: float = 1e-8,
+                 step_per_iter: int = 5):
+        """
+        Optimize the openbabel molecule.
+        """
+        self.setup()
+        initial_fun = getattr(self.ff, self.solver_type+'Initialize')
+        take_n_step_fun = getattr(self.ff, self.solver_type+'TakeNSteps')
+
+        initial_fun(max_step, tol)
+        while take_n_step_fun(step_per_iter):
+            pass
+
+        self.ff.GetCoordinates(self.obmol)
+
+        if self.mol_type == 'rdkit':
+            conf = self.mol.GetConformer()
+            set_rdconf_coordinates(conf, get_obmol_coords(self.obmol))
 
 
 def get_roo_radical_atoms(mol: 'Mol') -> tuple:
