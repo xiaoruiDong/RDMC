@@ -825,6 +825,6 @@ class RDKitTS(RDKitMol):
         num_atoms = self._mol.GetNumAtoms()
         for i in range(n):
             conf = Conformer()
-            set_conformer_coordinates(conf, np.zeros((num_atoms, 3)))
+            set_rdconf_coordinates(conf, np.zeros((num_atoms, 3)))
             conf.SetId(i)
             self._mol.AddConformer(conf)

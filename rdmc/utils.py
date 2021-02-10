@@ -139,7 +139,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         for obatom in ob.OBMolAtomIter(obmol):
             coords.append([obatom.GetX(), obatom.GetY(), obatom.GetZ()])
         AllChem.EmbedMolecule(rw_mol)
-        set_conformer_coordinates(rw_mol.GetConformer(), np.array(coords))
+        set_rdconf_coordinates(rw_mol.GetConformer(), coords)
     return rw_mol
 
 def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
@@ -172,6 +172,7 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
             atom.SetVector(ob.vector3(0, 0, 0))
 
     return obmol
+
 
 def rdkit_mol_to_openbabel_mol_manual(rdmol: Union['Mol', 'RWMol'],
                                       embed: bool = True,
@@ -289,8 +290,8 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
     return rwmol
 
 
-def set_conformer_coordinates(conf: Union['Conformer', 'RDKitConf'],
-                              coords: Union[tuple, list, np.ndarray]):
+def set_rdconf_coordinates(conf: Union['Conformer', 'RDKitConf'],
+                           coords: Union[tuple, list, np.ndarray]):
     """
     Set the Positions of atoms of the conformer.
 

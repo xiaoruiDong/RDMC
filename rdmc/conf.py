@@ -11,7 +11,7 @@ import numpy as np
 from rdkit.Chem import rdMolTransforms as rdMT
 from rdkit.Chem.rdchem import Conformer
 
-from rdmc.utils import find_internal_torsions, set_conformer_coordinates
+from rdmc.utils import find_internal_torsions, set_rdconf_coordinates
 
 
 class RDKitConf(object):
@@ -215,7 +215,7 @@ class RDKitConf(object):
         Args:
             coords: a list of tuple of atom coordinates.
         """
-        set_conformer_coordinates(self._conf, coords)
+        set_rdconf_coordinates(self._conf, coords)
 
     def SetBondLength(self,
                       atomIds: Sequence[int],
