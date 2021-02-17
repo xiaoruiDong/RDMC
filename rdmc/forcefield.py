@@ -394,8 +394,8 @@ class RDKitFF(object):
 
         return mol_copy
 
-    def _OptimizeConfs(self,
-                  mol: 'Mol',
+    def _optimize_confs(self,
+                  mol: Optional['Mol'] = None,
                   max_iters: int = 200,
                   num_threads: int = 0) -> int:
         """
@@ -410,6 +410,17 @@ class RDKitFF(object):
             - int: 0 for optimization done; 1 for not optimized; -1 for not optimizable.
             - float: energy
         """
+        if not mol:
+            mol = self.mol
+
+        # Section below is temporarily buggy due to a bug in the RDKit
+        # return rdForceFieldHelpers.OptimizeMoleculeConfs(mol.ToRWMol(),
+        #                                                  self.ff,
+        #                                                  numThreads=num_threads,
+        #                                                  maxIters=max_iters,)
+
+        # Section below does not support constraint. It will eventually change to the section
+        # above.
         if self.type == 'mmff94s':
             return rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(mol,
                                                                  numThreads=num_threads,
@@ -425,30 +436,32 @@ class RDKitFF(object):
                                                                 numThreads=num_threads,
                                                                 maxIters=max_iters,)
 
-    def OptimizeConfs(self,
-                      mol: 'Mol',
-                      max_iters: int = 200,
-                      num_threads: int = 0,
-                      max_cycles: int = 20):
+    def optimize_confs(self,
+                       mol: Optional['Mol'] = None,
+                       max_step: int = 100000,
+                       num_threads: int = 0,
+                       step_per_iter: int = 5):
         """
-        A wrapper for force field optimization.
+        A wrapper for force field optimization. Currently does not support constrained optimization.
+        If you are looking for constrained ones. You can iterate conformers and use ``optmize()``.
 
         Args:
             mol ('Mol'): A molecule to be optimized.
-            max_iters (int, optional): max iterations. Defaults to ``200``.
+            max_step (int, optional): max iterations. Defaults to ``200``.
             num_threads (int, optional): number of threads to use. Defaults to ``0`` for all.
-            max_cycles (int, optional): number of outer cycle. Check convergence after maxIters.
+            step_per_iter (int, optional): number of outer cycle. Check convergence after maxIters.
                                        Defaults to ``20``.
 
         Returns:
             - int: 0 for optimization done; 1 for not optimized; -1 for not optimizable.
             - float: energy
         """
-        mol = mol.ToRWMol() if isinstance(mol, RDKitMol) else mol
+        if not mol:
+            mol = self.mol
 
         i = 0
-        while i < max_cycles:
-            results = self._OptimizeConfs(mol, max_iters, num_threads)
+        while i < max_step:
+            results = self._optimize_confs(mol, max_iters=step_per_iter, num_threads=num_threads)
             not_converged = [result[0] for result in results]
             if 1 not in not_converged:
                 return results
