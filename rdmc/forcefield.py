@@ -66,6 +66,136 @@ class RDKitFF(object):
         assert force_field in self.available_force_field, ValueError(f'RDKit does not support {force_field}')
         self._type = force_field
 
+    def add_distance_constraint(self,
+                                atoms: Sequence,
+                                value: Optional[Union[int, float]] = None,
+                                min_len: Optional[Union[int, float]] = None,
+                                max_len: Optional[Union[int, float]] = None,
+                                relative: bool = False,
+                                force_constant: Union[int, float] = 1e5,
+                                ):
+        """
+        Add a distance constraint to the force field. You should set either ``value``
+        or ``min_len`` and ``max_len``.
+
+        Args:
+            atoms (Sequence): a length-2 sequence indicate the atom index.
+            value (int or float): Set distance to a certain value if ``value`` is provided.
+            min_len (int or float): The minimum distance value in Angstrom or
+                                   in factor of current length (if ``relative==True``).
+            max_len (int or float): The maximum distance value in Angstrom or
+                                   in factor of current length (if ``relative==True``).
+            relative (bool, optional): Whether input as relative distance to the current length.
+            force_constant (int or float, optional): the constant in optimization.
+        """
+        assert value or (min_len and max_len), ValueError('You should set either value or min_len and max_len')
+        assert len(atoms) == 2, ValueError('Invalid `atoms` arguments. Should have a length of 2.')
+        assert hasattr(self, 'ff'), ValueError('You need to setup the molecule first to set constraints.')
+
+        atoms = self.update_atom_idx(atoms)
+        if self.type == 'uff':
+            add_distance_constraint = self.ff.UFFAddDistanceConstraint
+        else:
+            add_distance_constraint = self.ff.MMFFAddDistanceConstraint
+
+        if value:
+            min_len = value
+            max_len = value + 0.000001
+
+        add_distance_constraint(*atoms, relative=relative,
+                                minLen=min_len, maxLen=max_len,
+                                forceConstant=force_constant)
+
+    def add_angle_constraint(self,
+                             atoms: Sequence,
+                             value: Optional[Union[int, float]] = None,
+                             min_angle: Optional[Union[int, float]] = None,
+                             max_angle: Optional[Union[int, float]] = None,
+                             relative: bool = False,
+                             force_constant: Union[int, float] = 1e5,
+                             ):
+        """
+        Add a angle constraint to the force field. You should set either ``value``
+        or ``min_angle`` and ``max_angle``.
+
+        Args:
+            atoms (Sequence): a length-2 sequence indicate the atom index.
+            value (int or float): Set angle to a certain value if ``value`` is provided.
+            min_angle (int or float): The minimum distance value in degrees or
+                                   in factor of current length (if ``relative==True``).
+            max_angle (int or float): The maximum distance value in degrees or
+                                   in factor of current length (if ``relative==True``).
+            relative (bool, optional): Whether input as relative angle to the current length.
+            force_constant (int or float, optional): the constant in optimization.
+        """
+        assert value or (min_angle and max_angle), ValueError('You should set either value or min_angle and max_angle')
+        assert len(atoms) == 3, ValueError('Invalid `atoms` arguments. Should have a length of 3.')
+        assert hasattr(self, 'ff'), ValueError('You need to setup the molecule first to set constraints.')
+
+        atoms = self.update_atom_idx(atoms)
+        if self.type == 'uff':
+            add_angle_constraint = self.ff.UFFAddAngleConstraint
+        else:
+            add_angle_constraint = self.ff.MMFFAddAngleConstraint
+
+        if value:
+            min_angle = value
+            max_angle = value + 0.000001
+
+        add_angle_constraint(*atoms, relative=relative,
+                             minAngleDeg=min_angle, maxAngleDeg=max_angle,
+                             forceConstant=force_constant)
+
+    def add_torsion_constraint(self,
+                               atoms: Sequence,
+                               value: Optional[Union[int, float]] = None,
+                               min_angle: Optional[Union[int, float]] = None,
+                               max_angle: Optional[Union[int, float]] = None,
+                               relative: bool = False,
+                               force_constant: Union[int, float] = 1e5,
+                               ):
+        """
+        Add a torsion constraint to the force field. You should set either ``value``
+        or ``min_angle`` and ``max_angle``.
+
+        Args:
+            atoms (Sequence): a length-2 sequence indicate the atom index.
+            value (int or float): Set angle to a certain value if ``value`` is provided.
+            min_angle (int or float): The minimum distance value in degrees or
+                                   in factor of current length (if ``relative==True``).
+            max_angle (int or float): The maximum distance value in degrees or
+                                   in factor of current length (if ``relative==True``).
+            relative (bool, optional): Whether input as relative angle to the current length.
+            force_constant (int or float, optional): the constant in optimization.
+        """
+        assert value or (min_angle and max_angle), ValueError('You should set either value or min_angle and max_angle')
+        assert len(atoms) == 4, ValueError('Invalid `atoms` arguments. Should have a length of 4.')
+        assert hasattr(self, 'ff'), ValueError('You need to setup the molecule first to set constraints.')
+
+        atoms = self.update_atom_idx(atoms)
+        if self.type == 'uff':
+            add_torsion_constraint = self.ff.UFFAddTorsionConstraint
+        else:
+            add_torsion_constraint = self.ff.MMFFAddTorsionConstraint
+
+        if value:
+            min_angle = value
+            max_angle = value + 0.000001
+
+        add_torsion_constraint(*atoms, relative=relative,
+                               minDihedralDeg=min_angle, maxDihedralDeg=max_angle,
+                               forceConstant=force_constant)
+
+    def fix_atom(self,
+                 atom_idx: int):
+        """
+        Fix the coordinates of an atom given by its index.
+
+        Args:
+            atom_idx (int): The atom index of the atom to fix.
+        """
+        atom_idx = self.update_atom_idx([atom_idx])[0]
+        self.ff.AddFixedPoint(atom_idx)
     def is_optimizable(self,
                        mol: Optional['Mol'] = None,
                       ) -> bool:
