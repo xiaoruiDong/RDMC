@@ -494,6 +494,7 @@ class OpenBabelFF:
         self.type = force_field
         self.ff = ob.OBForceField.FindForceField(self.type)
         self.solver_type = 'ConjugateGradients'
+        self.constraints = None
 
     @property
     def type(self):
@@ -514,16 +515,15 @@ class OpenBabelFF:
                 - UFF
         """
         force_field = force_field.lower()
-        assert force_field in self.available_force_field, ValueError(f'RDKit does not support {force_field}')
+        assert force_field in self.available_force_field, ValueError(f'Openbabel does not support {force_field}')
         self._type = force_field
 
     def _initialize_constraints(self):
         """
         Initialize openbabel constraints object.
         """
-        setattr(self,
-                'constraints',
-                getattr(self, 'constraints', ob.OBFFConstraints()))
+        if not self.constraints:
+            self.constraints = ob.OBFFConstraints()
 
     def add_distance_constraint(self,
                                 atoms: Sequence,
@@ -567,6 +567,7 @@ class OpenBabelFF:
         """
         assert len(atoms) == 4, ValueError('Invalid `atoms` arguments. Should have a length of 4.')
         self._initialize_constraints()
+        atoms = self.update_atom_idx(atoms)
         self.constraints.AddTorsionConstraint(*atoms, angle)
 
     def fix_atom(self,
@@ -618,10 +619,7 @@ class OpenBabelFF:
         Args:
             atoms (Sequence):
         """
-        try:
-            type = self.mol_type
-        except AttributeError:
-            # No molecule information
+        if not hasattr(self, 'mol_type'):
             return atoms
 
         if self.mol_type == 'rdkit':
@@ -643,7 +641,7 @@ class OpenBabelFF:
         elif not self.mol:
             RuntimeError('You need to set up a molecule to optimize first! '
                          'Either by `OpenBabelFF.mol = <molecule>`, or '
-                         'by `Openbabel.setup(mol = <molecule>`.')
+                         'by `OpenbabelFF.setup(mol = <molecule>`.')
 
         if constraints:
             self.constraints = constraints
@@ -666,7 +664,6 @@ class OpenBabelFF:
         """
         Optimize the openbabel molecule.
         """
-        self.setup()
         initial_fun = getattr(self.ff, self.solver_type+'Initialize')
         take_n_step_fun = getattr(self.ff, self.solver_type+'TakeNSteps')
 
