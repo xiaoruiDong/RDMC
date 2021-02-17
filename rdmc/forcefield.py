@@ -196,6 +196,100 @@ class RDKitFF(object):
         """
         atom_idx = self.update_atom_idx([atom_idx])[0]
         self.ff.AddFixedPoint(atom_idx)
+
+    @property
+    def mol(self):
+        """
+        The molecule to be optimized.
+        """
+        return self._mol
+
+    @mol.setter
+    def mol(self,
+            mol: Union['Mol', 'RDKitMol']):
+        """
+        Set the molecule to be optimized.
+
+        Args:
+            mol ('Mol', 'RDKitMol'): The molecule to be optimized. Currently,
+                                     it supports RDKit Mol and OBMol.
+        """
+        if isinstance(mol, (Chem.Mol, RDKitMol)):
+            self.mol_type = 'rdkit'
+            self._mol = mol
+        else:
+            raise NotImplementedError
+
+    def update_atom_idx(self,
+                        atoms: Sequence,
+                        ) -> list:
+        """
+        Update_atom_idx if a rdkit mol atom index is provided.
+
+        Args:
+            atoms (Sequence):
+        """
+        if not hasattr(self, 'mol_type'):
+            return atoms
+
+        if self.mol_type == 'rdkit':
+            return atoms
+        else:
+            raise NotImplementedError
+
+    def setup(self,
+              mol: Optional[Union['Mol', 'RDKitMol']] = None,
+              conf_id: int = -1,
+              ignore_interfrag_interactions = True,
+              ):
+        """
+        Setup the force field and get ready to be optimized.
+
+        Args:
+            mol (Mol or RDKitMol, optional): Setup the force field based on the molecule.
+            conf_id (int, optional): The ID of the conformer to optimize.
+            ignore_interfrag_interactions (bool, optional): 
+        """
+        if mol:
+            self.mol = mol
+        elif not self.mol:
+            RuntimeError('You need to set up a molecule to optimize first! '
+                         'Either by `RDKitFF.mol = <molecule>`, or '
+                         'by `RDKitFF.setup(mol = <molecule>`.')
+
+        if not self.is_optimizable():
+            self.mol, self.edits = self.make_optimizable(in_place=True)
+
+        if self.type == 'uff':
+            self.ff = rdForceFieldHelpers.UFFGetMoleculeForceField(self.mol.ToRWMol(),
+                                                                   confId=conf_id,
+                                                                   ignoreInterfragInteractions=ignore_interfrag_interactions)
+        else:
+            mmff_properties = rdForceFieldHelpers.MMFFGetMoleculeProperties(self.mol.ToRWMol(),
+                                                                            mmffVariant=self.type,)
+            self.ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(self.mol.ToRWMol(),
+                                                                    pyMMFFMolProperties=mmff_properties,
+                                                                    confId=conf_id,
+                                                                    ignoreInterfragInteractions=ignore_interfrag_interactions)
+        self.ff.Initialize()
+
+    def optimize(self,
+                 max_step: int = 100000,
+                 tol: float = 1e-8,
+                 step_per_iter: int = 5):
+        """
+        Optimize the RDKit molecule.
+        """
+        n, success = 0, 1
+        while (n < max_step) and (success != 0):
+            success = self.ff.Minimize(maxIts=step_per_iter,
+                                       energyTol=tol,)
+            n = n + step_per_iter
+
+        if success == 0:
+            return True
+
+
     def is_optimizable(self,
                        mol: Optional['Mol'] = None,
                       ) -> bool:
