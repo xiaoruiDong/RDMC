@@ -17,7 +17,7 @@ from rdmc.utils import (rdkit_mol_to_openbabel_mol,
                         set_rdconf_coordinates)
 
 
-ROO_TEMPLATE = Chem.MolFromSmarts('[OH0][OH0]')
+ROO_TEMPLATE = Chem.MolFromSmarts('[O;X1]-[O;X2]')
 ROO_TEMPLATE.GetAtoms()[0].SetNumRadicalElectrons(1)
 ROO_MOD = {'edit': {'SetAtomicNum': 9,
                     'SetNumRadicalElectrons': 0},
@@ -334,6 +334,9 @@ class RDKitFF(object):
         if not mol:
             mol = self.mol
 
+        if self.is_optimizable(mol):
+            return
+
         if not in_place:
             # Try to make a backup of the molecule if possible
             try:
@@ -344,6 +347,7 @@ class RDKitFF(object):
             mol_copy = mol
 
         edits = {}
+
         # Convert -O[O] to -OF
         roo = get_roo_radical_atoms(mol_copy)
         for idx in roo:
