@@ -470,6 +470,17 @@ class RDKitFF(object):
             # Hasn't been optimized
             return results
 
+    def get_optimized_mol(self) -> 'Mol':
+        """
+        Clean up the optimized molecule and return it. Please call this function once you believe
+        the optimization is done, and ready to get the optimized molecule.
+
+        Returns:
+            Mol: The optimized RDKitMol molecule
+        """
+        if hasattr(self, 'edits'):
+            self.recover_mol(edits=self.edits)
+        return self.mol
 
 class OpenBabelFF:
     """
@@ -693,9 +704,19 @@ class OpenBabelFF:
 
         self.ff.GetCoordinates(self.obmol)
 
+    def get_optimized_mol(self) -> 'Mol':
+        """
+        Clean up the optimized molecule and return it. Please call this function once you believe
+        the optimization is done, and ready to get the optimized molecule.
+
+        Returns:
+            Mol: The optimized molecule
+        """
         if self.mol_type == 'rdkit':
             conf = self.mol.GetConformer()
             set_rdconf_coordinates(conf, get_obmol_coords(self.obmol))
+
+        return self.mol
 
 
 def get_roo_radical_atoms(mol: 'Mol') -> tuple:
