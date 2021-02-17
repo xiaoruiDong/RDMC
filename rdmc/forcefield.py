@@ -629,6 +629,26 @@ class OpenBabelFF:
         else:
             raise NotImplementedError
 
+    def is_optimizable(self,
+                       mol: Optional['Mol'] = None,
+                      ) -> bool:
+        """
+        Check if Openbabel has the parameters for all atom type in the molecule.
+
+        Args:
+            mol (Mol): The molecule to be checked.
+
+        Returns:
+            bool: Whether RDKit has parameters.
+        """
+        if not mol:
+            mol = self.obmol
+
+        # Use an temporary force field to avoid ruinning other parts
+        ff = ob.OBForceField.FindForceField(self.type)
+
+        return ff.Setup(mol)
+
     def setup(self,
               mol: Optional[Union['Mol', 'RDKitMol', 'OBMol']] = None,
               constraints: Optional['ob.OBFFConstraints'] = None,
