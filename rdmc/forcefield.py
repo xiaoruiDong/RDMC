@@ -66,7 +66,9 @@ class RDKitFF(object):
         assert force_field in self.available_force_field, ValueError(f'RDKit does not support {force_field}')
         self._type = force_field
 
-    def IsOptimizable(self, mol: 'Mol'):
+    def is_optimizable(self,
+                       mol: Optional['Mol'] = None,
+                      ) -> bool:
         """
         Check if RDKit has the parameters for all atom type in the molecule.
 
@@ -76,16 +78,19 @@ class RDKitFF(object):
         Returns:
             bool: Whether RDKit has parameters.
         """
+        if not mol:
+            mol = self.mol
         mol = mol.ToRWMol() if isinstance(mol, RDKitMol) else mol
 
-        if self.type in ['mmff94', 'mmff94s']:
-            return rdForceFieldHelpers.MMFFHasAllMoleculeParams(mol)
-        else:
+        if self.type == 'uff':
             return rdForceFieldHelpers.UFFHasAllMoleculeParams(mol)
+        else:
+            return rdForceFieldHelpers.MMFFHasAllMoleculeParams(mol)
 
-    def MakeOptimizable(self,
-                        mol: 'RDKitMol',
-                        in_place: bool = False):
+    def make_optimizable(self,
+                         mol: Optional['RDKitMol'] = None,
+                         in_place: bool = False,
+                         ) -> tuple:
         """
         Make the molecule able to be optimized by the force field. Known problematic molecules:
 
@@ -102,8 +107,8 @@ class RDKitFF(object):
         Raises:
             NotImplementedError: Conversion strategy has not been implemented.
         """
-        if self.type == 'uff' or self.IsOptimizable(mol):
-            return mol, {}
+        if not mol:
+            mol = self.mol
 
         if not in_place:
             # Try to make a backup of the molecule if possible
@@ -124,15 +129,14 @@ class RDKitFF(object):
                 getattr(atom, attr)(value)
 
         # Check if optimizable
-        if not self.IsOptimizable(mol_copy):
+        if not self.is_optimizable(mol_copy):
             raise NotImplementedError('Strategies of making this molecule optimizable has '
                                       'not been implemented.')
-        else:
-            return mol_copy, edits
+        return mol_copy, edits
 
-    def RecoverMol(self,
-                   mol: 'Mol',
-                   edits: dict,
+    def recover_mol(self,
+                   mol: Optional['Mol'] = None,
+                   edits: dict = {},
                    in_place: bool = True):
         """
         Recover the molecule from modifications.
@@ -148,6 +152,8 @@ class RDKitFF(object):
         Raises:
             NotImplementedError: Conversion strategy has not been implemented.
         """
+        if not mol:
+            mol = self.mol
         if not in_place:
             # Try to make a backup of the molecule if possible
             try:
