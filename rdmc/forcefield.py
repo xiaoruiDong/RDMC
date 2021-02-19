@@ -63,7 +63,8 @@ class RDKitFF(object):
                 - UFF
         """
         force_field = force_field.lower()
-        assert force_field in self.available_force_field, ValueError(f'RDKit does not support {force_field}')
+        if force_field not in self.available_force_field:
+            raise ValueError(f'RDKit does not support {force_field}')
         self._type = force_field
 
     def add_distance_constraint(self,
@@ -88,9 +89,12 @@ class RDKitFF(object):
             relative (bool, optional): Whether input as relative distance to the current length.
             force_constant (int or float, optional): the constant in optimization.
         """
-        assert value or (min_len and max_len), ValueError('You should set either value or min_len and max_len')
-        assert len(atoms) == 2, ValueError('Invalid `atoms` arguments. Should have a length of 2.')
-        assert hasattr(self, 'ff'), ValueError('You need to setup the molecule first to set constraints.')
+        if (value is None) and ((min_len is None) or (max_len is None)):
+            raise ValueError('You should set either value or min_len and max_len')
+        if len(atoms) != 2:
+            raise ValueError('Invalid `atoms` arguments. Should have a length of 2.')
+        if not hasattr(self, 'ff'):
+            raise ValueError('You need to setup the molecule first to set constraints.')
 
         atoms = self.update_atom_idx(atoms)
         if self.type == 'uff':
@@ -128,9 +132,12 @@ class RDKitFF(object):
             relative (bool, optional): Whether input as relative angle to the current length.
             force_constant (int or float, optional): the constant in optimization.
         """
-        assert value or (min_angle and max_angle), ValueError('You should set either value or min_angle and max_angle')
-        assert len(atoms) == 3, ValueError('Invalid `atoms` arguments. Should have a length of 3.')
-        assert hasattr(self, 'ff'), ValueError('You need to setup the molecule first to set constraints.')
+        if (value is None) and ((min_angle is None) or (max_angle is None)):
+            raise ValueError('You should set either value or min_angle and max_angle')
+        if len(atoms) != 3:
+            raise ValueError('Invalid `atoms` arguments. Should have a length of 3.')
+        if not hasattr(self, 'ff'):
+            raise ValueError('You need to setup the molecule first to set constraints.')
 
         atoms = self.update_atom_idx(atoms)
         if self.type == 'uff':
@@ -168,9 +175,12 @@ class RDKitFF(object):
             relative (bool, optional): Whether input as relative angle to the current length.
             force_constant (int or float, optional): the constant in optimization.
         """
-        assert value or (min_angle and max_angle), ValueError('You should set either value or min_angle and max_angle')
-        assert len(atoms) == 4, ValueError('Invalid `atoms` arguments. Should have a length of 4.')
-        assert hasattr(self, 'ff'), ValueError('You need to setup the molecule first to set constraints.')
+        if (value is None) and ((min_angle is None) or (max_angle is None)):
+            raise ValueError('You should set either value or min_angle and max_angle')
+        if len(atoms) != 4:
+            raise ValueError('Invalid `atoms` arguments. Should have a length of 4.')
+        if not hasattr(self, 'ff'):
+            raise ValueError('You need to setup the molecule first to set constraints.')
 
         atoms = self.update_atom_idx(atoms)
         if self.type == 'uff':
@@ -530,7 +540,8 @@ class OpenBabelFF:
                 - UFF
         """
         force_field = force_field.lower()
-        assert force_field in self.available_force_field, ValueError(f'Openbabel does not support {force_field}')
+        if force_field not in self.available_force_field:
+            raise ValueError(f'Openbabel does not support {force_field}')
         self._type = force_field
 
     def _initialize_constraints(self):
@@ -550,7 +561,8 @@ class OpenBabelFF:
             atoms (Sequence): a length-2 sequence indicate the atom index.
             value (int or float): The distance value in Angstrom.
         """
-        assert len(atoms) == 2, ValueError('Invalid `atoms` arguments. Should have a length of 2.')
+        if len(atoms) != 2:
+            raise ValueError('Invalid `atoms` arguments. Should have a length of 2.')
         self._initialize_constraints()
         atoms = self.update_atom_idx(atoms)
         self.constraints.AddDistanceConstraint(*atoms, value)
@@ -565,7 +577,8 @@ class OpenBabelFF:
             atoms (Sequence): a length-3 sequence indicate the atom index.
             value (int or float): The degree value of the bond angle.
         """
-        assert len(atoms) == 3, ValueError('Invalid `atoms` arguments. Should have a length of 3.')
+        if len(atoms) != 3:
+            raise ValueError('Invalid `atoms` arguments. Should have a length of 3.')
         self._initialize_constraints()
         atoms = self.update_atom_idx(atoms)
         self.constraints.AddAngleConstraint(*atoms, angle)
@@ -580,7 +593,8 @@ class OpenBabelFF:
             atoms (Sequence): a length-4 sequence indicate the atom index.
             value (int or float): The degree value of the torsion angle.
         """
-        assert len(atoms) == 4, ValueError('Invalid `atoms` arguments. Should have a length of 4.')
+        if len(atoms) != 4:
+            raise ValueError('Invalid `atoms` arguments. Should have a length of 4.')
         self._initialize_constraints()
         atoms = self.update_atom_idx(atoms)
         self.constraints.AddTorsionConstraint(*atoms, angle)
@@ -688,9 +702,9 @@ class OpenBabelFF:
 
     def set_solver(self,
                    solver_type: str):
-        assert solver_type in self.available_solver, \
-            ValueError(f'Invalid solver. Got {solver_type}. '
-                       f'Should be chose from {self.available_solver}')
+        if solver_type not in self.available_solver:
+            raise ValueError(f'Invalid solver. Got {solver_type}. '
+                             f'Should be chose from {self.available_solver}')
 
     def optimize(self,
                  max_step: int = 100000,

@@ -657,8 +657,8 @@ class RDKitMol(object):
         """
         num_atoms = self.GetNumAtoms()
         if atomMap:
-            assert len(atomMap) == num_atoms, \
-                   ValueError('Invalid atomMap provided. It should have the same length as atom numbers.')
+            if len(atomMap) != num_atoms:
+                raise ValueError('Invalid atomMap provided. It should have the same length as atom numbers.')
         else:
             atomMap = list(range(num_atoms))
 

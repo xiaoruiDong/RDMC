@@ -358,7 +358,8 @@ def parse_xyz_by_openbabel(xyz: str,
     obconversion.SetInFormat('xyz')
     obmol = ob.OBMol()
     success = obconversion.ReadString(obmol, xyz)
-    assert success, ValueError('Unable to parse the provided xyz.')
+    if not success:
+        raise ValueError('Unable to parse the provided xyz.')
 
     if correct_CO and CO_OPENBABEL_PATTERN.Match(obmol):
         index_pairs = [x for x in CO_OPENBABEL_PATTERN.GetUMapList()]
