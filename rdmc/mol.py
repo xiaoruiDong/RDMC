@@ -379,12 +379,7 @@ class RDKitMol(object):
                                reflect=True)
 
         # The conformation is reflected, now reflect back
-        self.AlignMol(refMol=refMol,
-                      prbCid=prbCid,
-                      refCid=refCid,
-                      atomMap=atomMap,
-                      maxIters=1,
-                      reflect=True)
+        self.Reflect(id=prbCid)
 
         reflect = True if rmsd > rmsd_r else False
 
@@ -679,6 +674,18 @@ class RDKitMol(object):
             tuple: atom mapping numbers in the sequence of atom index.
         """
         return tuple(atom.GetAtomMapNum() for atom in self.GetAtoms())
+
+    def Reflect(self, id: int = 0):
+        """
+        Reflect the atom coordinates of a molecule, and therefore its mirror image.
+
+        Args:
+            id (int, optional): The conformer id to reflect.
+        """
+        self.AlignMol(refMol=self,
+                      prbCid=id,
+                      maxIters=0,
+                      reflect=True)
 
     def SetPositions(self,
                      coords: Sequence,
