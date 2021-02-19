@@ -728,8 +728,12 @@ class RDKitMol(object):
             conf = self.GetConformer(id=id)
         except ValueError as e:
             if id == 0:
-                self.EmbedConformer()
-                conf = self.GetConformer()
+                try:
+                    self.EmbedConformer()
+                except RuntimeError:
+                    self.EmbedNullConformer()
+                else:
+                    conf = self.GetConformer()
             else:
                 raise
         conf.SetPositions(coords)
