@@ -192,6 +192,29 @@ class RDKitMol(object):
         if len(results) == 0:
             raise RuntimeError('Cannot embed conformer for this molecule!')
 
+    def EmbedNullConformer(self):
+        """
+        Embed a conformer with all zero atom coordinates. This helps the cases where a conformer
+        can not be successfully embeded
+        """
+        self.EmbedMultipleNullConfs(n=1)
+
+    def EmbedMultipleNullConfs(self, n: int = 10):
+        """
+        Embed conformers to the RDKitMol. This will overwrite current conformers.
+        All coordinates will be initialized to zeros.
+
+        Args:
+            n (int): The number of conformers to be embedded. Defaults to ``10``.
+        """
+        self._mol.RemoveAllConformers()
+        num_atoms = self.GetNumAtoms()
+        for i in range(n):
+            conf = Conformer()
+            set_rdconf_coordinates(conf, np.zeros((num_atoms, 3)))
+            conf.SetId(i)
+            self._mol.AddConformer(conf)
+
     @ classmethod
     def FromOBMol(cls,
                   obMol: 'openbabel.OBMol',
