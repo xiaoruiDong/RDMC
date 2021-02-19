@@ -173,20 +173,24 @@ class RDKitMol(object):
         """
         return self.RenumberAtoms(list(range(self.GetNumAtoms())))
 
-    def EmbedConformer(self):
+    def EmbedConformer(self, **kwargs):
         """
         Embed a conformer to the ``RDKitMol``. This will overwrite current conformers.
         """
-        AllChem.EmbedMolecule(self._mol)
+        return_code = AllChem.EmbedMolecule(self._mol, **kwargs)
+        if return_code == -1:
+            raise RuntimeError('Cannot embed conformer for this molecule!')
 
-    def EmbedMultipleConfs(self, n: int = 1):
+    def EmbedMultipleConfs(self, n: int = 1, **kwargs):
         """
         Embed conformers to the ``RDKitMol``. This will overwrite current conformers.
 
         Args:
             n (int): The number of conformers to be embedded. The default is ``1``.
         """
-        AllChem.EmbedMultipleConfs(self._mol, numConfs=n)
+        results = AllChem.EmbedMultipleConfs(self._mol, numConfs=n, **kwargs)
+        if len(results) == 0:
+            raise RuntimeError('Cannot embed conformer for this molecule!')
 
     @ classmethod
     def FromOBMol(cls,
