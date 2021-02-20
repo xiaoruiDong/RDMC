@@ -192,26 +192,42 @@ class RDKitMol(object):
         if len(results) == 0:
             raise RuntimeError('Cannot embed conformer for this molecule!')
 
-    def EmbedNullConformer(self):
+    def EmbedNullConformer(self,
+                           random: bool = True):
         """
-        Embed a conformer with all zero atom coordinates. This helps the cases where a conformer
-        can not be successfully embeded
-        """
-        self.EmbedMultipleNullConfs(n=1)
+        Embed a conformer with meaningless atom coordinates. This helps the cases where a conformer
+        can not be successfully embeded. You can choose to generate all zero coordinates or random coordinates.
+        You can set to all-zero coordinates, if you will set coordinates later; You should set to random
+        coordinates, if you want to optimize this molecule by forcefield (RDKit force field cannot optimize
+        all-zero coordinates).
 
-    def EmbedMultipleNullConfs(self, n: int = 10):
+        Args:
+            random (bool, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
+                                     coordinates. Defaults to ``True``.
         """
-        Embed conformers to the RDKitMol. This will overwrite current conformers.
-        All coordinates will be initialized to zeros.
+        self.EmbedMultipleNullConfs(n=1, random=random)
+
+    def EmbedMultipleNullConfs(self,
+                               n: int = 10,
+                               random: bool = True):
+        """
+        Embed conformers with meaningless atom coordinates. This helps the cases where a conformer
+        can not be successfully embeded. You can choose to generate all zero coordinates or random coordinates.
+        You can set to all-zero coordinates, if you will set coordinates later; You should set to random
+        coordinates, if you want to optimize this molecule by forcefield (RDKit force field cannot optimize
+        all-zero coordinates).
 
         Args:
             n (int): The number of conformers to be embedded. Defaults to ``10``.
+            random (bool, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
+                                     coordinates. Defaults to ``True``.
         """
         self._mol.RemoveAllConformers()
         num_atoms = self.GetNumAtoms()
         for i in range(n):
             conf = Conformer()
-            set_rdconf_coordinates(conf, np.zeros((num_atoms, 3)))
+            coords = np.random.rand(num_atoms, 3) if random else np.zeros((num_atoms, 3))
+            set_rdconf_coordinates(conf, coords)
             conf.SetId(i)
             self._mol.AddConformer(conf)
 
