@@ -9,7 +9,12 @@ from typing import Optional, Sequence, Union
 
 from rdkit import Chem
 from rdkit.Chem import rdForceFieldHelpers
-import openbabel as ob
+try:
+    # Openbabel 3
+    from openbabel import openbabel as ob
+except ImportError:
+    # Openbabel 2
+    import openbabel as ob
 
 from rdmc.mol import RDKitMol
 from rdmc.utils import (rdkit_mol_to_openbabel_mol,

@@ -12,7 +12,12 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import BondType, Mol, RWMol
 
-import openbabel as ob
+try:
+    # Openbabel 3
+    from openbabel import openbabel as ob
+except ImportError:
+    # Openbabel 2
+    import openbabel as ob
 
 # Bond order dictionary for RDKit, numbers are the bond order.
 ORDERS = {1: BondType.SINGLE, 2: BondType.DOUBLE, 3: BondType.TRIPLE, 1.5: BondType.AROMATIC,
