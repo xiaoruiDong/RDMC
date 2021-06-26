@@ -4,7 +4,10 @@
 """
 A module contains RMG related functions. Needs to run with rmg_env.
 """
+
+import itertools
 from typing import List, Optional
+
 from rdkit import Chem
 
 try:
@@ -141,11 +144,11 @@ def find_reaction_family(database: 'RMGDatabase',
             print('Doesn\'t match any RMG reaction family!')
 
 
-def generate_product_complex(database: 'RMGDatabase',
-                             reactants: list,
-                             products: list,
-                             verbose: bool = True,
-                             ) -> List['Molecule']:
+def generate_reaction_complex(database: 'RMGDatabase',
+                              reactants: list,
+                              products: list,
+                              verbose: bool = True,
+                              ) -> List['Molecule']:
     """
     Generate a product complex according to RMG reaction family. Currently,
     this function is only valid for reaction with a single reactant.
@@ -183,39 +186,62 @@ def generate_product_complex(database: 'RMGDatabase',
     if family.auto_generated and reactant_num != len(reactants):
         raise NotImplementedError
 
-    # A <=> B or A <=> B + C reactions
+    template_reactants = [x.item for x in template.reactants]
+
+    # A = B or A = B + C
     if len(reactants) == 1:
         # Find all possible mappings
-        mappings = family._match_reactant_to_template(reactants[0],
-                                                      template.reactants[0].item)
-        # Apply each mapping to the reactant
-        for mapping in mappings:
-            # Clear * labels
-            reactants[0].clear_labeled_atoms()
-            # Reassign * labels
-            for reactant_atom, template_atom in mapping.items():
-                reactant_atom.label = template_atom.label
-            # Apply reaction recipe
-            reactant_structure = reactants[0].copy(deep=True)
-            if forward:
-                family.forward_recipe.apply_forward(reactant_structure, unique=True)
-            else:
-                family.reverse_recipe.apply_forward(reactant_structure, unique=True)
-            for atom in reactant_structure.atoms:
-                atom.update_charge()
+        mappings = family._match_reactant_to_template(reactants[0], template_reactants[0])
+        mappings = [[map0] for map0 in mappings]
 
-            # The product complex is stored in `product_structure`
-            # `reactant_structure` will be used to check isomorphism
-            product_structure = reactant_structure.copy(deep=True)
-            reactant_structures = reactant_structure.split()
-            for struct in reactant_structures:
-                struct.update()
-            match = check_isomorphic_molecules(reactant_structures,
-                                               products)
-            if match:
-                return product_structure
+    # A + B = C + D
+    elif len(reactants) == 2:
+        # Get A + B mappings
+        mappings_a = family._match_reactant_to_template(reactants[0], template_reactants[0])
+        mappings_b = family._match_reactant_to_template(reactants[1], template_reactants[1])
+        mappings = list(itertools.product(mappings_a, mappings_b))
+        # Get B + A mappings
+        mappings_a = family._match_reactant_to_template(reactants[0], template_reactants[1])
+        mappings_b = family._match_reactant_to_template(reactants[1], template_reactants[0])
+        mappings.extend(list(itertools.product(mappings_a, mappings_b)))
     else:
         raise NotImplementedError
+
+    for mapping in mappings:
+        # Delete old reaction labels
+        for struct in reactants:
+            struct.clear_labeled_atoms()
+
+        # Apply new reaction labels
+        for m in mapping:
+            for reactant_atom, template_atom in m.items():
+                reactant_atom.label = template_atom.label
+
+        # Create a reactant complex
+        reactant_structure = mm.Molecule()
+        for struct in reactants:
+            reactant_structure = reactant_structure.merge(struct.copy(deep=True))
+
+        # Make a copy for the reactant complex for output
+        reactant_complex = reactant_structure.copy(deep=True)
+        # Apply reaction recipe
+        if forward:
+            family.forward_recipe.apply_forward(reactant_structure, unique=True)
+        else:
+            family.reverse_recipe.apply_forward(reactant_structure, unique=True)
+        # Now reactant_structure is tranformed to a product complex
+        # First, clean it up
+        for atom in reactant_structure.atoms:
+            atom.update_charge()
+        # Second, Store the product complex in `product_complex` for output
+        product_complex = reactant_structure.copy(deep=True)
+        # Then, `reactant_structure` will be used to check isomorphism
+        product_structures = reactant_structure.split()
+        for struct in product_structures:
+            struct.update()
+        match = check_isomorphic_molecules(product_structures, products)
+        if match:
+            return reactant_complex, product_complex
 
 
 def check_isomorphic_molecules(mols_1: List['Molecule'],
@@ -234,11 +260,9 @@ def check_isomorphic_molecules(mols_1: List['Molecule'],
     if len(mols_1) != len(mols_2):
         return False
 
-    match = False
     for mol1 in mols_1:
         for mol2 in mols_2:
             if mol1.is_isomorphic(mol2):
-                match = True
                 break
         # an element in mols_1 does not match any element in mols_2
         else:
