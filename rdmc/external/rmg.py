@@ -110,6 +110,7 @@ def from_rdkit_mol(rdkitmol,
 
     return mol
 
+
 def find_reaction_family(database: 'RMGDatabase',
                          reactants: list,
                          products: list,
@@ -142,6 +143,7 @@ def find_reaction_family(database: 'RMGDatabase',
     else:
         if verbose:
             print('Doesn\'t match any RMG reaction family!')
+        return None, None
 
 
 def generate_reaction_complex(database: 'RMGDatabase',
@@ -170,7 +172,10 @@ def generate_reaction_complex(database: 'RMGDatabase',
                                                      verbose=verbose)
     except TypeError:
         # Cannot find any matches
-        return
+        return None, None
+    else:
+        if family_label == None:
+            return None, None
 
     # Make the reaction family preserver atom orders
     family = database.kinetics.families[family_label]
@@ -219,8 +224,13 @@ def generate_reaction_complex(database: 'RMGDatabase',
 
         # Create a reactant complex
         reactant_structure = mm.Molecule()
-        for struct in reactants:
-            reactant_structure = reactant_structure.merge(struct.copy(deep=True))
+        if len(reactants) == 1:
+            reactant_structure = reactants[0].copy(deep=True)
+        else:
+            for struct in reactants:
+                reactant_structure = reactant_structure.merge(
+                                            struct.copy(deep=True)
+                                            )
 
         # Make a copy for the reactant complex for output
         reactant_complex = reactant_structure.copy(deep=True)
@@ -242,6 +252,8 @@ def generate_reaction_complex(database: 'RMGDatabase',
         match = check_isomorphic_molecules(product_structures, products)
         if match:
             return reactant_complex, product_complex
+    else:
+        raise RuntimeError('Cannot find the correct reaction mapping.')
 
 
 def check_isomorphic_molecules(mols_1: List['Molecule'],
