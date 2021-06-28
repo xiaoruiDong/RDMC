@@ -29,6 +29,21 @@ ROO_MOD = {'edit': {'SetAtomicNum': 9,
            'remedy': {'SetAtomicNum': 8,
                       'SetNumRadicalElectrons': 1}}
 
+H_RAD_TEMP = Chem.MolFromSmiles('[H]')
+H_RAD_MOD = {'edit': {'SetAtomicNum': 17,
+                      'SetNumRadicalElectrons': 1},
+             'remedy': {'SetAtomicNum': 1,
+                      'SetNumRadicalElectrons': 1}}
+
+O_RAD_TEMP = Chem.MolFromSmiles('O')
+O_RAD_MOD = {'edit': {'SetAtomicNum': 9,
+                      'SetNumRadicalElectrons': 1},
+             'remedy': {'SetAtomicNum': 8,
+                        'SetNumRadicalElectrons': 2}}
+
+H2_RAD_TEMP = Chem.MolFromSmiles('[H][H]')
+H2_RAD_MOD = {'edit': {'SetAtomicNum': 17,},
+              'remedy': {'SetAtomicNum': 1,}}
 
 class RDKitFF(object):
     """
@@ -337,7 +352,9 @@ class RDKitFF(object):
 
         1. RO[O] is not optimizable by MMFF. By changing -O[O] to -OF,
            it allows the geometry to be optimized yielding reasonable results.
-
+        2. [H].XXX and [O].XXX is not optimizable by MMFF. Changing [H] to [Cl], and [O] to [F].
+        3. [H][H] is optimizable by MMFF. Changing to ClCl; when recovery change the bond length
+           back to 74 pm.
         Args:
             mol ('Mol'): Molecule to be changed.
             in_place (bool, optional): Whether to make the change inplace. Defaults to ``False``.
@@ -371,6 +388,29 @@ class RDKitFF(object):
             atom = mol_copy.GetAtomWithIdx(idx)
             edits[idx] = ROO_MOD
             for attr, value in ROO_MOD['edit'].items():
+                getattr(atom, attr)(value)
+
+        # Convert [O] to [F] and [H] to [Cl]
+        Hs = mol_copy.GetSubstructMatches(H_RAD_TEMP)
+        for idx in Hs:
+            atom = mol_copy.GetAtomWithIdx(idx[0])
+            edits[idx[0]] = H_RAD_MOD
+            for attr, value in H_RAD_MOD['edit'].items():
+                getattr(atom, attr)(value)
+
+        Os = mol_copy.GetSubstructMatches(O_RAD_TEMP)
+        for idx in Os:
+            atom = mol_copy.GetAtomWithIdx(idx[0])
+            edits[idx[0]] = O_RAD_MOD
+            for attr, value in O_RAD_MOD['edit'].items():
+                getattr(atom, attr)(value)
+
+        # Convert [H][H] to ClCl
+        H2s = [idx for idxs in mol_copy.GetSubstructMatches(H2_RAD_TEMP) for idx in idxs]
+        for idx in H2s:
+            atom = mol_copy.GetAtomWithIdx(idx)
+            edits[idx] = H2_RAD_MOD
+            for attr, value in H2_RAD_MOD['edit'].items():
                 getattr(atom, attr)(value)
 
         # Check if optimizable
@@ -414,6 +454,11 @@ class RDKitFF(object):
             for attr, value in approach['remedy'].items():
                 getattr(atom, attr)(value)
 
+        # Adjust H-H bond to 74 pm
+        H2s = [idxs for idxs in mol_copy.GetSubstructMatches(H2_RAD_TEMP)]
+        for bond in H2s:
+            for conformer in mol_copy.GetAllConformers():
+                conformer.SetBondLength(bond, 0.74)
         return mol_copy
 
     def optimize_confs(self,
