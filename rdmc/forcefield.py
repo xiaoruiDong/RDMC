@@ -255,7 +255,7 @@ class RDKitFF(object):
     def setup(self,
               mol: Optional[Union['Mol', 'RDKitMol']] = None,
               conf_id: int = -1,
-              ignore_interfrag_interactions = True,
+              ignore_interfrag_interactions = False,
               ):
         """
         Setup the force field and get ready to be optimized.
@@ -263,7 +263,9 @@ class RDKitFF(object):
         Args:
             mol (Mol or RDKitMol, optional): Setup the force field based on the molecule.
             conf_id (int, optional): The ID of the conformer to optimize.
-            ignore_interfrag_interactions (bool, optional): 
+            ignore_interfrag_interactions (bool, optional): Whether to ignore interfragment interactions.
+                                                            Defaults to ``False`` to allow a similar behavior
+                                                            as the other package.
         """
         if mol:
             self.mol = mol
@@ -346,8 +348,7 @@ class RDKitFF(object):
         Raises:
             NotImplementedError: Conversion strategy has not been implemented.
         """
-        if not mol:
-            mol = self.mol
+        mol = mol if mol else self.mol
 
         if self.is_optimizable(mol):
             return
@@ -357,6 +358,7 @@ class RDKitFF(object):
             try:
                 mol_copy = mol.Copy()
             except AttributeError:
+                # TODO: Print a warning that cannot be done in-place
                 mol_copy = mol
         else:
             mol_copy = mol
@@ -395,13 +397,14 @@ class RDKitFF(object):
         Raises:
             NotImplementedError: Conversion strategy has not been implemented.
         """
-        if not mol:
-            mol = self.mol
+        mol = mol if mol else self.mol
+
         if not in_place:
             # Try to make a backup of the molecule if possible
             try:
                 mol_copy = mol.Copy()
             except AttributeError:
+                # TODO: Print a warning that cannot be done in-place
                 mol_copy = mol
         else:
             mol_copy = mol
@@ -692,7 +695,7 @@ class OpenBabelFF:
         """
         if mol:
             self.mol = mol
-        elif not hasattr(self, mol) or not self.mol:
+        elif not hasattr(self, 'mol') or not self.mol:
             RuntimeError('You need to set up a molecule to optimize first! '
                          'Either by `OpenBabelFF.mol = <molecule>`, or '
                          'by `OpenbabelFF.setup(mol = <molecule>`.')
