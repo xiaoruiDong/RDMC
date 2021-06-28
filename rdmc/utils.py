@@ -170,6 +170,20 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
     obmol = ob.OBMol()
     obconv.ReadString(obmol, sdf_str)
 
+    # Temporary Fix for Issue # 1
+    # This function works okay with openbabel 2.4.1 but not 3.1.1
+    # The atom spin multiplicity looks not right in the obmol
+    # A naive fix for carbons and oxygens
+    # This fix cannot deal with any charged species!!!
+    for obatom in ob.OBMolAtomIter(obmol):
+        # Find the unsaturated carbons
+        if obatom.GetAtomicNum() == 6 and obatom.GetTotalValence() < 4:
+            obatom.SetSpinMultiplicity(5 - obatom.GetTotalValence())
+        elif obatom.GetAtomicNum() == 8 and obatom.GetTotalValence() < 2:
+            obatom.SetSpinMultiplicity(3 - obatom.GetTotalValence())
+        elif obatom.GetAtomicNum() == 1 and obatom.GetTotalValence() == 0:
+            obatom.SetSpinMultiplicity(2)
+
     if not embed:
         for atom in ob.OBMolAtomIter(obmol):
             atom.SetVector(ob.vector3(0, 0, 0))
@@ -365,6 +379,20 @@ def parse_xyz_by_openbabel(xyz: str,
     success = obconversion.ReadString(obmol, xyz)
     if not success:
         raise ValueError('Unable to parse the provided xyz.')
+
+    # Temporary Fix for Issue # 1
+    # This function works okay with openbabel 2.4.1 but not 3.1.1
+    # The atom spin multiplicity looks not right in the obmol
+    # A naive fix for carbons and oxygens
+    # This fix cannot deal with any charged species!!!
+    for obatom in ob.OBMolAtomIter(obmol):
+        # Find the unsaturated carbons
+        if obatom.GetAtomicNum() == 6 and obatom.GetTotalValence() < 4:
+            obatom.SetSpinMultiplicity(5 - obatom.GetTotalValence())
+        elif obatom.GetAtomicNum() == 8 and obatom.GetTotalValence() < 2:
+            obatom.SetSpinMultiplicity(3 - obatom.GetTotalValence())
+        elif obatom.GetAtomicNum() == 1 and obatom.GetTotalValence() == 0:
+            obatom.SetSpinMultiplicity(2)
 
     if correct_CO and CO_OPENBABEL_PATTERN.Match(obmol):
         index_pairs = [x for x in CO_OPENBABEL_PATTERN.GetUMapList()]
