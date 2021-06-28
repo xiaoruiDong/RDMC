@@ -422,8 +422,14 @@ class RDKitFF(object):
                        num_threads: int = 0,
                        step_per_iter: int = 5):
         """
-        A wrapper for force field optimization. Currently does not support constrained optimization.
-        If you are looking for constrained ones. You can iterate conformers and use ``optmize()``.
+        A wrapper for force field optimization for multiple conformers simultaneously.
+
+        It can take constraints for optimization, but all conformers share the same constraints.
+        This can be confusing when using relative value constraints. When using relative constraints,
+        the actual value to be used is only based on the first conformer. Therefore, if you are doing
+        a torsional scan, you CANNOT first generate conformers with different torsional angles, and
+        and then set the relative constraint with value = 1, and optimize using this function. You still
+        should iterate conformers and use ``optmize()`` instead.
 
         Args:
             mol ('Mol'): A molecule to be optimized.
