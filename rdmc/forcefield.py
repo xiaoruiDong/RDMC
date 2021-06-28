@@ -416,48 +416,6 @@ class RDKitFF(object):
 
         return mol_copy
 
-    def _optimize_confs(self,
-                  mol: Optional['Mol'] = None,
-                  max_iters: int = 200,
-                  num_threads: int = 0) -> int:
-        """
-        A wrapper for force field optimization.
-
-        Args:
-            mol ('Mol'): A molecule to be optimized.
-            max_iters (int, optional): max iterations. Defaults to ``200``.
-            num_threads (int, optional): number of threads to use. Defaults to ``0`` for all.
-
-        Returns:
-            - int: 0 for optimization done; 1 for not optimized; -1 for not optimizable.
-            - float: energy
-        """
-        if not mol:
-            mol = self.mol
-
-        # Section below is temporarily buggy due to a bug in the RDKit
-        # return rdForceFieldHelpers.OptimizeMoleculeConfs(mol.ToRWMol(),
-        #                                                  self.ff,
-        #                                                  numThreads=num_threads,
-        #                                                  maxIters=max_iters,)
-
-        # Section below does not support constraint. It will eventually change to the section
-        # above.
-        if self.type == 'mmff94s':
-            return rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(mol,
-                                                                 numThreads=num_threads,
-                                                                 maxIters=max_iters,
-                                                                 mmffVariant='MMFF94s')
-        elif self.type == 'mmff94':
-            return rdForceFieldHelpers.MMFFOptimizeMoleculeConfs(mol,
-                                                                 numThreads=num_threads,
-                                                                 maxIters=max_iters,
-                                                                mmffVariant='MMFF94')
-        else:
-            return rdForceFieldHelpers.UFFOptimizeMoleculeConfs(mol,
-                                                                numThreads=num_threads,
-                                                                maxIters=max_iters,)
-
     def optimize_confs(self,
                        mol: Optional['Mol'] = None,
                        max_step: int = 100000,
@@ -483,7 +441,10 @@ class RDKitFF(object):
 
         i = 0
         while i < max_step:
-            results = self._optimize_confs(mol, max_iters=step_per_iter, num_threads=num_threads)
+            results = rdForceFieldHelpers.OptimizeMoleculeConfs(mol.ToRWMol(),
+                                                         self.ff,
+                                                         numThreads=num_threads,
+                                                         maxIters=step_per_iter,)
             not_converged = [result[0] for result in results]
             if 1 not in not_converged:
                 return results
