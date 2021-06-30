@@ -35,7 +35,7 @@ H_RAD_MOD = {'edit': {'SetAtomicNum': 17,
              'remedy': {'SetAtomicNum': 1,
                       'SetNumRadicalElectrons': 1}}
 
-O_RAD_TEMP = Chem.MolFromSmiles('O')
+O_RAD_TEMP = Chem.MolFromSmiles('[O]')
 O_RAD_MOD = {'edit': {'SetAtomicNum': 9,
                       'SetNumRadicalElectrons': 1},
              'remedy': {'SetAtomicNum': 8,
