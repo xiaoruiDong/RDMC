@@ -6,6 +6,6 @@ channels:
   - conda-forge
 dependencies:
   - numpy
-  - rdkit::rdkit
-  - openbabel
+  - rdkit>=2021.03.1
+  - openbabel>=3
   - py3dmol
