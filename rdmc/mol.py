@@ -851,6 +851,219 @@ class RDKitMol(object):
         """
         return Chem.MolToMolBlock(self._mol, confId=confId)
 
+    def GetFormalCharge(self):
+        """
+        Get formal charge of the molecule.
+
+        Returns:
+            int : Formal charge.
+        """
+        return Chem.GetFormalCharge(self._mol)
+
+    def GetSpinMultiplicity(self):
+        """
+        Get spin multiplicity of a molecule. The spin multiplicity is calculated
+        using Hund's rule of maximum multiplicity defined as 2S + 1.
+
+        Returns:
+            int : Spin multiplicity.
+        """
+        num_radical_elec = 0
+        for atom in self.GetAtoms():
+            num_radical_elec += atom.GetNumRadicalElectrons()
+        return num_radical_elec + 1
+
+    def SaturateBiradicalSites12(self, multiplicity: int):
+        """
+        A method help to saturate 1,2 biradicals to match the given
+        molecule spin multiplicity. E.g.,
+            *C - C* => C = C
+        In the current implementation, no error will be raised,
+        if the function doesn't achieve the goal. This function has not been
+        been tested on nitrogenate.
+
+        Args:
+            multiplicity (int): The target multiplicity.
+        """
+        cur_multiplicity = self.GetSpinMultiplicity()
+        if  cur_multiplicity == multiplicity:
+            # No need to fix
+            return
+        elif cur_multiplicity < multiplicity:
+            print('It is not possible to match the multiplicity '
+                  'by saturating 1,2 biradical sites.')
+            return
+        elif (cur_multiplicity - multiplicity) % 2:
+            print('It is not possible to match the multiplicity '
+                  'by saturating 1,2 biradical sites.')
+            return
+
+        num_dbs = (cur_multiplicity - multiplicity) / 2
+
+        # Find all radical sites and save in `rad_atoms` and `rad_atom_elec_nums`
+        rad_atoms = []
+        for atom in self.GetAtoms():
+            if atom.GetNumRadicalElectrons() > 0:
+                rad_atoms.append(atom.GetIdx())
+
+        # a list to record connected atom pairs to avoid repeating
+        connected = [(i, j) for i in rad_atoms for j in rad_atoms
+                        if i != j and \
+                            self.GetBondBetweenAtoms(i, j)]
+
+        # Naive way to saturate 1,2 biradicals
+        while num_dbs and connected:
+
+            for i, j in connected:
+                bond = self.GetBondBetweenAtoms(i, j)
+
+                # Find the correct new bond type
+                new_bond_type = ORDERS.get(bond.GetBondTypeAsDouble() + 1)
+                if not new_bond_type:
+                    # Although a bond is found, cannot decide what bond to make between them, pass
+                    # This may cause insuccess for aromatic molecules
+                    # TODO: Test the adaptability for aromatic molecules
+                    continue
+                bond.SetBondType(new_bond_type)
+
+                # Modify radical site properties
+                for atom in [self.GetAtomWithIdx(j), self.GetAtomWithIdx(i)]:
+                    # Decrease radical electron by 1
+                    atom.SetNumRadicalElectrons(atom.GetNumRadicalElectrons() - 1)
+                    # remove it from the list if it is no longer a radical
+                    if atom.GetNumRadicalElectrons() == 0:
+                        rad_atoms.remove(atom.GetIdx())
+                break
+            else:
+                # if no update is made at all, break
+                # TODO: Change this to a log in the future
+                break
+            connected = [pair for pair in connected
+                         if pair[0] in rad_atoms and pair[1] in rad_atoms]
+        if num_dbs:
+            print('Cannot match the multiplicity by saturating 1,2 biradical.')
+
+    def SaturateBiradicalSitesCDB(self, multiplicity: int, chain_length: int = 8):
+        """
+        A method help to saturate biradicals that have conjugated double bond in between
+        to match the given molecule spin multiplicity. E.g, 1,4 biradicals can be saturated
+        if there is a unsaturated bond between them:
+            *C - C = C - C* => C = C - C = C
+        In the current implementation, no error will be raised,
+        if the function doesn't achieve the goal. This function has not been
+        been tested on nitrogenate.
+
+        Args:
+            multiplicity (int): The target multiplicity.
+            chain_length (int): How long the conjugated double bond chain is.
+                                A larger value will result in longer time.
+        """
+        cur_multiplicity = self.GetSpinMultiplicity()
+        if  cur_multiplicity == multiplicity:
+            # No need to fix
+            return
+        elif cur_multiplicity < multiplicity:
+            print('It is not possible to match the multiplicity '
+                  'by saturating 1,4 biradical sites.')
+            return
+        elif (cur_multiplicity - multiplicity) % 2:
+            print('It is not possible to match the multiplicity '
+                  'by saturating 1,4 biradical sites.')
+            return
+
+        num_dbs = (cur_multiplicity - multiplicity) / 2
+
+        # Find all radical sites and save in `rad_atoms` and `rad_atom_elec_nums`
+        rad_atoms = []
+        for atom in self.GetAtoms():
+            if atom.GetNumRadicalElectrons() > 0:
+                rad_atoms.append(atom.GetIdx())
+
+        # prepruning by atom numbers
+        chain_length = min(self.GetNumAtoms(), chain_length)
+        # Find all paths satisfy *C -[- C = C -]n- C*
+        # n = 1, 2, 3 is corresponding to chain length = 4, 6, 8
+        for path_length in range(4, chain_length+1, 2):
+
+            if not num_dbs:
+                # problem solved in the previous run
+                break
+
+            all_paths = [list(p) for p in \
+                         list(Chem.rdmolops.FindAllPathsOfLengthN(self._mol,
+                                                                  path_length,
+                                                                  useBonds=False))]
+            if not all_paths:
+                # empty all_paths means cannot find chains such long
+                break
+
+            paths = []
+            for path in all_paths:
+                if path[0] in rad_atoms and path[-1] in rad_atoms:
+                    for sec in range(1, path_length-2, 2):
+                        bond = self.GetBondBetweenAtoms(path[sec],
+                                                        path[sec+1])
+                        if bond.GetBondTypeAsDouble() not in [2, 3]:
+                            break
+                    else:
+                        paths.append(path)
+
+            while num_dbs and paths:
+                for path in paths:
+                    bonds = [self.GetBondBetweenAtoms(*path[i:i+2])
+                             for i in range(path_length-1)]
+
+                    new_bond_types = [ORDERS.get(bond.GetBondTypeAsDouble() + (-1) ** i)
+                                    for i, bond in enumerate(bonds)]
+
+                    if any([bond_type is None for bond_type in new_bond_types]):
+                        # Although a match is found, cannot decide what bond to make, pass
+                        continue
+
+                    for bond, bond_type in zip(bonds, new_bond_types):
+                        bond.SetBondType(bond_type)
+
+                    # Modify radical site properties
+                    for atom in [self.GetAtomWithIdx(path[0]), self.GetAtomWithIdx(path[-1])]:
+                        # Decrease radical electron by 1
+                        atom.SetNumRadicalElectrons(atom.GetNumRadicalElectrons() - 1)
+                        # remove it from the list if it is no longer a radical
+                        if atom.GetNumRadicalElectrons() == 0:
+                            rad_atoms.remove(atom.GetIdx())
+
+                    num_dbs -= 1
+                    break
+                else:
+                    # if no update is made at all, break
+                    # TODO: Change this to a log in the future
+                    break
+                paths = [path for path in paths
+                        if path[0] in rad_atoms and path[-1] in rad_atoms]
+
+        if num_dbs:
+            print('Cannot match the multiplicity by saturating biradical with conjugated double bonds.')
+
+    def SaturateBiradicalSites(self, multiplicity: int,
+                               chain_length: int = 8):
+        """
+        A method help to saturate biradicals to match the given
+        molecule spin multiplicity. This is just a wrapper to call both
+        `SaturateBiradicalSites12` and `SaturateBiradicalSites14`:
+            *C - C* => C = C
+            *C - C = C - C* => C = C - C = C
+        In the current implementation, no error will be raised,
+        if the function doesn't achieve the goal. This function has not been
+        been tested on nitrogenate.
+
+        Args:
+            multiplicity (int): The target multiplicity.
+            chain_length (int): How long the conjugated double bond chain is.
+                                A larger value will result in longer time.
+        """
+        self.SaturateBiradicalSites12(multiplicity=multiplicity)
+        self.SaturateBiradicalSitesCDB(multiplicity=multiplicity,
+                                       chain_length=chain_length)
+
 
 class RDKitTS(RDKitMol):
     """
