@@ -51,8 +51,8 @@ def mol_viewer(obj: str,
         viewer.addModel(obj, model, model_extra, viewer=viewer_loc)
 
     if style_spec is None:
-        viewer.setStyle({'stick': {'radius': 0.2},
-                        'sphere': {'scale': 0.25},},)
+        viewer.setStyle({'stick': {'radius': 0.05, 'color': '#f2f2f2'},
+                         'sphere': {'scale': 0.25},},)
 
     else:
         viewer.setStyle(style_spec, viewer=viewer_loc)
@@ -104,13 +104,15 @@ def freq_viewer(obj: str,
         viewer_loc (tuple, optional): The location of the viewer in the grid. E.g., (0, 1). Defaults to None.
 
     Returns:
-        py3Dmol.view: The molecule frequence viewer.
+        py3Dmol.view: The molecule frequency viewer.
     """
     model_extra = {'vibrate': {'frames': frames,'amplitude': amplitude}}
     animate = {'loop': 'backAndForth'}
-    return mol_viewer(obj, model, model_extra, animate, atom_index,
-                      style_spec, viewer, viewer_size, viewer_loc)
-
+    viewer = mol_viewer(obj, model, model_extra, animate, atom_index,
+                        style_spec, viewer, viewer_size, viewer_loc)
+    viewer.vibrate(frames, amplitude, True, {'color': 'black',
+                                             'radius': 0.08,})
+    return viewer
 
 def grid_viewer(viewer_grid: tuple,
                 linked: bool = False,
