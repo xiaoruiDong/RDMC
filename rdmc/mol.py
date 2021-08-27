@@ -84,6 +84,20 @@ class RDKitMol(object):
         # Perceive rings
         self.GetSymmSSSR()
 
+    def AddRedundantBonds(self, bonds: Iterable):
+        """
+        Add redundant bonds (not originally exist in the molecule) for
+        the convenience for some molecule operation or analysis. This function
+        will only generate a copy of the molecule and no change is conducted inplace.
+
+        Args:
+            bonds: a list of length-2 Iterables containing the index of the ended atoms.
+        """
+        rw_mol = self.Copy().ToRWMol()
+        for bond in bonds:
+            rw_mol.AddBond(*bond, Chem.BondType.SINGLE)
+        return RDKitMol.FromMol(rw_mol)
+
     def AlignMol(self,
                  refMol: Union['RDKitMol', 'RWMol', 'Mol'],
                  prbCid: int = 0,
