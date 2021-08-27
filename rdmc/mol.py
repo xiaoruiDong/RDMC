@@ -5,7 +5,7 @@
 This module provides class and methods for dealing with RDKit RWMol, Mol.
 """
 
-from typing import List, Optional, Sequence, Union
+from typing import Iterable, List, Optional, Sequence, Union
 
 import numpy as np
 from rdkit import Chem
@@ -446,8 +446,8 @@ class RDKitMol(object):
         Returns:
             list: A list of element symbols.
         """
-        pt = Chem.GetPeriodicTable()
-        return [pt.GetElementSymbol(atom.GetAtomicNum()) for atom in self.GetAtoms()]
+        atom_nums = [atom.GetAtomicNum() for atom in self.GetAtoms()]
+        return get_element_symbols(atom_nums)
 
     def GetConformer(self,
                      id: int = 0) -> 'RDKitConf':

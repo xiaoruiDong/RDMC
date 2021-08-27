@@ -5,7 +5,7 @@
 This module provides methods that can directly apply to RDKit Mol/RWMol.
 """
 
-from typing import Union
+from typing import Iterable, Union
 
 import numpy as np
 from rdkit import Chem
@@ -408,3 +408,16 @@ def parse_xyz_by_openbabel(xyz: str,
                     atom.SetFormalCharge(+1)
 
     return obmol
+
+
+def get_element_symbols(atom_nums: Iterable):
+    """
+    Get the element symbols for a given atom index list.
+
+    Args:
+        atom_nums (Iterable): A list of elemental numbers.
+    Returns:
+        list: A list of element symbols.
+    """
+    pt = Chem.GetPeriodicTable()
+    return [pt.GetElementSymbol(int(atom_num)) for atom_num in atom_nums]
