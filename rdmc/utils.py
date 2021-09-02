@@ -121,7 +121,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
             rw_mol.AddAtom(atom)
 
     for bond in ob.OBMolBondIter(obmol):
-        # Atom indexes in Openbael is 1-indexed, so we need to convert them to 0-indexed
+        # Atom indexes in Openbabel is 1-indexed, so we need to convert them to 0-indexed
         atom1_idx = bond.GetBeginAtomIdx() - 1
         atom2_idx = bond.GetEndAtomIdx() - 1
         # Get the bond order. For aromatic molecules, the bond order is not
@@ -421,3 +421,42 @@ def get_element_symbols(atom_nums: Iterable):
     """
     pt = Chem.GetPeriodicTable()
     return [pt.GetElementSymbol(int(atom_num)) for atom_num in atom_nums]
+
+
+def get_internal_coords(obmol,
+                        nonredundant: bool = True,
+                        ) -> list:
+    """
+    Generate a non_redundant_internal coordinate.
+
+    Args:
+        obmol (OBMol): Openbabel mol.
+        nonredundant (bool): whether non-redundant. Defaults to ``True``.
+    """
+    obconv = ob.OBConversion()
+    obconv.SetOutFormat('gzmat')
+    gzmat_str = obconv.WriteString(obmol)
+    lines = gzmat_str.split('Variables:')[0].splitlines()[6:]
+    bonds = []
+    angles = []
+    torsions = []
+    for idx, line in enumerate(lines):
+        items = line.split()
+        try:
+            bonds.append((idx + 1, int(items[1])))
+            angles.append([idx + 1, int(items[1]), int(items[3])])
+            torsions.append([idx + 1, int(items[1]), int(items[3]), int(items[5])])
+        except IndexError:
+            # First, second, and third lines are special
+            pass
+    if nonredundant:
+        non_red_torsions = []
+        pivots = []
+        for tor in torsions:
+            if tor[1:3] not in pivots and tor[-2:-4:-1] not in pivots:
+                pivots.append(tor[1:3])
+                non_red_torsions.append(tor)
+        pass
+        torsions = non_red_torsions
+    return bonds, angles, torsions
+
