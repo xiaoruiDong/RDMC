@@ -145,9 +145,9 @@ class RDKitFF(object):
         Args:
             atoms (Sequence): a length-2 sequence indicate the atom index.
             value (int or float): Set angle to a certain value if ``value`` is provided.
-            min_angle (int or float): The minimum distance value in degrees or
+            min_angle (int or float): The minimum angle value in degrees or
                                    in factor of current length (if ``relative==True``).
-            max_angle (int or float): The maximum distance value in degrees or
+            max_angle (int or float): The maximum angle value in degrees or
                                    in factor of current length (if ``relative==True``).
             relative (bool, optional): Whether input as relative angle to the current length.
             force_constant (int or float, optional): the constant in optimization.
@@ -188,9 +188,9 @@ class RDKitFF(object):
         Args:
             atoms (Sequence): a length-2 sequence indicate the atom index.
             value (int or float): Set angle to a certain value if ``value`` is provided.
-            min_angle (int or float): The minimum distance value in degrees or
+            min_angle (int or float): The minimum angle value in degrees or
                                    in factor of current length (if ``relative==True``).
-            max_angle (int or float): The maximum distance value in degrees or
+            max_angle (int or float): The maximum angle value in degrees or
                                    in factor of current length (if ``relative==True``).
             relative (bool, optional): Whether input as relative angle to the current length.
             force_constant (int or float, optional): the constant in optimization.
