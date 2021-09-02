@@ -1078,6 +1078,18 @@ class RDKitMol(object):
         self.SaturateBiradicalSitesCDB(multiplicity=multiplicity,
                                        chain_length=chain_length)
 
+    def GetInternalCoordinates(self,
+                               nonredundant: bool = True,
+                               ) -> list:
+        """
+        Get internal coordinates of the molecule.
+        """
+        bonds, angles, torsions = get_internal_coords(self.ToOBMol(),
+                                                      nonredundant=nonredundant)
+        return [[[element - 1 for element in item]
+                  for item in ic]
+                  for ic in [bonds, angles, torsions]]
+
 
 class RDKitTS(RDKitMol):
     """
