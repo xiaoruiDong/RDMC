@@ -9,6 +9,7 @@ from typing import Optional
 
 import py3Dmol
 
+from rdmc.mol import RDKitMol
 
 def mol_viewer(obj: str,
                model: str = 'xyz',
@@ -25,9 +26,10 @@ def mol_viewer(obj: str,
 
     Args:
         obj (str): A string representation of the molecule can be xyz string,
-                   sdf string, etc.
+                   sdf string, etc. Or an RDKitMol object.
         model (str, optional): The model (format) of the molecule representation, e.g., ``'xyz'``.
-                     Defaults to ``'xyz'``.
+                     Defaults to ``'xyz'``. If RDKitMol is feed in, the model will forced to be
+                     ``sdf``.
         model_extra (dict, optional): Extra specs for the model. E.g., frequency specs
                      Can be provided here. Default to ``None``
         animate (dict, optional): Specs for animation. E.g., ``{'loop': 'backAndForth'}``.
@@ -42,6 +44,8 @@ def mol_viewer(obj: str,
     Returns:
         py3Dmol.view: The molecule viewer.
     """
+    if isinstance(obj, RDKitMol):
+        obj, model = obj.ToMolBlock(), 'sdf'
     if not viewer:
         viewer = py3Dmol.view(width=viewer_size[0], height=viewer_size[1])
 
