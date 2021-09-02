@@ -453,6 +453,13 @@ class RDKitMol(object):
 
         return rmsd, reflect
 
+    def GetBondsAsTuples(self):
+        """
+        Generate a list of length-2 sets indicating the bonding atoms
+        in the molecule
+        """
+        return [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in self.GetBonds()]
+
     def GetElementSymbols(self):
         """
         Get the element symbols of the molecules. The element symbols are sorted by the atom indexes.
