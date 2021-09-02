@@ -105,6 +105,7 @@ class RDKitMol(object):
                  reflect: bool = False,
                  atomMap: list = [],
                  maxIters: int = 1000,
+                 weights: list = [],
                  ) -> float:
         """
         Align molecules based on a reference molecule.
@@ -133,7 +134,9 @@ class RDKitMol(object):
                                         refCid=refCid,
                                         atomMap=atomMap,
                                         reflect=reflect,
-                                        maxIters=maxIters)
+                                        maxIters=maxIters,
+                                        weights=weights,
+                                        )
 
     def CombineMol(self,
                    molFrag: 'Mol',
