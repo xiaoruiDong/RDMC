@@ -121,6 +121,7 @@ def from_rdkit_mol(rdkitmol,
 def find_reaction_family(database: 'RMGDatabase',
                          reactants: list,
                          products: list,
+                         only_families: list = None,
                          verbose: bool = True,
                          ) -> Optional[tuple]:
     """
@@ -138,8 +139,10 @@ def find_reaction_family(database: 'RMGDatabase',
     # Check if the RMG can find this reaction. Use ``copy``` to avoid changing reactants and products.
     for family in database.kinetics.families.values():
         family.save_order = False
-    reaction_list = database.kinetics.generate_reactions(reactants=[mol.copy() for mol in reactants],
-                                                         products=[mol.copy() for mol in products])
+    reaction_list = database.kinetics.generate_reactions_from_families(
+                                                        reactants=[mol.copy() for mol in reactants],
+                                                        products=[mol.copy() for mol in products],
+                                                        only_families=only_families)
     # Get reaction information
     for rxn in reaction_list:
         family = rxn.family
@@ -156,6 +159,7 @@ def find_reaction_family(database: 'RMGDatabase',
 def generate_reaction_complex(database: 'RMGDatabase',
                               reactants: list,
                               products: list,
+                              only_families: list = None,
                               verbose: bool = True,
                               ) -> List['Molecule']:
     """
@@ -176,6 +180,7 @@ def generate_reaction_complex(database: 'RMGDatabase',
         family_label, forward = find_reaction_family(database,
                                                      reactants,
                                                      products,
+                                                     only_families=only_families,
                                                      verbose=verbose)
     except TypeError:
         # Cannot find any matches
