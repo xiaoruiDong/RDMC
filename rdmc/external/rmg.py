@@ -21,13 +21,20 @@ except ModuleNotFoundError:
     raise
 
 
-def load_rmg_database():
+def load_rmg_database(families: list = [],
+                      all_families: bool = False):
     """
     A helper function to load RMG database.
 
     Returns:
         RMGDatabase: A instance of RMG database
     """
+    if all_families:
+        kinetics_families='all'
+    elif families:
+        kinetics_families=families
+    else:
+        kinetics_families='default'
     database_path = settings['database.directory']
     database = RMGDatabase()
     database.load(
@@ -35,7 +42,7 @@ def load_rmg_database():
         thermo_libraries=['primaryThermoLibrary'],
         reaction_libraries=[],
         seed_mechanisms=[],
-        kinetics_families='default',
+        kinetics_families=kinetics_families,
     )
     return database
 
