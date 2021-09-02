@@ -775,3 +775,49 @@ def get_roo_radical_atoms(mol: 'Mol') -> tuple:
             if mol.GetAtomWithIdx(idx).GetNumRadicalElectrons() == 1:
                 O_idx.append(idx)
     return tuple(set(O_idx))
+
+
+def optimize_mol(mol: 'RDKitMol',
+                 force_field: str = "MMFF94s",
+                 tol: float = 1e-8,
+                 step_size: int = 5,
+                 max_step: int = 10000,
+                 ignore_interfrag_interaction=False,
+                 frozen_bonds: list = [],
+                 frozen_non_bondings: list = []):
+    """
+    A helper function to quickly launch forcefield optimization, and
+    automatically retry Openbabel force field if RDKit force field fails.
+    """
+    mol_copy = mol.Copy()
+    try:
+        # First try if we can use RDKit Forcefield to optimize
+        # It is faster, relatively more robust, but have limited atom-type support
+        ff = RDKitFF(force_field)
+        # In RDKit FF, setup first then add constraints
+        ff.setup(mol_copy, ignore_interfrag_interactions= ignore_interfrag_interaction)
+        for frozen_bond in frozen_bonds + frozen_non_bondings:
+            if len(frozen_bond) == 1:
+                ff.add_distance_constraint(atoms=frozen_bond[0], relative=True)
+            elif len(frozen_bond) == 2:
+                ff.add_distance_constraint(atoms=frozen_bond[0], value=frozen_bond[1])
+
+    except NotImplementedError as e:
+        print(e)
+        # It usually means we cannot make the molecule optimizable by RDKit force field
+        # Then use OpenBabel force field
+        ff = OpenBabelFF(force_field)
+        # Provides mol can help adjust the atom index difference between RDKit Mol and OpenBabel Mol
+        ff.mol = mol_copy
+        # In Openbabel Forcefield, add constraints first then setup the force field
+        for frozen_bond in frozen_bonds + frozen_non_bondings:
+            if len(frozen_bond) == 1:
+                distance = np.linalg.norm(mol.GetPositions[frozen_bond, :])
+            elif len(frozen_bond) == 2:
+                distance = frozen_bond[1]
+            ff.add_distance_constraint(frozen_bond[0], value=distance)
+        ff.setup()
+    finally:
+        ff.optimize(max_step=max_step, tol=tol, step_per_iter=step_size)
+        mol_copy = ff.get_optimized_mol()
+    return mol_copy
