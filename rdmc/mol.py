@@ -138,6 +138,12 @@ class RDKitMol(object):
                                         weights=weights,
                                         )
 
+    def AssignStereochemistryFrom3D(self, confId: int = 0):
+        """
+        Assign the chiraltype to a molecule's atoms.
+        """
+        Chem.rdmolops.AssignStereochemistryFrom3D(self._mol, confId=confId)
+
     def CombineMol(self,
                    molFrag: 'Mol',
                    offset: Union[list, tuple, float] = 0,
