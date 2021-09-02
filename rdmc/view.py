@@ -20,6 +20,7 @@ def mol_viewer(obj: str,
                viewer: Optional[py3Dmol.view] = None,
                viewer_size: tuple = (400, 400),
                viewer_loc: Optional[tuple] = None,
+               gv_background: bool = False,
                ) -> py3Dmol.view:
     """
     This is the most general function to view a molecule powered by py3Dmol
@@ -40,6 +41,8 @@ def mol_viewer(obj: str,
         viewer_size (tuple, optional): Set the viewer size. Only useful if ``viewer`` is not provided.
                                        Defaults to (400, 400).
         viewer_loc (tuple, optional): The location of the viewer in the grid. E.g., (0, 1). Defaults to None.
+        gv_background (optional, bool): To use a background that is similar to the style of GaussView.
+                                        Defaults to ``False``.
 
     Returns:
         py3Dmol.view: The molecule viewer.
@@ -75,6 +78,8 @@ def mol_viewer(obj: str,
                                   'backgroundOpacity': 0.2,
                                   'backgroundColor': 'black',
                                  }, viewer=viewer_loc)
+        if gv_background:
+            viewer.setBackgroundColor('#e5e5ff')
     viewer.zoomTo(viewer=viewer_loc)
     return viewer
 
