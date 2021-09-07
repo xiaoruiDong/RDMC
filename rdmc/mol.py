@@ -1073,14 +1073,54 @@ class RDKitMol(object):
         if num_dbs:
             print('Cannot match the multiplicity by saturating biradical with conjugated double bonds.')
 
-    def SaturateBiradicalSites(self, multiplicity: int,
-                               chain_length: int = 8):
+    def SaturateCarbene(self, multiplicity: int,):
         """
-        A method help to saturate biradicals to match the given
+        A method help to saturate carbenes and nitrenes to match the given
+        molecule spin multiplicity:
+            *-C-* (triplet) => C-(**) (singlet)
+        In the current implementation, no error will be raised,
+        if the function doesn't achieve the goal. This function has not been
+        been tested on nitrogenate.
+
+        Args:
+            multiplicity (int): The target multiplicity.
+        """
+        cur_multiplicity = self.GetSpinMultiplicity()
+        if  cur_multiplicity == multiplicity:
+            # No need to fix
+            return
+        elif cur_multiplicity < multiplicity:
+            print('It is not possible to match the multiplicity '
+                  'by saturating carbene sites.')
+            return
+        elif (cur_multiplicity - multiplicity) % 2:
+            print('It is not possible to match the multiplicity '
+                  'by saturating carbene sites.')
+            return
+        elec_to_pair = cur_multiplicity - multiplicity
+
+        carbene_atoms = self.GetSubstructMatches(CARBENE_PATTERN)  # Import from rdmc.utils
+        for atom in carbene_atoms:
+            atom = self.GetAtomWithIdx(atom[0])
+            while atom.GetNumRadicalElectrons() >=2 and elec_to_pair:
+                atom.SetNumRadicalElectrons(atom.GetNumRadicalElectrons() - 2)
+                elec_to_pair -= 2
+            if not elec_to_pair:
+                break
+
+        if elec_to_pair:
+            print('Cannot match the multiplicity by saturating biradical with conjugated double bonds.')
+
+    def SaturateMol(self, multiplicity: int,
+                    chain_length: int = 8):
+        """
+        A method help to saturate the molecule to match the given
         molecule spin multiplicity. This is just a wrapper to call both
-        `SaturateBiradicalSites12` and `SaturateBiradicalSites14`:
+        `SaturateBiradicalSites12`, `SaturateBiradicalSitesCDB`, and
+        `SaturateCarbene`:
             *C - C* => C = C
             *C - C = C - C* => C = C - C = C
+            *-C-* (triplet) => C-(**) (singlet)
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1093,6 +1133,7 @@ class RDKitMol(object):
         self.SaturateBiradicalSites12(multiplicity=multiplicity)
         self.SaturateBiradicalSitesCDB(multiplicity=multiplicity,
                                        chain_length=chain_length)
+        self.SaturateCarbene(multiplicity=multiplicity)
 
     def GetInternalCoordinates(self,
                                nonredundant: bool = True,

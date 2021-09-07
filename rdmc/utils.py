@@ -35,6 +35,10 @@ ROTATABLE_BOND_SMARTS_WO_METHYL = Chem.MolFromSmarts('[!$(*#*)&!D1!H3]-&!@[!$(*#
 CO_OPENBABEL_PATTERN = ob.OBSmartsPattern()
 CO_OPENBABEL_PATTERN.Init('[C;v2]=[O]')
 
+# Carbene and nitrene templates. RDKit and Openbabel have difficulty
+# distinguish their multiplicity when input as SMILES or XYZ
+CARBENE_PATTERN = Chem.MolFromSmarts('[Cv0,Cv1,Cv2,Nv0,Nv1]')
+
 def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
                                              atom2: 'rdkit.Chem.rdchem.Atom',
                                              ) -> int:
