@@ -722,12 +722,14 @@ class GaussianLog(object):
         Guess the reactants and products from the IRC path. Note: this
         result is not deterministic depending on the pair of conformes you use.
         And this method is only functioning if the job is bidirectional.
+
         Args:
             index (int): The index of the pair of conformers to use and the it represents
                          the distance from the TS conformer. The larger the far to the end
                          of the IRC path. defaults to 0, the end of each side of the IRC curve.
             as_mol_frags (bool): Whether to return results as mol fragments or as complexes.
                                  Defaults to ``False`` as to return as complexes.
+            inverse (bool): Inverse the direction of the reaction.
         """
         if 'irc' not in self.job_type:
             raise RuntimeError('This method is only valid for IRC jobs.')
@@ -735,7 +737,8 @@ class GaussianLog(object):
         if not midpoint:
             return (None, None)
         conv_idxs = self.get_converged_geom_idx(as_numbers=True)
-        assert (index >= 0) and (index <= self.num_converged_geoms // 2)
+        if (index < 0) or (index > self.num_converged_geoms // 2):
+            raise RuntimeError(f'The index should be between 0 and {self.num_converged_geoms // 2}')
         if index == 0:
             idx1, idx2 = conv_idxs[[midpoint - 1, -1]].tolist()
         else:
@@ -753,6 +756,55 @@ class GaussianLog(object):
 
         return r_mol, p_mol
 
+    def guess_rxn_from_freq(self,
+                            amplitude: float = 1.0,
+                            atom_weighted: bool = False,
+                            as_mol_frags: bool = False,
+                            inverse: bool = False):
+        """
+        Guess the reactants and products from the imaginary frequency. Note: this
+        result is not deterministic depending on the amplitude you use.
+
+        Args:
+            amplitude (int): The amplitude factor on the displacement matrix to generate the
+                             guess geometry for the reactant and the product. A smaller factor
+                             makes the geometry close to the TS, while a wildly large factor
+                             makes the geometry nonphysical.
+            atom_weighted (bool): If use the sqrt(atom mass) as a scaling factor to the displacement.
+                                  The concern is that light atoms (e.g., H) tend to have larger motions
+                                  than heavier atoms.
+            as_mol_frags (bool): Whether to return results as mol fragments or as complexes.
+                                 Defaults to ``False`` as to return as complexes.
+            inverse (bool): Inverse the direction of the reaction.
+        """
+        if 'freq' not in self.job_type and not self.is_ts:
+            raise RuntimeError('This method is only valid for TS frequency jobs.')
+        if self.num_neg_freqs != 1:
+            raise RuntimeError(f'This may not be a TS, since it has {self.num_neg_freqs}' \
+                               f' imaginary frequencies.')
+
+        xyz, disp = self.converged_geometries[0], self.cclib_results.vibdisps[0]
+        if atom_weighted:
+            atom_weights = np.sqrt(self.cclib_results.atommasses.reshape(-1,1))
+        else:
+            atom_weights = np.ones((self.cclib_results.natom, 1))
+        xyzs = xyz - amplitude * disp * atom_weights, xyz + amplitude * disp * atom_weights
+        mol = self.get_mol()
+        xyz_strs = []
+        for xyz in xyzs:
+            mol.SetPositions(xyz)
+            xyz_strs.append(mol.ToXYZ())
+        r_mol, p_mol = [RDKitMol.FromXYZ(xyz_str) for xyz_str in xyz_strs]
+        r_mol.SaturateMol(multiplicity=self.multiplicity)
+        p_mol.SaturateMol(multiplicity=self.multiplicity)
+
+        if inverse:
+            r_mol, p_mol = p_mol, r_mol
+
+        if as_mol_frags:
+            r_mol, p_mol = r_mol.GetMolFrags(asMols=True), p_mol.GetMolFrags(asMols=True)
+
+        return r_mol, p_mol
 
     ###################################################################
     ####                                                           ####
