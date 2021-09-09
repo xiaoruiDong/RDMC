@@ -78,8 +78,8 @@ def mol_viewer(obj: str,
                                   'backgroundOpacity': 0.2,
                                   'backgroundColor': 'black',
                                  }, viewer=viewer_loc)
-        if gv_background:
-            viewer.setBackgroundColor('#e5e5ff')
+    if gv_background:
+        viewer.setBackgroundColor('#e5e5ff')
     viewer.zoomTo(viewer=viewer_loc)
     return viewer
 
@@ -186,8 +186,8 @@ def mol_animation(obj: str,
         viewer.addModelsAsFrames(obj, model, model_extra, viewer=viewer_loc)
 
     if style_spec is None:
-        viewer.setStyle({'stick': {'radius': 0.2},
-                        'sphere': {'scale': 0.25},},)
+        viewer.setStyle({'stick': {'radius': 0.05, 'color': '#f2f2f2'},
+                         'sphere': {'scale': 0.25},},)
 
     else:
         viewer.setStyle(style_spec, viewer=viewer_loc)
