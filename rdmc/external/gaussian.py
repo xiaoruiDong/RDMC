@@ -347,7 +347,7 @@ class GaussianLog(object):
         Returns:
             np.ndarray
         """
-        converged_idx = self.converged_geom_idx
+        converged_idx = self.get_converged_geom_idx()
         if 'opt' in self.job_type and 'scan' not in self.job_type:
             if np.any(converged_idx):
                 return self.cclib_results.atomcoords[converged_idx][-1:]
@@ -368,21 +368,32 @@ class GaussianLog(object):
         """
         return self.converged_geometries.shape[0]
 
-    @property
-    def converged_geom_idx(self):
+    def get_converged_geom_idx(self,
+                               as_numbers: bool = False,):
         """
-        Return the indexes of geometries that are converged.
+        Return the indexes of geometries that are converged. By default, a
+        numpy array of True and False will be returned. But you can output numeric
+        results by changing the argument.
+
+        Args:
+            as_numbers (bool): Whether returns a list of numbers. Defaults to ``False`` for better performance.
 
         Returns:
             np.array
         """
         if 'opt' in self.job_type or 'irc' in self.job_type:
-            return self.cclib_results.OPT_DONE & self.cclib_results.optstatus > 0
+            idx_array = self.cclib_results.OPT_DONE & self.cclib_results.optstatus > 0
         elif 'scan' in self.job_type:
             # For IRC and scan, convergence is defined as fulfilling at least 2 criteria for gaussian
-            return self.cclib_results.optstatus > 2
+            idx_array = self.cclib_results.optstatus > 2
         else:
-            return np.array([True])
+            idx_array = np.array([True])
+        if 'irc' in self.job_type:
+            # Mark the input geometry of the IRC as converged (cclib mark it just as initial geometry '1')
+            idx_array[0] = True
+        if as_numbers:
+            idx_array = np.where(idx_array)[0]
+        return idx_array
 
     @property
     def initial_geometry(self):
@@ -456,8 +467,8 @@ class GaussianLog(object):
         return params
 
     def get_xyzs(self,
-                 converged=True,
-                 initial_geom=True):
+                 converged: bool = True,
+                 initial_geom: bool = True,):
         """
         Get the xyz strings of geometries stored in the output file.
 
@@ -469,7 +480,7 @@ class GaussianLog(object):
                                  geometry 1 as the input geometry. Defaults to True.
         """
         if converged:
-            converged_idx = np.where(self.converged_geom_idx)[0]
+            converged_idx = self.get_converged_geom_idx(as_numbers=True)
             if 'opt' in self.job_type:
                 xyz_strs = [self.cclib_results.writexyz(indices=i) for i in converged_idx[-1:]]
             else:
@@ -478,7 +489,7 @@ class GaussianLog(object):
             xyz_strs = [self.cclib_results.writexyz(indices=i) for i in range(self.num_all_geoms)]
 
         if initial_geom:
-            if self.cclib_results.optstatus[0] >= 4:
+            if self.cclib_results.optstatus[0] >= 4 or 'irc' in self.job_type:
                 xyz_strs[0] = self.cclib_results.writexyz(indices=-self.num_all_geoms)
             elif 'opt' in self.job_type and not converged:
                 xyz_strs[0] = self.cclib_results.writexyz(indices=-self.num_all_geoms)
@@ -506,7 +517,7 @@ class GaussianLog(object):
             scf_energies = self.cclib_results.scfenergies
 
         if converged:
-            sub1 = scf_energies[self.converged_geom_idx]
+            sub1 = scf_energies[self.get_converged_geom_idx()]
             sub2 = scf_energies[num_opt_geoms:]
             scf_energies = np.concatenate([sub1, sub2])
 
@@ -696,19 +707,52 @@ class GaussianLog(object):
         """
         Find the geometry index of an IRC job where the direction of the path changes.
         """
-        scf_e = self.get_scf_energies(converged=True)
+        scf_e = self.get_scf_energies(converged=converged)
         e_diff = np.diff(scf_e)
         if np.alltrue(e_diff < 0):
             # There is no midpoint
             return
-        midpoint = np.argmax(e_diff)
+        return np.argmax(e_diff) + 1
 
-        if converged:
-            # The index regarding converged geometries
-            midpoint += 1
-            return midpoint
+    def guess_rxn_from_irc(self,
+                           index: int = 0,
+                           as_mol_frags: bool = False,
+                           inverse: bool = False):
+        """
+        Guess the reactants and products from the IRC path. Note: this
+        result is not deterministic depending on the pair of conformes you use.
+        And this method is only functioning if the job is bidirectional.
+        Args:
+            index (int): The index of the pair of conformers to use and the it represents
+                         the distance from the TS conformer. The larger the far to the end
+                         of the IRC path. defaults to 0, the end of each side of the IRC curve.
+            as_mol_frags (bool): Whether to return results as mol fragments or as complexes.
+                                 Defaults to ``False`` as to return as complexes.
+        """
+        if 'irc' not in self.job_type:
+            raise RuntimeError('This method is only valid for IRC jobs.')
+        midpoint = self.get_irc_midpoint(converged=True)
+        if not midpoint:
+            return (None, None)
+        conv_idxs = self.get_converged_geom_idx(as_numbers=True)
+        assert (index >= 0) and (index <= self.num_converged_geoms // 2)
+        if index == 0:
+            idx1, idx2 = conv_idxs[[midpoint - 1, -1]].tolist()
         else:
-            return np.where(self.converged_geom_idx)[0][midpoint] + 1
+            idx1, idx2 = conv_idxs[[index, midpoint + index - 1]].tolist()
+        r_mol = RDKitMol.FromXYZ(xyz=self.cclib_results.writexyz(indices=idx1))
+        p_mol = RDKitMol.FromXYZ(xyz=self.cclib_results.writexyz(indices=idx2))
+        r_mol.SaturateMol(multiplicity=self.multiplicity)
+        p_mol.SaturateMol(multiplicity=self.multiplicity)
+
+        if inverse:
+            r_mol, p_mol = p_mol, r_mol
+
+        if as_mol_frags:
+            r_mol, p_mol = r_mol.GetMolFrags(asMols=True), p_mol.GetMolFrags(asMols=True)
+
+        return r_mol, p_mol
+
 
     ###################################################################
     ####                                                           ####
