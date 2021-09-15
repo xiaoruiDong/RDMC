@@ -196,7 +196,15 @@ def generate_reaction_complex(database: 'RMGDatabase',
     # Get reaction template and species number
     template = family.forward_template if forward else family.reverse_template
     reactant_num = family.reactant_num if forward else family.product_num
-    product_num = family.product_num if forward else family.reactant_num
+    if not reactant_num:
+        # Some families doesn't contain reactant num...
+        # As a workaround, the following may not always works
+        reactant_num = 0
+        for reactant in template.reactants:
+            try:
+                reactant_num += len(reactant.item.split())
+            except AttributeError:
+                reactant_num += 1
 
     # The following block copied from rmgpy.data.kinetics.family
     # Its actual role is not clear
