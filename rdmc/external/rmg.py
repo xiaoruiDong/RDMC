@@ -203,7 +203,15 @@ def generate_reaction_complex(database: 'RMGDatabase',
     if family.auto_generated and reactant_num != len(reactants):
         raise NotImplementedError
 
-    template_reactants = [x.item for x in template.reactants]
+    # Note, for some bimolecular families, it may just have one templates
+    if len(template.reactants) < reactant_num:
+        try:
+            grps = template.reactants[0].item.split()
+            template_reactants = [grp for grp in grps]
+        except AttributeError:
+            template_reactants = [x.item for x in template.reactants]
+    else:
+        template_reactants = [x.item for x in template.reactants]
 
     # A = B or A = B + C
     if len(reactants) == 1:
