@@ -1194,3 +1194,42 @@ class RDKitTS(RDKitMol):
             set_rdconf_coordinates(conf, np.zeros((num_atoms, 3)))
             conf.SetId(i)
             self._mol.AddConformer(conf)
+
+
+def parse_xyz_or_smiles_list(mol_list,
+                             with_3d_info: bool = False,
+                             **kwargs):
+    """
+    A helper function to parse xyz and smiles and list if the
+    conformational information is provided.
+
+    Args:
+        mol_list (list): a list of smiles or xyzs or tuples of (string, multiplicity)
+                  to specify desired multiplicity.
+                  E.g., ['CCC', 'H 0 0 0', ('[CH2]', 1)]
+        with_3d_info (bool): Whether to indicate which entries are from 3D representations.
+                             Defaults to False.
+
+    """
+    mols, is_3D = [], []
+    for mol in mol_list:
+        if isinstance(mol, (tuple, list)) and len(mol) == 2:
+            mol, mult = mol
+        else:
+            mult = None
+        try:
+            rd_mol = RDKitMol.FromXYZ(mol, **kwargs)
+        except ValueError:
+            rd_mol = RDKitMol.FromSmiles(mol,)
+            rd_mol.EmbedConformer()
+            is_3D.append(False)
+        else:
+            is_3D.append(True)
+        finally:
+            if mult != None:
+                rd_mol.SaturateMol(multiplicity=mult)
+            mols.append(rd_mol)
+    if with_3d_info:
+        return mols, is_3D
+    else:
+        return mols
