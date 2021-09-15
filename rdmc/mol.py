@@ -327,6 +327,18 @@ class RDKitMol(object):
         return cls(mol, keepAtomMap=keepAtomMap)
 
     @classmethod
+    def FromSmarts(cls,
+                   smarts):
+        """
+        Convert a SMARTS to an ``RDKitMol`` object.
+
+        Args:
+            smarts (str): A SMARTS string of the molecule
+        """
+        mol = Chem.MolFromSmarts(smarts)
+        return cls(mol)
+
+    @classmethod
     def FromRMGMol(cls,
                    rmgMol: 'rmgpy.molecule.Molecule',
                    removeHs: bool = False,
