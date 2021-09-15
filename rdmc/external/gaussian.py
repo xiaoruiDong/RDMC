@@ -785,7 +785,8 @@ class GaussianLog(object):
 
         xyz, disp = self.converged_geometries[0], self.cclib_results.vibdisps[0]
         if atom_weighted:
-            atom_weights = np.sqrt(self.cclib_results.atommasses.reshape(-1,1))
+            atom_weights = np.sqrt(
+                self.cclib_results.atommasses[:self.cclib_results.natom].reshape(-1, 1))
         else:
             atom_weights = np.ones((self.cclib_results.natom, 1))
         xyzs = xyz - amplitude * disp * atom_weights, xyz + amplitude * disp * atom_weights
