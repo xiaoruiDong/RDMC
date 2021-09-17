@@ -278,22 +278,41 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
     atoms_copy = mol_copy.vertices
 
     rwmol = Chem.rdchem.RWMol()
-    for rmg_atom in atoms_copy:
+    reset_num_electron = {}
+    for i, rmg_atom in enumerate(atoms_copy):
         rd_atom = Chem.rdchem.Atom(rmg_atom.element.symbol)
         if rmg_atom.element.isotope != -1:
             rd_atom.SetIsotope(rmg_atom.element.isotope)
+        if not remove_hs:
+            # Avoid `SanitizeMol` adding undesired hydrogens
+            rd_atom.SetNoImplicit(True)
+        else:
+            explicit_Hs = [True for a, b in rmg_atom.edges.items()
+                           if a.is_hydrogen() and b.is_single()]
+            rd_atom.SetNumExplicitHs(sum(explicit_Hs))
+            rd_atom.SetNoImplicit(True)
         rd_atom.SetNumRadicalElectrons(rmg_atom.radical_electrons)
         rd_atom.SetFormalCharge(rmg_atom.charge)
-        if rmg_atom.element.symbol == 'C' and rmg_atom.lone_pairs == 1 \
-                and not rmg_atom.charge and mol_copy.multiplicity == 1:
-            # hard coding for carbenes
-            rd_atom.SetNumRadicalElectrons(2)
+
+        # There are cases requiring to reset electrons after sanitization
+        # for carbene, nitrene and atomic oxygen
+        # For other atoms, to be added once encountered
+        if rmg_atom.is_carbon() and rmg_atom.lone_pairs >= 1 and not rmg_atom.charge:
+            reset_num_electron[i] = rmg_atom.radical_electrons
+        elif rmg_atom.is_nitrogen() and rmg_atom.lone_pairs >= 2 and not rmg_atom.charge:
+            reset_num_electron[i] = rmg_atom.radical_electrons
+        elif rmg_atom.is_oxygen and rmg_atom.lone_pairs >= 3 and not rmg_atom.charge:
+            reset_num_electron[i] = rmg_atom.radical_electrons
         if not (remove_hs and rmg_atom.symbol == 'H'):
             rwmol.AddAtom(rd_atom)
 
     # Add the bonds
     for atom1 in atoms_copy:
+        if remove_hs and atom1.is_hydrogen():
+            continue
         for atom2, bond12 in atom1.edges.items():
+            if remove_hs and atom2.is_hydrogen():
+                continue
             if bond12.is_hydrogen_bond():
                 continue
             if atoms_copy.index(atom1) < atoms_copy.index(atom2):
@@ -307,6 +326,10 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
         rwmol = Chem.RemoveHs(rwmol, sanitize=sanitize)
     elif sanitize:
         Chem.SanitizeMol(rwmol)
+
+    for key, val in reset_num_electron.items():
+        rwmol.GetAtomWithIdx(key).SetNumRadicalElectrons(val)
+
     return rwmol
 
 
