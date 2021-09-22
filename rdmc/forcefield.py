@@ -179,7 +179,7 @@ class RDKitFF(object):
                                min_angle: Optional[Union[int, float]] = None,
                                max_angle: Optional[Union[int, float]] = None,
                                relative: bool = False,
-                               force_constant: Union[int, float] = 1e5,
+                               force_constant: Union[int, float] = 1e2,
                                ):
         """
         Add a torsion constraint to the force field. You should set either ``value``
