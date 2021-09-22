@@ -284,7 +284,7 @@ class RDKitFF(object):
         """
         if mol:
             self.mol = mol
-        elif not hasattr(self, mol) or not self.mol:
+        elif not hasattr(self, 'mol') or not self.mol:
             RuntimeError('You need to set up a molecule to optimize first! '
                          'Either by `RDKitFF.mol = <molecule>`, or '
                          'by `RDKitFF.setup(mol = <molecule>`.')
@@ -320,7 +320,6 @@ class RDKitFF(object):
 
         if success == 0:
             return True
-
 
     def is_optimizable(self,
                        mol: Optional['Mol'] = None,
