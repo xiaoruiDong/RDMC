@@ -461,7 +461,6 @@ class RDKitFF(object):
         return mol_copy
 
     def optimize_confs(self,
-                       mol: Optional['Mol'] = None,
                        max_step: int = 100000,
                        num_threads: int = 0,
                        step_per_iter: int = 5):
@@ -476,7 +475,6 @@ class RDKitFF(object):
         should iterate conformers and use ``optmize()`` instead.
 
         Args:
-            mol ('Mol'): A molecule to be optimized.
             max_step (int, optional): max iterations. Defaults to ``200``.
             num_threads (int, optional): number of threads to use. Defaults to ``0`` for all.
             step_per_iter (int, optional): number of outer cycle. Check convergence after maxIters.
@@ -486,22 +484,28 @@ class RDKitFF(object):
             - int: 0 for optimization done; 1 for not optimized; -1 for not optimizable.
             - float: energy
         """
-        if not mol:
-            mol = self.mol
-
+        if max_step == 0:
+            return rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
+                                                             self.ff,
+                                                             numThreads=num_threads,
+                                                             maxIters=0,)
         i = 0
         while i < max_step:
-            results = rdForceFieldHelpers.OptimizeMoleculeConfs(mol.ToRWMol(),
-                                                         self.ff,
-                                                         numThreads=num_threads,
-                                                         maxIters=step_per_iter,)
+            results = rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
+                                                                self.ff,
+                                                                numThreads=num_threads,
+                                                                maxIters=step_per_iter,)
             not_converged = [result[0] for result in results]
             if 1 not in not_converged:
                 return results
             i += 1
-        else:
-            # Hasn't been optimized
+        try:
             return results
+        except UnboundLocalError:
+            # It will only happends when users assign a negative value
+            # and the variable `results` therefore is not created.
+            raise ValueError(f'An invalid max_step {max_step} was assigned. It should be an'
+                             f' integer >= 0.')
 
     def get_optimized_mol(self) -> 'Mol':
         """
