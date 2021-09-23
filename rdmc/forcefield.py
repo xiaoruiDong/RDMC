@@ -7,6 +7,8 @@ A module used to deal with force field supported by RDKit.
 
 from typing import Optional, Sequence, Union
 
+import numpy as np
+
 from rdkit import Chem
 from rdkit.Chem import rdForceFieldHelpers
 try:
@@ -543,6 +545,51 @@ class RDKitFF(object):
                                                             maxIters=0)
         # results is a list of (convergence, energy value)
         return [item[1] for item in results]
+
+    def torsional_scan_1d(self,
+                          torsion,
+                          num_points: int = 45,
+                          rigid: bool = True,
+                          init_angle: Optional[float] = None,
+                          force_constant: float=100,
+                          return_xyz: bool = False):
+        mol_copy = self.mol.Copy()
+        conf = self.mol.GetConformer()
+        if not init_angle:
+            init_angle = conf.GetTorsionDeg(torsion)
+        pos0 = conf.GetPositions()
+
+        angles = np.zeros(num_points)
+        energies = np.zeros_like(angles)
+        xyzs = []
+
+        for i in range(num_points):
+            conf.SetPositions(pos0)
+            angle_val = init_angle + i * 360 / num_points
+            conf.SetTorsionDeg(torsion, angle_val)
+            self.setup()
+            if rigid:
+                angles[i] = conf.GetTorsionDeg(torsion)
+                energies[i] = self.get_energy()
+                if return_xyz:
+                    xyzs.append(self.mol.ToXYZ())
+                continue
+            self.add_torsion_constraint(torsion, value=angle_val,
+                                        force_constant=force_constant)
+            self.optimize()
+            opt_mol = self.get_optimized_mol()
+            angles[i] = opt_mol.GetConformer().GetTorsionDeg(torsion)
+            energies[i] = self.get_energy()
+            if return_xyz:
+                xyzs.append(opt_mol.ToXYZ())
+
+        # Initialize the molecule to remove any modifications to self.mol
+        self.setup(mol_copy)
+
+        if return_xyz:
+            return angles, energies, xyzs
+        return angles, energies
+
 
 class OpenBabelFF:
     """
