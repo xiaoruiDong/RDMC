@@ -519,6 +519,31 @@ class RDKitFF(object):
             self.recover_mol(edits=self.edits)
         return self.mol
 
+    def get_energy(self,):
+        """
+        Get the energy of the first conformer of the molecule in kcal/mol.
+
+        Returns:
+            float: the energy of the index 0 conformer
+        """
+        return self.ff.CalcEnergy()
+
+    def get_conformer_energies(self,):
+        """
+        Get the energy of all conformers of the molecule. Surprisingly, there is no such a handy
+        function built in the RDKit. The built-in function is CalcEnergy which you can only get the
+        energy of the index 0 conformer (the default). The energies are in kcal/mol.
+
+        Returns:
+            list: Energies of all conformers of the molecule.
+        """
+        results = rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
+                                                            self.ff,
+                                                            numThreads=0,
+                                                            maxIters=0)
+        # results is a list of (convergence, energy value)
+        return [item[1] for item in results]
+
 class OpenBabelFF:
     """
     A wrapper to deal with Force field of Openbabel. It can handle both RDKit Mol and OBMol
