@@ -73,7 +73,7 @@ class RDKitMol(object):
             elif attr in KEEP_RDMOL_ATTRIBUTES:
                 setattr(self, attr, getattr(self._mol, attr,))
 
-        # Set atom map number
+        # Set atom map number if it is not stored in mol or if it is invalid.
         if keepAtomMap:
             if not np.any(self.GetAtomMapNumbers()):
                 # No stored atom mapping, so set it anyway
