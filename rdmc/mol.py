@@ -324,7 +324,20 @@ class RDKitMol(object):
         # no hydrogens are automatically added. So, we need to add H atoms.
         if not removeHs:
             mol = Chem.rdmolops.AddHs(mol)
-        return cls(mol, keepAtomMap=keepAtomMap)
+
+        # Atom map may be different than atom index in the generated mol
+        # Reset those index
+        if keepAtomMap :
+            rdkitmol = cls(mol, keepAtomMap=keepAtomMap)
+            for idx in range(rdkitmol.GetNumAtoms()):
+                atom = rdkitmol.GetAtomWithIdx(idx)
+                atommap_num = atom.GetAtomMapNum()
+                if idx != atommap_num:
+                    rdkitmol.GetAtomMapNumbers()
+                    new_order = np.argsort(rdkitmol.GetAtomMapNumbers()).tolist()
+                    return rdkitmol.RenumberAtoms(new_order)
+        else:
+            return cls(mol, keepAtomMap=keepAtomMap)
 
     @classmethod
     def FromSmarts(cls,
