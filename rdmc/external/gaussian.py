@@ -355,6 +355,8 @@ class GaussianLog(object):
                 return np.array([])
         if 'irc' in self.job_type or 'scan' in self.job_type:
             return self.cclib_results.atomcoords[converged_idx]
+        if self.job_type == ['freq'] and self.success:
+            return np.array([self.initial_geometry])
         else:
             return self.cclib_results.converged_geometries[:1]
 
