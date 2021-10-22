@@ -327,8 +327,8 @@ class RDKitMol(object):
 
         # Atom map may be different than atom index in the generated mol
         # Reset those index
-        if keepAtomMap :
-            rdkitmol = cls(mol, keepAtomMap=keepAtomMap)
+        rdkitmol = cls(mol, keepAtomMap=keepAtomMap)
+        if keepAtomMap:
             for idx in range(rdkitmol.GetNumAtoms()):
                 atom = rdkitmol.GetAtomWithIdx(idx)
                 atommap_num = atom.GetAtomMapNum()
@@ -336,8 +336,7 @@ class RDKitMol(object):
                     rdkitmol.GetAtomMapNumbers()
                     new_order = np.argsort(rdkitmol.GetAtomMapNumbers()).tolist()
                     return rdkitmol.RenumberAtoms(new_order)
-        else:
-            return cls(mol, keepAtomMap=keepAtomMap)
+        return rdkitmol
 
     @classmethod
     def FromSmarts(cls,
