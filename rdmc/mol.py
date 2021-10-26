@@ -753,7 +753,7 @@ class RDKitMol(object):
             atomMap(list, tuple, optional): A sequence of integers for atom mapping.
         """
         num_atoms = self.GetNumAtoms()
-        if atomMap:
+        if atomMap is not None:
             if len(atomMap) != num_atoms:
                 raise ValueError('Invalid atomMap provided. It should have the same length as atom numbers.')
         else:
