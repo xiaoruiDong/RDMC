@@ -5,6 +5,7 @@
 This module provides class and methods for dealing with RDKit RWMol, Mol.
 """
 
+from itertools import combinations
 from typing import Iterable, List, Optional, Sequence, Union
 
 import numpy as np
@@ -961,9 +962,8 @@ class RDKitMol(object):
                 rad_atoms.append(atom.GetIdx())
 
         # a list to record connected atom pairs to avoid repeating
-        connected = [(i, j) for i in rad_atoms for j in rad_atoms
-                        if i != j and \
-                            self.GetBondBetweenAtoms(i, j)]
+        connected = [(i, j) for i, j in combinations(rad_atoms, 2)
+                     if self.GetBondBetweenAtoms(i, j)]
 
         # Naive way to saturate 1,2 biradicals
         while num_dbs and connected:
@@ -992,8 +992,13 @@ class RDKitMol(object):
                 # if no update is made at all, break
                 # TODO: Change this to a log in the future
                 break
+            num_dbs -= 1
             connected = [pair for pair in connected
                          if pair[0] in rad_atoms and pair[1] in rad_atoms]
+
+        # Update things including explicity / implicit valence, etc.
+        self.UpdatePropertyCache(strict=False)
+
         if num_dbs:
             print('Cannot match the multiplicity by saturating 1,2 biradical.')
 
@@ -1093,6 +1098,9 @@ class RDKitMol(object):
                     break
                 paths = [path for path in paths
                         if path[0] in rad_atoms and path[-1] in rad_atoms]
+
+        # Update things including explicity / implicit valence, etc.
+            self.UpdatePropertyCache(strict=False)
 
         if num_dbs:
             print('Cannot match the multiplicity by saturating biradical with conjugated double bonds.')
