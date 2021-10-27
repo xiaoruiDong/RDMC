@@ -387,7 +387,7 @@ class GaussianLog(object):
             idx_array = self.cclib_results.OPT_DONE & self.cclib_results.optstatus > 0
         elif 'scan' in self.job_type:
             # For IRC and scan, convergence is defined as fulfilling at least 2 criteria for gaussian
-            idx_array = self.cclib_results.optstatus > 2
+            idx_array = self.cclib_results.optstatus >= 2
         else:
             idx_array = np.array([True])
         if 'irc' in self.job_type:
@@ -438,13 +438,15 @@ class GaussianLog(object):
 
     def get_scanparams(self,
                        converged=True,
-                       relative=True):
+                       relative=True,
+                       backend='openbabel'):
         """
         Get the values of the scanning parameters. It is assumed that the job is 1D scan.
 
         Args:
             converged (bool): If only return values for converged geometries.
             relative (bool): If return values that are relative to the first entry.
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
 
         Returns:
             np.array
@@ -456,7 +458,7 @@ class GaussianLog(object):
         if converged:
             params = np.array(self.cclib_results.scanparm[0])
         else:
-            mol = self.get_mol(converged=False)
+            mol = self.get_mol(converged=False, backend=backend)
             get_val_fun = {2: 'GetBondLength', 3: 'GetAngleDeg', 4: 'GetTorsionDeg'}[len(scan_name)]
             params = np.array([getattr(mol.GetConformer(id=i), get_val_fun)(scan_name)
                                     for i in range(mol.GetNumConformers())])
@@ -542,6 +544,7 @@ class GaussianLog(object):
                embed_conformers: bool = True,
                converged: bool = True,
                neglect_spin: bool = True,
+               backend: str = 'openbabel'
                ) -> 'RDKitMol':
         """
         Perceive the xyzs in the file and turn the geometries to conformers.
@@ -554,7 +557,8 @@ class GaussianLog(object):
                               is only valid when ``embed_confs`` is ``True``.
             neglect_spin (bool): Whether to neglect the error when spin multiplicity are different
                                  between the generated mol and the value in the output file. This
-                                 can be useful for calculations involves TS. Defaults to ``True``
+                                 can be useful for calculations involves TS. Defaults to ``True``.
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
 
         Returns:
             RDKitMol: a molecule generated from the output file.
@@ -573,7 +577,8 @@ class GaussianLog(object):
         else:
             # If not converged, use the initial guess geometry
             xyz = self.cclib_results.writexyz(indices=-self.num_all_geoms)
-        mol = RDKitMol.FromXYZ(xyz)
+
+        mol = RDKitMol.FromXYZ(xyz, backend=backend)
 
         if mol.GetSpinMultiplicity() != self.multiplicity:
             mol.SaturateMol(multiplicity=self.multiplicity)
@@ -595,7 +600,8 @@ class GaussianLog(object):
     def _process_scan_mol(self,
                           converged: bool = True,
                           align_scan: bool = True,
-                          align_frag_idx: int = 1):
+                          align_frag_idx: int = 1,
+                          backend: str = 'openbabel'):
         """
         A function helps to process molecule conformers from a scan job.
 
@@ -604,11 +610,12 @@ class GaussianLog(object):
                                Defaults to ``True``
             align_frag_idx (int): Value should be either 1 or 2. Assign which of the part to be
                                   aligned.
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
 
         Returns:
             RDKitMol
         """
-        mol = self.get_mol(converged=converged,)
+        mol = self.get_mol(converged=converged, backend=backend)
         if align_scan:
             # Assume it is 1D scan
             scan_name = self.get_scannames(as_list=True, index_0=True)[0]
@@ -623,12 +630,15 @@ class GaussianLog(object):
 
     def _process_irc_mol(self,
                          converged: bool = True,
-                         bothway: bool = True):
+                         bothway: bool = True,
+                         backend: str = 'openbabel'):
         """
         A function helps to process molecule conformers from a IRC job.
 
         Args:
-            bothway (bool): Whether is a two-way IRC job.
+            converged (bool): Whether only process converged conformers. Defaults to ``True``.
+            bothway (bool): Whether is a two-way IRC job. Defaults to ``True``.
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
 
         Returns:
             RDKitMol
@@ -636,7 +646,7 @@ class GaussianLog(object):
         # Figure out if there is an 'inverse' point in the IRC path
         midpoint = self.get_irc_midpoint(converged=converged)
         if bothway and midpoint:
-            mol = self.get_mol(converged=converged, embed_conformers=False)
+            mol = self.get_mol(converged=converged, embed_conformers=False, backend=backend)
             num_confs = self.num_converged_geoms if converged else self.num_all_geoms
             mol.EmbedMultipleNullConfs(n=num_confs)
             coords = self.converged_geometries if converged else self.all_geometries
@@ -645,7 +655,7 @@ class GaussianLog(object):
             for i in range(num_confs):
                 mol.SetPositions(coords=coords[i], id=i)
         else:
-            mol = self.get_mol(converged=converged,)
+            mol = self.get_mol(converged=converged, backend=backend)
         return mol
 
     ###################################################################
@@ -719,7 +729,8 @@ class GaussianLog(object):
     def guess_rxn_from_irc(self,
                            index: int = 0,
                            as_mol_frags: bool = False,
-                           inverse: bool = False):
+                           inverse: bool = False,
+                           backend: str = 'openbabel'):
         """
         Guess the reactants and products from the IRC path. Note: this
         result is not deterministic depending on the pair of conformes you use.
@@ -731,7 +742,8 @@ class GaussianLog(object):
                          of the IRC path. defaults to 0, the end of each side of the IRC curve.
             as_mol_frags (bool): Whether to return results as mol fragments or as complexes.
                                  Defaults to ``False`` as to return as complexes.
-            inverse (bool): Inverse the direction of the reaction.
+            inverse (bool): Inverse the direction of the reaction. Defaults to ``False``.
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
         if 'irc' not in self.job_type:
             raise RuntimeError('This method is only valid for IRC jobs.')
@@ -745,8 +757,8 @@ class GaussianLog(object):
             idx1, idx2 = conv_idxs[[midpoint - 1, -1]].tolist()
         else:
             idx1, idx2 = conv_idxs[[index, midpoint + index - 1]].tolist()
-        r_mol = RDKitMol.FromXYZ(xyz=self.cclib_results.writexyz(indices=idx1))
-        p_mol = RDKitMol.FromXYZ(xyz=self.cclib_results.writexyz(indices=idx2))
+        r_mol = RDKitMol.FromXYZ(xyz=self.cclib_results.writexyz(indices=idx1), backend=backend)
+        p_mol = RDKitMol.FromXYZ(xyz=self.cclib_results.writexyz(indices=idx2), backend=backend)
         r_mol.SaturateMol(multiplicity=self.multiplicity)
         p_mol.SaturateMol(multiplicity=self.multiplicity)
 
@@ -762,7 +774,8 @@ class GaussianLog(object):
                             amplitude: float = 1.0,
                             atom_weighted: bool = False,
                             as_mol_frags: bool = False,
-                            inverse: bool = False):
+                            inverse: bool = False,
+                            backend: str = 'openbabel'):
         """
         Guess the reactants and products from the imaginary frequency. Note: this
         result is not deterministic depending on the amplitude you use.
@@ -777,7 +790,8 @@ class GaussianLog(object):
                                   than heavier atoms.
             as_mol_frags (bool): Whether to return results as mol fragments or as complexes.
                                  Defaults to ``False`` as to return as complexes.
-            inverse (bool): Inverse the direction of the reaction.
+            inverse (bool): Inverse the direction of the reaction. Defaults to ``False``.
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
         if 'freq' not in self.job_type and not self.is_ts:
             raise RuntimeError('This method is only valid for TS frequency jobs.')
@@ -792,12 +806,12 @@ class GaussianLog(object):
         else:
             atom_weights = np.ones((self.cclib_results.natom, 1))
         xyzs = xyz - amplitude * disp * atom_weights, xyz + amplitude * disp * atom_weights
-        mol = self.get_mol()
+        mol = self.get_mol(backend=backend)
         xyz_strs = []
         for xyz in xyzs:
             mol.SetPositions(xyz)
             xyz_strs.append(mol.ToXYZ())
-        r_mol, p_mol = [RDKitMol.FromXYZ(xyz_str) for xyz_str in xyz_strs]
+        r_mol, p_mol = [RDKitMol.FromXYZ(xyz_str, backend=backend) for xyz_str in xyz_strs]
         r_mol.SaturateMol(multiplicity=self.multiplicity)
         p_mol.SaturateMol(multiplicity=self.multiplicity)
 
@@ -940,13 +954,16 @@ class GaussianLog(object):
     ####                                                           ####
     ###################################################################
 
-    def view_mol(self, *args, **kwargs):
+    def view_mol(self, backend='openbabel', *args, **kwargs):
         """
         Create a Py3DMol viewer for the molecule. By default, it will shows either
         the initial geometry or the converged geometry depending on what job type
         involved in the file.
+
+        Args:
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
-        return mol_viewer(self.get_mol(), *args, **kwargs)
+        return mol_viewer(self.get_mol(backend=backend), *args, **kwargs)
 
     def view_freq(self,
                   mode_idx: int = 0,
@@ -972,6 +989,7 @@ class GaussianLog(object):
     def view_traj(self,
                   align_scan: bool = True,
                   align_frag_idx: int = 1,
+                  backend: str = 'openbabel',
                   **kwargs):
         """
         View the trajectory as a Py3DMol animation.
@@ -980,15 +998,17 @@ class GaussianLog(object):
             align_scan (bool): If align the molecule to make the animation cleaner.
                                Defaults to ``True``
             align_frag_idx (int): Value should be either 1 or 2. Assign which of the part to be
-                                  aligned.
+                                  aligned. Defaults to ``1``.
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
         if 'scan' in self.job_type and align_scan:
             mol = self._process_scan_mol(align_scan=align_scan,
-                                         align_frag_idx=align_frag_idx)
+                                         align_frag_idx=align_frag_idx,
+                                         backend=backend)
             xyzs = [mol.ToXYZ(confId=i) for i in range(mol.GetNumConformers())]
         elif 'irc' in self.job_type and \
                 not (self.schemes['irc'].get('forward') or self.schemes['irc'].get('reverse')):
-            mol = self._process_irc_mol()
+            mol = self._process_irc_mol(backend=backend)
             xyzs = [mol.ToXYZ(confId=i) for i in range(mol.GetNumConformers())]
         else:
             xyzs = self.get_xyzs(converged=True)
@@ -1003,11 +1023,14 @@ class GaussianLog(object):
     ####                                                           ####
     ###################################################################
 
-    def interact_convergence(self):
+    def interact_convergence(self, backend: str = 'openbabel'):
         """
         Create a IPython interactive widget to investigate the optimization convergence.
+
+        Args:
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
-        mol = self.get_mol(converged=False)
+        mol = self.get_mol(converged=False, backend=backend)
         xyzs = self.get_xyzs(converged=False)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         def visual(idx):
@@ -1026,6 +1049,9 @@ class GaussianLog(object):
         return interact(visual, idx=slider)
 
     def interact_freq(self):
+        """
+        Create a IPython interactive widget to investigate the frequency calculation.
+        """
         dropdown = Dropdown(
             options=self.freqs,
             value=self.freqs[0],
@@ -1045,8 +1071,21 @@ class GaussianLog(object):
     def interact_scan(self,
                       align_scan: bool = True,
                       align_frag_idx: int = 1,
+                      backend: str = 'openbabel',
                       **kwargs):
-        mol = self._process_scan_mol(align_scan=align_scan, align_frag_idx=align_frag_idx)
+        """
+        Create a IPython interactive widget to investigate the scan results.
+
+        Args:
+            align_scan (bool): If align the molecule to make the animation cleaner.
+                               Defaults to ``True``
+            align_frag_idx (int): Value should be either 1 or 2. Assign which of the part to be
+                                  aligned. Defaults to ``1``.
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+        """
+        mol = self._process_scan_mol(align_scan=align_scan,
+                                     align_frag_idx=align_frag_idx,
+                                     backend=backend)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         xyzs = self.get_xyzs(converged=True)
 
@@ -1082,8 +1121,14 @@ class GaussianLog(object):
 
         return interact(visual, idx=slider)
 
-    def interact_irc(self):
-        mol = self._process_irc_mol()
+    def interact_irc(self, backend: str = 'openbabel'):
+        """
+        Create a IPython interactive widget to investigate the IRC results.
+
+        Args:
+            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+        """
+        mol = self._process_irc_mol(backend=backend)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         xyzs = self.get_xyzs(converged=True)
         y_params = self.get_scf_energies(converged=True)
