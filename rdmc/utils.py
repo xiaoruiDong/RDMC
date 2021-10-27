@@ -115,6 +115,8 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         if isotope != 0:
             atom.SetIsotope(isotope)
         spin = obatom.GetSpinMultiplicity()
+        if not remove_hs:
+            atom.SetNoImplicit(True)
         if spin == 2:  # radical
             atom.SetNumRadicalElectrons(1)
         elif spin in [1, 3]:  # carbene
