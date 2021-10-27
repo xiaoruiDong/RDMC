@@ -185,6 +185,8 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
         # Find the unsaturated carbons
         if obatom.GetAtomicNum() == 6 and obatom.GetTotalValence() < 4:
             obatom.SetSpinMultiplicity(5 - obatom.GetTotalValence())
+        elif obatom.GetAtomicNum() == 7 and obatom.GetTotalValence() < 3:
+            obatom.SetSpinMultiplicity(4 - obatom.GetTotalValence())
         elif obatom.GetAtomicNum() == 8 and obatom.GetTotalValence() < 2:
             obatom.SetSpinMultiplicity(3 - obatom.GetTotalValence())
         elif obatom.GetAtomicNum() == 1 and obatom.GetTotalValence() == 0:
@@ -418,6 +420,8 @@ def parse_xyz_by_openbabel(xyz: str,
         # Find the unsaturated carbons
         if obatom.GetAtomicNum() == 6 and obatom.GetTotalValence() < 4:
             obatom.SetSpinMultiplicity(5 - obatom.GetTotalValence())
+        elif obatom.GetAtomicNum() == 7 and obatom.GetTotalValence() < 3:
+            obatom.SetSpinMultiplicity(4 - obatom.GetTotalValence())
         elif obatom.GetAtomicNum() == 8 and obatom.GetTotalValence() < 2:
             obatom.SetSpinMultiplicity(3 - obatom.GetTotalValence())
         elif obatom.GetAtomicNum() == 1 and obatom.GetTotalValence() == 0:
