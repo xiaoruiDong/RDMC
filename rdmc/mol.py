@@ -803,8 +803,7 @@ class RDKitMol(object):
                     self.EmbedConformer()
                 except RuntimeError:
                     self.EmbedNullConformer()
-                else:
-                    conf = self.GetConformer()
+                conf = self.GetConformer()
             else:
                 raise
         conf.SetPositions(coords)
