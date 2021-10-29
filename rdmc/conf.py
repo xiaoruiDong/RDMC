@@ -173,7 +173,7 @@ class RDKitConf(object):
         """
         try:
             return self._torsions if not not indexed1 \
-                else [[ind + 1 for ind in tor] for tor in self._torions]
+                else [[ind + 1 for ind in tor] for tor in self._torsions]
         except AttributeError:
             self._torsions = find_internal_torsions(self._owning_mol)
             return self._torsions
