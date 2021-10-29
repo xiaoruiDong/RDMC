@@ -5,7 +5,7 @@
 A module contains RMG related functions. Needs to run with rmg_env.
 """
 
-import itertools
+from itertools import product as set_product
 from typing import List, Optional
 
 from rdkit import Chem
@@ -161,16 +161,22 @@ def generate_reaction_complex(database: 'RMGDatabase',
                               products: list,
                               only_families: list = None,
                               verbose: bool = True,
+                              resonance: bool = True,
                               ) -> List['Molecule']:
     """
-    Generate a product complex according to RMG reaction family. Currently,
-    this function is only valid for reaction with a single reactant.
+    Generate a product complex according to RMG reaction family. Please note,
+    that this will only return one template.
+    # TODO: provide an option if multiple channel if available.
 
     Args:
         database (RMGDatabase): An RMG database instance.
-        reactants (list): a list of reactant molecules.
-        products (list): a list of product molecules.
-        verbose (bool, optional): Whether to print results. Defaults to print.
+        reactants (list): A list of reactant molecules.
+        products (list): A list of product molecules.
+        only_families (list): A list of families that constrains the search.
+        resonance (bool): generate resonance structures when identifying template matching.
+                          Can be potentially expensive for some complicated structures.
+                          Defaults to ``True``.
+        verbose (bool, optional): Whether to print results. Defaults to ``True`` as to print.
 
     Returns:
         Molecule: a product complex with consistent atom indexing as in the reactant.
@@ -232,14 +238,23 @@ def generate_reaction_complex(database: 'RMGDatabase',
         # Get A + B mappings
         mappings_a = family._match_reactant_to_template(reactants[0], template_reactants[0])
         mappings_b = family._match_reactant_to_template(reactants[1], template_reactants[1])
-        mappings = list(itertools.product(mappings_a, mappings_b))
+        mappings = list(set_product(mappings_a, mappings_b))
         # Get B + A mappings
         mappings_a = family._match_reactant_to_template(reactants[0], template_reactants[1])
         mappings_b = family._match_reactant_to_template(reactants[1], template_reactants[0])
-        mappings.extend(list(itertools.product(mappings_a, mappings_b)))
+        mappings.extend(list(set_product(mappings_a, mappings_b)))
     else:
         raise NotImplementedError
 
+    # Since sometimes there can be resonances structures, we also need to generate those
+    # resonance structures for matching
+    if resonance:
+        p_to_match = [p.copy(deep=True).generate_resonance_structures() for p in products]
+        ps_to_match = list(set_product(*p_to_match))
+    else:
+        ps_to_match = [products]
+
+    # Iterate each found mapping
     for mapping in mappings:
         # Delete old reaction labels
         for struct in reactants:
@@ -274,12 +289,16 @@ def generate_reaction_complex(database: 'RMGDatabase',
         # Second, Store the product complex in `product_complex` for output
         product_complex = reactant_structure.copy(deep=True)
         # Then, `reactant_structure` will be used to check isomorphism
+        # Although it is called reactant structure, but its connectivity
+        # has been modified according to the template
         product_structures = reactant_structure.split()
         for struct in product_structures:
-            struct.update()
-        match = check_isomorphic_molecules(product_structures, products)
-        if match:
-            return reactant_complex, product_complex
+            struct.update()  # Clean up each structure
+        # Isomorphic check considering resonance structures
+        for p_to_match in ps_to_match:
+            match = check_isomorphic_molecules(product_structures, p_to_match)
+            if match:
+                return reactant_complex, product_complex
     else:
         raise RuntimeError('Cannot find the correct reaction mapping.')
 
