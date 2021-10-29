@@ -786,15 +786,22 @@ class RDKitMol(object):
                       reflect=True)
 
     def SetPositions(self,
-                     coords: Sequence,
-                     id: int = 0):
+                     coords: Union[Sequence, str],
+                     id: int = 0,
+                     header: bool = False):
         """
         Set the atom positions to one of the conformer.
 
         Args:
-            coords (sequence): A tuple/list/ndarray containing atom positions.
-            id (int, optional): Conformer ID to assign the Positions to.
+            coords (sequence): A tuple/list/ndarray containing atom positions;
+                               or a string with the typical XYZ formating.
+            id (int, optional): Conformer ID to assign the Positions to. Defaults to ``1``.
+            header (bool): When the XYZ string has an header. Defaults to ``False``.
         """
+        if isinstance(coords, str):
+            xyz_lines = coords.splitlines()[2:] if header else coords.splitlines()
+            coords = np.array([[float(atom) for atom in line.strip().split()[1:]] for line in xyz_lines])
+
         try:
             conf = self.GetConformer(id=id)
         except ValueError as e:
