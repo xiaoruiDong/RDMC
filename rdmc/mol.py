@@ -1172,9 +1172,7 @@ class RDKitMol(object):
         self.SaturateBiradicalSitesCDB(multiplicity=multiplicity,
                                        chain_length=chain_length)
         self.SaturateCarbene(multiplicity=multiplicity)
-        if self.GetSpinMultiplicity() == multiplicity:
-            print('Eventually, SaturateMol finds a way to saturate the molecule to the desired multiplicity.')
-        else:
+        if self.GetSpinMultiplicity() != multiplicity:
             print('SaturateMol fails after trying all methods and you need to be cautious about the generated mol.')
 
     def GetInternalCoordinates(self,
