@@ -521,7 +521,10 @@ class GaussianLog(object):
             scf_energies = self.cclib_results.scfenergies
 
         if converged:
-            sub1 = scf_energies[self.get_converged_geom_idx()]
+            if 'opt' in self.job_type:
+                sub1 = scf_energies[:num_opt_geoms][self.get_converged_geom_idx()]
+            else:
+                sub1 = scf_energies[self.get_converged_geom_idx()]
             sub2 = scf_energies[num_opt_geoms:]
             scf_energies = np.concatenate([sub1, sub2])
 
