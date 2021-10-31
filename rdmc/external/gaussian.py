@@ -132,17 +132,26 @@ class GaussianLog(object):
             lines = f.readlines()[-5:]
         for line in lines:
             if 'Normal termination' in line:
+                # Example:
+                # Normal termination of Gaussian 16 at Thu Oct 28 13:55:59 2021.
                 self._success = True
                 self._finished = True
                 time_str = re.search(self.time_regex, line).group()
                 self._termination_time = datetime.datetime.strptime(time_str, '%b %d %H:%M:%S %Y')
                 return
             elif 'Error termination' in line:
+                # Example:
+                # 1. Error termination request processed by link 9999. (without timestamp)
+                # 2. Error termination via Lnk1e in /opt/g16/l9999.exe at Fri Oct 29 14:32:23 2021. (with timestamp)
                 self._success = False
                 self._finished = True
-                time_str = re.search(self.time_regex, line).group()
-                self._termination_time = datetime.datetime.strptime(time_str, '%b %d %H:%M:%S %Y')
-                return
+                try:
+                    time_str = re.search(self.time_regex, line).group()
+                except AttributeError:
+                    pass
+                else:
+                    self._termination_time = datetime.datetime.strptime(time_str, '%b %d %H:%M:%S %Y')
+                    return
         self._success = False
         self._finished = False
         self._termination_time = None
