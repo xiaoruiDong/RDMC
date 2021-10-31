@@ -227,78 +227,84 @@ def generate_reaction_complex(database: 'RMGDatabase',
     else:
         template_reactants = [x.item for x in template.reactants]
 
-    # A = B or A = B + C
-    if len(reactants) == 1:
-        # Find all possible mappings
-        mappings = family._match_reactant_to_template(reactants[0], template_reactants[0])
-        mappings = [[map0] for map0 in mappings]
-
-    # A + B = C + D
-    elif len(reactants) == 2:
-        # Get A + B mappings
-        mappings_a = family._match_reactant_to_template(reactants[0], template_reactants[0])
-        mappings_b = family._match_reactant_to_template(reactants[1], template_reactants[1])
-        mappings = list(set_product(mappings_a, mappings_b))
-        # Get B + A mappings
-        mappings_a = family._match_reactant_to_template(reactants[0], template_reactants[1])
-        mappings_b = family._match_reactant_to_template(reactants[1], template_reactants[0])
-        mappings.extend(list(set_product(mappings_a, mappings_b)))
-    else:
-        raise NotImplementedError
-
-    # Since sometimes there can be resonances structures, we also need to generate those
-    # resonance structures for matching
+    # Resonance structure is generated for both reactants and product
     if resonance:
+        r_to_gen = [r.copy(deep=True).generate_resonance_structures(keep_isomorphic=False,
+                                                                    filter_structures=True,
+                                                                    save_order=True) for r in reactants]
+        rs_to_gen = list(set_product(*r_to_gen))
         p_to_match = [p.copy(deep=True).generate_resonance_structures() for p in products]
         ps_to_match = list(set_product(*p_to_match))
     else:
+        rs_to_gen = [reactants]
         ps_to_match = [products]
 
-    # Iterate each found mapping
-    for mapping in mappings:
-        # Delete old reaction labels
-        for struct in reactants:
-            struct.clear_labeled_atoms()
-
-        # Apply new reaction labels
-        for m in mapping:
-            for reactant_atom, template_atom in m.items():
-                reactant_atom.label = template_atom.label
-
-        # Create a reactant complex
-        reactant_structure = mm.Molecule()
+    for reactants in rs_to_gen:
+    # A = B or A = B + C
         if len(reactants) == 1:
-            reactant_structure = reactants[0].copy(deep=True)
-        else:
-            for struct in reactants:
-                reactant_structure = reactant_structure.merge(
-                                            struct.copy(deep=True)
-                                            )
+            # Find all possible mappings
+            mappings = family._match_reactant_to_template(reactants[0], template_reactants[0])
+            mappings = [[map0] for map0 in mappings]
 
-        # Make a copy for the reactant complex for output
-        reactant_complex = reactant_structure.copy(deep=True)
-        # Apply reaction recipe
-        if forward:
-            family.forward_recipe.apply_forward(reactant_structure, unique=True)
+        # A + B = C + D
+        elif len(reactants) == 2:
+            # Get A + B mappings
+            mappings_a = family._match_reactant_to_template(reactants[0], template_reactants[0])
+            mappings_b = family._match_reactant_to_template(reactants[1], template_reactants[1])
+            mappings = list(set_product(mappings_a, mappings_b))
+            # Get B + A mappings
+            mappings_a = family._match_reactant_to_template(reactants[0], template_reactants[1])
+            mappings_b = family._match_reactant_to_template(reactants[1], template_reactants[0])
+            mappings.extend(list(set_product(mappings_a, mappings_b)))
         else:
-            family.reverse_recipe.apply_forward(reactant_structure, unique=True)
-        # Now reactant_structure is tranformed to a product complex
-        # First, clean it up
-        for atom in reactant_structure.atoms:
-            atom.update_charge()
-        # Second, Store the product complex in `product_complex` for output
-        product_complex = reactant_structure.copy(deep=True)
-        # Then, `reactant_structure` will be used to check isomorphism
-        # Although it is called reactant structure, but its connectivity
-        # has been modified according to the template
-        product_structures = reactant_structure.split()
-        for struct in product_structures:
-            struct.update()  # Clean up each structure
-        # Isomorphic check considering resonance structures
-        for p_to_match in ps_to_match:
-            match = check_isomorphic_molecules(product_structures, p_to_match)
-            if match:
-                return reactant_complex, product_complex
+            raise NotImplementedError
+
+        # Iterate each found mapping
+        for mapping in mappings:
+            # Delete old reaction labels
+            for struct in reactants:
+                struct.clear_labeled_atoms()
+
+            # Apply new reaction labels
+            for m in mapping:
+                for reactant_atom, template_atom in m.items():
+                    reactant_atom.label = template_atom.label
+
+            # Create a reactant complex
+            reactant_structure = mm.Molecule()
+            if len(reactants) == 1:
+                reactant_structure = reactants[0].copy(deep=True)
+            else:
+                for struct in reactants:
+                    reactant_structure = reactant_structure.merge(
+                                                struct.copy(deep=True)
+                                                )
+
+            # Make a copy for the reactant complex for output
+            reactant_complex = reactant_structure.copy(deep=True)
+            # Apply reaction recipe
+            if forward:
+                family.forward_recipe.apply_forward(reactant_structure, unique=True)
+            else:
+                family.reverse_recipe.apply_forward(reactant_structure, unique=True)
+            # Now reactant_structure is tranformed to a product complex
+            # First, clean it up
+            for atom in reactant_structure.atoms:
+                atom.update_charge()
+            # Second, Store the product complex in `product_complex` for output
+            product_complex = reactant_structure.copy(deep=True)
+            # Then, `reactant_structure` will be used to check isomorphism
+            # Although it is called reactant structure, but its connectivity
+            # has been modified according to the template
+            product_structures = reactant_structure.split()
+
+            for struct in product_structures:
+                struct.update()  # Clean up each structure
+            # Isomorphic check considering resonance structures
+            for products in ps_to_match:
+                match = check_isomorphic_molecules(product_structures, products)
+                if match:
+                    return reactant_complex, product_complex
     else:
         raise RuntimeError('Cannot find the correct reaction mapping.')
 
