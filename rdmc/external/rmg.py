@@ -122,6 +122,7 @@ def find_reaction_family(database: 'RMGDatabase',
                          reactants: list,
                          products: list,
                          only_families: list = None,
+                         unique: bool = True,
                          verbose: bool = True,
                          ) -> Optional[tuple]:
     """
@@ -131,10 +132,15 @@ def find_reaction_family(database: 'RMGDatabase',
         database (RMGDatabase): A RMG database instance.
         reactants (list): A list of reactant molecules.
         products (list): A list of product molecules.
+        only_families (list, optional): A list of family to search from. Defaults to ``None``
+                                        for unlimited.
+        unique (bool): Whether to only return a single results. Defaults to ``True``.
         verbose (bool, optional): Whether to print results. Defaults to print.
 
     Returns:
-        tuple: (family_label, is_forward). None if no match.
+        - tuple: (family_label, is_forward) if ``unique == True``.
+        - None: if no match is found.
+        - list: [(family_label1, is_foward_1), (family_label2, is_forward2)...] if ``unique == False``.
     """
     # Check if the RMG can find this reaction. Use ``copy``` to avoid changing reactants and products.
     for family in database.kinetics.families.values():
@@ -144,12 +150,16 @@ def find_reaction_family(database: 'RMGDatabase',
                                                         products=[mol.copy() for mol in products],
                                                         only_families=only_families)
     # Get reaction information
+    all_matches = []
     for rxn in reaction_list:
-        family = rxn.family
-        forward = rxn.is_forward
         if verbose:
-            print(f'{rxn}\nRMG family: {family}\nIs forward reaction: {forward}')
-        return family, forward
+            print(f'{rxn}\nRMG family: {rxn.family}\nIs forward reaction: {rxn.forward}')
+        if unique:
+            return rxn.family, rxn.is_forward
+        else:
+            all_matches.append((rxn.family, rxn.is_forward))
+    if all_matches:
+        return all_matches
     else:
         if verbose:
             print('Doesn\'t match any RMG reaction family!')
