@@ -458,6 +458,18 @@ def get_element_symbols(atom_nums: Iterable):
     return [PERIODIC_TABLE.GetElementSymbol(int(atom_num)) for atom_num in atom_nums]
 
 
+def get_atom_masses(atom_nums: Iterable):
+    """
+    Get the atom masses for a given atom index list.
+
+    Args:
+        atom_nums (Iterable): A list of elemental numbers.
+    Returns:
+        list: A list of element symbols.
+    """
+    return [PERIODIC_TABLE.GetAtomicWeight(int(atom_num)) for atom_num in atom_nums]
+
+
 def get_internal_coords(obmol,
                         nonredundant: bool = True,
                         ) -> list:

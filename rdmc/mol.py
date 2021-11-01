@@ -501,8 +501,16 @@ class RDKitMol(object):
         Returns:
             list: A list of element symbols.
         """
-        atom_nums = [atom.GetAtomicNum() for atom in self.GetAtoms()]
-        return get_element_symbols(atom_nums)
+        return get_element_symbols(self.GetAtomicNumbers())
+
+    def GetAtomMasses(self):
+        """
+        Get the mass of each atom. The order is consistent with the atom indexes.
+
+        Returns:
+            list: A list of atom masses.
+        """
+        return get_atom_masses(self.GetAtomicNumbers())
 
     def GetConformer(self,
                      id: int = 0) -> 'RDKitConf':

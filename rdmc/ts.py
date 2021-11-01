@@ -289,8 +289,7 @@ def examine_normal_mode(r_mol: RDKitMol,
 
     # Generate weights
     if isinstance(weights, bool) and weights:
-        atom_masses = np.array([PT.GetAtomicWeight(PT.GetAtomicNumber(symbol))
-                                for symbol in r_mol.GetElementSymbols()]).reshape(-1, 1)
+        atom_masses = np.array(r_mol.GetAtomMasses()).reshape(-1, 1)
         weights = np.sqrt(atom_masses)
     elif isinstance(weights, bool) and not weights:
         weights = np.ones((ts_xyz.shape[0], 1))
