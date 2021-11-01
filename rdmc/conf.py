@@ -172,7 +172,7 @@ class RDKitConf(object):
             Optinal[list]: A list of four-atom-indice to indicating the torsional modes.
         """
         try:
-            return self._torsions if not not indexed1 \
+            return self._torsions if not indexed1 \
                 else [[ind + 1 for ind in tor] for tor in self._torsions]
         except AttributeError:
             self._torsions = find_internal_torsions(self._owning_mol)
