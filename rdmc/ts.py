@@ -198,7 +198,6 @@ def guess_rxn_from_normal_mode(xyz: np.array,
                            can be provided, and all possible results will be returned.
         weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
                               If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
-                              
                               The concern is that light atoms (e.g., H) tend to have larger motions
                               than heavier atoms.
         backend (str): The backend used to perceive xyz. Defaults to ``'openbabel'``.
@@ -248,3 +247,88 @@ def guess_rxn_from_normal_mode(xyz: np.array,
         mols[side] = [mol for i, mol in enumerate(ms) if i not in prune]
 
     return tuple(mols.values())
+
+
+def examine_normal_mode(r_mol: RDKitMol,
+                        p_mol: RDKitMol,
+                        ts_xyz: np.array,
+                        disp: np.array,
+                        amplitude: Union[float, list] = 0.25,
+                        weights: Union[bool, np.array] = True,
+                        verbose: bool = True,
+                        as_factors: bool = True):
+    """
+    Examine a TS's imaginary frequency given a known reactant complex and a
+    product complex. The function checks if the bond changes are corresponding
+    to the most significant change in the normal mode. The reactant and product
+    complex need to be atom mapped.
+
+    Args:
+        r_mol ('RDKitMol'): the reactant complex.
+        p_mol ('RDKitMol'): the product complex.
+        ts_xyz (np.array): The xyz coordinates of the transition state. It should have a
+                           size of N x 3.
+        disp (np.array): The displacement of the normal mode. It should have a size of
+                        N x 3.
+        amplitude (float): The amplitude of the motion. Defaults to 0.25.
+        weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
+                              If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
+                              The concern is that light atoms (e.g., H) tend to have larger motions
+                              than heavier atoms.
+        verbose (bool): If print detailed information. Defaults to ``True``.
+        as_factors (bool): If return the value of factors instead of a judgment.
+                           Defaults to ``False``
+
+    Returns:
+        - bool: ``True`` for pass the examination, ``False`` otherwise.
+        - list: If `as_factors == True`, two factors will be returned.
+    """
+    # Analyze connectivity
+    broken, formed, changed = get_all_changing_bonds(r_mol, p_mol)
+    reacting_bonds = broken + formed + changed
+
+    # Generate weights
+    if isinstance(weights, bool) and weights:
+        atom_masses = np.array([PT.GetAtomicWeight(PT.GetAtomicNumber(symbol))
+                                for symbol in r_mol.GetElementSymbols()]).reshape(-1, 1)
+        weights = np.sqrt(atom_masses)
+    elif isinstance(weights, bool) and not weights:
+        weights = np.ones((ts_xyz.shape[0], 1))
+
+    # Generate conformer instance according to the displacement
+    xyzs = ts_xyz - amplitude * disp * weights, ts_xyz + amplitude * disp * weights
+    r_copy = r_mol.Copy(); r_copy.SetPositions(xyzs[0])
+    p_copy = p_mol.Copy(); p_copy.SetPositions(xyzs[1])
+    r_conf, p_conf = r_copy.GetConformer(), p_copy.GetConformer()
+
+    # Calculate bond distance change
+    formed_and_broken_diff = [abs(r_conf.GetBondLength(bond) - p_conf.GetBondLength(bond))
+                              for bond in broken + formed]
+    changed_diff = [abs(r_conf.GetBondLength(bond) - p_conf.GetBondLength(bond))
+                    for bond in changed]
+    other_bonds_diff = [abs(r_conf.GetBondLength(bond) - p_conf.GetBondLength(bond))
+                        for bond in r_copy.GetBondsAsTuples() if bond not in reacting_bonds]
+
+    # We expect bonds that are formed or broken in the reaction
+    # have relatively large changes; For bonds that change their bond order
+    # in the reaction may have a smaller factor.
+    # In this function, we only use the larger factor as a check.
+    # The smaller factor is less deterministic, considering the change in
+    # other bonds due to the change of atom hybridization or bond conjugation.
+    baseline = np.max(other_bonds_diff)
+    std = np.std(other_bonds_diff)
+    larger_factor = (np.min(formed_and_broken_diff) - baseline) / std
+    smaller_factor = (np.min(changed_diff) - baseline) / std
+
+    if verbose:
+        print(f'The min. bond distance change for bonds that are broken or formed'
+              f' is {larger_factor:.1f} std off the baseline.')
+        print(f'The min. bond distance change for bonds that are changed'
+              f' is {smaller_factor:.1f} std off the baseline.')
+
+    if as_factors:
+        return larger_factor, smaller_factor
+
+    if larger_factor > 3:
+        return True
+    return False
