@@ -39,6 +39,9 @@ CO_OPENBABEL_PATTERN.Init('[C;v2]=[O]')
 # distinguish their multiplicity when input as SMILES or XYZ
 CARBENE_PATTERN = Chem.MolFromSmarts('[Cv0,Cv1,Cv2,Nv0,Nv1,Ov0]')
 
+PERIODIC_TABLE = Chem.GetPeriodicTable()
+
+
 def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
                                              atom2: 'rdkit.Chem.rdchem.Atom',
                                              ) -> int:
@@ -452,8 +455,7 @@ def get_element_symbols(atom_nums: Iterable):
     Returns:
         list: A list of element symbols.
     """
-    pt = Chem.GetPeriodicTable()
-    return [pt.GetElementSymbol(int(atom_num)) for atom_num in atom_nums]
+    return [PERIODIC_TABLE.GetElementSymbol(int(atom_num)) for atom_num in atom_nums]
 
 
 def get_internal_coords(obmol,

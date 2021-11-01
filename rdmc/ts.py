@@ -9,6 +9,9 @@ from typing import List, Union
 
 import numpy as np
 
+from rdmc import RDKitMol
+from rdmc.utils import PERIODIC_TABLE as PT
+
 
 def get_formed_bonds(r_mol: Union['RDKitMol', 'Mol'],
                      p_mol:  Union['RDKitMol', 'Mol'],
@@ -172,3 +175,76 @@ def is_DA_rxn_endo(r_mol: 'RDKitMol',
     # using the normal vector of the reference plane as a reference direction
     endo = ((norm_vec @ dien_vec.T) * (norm_vec @ dinp_vec.T)).item() > 0
     return endo
+
+
+def guess_rxn_from_normal_mode(xyz: np.array,
+                               symbols: np.array,
+                               disp: np.array,
+                               amplitude: Union[float, list] = 0.25,
+                               weights: Union[bool, np.array] = True,
+                               backend: str = 'openbabel',
+                               multiplicity: int = 1):
+    """
+    Guess reaction according to the normal mode analysis for a TS.
+
+    Args:
+        xyz (np.array): The xyz coordinates of the transition state. It should have a
+                        size of N x 3.
+        symbols (np.array): The symbols of each atoms. It should have a size of N.
+        disp (np.array): The displacement of the normal mode. It should have a size of
+                        N x 3.
+        amplitude (float): The amplitude of the motion. If a single value is provided then the guess
+                           will be unique (if available). 0.25 will be the default. Otherwise, a list
+                           can be provided, and all possible results will be returned.
+        weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
+                              If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
+                              
+                              The concern is that light atoms (e.g., H) tend to have larger motions
+                              than heavier atoms.
+        backend (str): The backend used to perceive xyz. Defaults to ``'openbabel'``.
+        multiplicity (int): The spin multiplicity of the transition states. Defaults to 1.
+
+    Returns:
+        list: a list of potential reactants
+        list: a list of potential products
+    """
+    if isinstance(amplitude, float):
+        amplitude = [amplitude]
+
+    # Generate weights
+    if isinstance(weights, bool) and weights:
+        atom_masses = np.array([PT.GetAtomicWeight(PT.GetAtomicNumber(symbol)) for symbol in symbols]).reshape(-1, 1)
+        weights = np.sqrt(atom_masses)
+    elif isinstance(weights, bool) and not weights:
+        weights = np.ones((xyz.shape[0], 1))
+
+    mols = {'r': [], 'p': []}
+    for amp in amplitude:
+        xyzs = xyz - amp * disp * weights, xyz + amp * disp * weights
+
+        # Create the reactant complex and the product complex
+        for xyz_mod, side in zip(xyzs, ['r', 'p']):
+            xyz_str = ''
+            for symbol, coords in zip(symbols, xyz_mod):
+                xyz_str += f'{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n'
+            try:
+                mols[side].append(RDKitMol.FromXYZ(xyz_str, header=False, backend=backend))
+                mols[side][-1].SaturateMol(multiplicity=multiplicity)
+            except:
+                # Need to provide a more precise error in the future
+                # Cannot generate the molecule from XYZ
+                pass
+
+    # Pairwise isomorphic comparison
+    for side, ms in mols.items():
+        prune = []
+        len_mol = len(ms)
+        for i in range(len_mol):
+            if i in prune:
+                continue
+            for j in range(i + 1, len_mol):
+                if j not in prune and ms[i].GetSubstructMatch(ms[j]):
+                    prune.append(j)
+        mols[side] = [mol for i, mol in enumerate(ms) if i not in prune]
+
+    return tuple(mols.values())
