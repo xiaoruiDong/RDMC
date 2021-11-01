@@ -15,9 +15,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cclib.io
 
-from rdkit import Chem
 from rdmc import RDKitMol
+from rdmc.ts import guess_rxn_from_normal_mode
 from rdmc.view import mol_viewer, freq_viewer, mol_animation
+from rdmc.utils import PERIODIC_TABLE as PT
 
 try:
     from ipywidgets import interact, IntSlider, Dropdown, FloatLogSlider
@@ -783,26 +784,23 @@ class GaussianLog(object):
 
         return r_mol, p_mol
 
-    def guess_rxn_from_freq(self,
-                            amplitude: float = 1.0,
-                            atom_weighted: bool = False,
-                            as_mol_frags: bool = False,
-                            inverse: bool = False,
-                            backend: str = 'openbabel'):
+    def guess_rxn_from_normal_mode(self,
+                                   amplitude: float = 0.25,
+                                   atom_weighted: bool = False,
+                                   inverse: bool = False,
+                                   backend: str = 'openbabel'):
         """
-        Guess the reactants and products from the imaginary frequency. Note: this
+        Guess the reactants and products from the mode of the imaginary frequency. Note: this
         result is not deterministic depending on the amplitude you use.
 
         Args:
             amplitude (int): The amplitude factor on the displacement matrix to generate the
                              guess geometry for the reactant and the product. A smaller factor
                              makes the geometry close to the TS, while a wildly large factor
-                             makes the geometry nonphysical.
+                             makes the geometry nonphysical. Can be either a float or a list of floats.
             atom_weighted (bool): If use the sqrt(atom mass) as a scaling factor to the displacement.
                                   The concern is that light atoms (e.g., H) tend to have larger motions
                                   than heavier atoms.
-            as_mol_frags (bool): Whether to return results as mol fragments or as complexes.
-                                 Defaults to ``False`` as to return as complexes.
             inverse (bool): Inverse the direction of the reaction. Defaults to ``False``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
@@ -813,33 +811,32 @@ class GaussianLog(object):
                                f' imaginary frequencies.')
 
         xyz, disp = self.converged_geometries[0], self.cclib_results.vibdisps[0]
+        atom_symbols = [PT.GetElementSymbol(int(i)) for i in self.cclib_results.atomnos]
         if atom_weighted:
             try:
                 atom_masses = self.cclib_results.atommasses[:self.cclib_results.natom].reshape(-1, 1)
             except AttributeError:
                 # For some unknown cases, atommasses is not available
-                pt = Chem.GetPeriodicTable()
-                atom_masses = np.array([pt.GetAtomicWeight(int(i)) for i in self.cclib_results.atomnos]).reshape(-1, 1)
+                atom_masses = np.array([PT.GetAtomicWeight(int(i)) for i in self.cclib_results.atomnos]).reshape(-1, 1)
             atom_weights = np.sqrt(atom_masses)
         else:
             atom_weights = np.ones((self.cclib_results.natom, 1))
-        xyzs = xyz - amplitude * disp * atom_weights, xyz + amplitude * disp * atom_weights
-        mol = self.get_mol(backend=backend)
-        xyz_strs = []
-        for xyz in xyzs:
-            mol.SetPositions(xyz)
-            xyz_strs.append(mol.ToXYZ())
-        r_mol, p_mol = [RDKitMol.FromXYZ(xyz_str, backend=backend) for xyz_str in xyz_strs]
-        r_mol.SaturateMol(multiplicity=self.multiplicity)
-        p_mol.SaturateMol(multiplicity=self.multiplicity)
+
+        r_mols, p_mols = guess_rxn_from_normal_mode(xyz=xyz,
+                                                    symbols=atom_symbols,
+                                                    disp=disp,
+                                                    amplitude=amplitude,
+                                                    weights=atom_weights,
+                                                    backend=backend,
+                                                    multiplicity=self.multiplicity
+                                                    )
+        if not len(r_mols) or not len(p_mols):
+            print('At least one side of the reaction cannot be inferred using provided arguments.')
 
         if inverse:
-            r_mol, p_mol = p_mol, r_mol
+            r_mols, p_mols = p_mols, r_mols
 
-        if as_mol_frags:
-            r_mol, p_mol = r_mol.GetMolFrags(asMols=True), p_mol.GetMolFrags(asMols=True)
-
-        return r_mol, p_mol
+        return r_mols, p_mols
 
     ###################################################################
     ####                                                           ####
