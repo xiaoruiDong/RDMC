@@ -318,13 +318,18 @@ def examine_normal_mode(r_mol: RDKitMol,
     baseline = np.max(other_bonds_diff)
     std = np.std(other_bonds_diff)
     larger_factor = (np.min(formed_and_broken_diff) - baseline) / std
-    smaller_factor = (np.min(changed_diff) - baseline) / std
+    if changed_diff:
+        # There might be no bond that only changes its order
+        smaller_factor = (np.min(changed_diff) - baseline) / std
+    else:
+        smaller_factor = 0
 
     if verbose:
         print(f'The min. bond distance change for bonds that are broken or formed'
-              f' is {larger_factor:.1f} std off the baseline.')
-        print(f'The min. bond distance change for bonds that are changed'
-              f' is {smaller_factor:.1f} std off the baseline.')
+              f' is {np.min(formed_and_broken_diff)} A and is {larger_factor:.1f} STD off the baseline.')
+        if changed_diff:
+            print(f'The min. bond distance change for bonds that are changed'
+                  f' is {np.min(changed_diff)} A and is {smaller_factor:.1f} STD off the baseline.')
 
     if as_factors:
         return larger_factor, smaller_factor
