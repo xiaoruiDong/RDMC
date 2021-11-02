@@ -689,6 +689,26 @@ class RDKitMol(object):
         return find_internal_torsions(self._mol,
                                       exclude_methyl=excludeMethyl)
 
+    def GetVdwMatrix(self) -> Optional[np.ndarray]:
+        """
+        Get the derived Van der Waals matrix, which can be used to analyze
+        the collision of atoms. More information can be found from ``generate_vdw_mat``.
+        
+        Returns:
+            Optional[np.ndarray]: A 2D array of the derived Van der Waals Matrix, if the
+                                  the matrix exists, otherwise ``None``.
+        """
+        try:
+            return self._vdw_mat
+        except AttributeError:
+            self.SetVdwMatrix()
+            return self._vdw_mat
+
+    def HasCollidingAtoms(self) -> np.ndarray:
+        dist_mat = np.triu(self.GetDistanceMatrix())
+        # if the distance is smaller than a threshold, the atom has a high chance of colliding
+        return not not np.all(self.GetVdwMatrix() <= dist_mat)
+
     def PrepareOutputMol(self,
                           removeHs: bool = False,
                           sanitize: bool = True,
@@ -1212,6 +1232,29 @@ class RDKitMol(object):
         if self.GetSpinMultiplicity() != multiplicity:
             print('SaturateMol fails after trying all methods and you need to be cautious about the generated mol.')
 
+    def SetVdwMatrix(self,
+                     threshold: float = 0.4,
+                     vdw_radii: dict = VDW_RADII):
+        """
+        Set the derived Van der Waals matrix, which is an upper triangle matrix
+        calculated from a threshold usually around 0.4 of the Van der Waals Radii.
+        Its diagonal elements are all zeros. The element (i, j) is calculated by
+        threshold * sum( R(atom i) + R(atom j) ). If two atoms are bonded, the value is
+        set to be zero. When threshold = 0.4, the value is close to the covalent bond
+        length.
+        
+        Args:
+            threshold (float): The threshold used to calculate the derived Van der Waals
+                               matrix. A larger value results in a matrix with larger values;
+                               When compared with distance matrix, it may overestiate the
+                               overlapping between atoms. The default value is 0.4.
+            vdw_radii (dict): A dict stores the Van der Waals radii of different elements.
+        
+        Raises:
+            ValueError: Invalid threshold is supplied.
+        """
+        self._vdw_mat = generate_vdw_mat(self, threshold, vdw_radii)
+
     def GetInternalCoordinates(self,
                                nonredundant: bool = True,
                                ) -> list:
@@ -1294,3 +1337,47 @@ def parse_xyz_or_smiles_list(mol_list,
         return mols, is_3D
     else:
         return mols
+
+def generate_vdw_mat(rd_mol,
+                     threshold: float = 0.4,
+                     vdw_radii: dict = VDW_RADII):
+    """
+    Generate a derived Van der Waals matrix, which is an upper triangle matrix
+    calculated from a threshold usually around 0.4 of the Van der Waals Radii.
+    Its diagonal elements are all zeros. The element (i, j) is calculated by
+    threshold * sum( R(atom i) + R(atom j) ). If two atoms are bonded, the value is
+    set to be zero. When threshold = 0.4, the value is close to the covalent bond
+    length.
+    
+    Args:
+        threshold (float): The threshold used to calculate the derived Van der Waals
+                            matrix. A larger value results in a matrix with larger values;
+                            When compared with distance matrix, it may overestiate the
+                            overlapping between atoms. The default value is 0.4.
+        vdw_radii (dict): A dict stores the Van der Waals radii of different elements.
+    
+    Raises:
+        ValueError: Invalid threshold is supplied.
+    """
+    if threshold <= 0:
+        raise ValueError("The provided threshold is invalid.")
+
+    # initialize a vdw matrix
+    num_atom = rd_mol.GetNumAtoms()
+    vdw_mat = np.zeros((num_atom, num_atom))
+    # get all of the atom index
+    atom_idx_list = range(num_atom)
+
+    for atom1_ind in atom_idx_list:
+        atom1 = rd_mol.GetAtomWithIdx(atom1_ind)
+        bonded_atom_number = [nb.GetIdx() for nb in atom1.GetNeighbors()]
+        for atom2_ind in atom_idx_list[atom1_ind + 1:]:
+            if atom2_ind in bonded_atom_number:
+                # set a small value for bonded atoms, so they won't arise the collision detector
+                vdw_mat[atom1_ind, atom2_ind] = 0.
+            else:
+                atom2 = rd_mol.GetAtomWithIdx(atom2_ind)
+                vdw_mat[atom1_ind, atom2_ind] = threshold * \
+                    (vdw_radii[atom1.GetAtomicNum()] +
+                        vdw_radii[atom2.GetAtomicNum()])
+    return vdw_mat

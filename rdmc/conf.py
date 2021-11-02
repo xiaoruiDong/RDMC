@@ -5,13 +5,15 @@
 This module provides class and methods for dealing with RDKit Conformer.
 """
 
-from typing import Sequence, Union
+from typing import Optional, Sequence, Union
 
 import numpy as np
+from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 from rdkit.Chem.rdchem import Conformer
+from scipy.spatial import distance_matrix
 
-from rdmc.utils import find_internal_torsions, set_rdconf_coordinates
+from rdmc.utils import find_internal_torsions, set_rdconf_coordinates, VDW_RADII
 
 
 class RDKitConf(object):
@@ -134,6 +136,15 @@ class RDKitConf(object):
         """
         return [self.GetTorsionDeg(tor) for tor in self.GetTorsionalModes()]
 
+    def GetDistanceMatrix(self) -> np.ndarray:
+        """
+        Get the distance matrix of the conformer.
+
+        Returns:
+            array: n x n distance matrix such that n is the number of atom.
+        """
+        return distance_matrix(self._conf.GetPositions(), self._conf.GetPositions())
+
     def GetOwningMol(self):
         """
         Get the owning molecule of the conformer.
@@ -177,6 +188,27 @@ class RDKitConf(object):
         except AttributeError:
             self._torsions = find_internal_torsions(self._owning_mol)
             return self._torsions
+
+    def GetVdwMatrix(self) -> Optional[np.ndarray]:
+        """
+        Get the derived Van der Waals matrix, which can be used to analyze
+        the collision of atoms. More information can be found from ``generate_vdw_mat``.
+        
+        Returns:
+            Optional[np.ndarray]: A 2D array of the derived Van der Waals Matrix, if the
+                                  the matrix exists, otherwise ``None``.
+        """
+        try:
+            return self._vdw_mat
+        except AttributeError:
+            # Try to obtain from its Owning molecule
+            self._vdw_mat = self._owning_mol.GetVdwMatrix()
+            return self._vdw_mat
+
+    def HasCollidingAtoms(self) -> np.ndarray:
+        dist_mat = np.triu(self.GetDistanceMatrix())
+        # if the distance is smaller than a threshold, the atom has a high chance of colliding
+        return not not np.all(self.GetVdwMatrix() <= dist_mat)
 
     def HasOwningMol(self):
         """

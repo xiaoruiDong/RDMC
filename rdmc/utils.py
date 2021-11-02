@@ -40,6 +40,7 @@ CO_OPENBABEL_PATTERN.Init('[C;v2]=[O]')
 CARBENE_PATTERN = Chem.MolFromSmarts('[Cv0,Cv1,Cv2,Nv0,Nv1,Ov0]')
 
 PERIODIC_TABLE = Chem.GetPeriodicTable()
+VDW_RADII = {i: PERIODIC_TABLE.GetRvdw(i) for i in range(1, 36)}
 
 
 def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
