@@ -949,6 +949,18 @@ class RDKitMol(object):
         """
         return Chem.GetFormalCharge(self._mol)
 
+    def GetInternalCoordinates(self,
+                               nonredundant: bool = True,
+                               ) -> list:
+        """
+        Get internal coordinates of the molecule.
+        """
+        bonds, angles, torsions = get_internal_coords(self.ToOBMol(),
+                                                      nonredundant=nonredundant)
+        return [[[element - 1 for element in item]
+                  for item in ic]
+                  for ic in [bonds, angles, torsions]]
+
     def GetSpinMultiplicity(self):
         """
         Get spin multiplicity of a molecule. The spin multiplicity is calculated
@@ -1255,17 +1267,6 @@ class RDKitMol(object):
         """
         self._vdw_mat = generate_vdw_mat(self, threshold, vdw_radii)
 
-    def GetInternalCoordinates(self,
-                               nonredundant: bool = True,
-                               ) -> list:
-        """
-        Get internal coordinates of the molecule.
-        """
-        bonds, angles, torsions = get_internal_coords(self.ToOBMol(),
-                                                      nonredundant=nonredundant)
-        return [[[element - 1 for element in item]
-                  for item in ic]
-                  for ic in [bonds, angles, torsions]]
 
 
 class RDKitTS(RDKitMol):
