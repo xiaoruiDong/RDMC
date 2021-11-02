@@ -15,6 +15,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cclib.io
 
+from rdkit import Chem
 from rdmc import RDKitMol
 from rdmc.view import mol_viewer, freq_viewer, mol_animation
 
@@ -813,8 +814,13 @@ class GaussianLog(object):
 
         xyz, disp = self.converged_geometries[0], self.cclib_results.vibdisps[0]
         if atom_weighted:
-            atom_weights = np.sqrt(
-                self.cclib_results.atommasses[:self.cclib_results.natom].reshape(-1, 1))
+            try:
+                atom_masses = self.cclib_results.atommasses[:self.cclib_results.natom].reshape(-1, 1)
+            except AttributeError:
+                # For some unknown cases, atommasses is not available
+                pt = Chem.GetPeriodicTable()
+                atom_masses = np.array([pt.GetAtomicWeight(int(i)) for i in self.cclib_results.atomnos]).reshape(-1, 1)
+            atom_weights = np.sqrt(atom_masses)
         else:
             atom_weights = np.ones((self.cclib_results.natom, 1))
         xyzs = xyz - amplitude * disp * atom_weights, xyz + amplitude * disp * atom_weights
