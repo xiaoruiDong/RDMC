@@ -11,6 +11,11 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import BondType, Mol, RWMol
+from rdkit import RDLogger
+
+# Mute RDKit's error logs
+# They can be confusing at places where try ... except ... are implemented.
+RDLogger.DisableLog("rdApp.*")
 
 try:
     # Openbabel 3
