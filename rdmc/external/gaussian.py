@@ -255,7 +255,7 @@ class GaussianLog(object):
             self._ts = True
             return
 
-        if 'freqs' in self.job_type and self.num_neg_freqs == 1:
+        if 'freq' in self.job_type and self.num_neg_freqs == 1:
                 self._ts = True
                 return
 
