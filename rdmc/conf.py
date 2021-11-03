@@ -376,8 +376,6 @@ def edit_conf_by_add_bonds(conf, function_name, atoms, value):
         atoms (list): A list of atoms representing the internal coordinates.
         value (float): Value to be set.
     """
-    import pdb
-    pdb.set_trace()
     tmp_mol = conf.GetOwningMol()
     all_bonds = tmp_mol.GetBondsAsTuples()
     bonds_to_add = []
