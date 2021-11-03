@@ -197,24 +197,62 @@ class RDKitMol(object):
         """
         return self.RenumberAtoms(list(range(self.GetNumAtoms())))
 
-    def EmbedConformer(self, **kwargs):
+    def EmbedConformer(self,
+                       embed_null: bool = True,
+                       **kwargs):
         """
-        Embed a conformer to the ``RDKitMol``. This will overwrite current conformers.
-        """
-        return_code = AllChem.EmbedMolecule(self._mol, **kwargs)
-        if return_code == -1:
-            raise RuntimeError('Cannot embed conformer for this molecule!')
+        Embed a conformer to the ``RDKitMol``. This will overwrite current conformers. By default, it
+        will first try embeding a 3D conformer; if failed, it will then try to compute 2D coordinates
+        and use that for the conformer structure; if both approaches fail and allow embedding a null
+        conformer, then a conformer with all zero coordinates will be embedded. The last one is still
+        helpful if you have the coordinates, so you can use `SetPositions` to set them, or if you want to
+        optimize the geometry using things like forcefields.
 
-    def EmbedMultipleConfs(self, n: int = 1, **kwargs):
+        Args:
+            embed_null (bool): If Embed 3D and 2D coordinates fails, whether to embed a conformer
+                               with all null coordinates: (0, 0, 0) for each atom. Defaults to ``True``.
         """
-        Embed conformers to the ``RDKitMol``. This will overwrite current conformers.
+        try:
+            return_code = AllChem.EmbedMolecule(self._mol, **kwargs)
+        except Chem.AtomValenceException:
+            try:
+                AllChem.Compute2DCoords(self._mol)
+                return_code = 0
+            except:  # To be replaced by a more specific error type
+                return_code = -1
+
+        if return_code == -1:
+            if embed_null:
+                self.EmbedNullConformer()
+            else:
+                raise RuntimeError('Cannot embed conformer for this molecule!')
+
+    def EmbedMultipleConfs(self,
+                           n: int = 1,
+                           embed_null: bool = True,
+                           **kwargs):
+        """
+        Embed conformers to the ``RDKitMol``. This will overwrite current conformers. By default, it
+        will first try embeding 3D conformers; if failed, it will then try to compute 2D coordinates
+        and use that for the conformer structures; if both approaches fail and allow embedding null
+        conformers, then conformers with all zero coordinates will be embedded. The last one is still
+        helpful if you have the coordinates, so you can use `SetPositions` to set them, or you want to
+        optimize the geometry using things like forcefields.
 
         Args:
             n (int): The number of conformers to be embedded. The default is ``1``.
+            embed_null (bool): If embeding fails, whether to embed null conformers. Defaults to ``True``.
         """
-        results = AllChem.EmbedMultipleConfs(self._mol, numConfs=n, **kwargs)
+        try:
+            results = AllChem.EmbedMultipleConfs(self._mol, numConfs=n, **kwargs)
+        except Chem.AtomValenceException:
+            results = []
+
         if len(results) == 0:
-            raise RuntimeError('Cannot embed conformer for this molecule!')
+            if embed_null:
+                results = self.EmbedMultipleNullConfs(n=n)
+            else:
+                raise RuntimeError('Cannot embed conformer for this molecule!')
 
     def EmbedNullConformer(self,
                            random: bool = True):
@@ -236,7 +274,7 @@ class RDKitMol(object):
                                random: bool = True):
         """
         Embed conformers with meaningless atom coordinates. This helps the cases where a conformer
-        can not be successfully embeded. You can choose to generate all zero coordinates or random coordinates.
+        can not be successfully embedded. You can choose to generate all zero coordinates or random coordinates.
         You can set to all-zero coordinates, if you will set coordinates later; You should set to random
         coordinates, if you want to optimize this molecule by forcefield (RDKit force field cannot optimize
         all-zero coordinates).
@@ -693,7 +731,7 @@ class RDKitMol(object):
         """
         Get the derived Van der Waals matrix, which can be used to analyze
         the collision of atoms. More information can be found from ``generate_vdw_mat``.
-        
+
         Returns:
             Optional[np.ndarray]: A 2D array of the derived Van der Waals Matrix, if the
                                   the matrix exists, otherwise ``None``.
@@ -1261,7 +1299,7 @@ class RDKitMol(object):
                                When compared with distance matrix, it may overestiate the
                                overlapping between atoms. The default value is 0.4.
             vdw_radii (dict): A dict stores the Van der Waals radii of different elements.
-        
+
         Raises:
             ValueError: Invalid threshold is supplied.
         """
