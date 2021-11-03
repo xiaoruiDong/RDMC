@@ -131,7 +131,7 @@ class GaussianLog(object):
 
     def _update_status(self):
         with open(self.path) as f:
-            lines = f.readlines()[-5:]
+            lines = f.readlines()[-10:]
         for line in lines:
             if 'Normal termination' in line:
                 # Example:
@@ -154,6 +154,15 @@ class GaussianLog(object):
                 else:
                     self._termination_time = datetime.datetime.strptime(time_str, '%b %d %H:%M:%S %Y')
                     return
+            elif 'Erroneous write' in line:
+                # Example:
+                # Erroneous write. Write -1 instead of 198024.
+                # fd = 4
+                # orig len = 198024 left = 198024
+                # g_write
+                self._success = False
+                self._finished = False
+                self._termination_time = None
         self._success = False
         self._finished = False
         self._termination_time = None
