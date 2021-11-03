@@ -193,7 +193,7 @@ class RDKitConf(object):
         """
         Get the derived Van der Waals matrix, which can be used to analyze
         the collision of atoms. More information can be found from ``generate_vdw_mat``.
-        
+
         Returns:
             Optional[np.ndarray]: A 2D array of the derived Van der Waals Matrix, if the
                                   the matrix exists, otherwise ``None``.
@@ -261,7 +261,16 @@ class RDKitConf(object):
             value (int or float, optional): Bond length in Angstrom.
         """
         assert len(atomIds) == 2, ValueError(f'Invalid atomIds. It should be a sequence with a length of 2. Got {atomIds}')
-        return rdMT.SetBondLength(self._conf, *atomIds, value)
+        try:
+            return rdMT.SetBondLength(self._conf, *atomIds, value)
+        except ValueError:
+            # RDKit doesn't allow change bonds for non-bonding atoms
+            # A workaround may be form a bond and change the distance
+            tmp_mol = self.GetOwningMol().AddRedundantBonds([atomIds])
+            tmp_mol.SetPositions(self.GetPositions())
+            conf = tmp_mol.GetConformer()
+            conf.SetBondLength(atomIds, value)
+            self.SetPositions(conf.GetPositions())
 
     def SetAngleDeg(self,
                     atomIds: Sequence[int],
