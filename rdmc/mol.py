@@ -1292,7 +1292,7 @@ class RDKitMol(object):
         threshold * sum( R(atom i) + R(atom j) ). If two atoms are bonded, the value is
         set to be zero. When threshold = 0.4, the value is close to the covalent bond
         length.
-        
+
         Args:
             threshold (float): The threshold used to calculate the derived Van der Waals
                                matrix. A larger value results in a matrix with larger values;
@@ -1304,39 +1304,6 @@ class RDKitMol(object):
             ValueError: Invalid threshold is supplied.
         """
         self._vdw_mat = generate_vdw_mat(self, threshold, vdw_radii)
-
-
-
-class RDKitTS(RDKitMol):
-    """
-    This is a wrapper for Chem.rdchem.Mol / Chem.rdchem.RWMol to deal with Transition States
-    specifically. Since transition states are those cannot be sanitized, EmbedConformer method
-    is not feasible. Modifications on ``Chem.AllChem.EmbedMolecule()`` and ``Chem.All.EmbedMultipleConfs``
-    allows user assign xyz coordinates mannually. Generally, not recommended to use unless you have to do it.
-    """
-
-    def EmbedConformer(self):
-        """
-        Embed a conformer to the RDKitMol. This will overwrite current conformers.
-        The coordinates will be initialized to zeros.
-        """
-        self.EmbedMultipleConfs()
-
-    def EmbedMultipleConfs(self, n: int = 1):
-        """
-        Embed conformers to the RDKitMol. This will overwrite current conformers.
-        All coordinates will be initialized to zeros.
-
-        Args:
-            n (int): The number of conformers to be embedded. Defaults to ``1``.
-        """
-        self._mol.RemoveAllConformers()
-        num_atoms = self._mol.GetNumAtoms()
-        for i in range(n):
-            conf = Conformer()
-            set_rdconf_coordinates(conf, np.zeros((num_atoms, 3)))
-            conf.SetId(i)
-            self._mol.AddConformer(conf)
 
 
 def parse_xyz_or_smiles_list(mol_list,
