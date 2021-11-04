@@ -266,7 +266,12 @@ class RDKitConf(object):
         except ValueError:
             # RDKit doesn't allow change bonds for non-bonding atoms
             # A workaround may be form a bond and change the distance
-            edit_conf_by_add_bonds(self, 'SetBondLength', atomIds, value)
+            try:
+                edit_conf_by_add_bonds(self, 'SetBondLength', atomIds, value)
+            except ValueError:
+                # RDKit doesn't allow change bonds for atoms in a ring
+                # A workaround hasn't been proposed
+                raise NotImplementedError(f'Approach for modifying the bond length of {atomIds} is not available.')
 
     def SetAngleDeg(self,
                     atomIds: Sequence[int],
@@ -283,9 +288,14 @@ class RDKitConf(object):
         try:
             return rdMT.SetAngleDeg(self._conf, *atomIds, value)
         except ValueError:
-            # RDKit doesn't allow change bonds for non-bonding atoms
-            # A workaround may be form a bond and change the distance
-            edit_conf_by_add_bonds(self, 'SetAngleDeg', atomIds, value)
+            try:
+                # RDKit doesn't allow change bonds for non-bonding atoms
+                # A workaround may be form a bond and change the distance
+                edit_conf_by_add_bonds(self, 'SetAngleDeg', atomIds, value)
+            except:
+                # RDKit doesn't allow change bonds for atoms in a ring
+                # A workaround hasn't been proposed
+                raise NotImplementedError(f'Approach for modifying the bond angle of {atomIds} is not available.')
 
     def SetAngleRad(self,
                     atomIds: Sequence[int],
@@ -302,9 +312,14 @@ class RDKitConf(object):
         try:
             return rdMT.SetAngleRad(self._conf, *atomIds, value)
         except ValueError:
-            # RDKit doesn't allow change bonds for non-bonding atoms
-            # A workaround may be form a bond and change the distance
-            edit_conf_by_add_bonds(self, 'SetAngleRad', atomIds, value)
+            try:
+                # RDKit doesn't allow change bonds for non-bonding atoms
+                # A workaround may be form a bond and change the distance
+                edit_conf_by_add_bonds(self, 'SetAngleRad', atomIds, value)
+            except:
+                # RDKit doesn't allow change bonds for atoms in a ring
+                # A workaround hasn't been proposed
+                raise NotImplementedError(f'Approach for modifying the bond angle of {atomIds} is not available.')
 
     def SetTorsionDeg(self,
                       torsion: list,
@@ -320,9 +335,14 @@ class RDKitConf(object):
         try:
             rdMT.SetDihedralDeg(self._conf, *torsion, degree)
         except ValueError:
-            # RDKit doesn't allow change bonds for non-bonding atoms
-            # A workaround may be form a bond and change the distance
-            edit_conf_by_add_bonds(self, 'SetDihedralDeg', torsion, degree)
+            try:
+                # RDKit doesn't allow change bonds for non-bonding atoms
+                # A workaround may be form a bond and change the distance
+                edit_conf_by_add_bonds(self, 'SetDihedralDeg', torsion, degree)
+            except:
+                # RDKit doesn't allow change bonds for atoms in a ring
+                # A workaround hasn't been proposed
+                raise NotImplementedError(f'Approach for modifying the dihedral of {torsion} is not available.')
 
     def SetAllTorsionsDeg(self, angles: list):
         """
