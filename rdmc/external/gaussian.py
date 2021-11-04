@@ -937,7 +937,7 @@ class GaussianLog(object):
             highlight_index (int): highlight the data corresponding to the given index.
             ax (axes): An existing matplotlib axes instance.
         """
-        y_params = self.get_scf_energies(converged=True, only_opt=('opt' in self.job_type), relative=True)
+        y_params = self.get_scf_energies(converged=converged, only_opt=('opt' in self.job_type), relative=True)
         if relative_y:
             baseline_y = 0
         else:
