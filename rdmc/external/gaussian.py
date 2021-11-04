@@ -533,6 +533,9 @@ class GaussianLog(object):
                              return SCF energies only for the optimization step. Defaults
                              to ``False``.
             relative (bool): Only return the value relative to the minimum. Defaults to ``True``.
+
+        Returns:
+            np.array: The SCF energies.
         """
         num_opt_geoms = self.num_all_geoms
         if only_opt and 'opt' in self.job_type:
@@ -555,6 +558,29 @@ class GaussianLog(object):
             scf_energies -= scf_energies.min()
 
         return scf_energies
+
+    def get_scan_lowest_conformer(self,
+                                  as_xyz: bool = False):
+        """
+        Get the lowest conformer in a conformer job. By default its ID is returned.
+
+        Args:
+            as_xyz (bool): if ``True``, the xyz str is returned rather than ID.
+
+        Returns:
+            - int: the ID of the conformer
+            - str: the XYZ of the conformer
+        """
+        energies = self.get_scf_energies(converged=True, only_opt=('opt' in self.job_type), relative=True)
+        if energies.shape[0] > 0:
+            low_idx = int(np.argmin(energies))
+        else:
+            return -1  # or may be raise an error?
+        if as_xyz:
+            return self.get_xyzs(converged=True)[low_idx]
+        else:
+            return low_idx
+
 
     ###################################################################
     ####                                                           ####
