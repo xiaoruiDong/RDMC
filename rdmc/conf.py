@@ -322,7 +322,7 @@ class RDKitConf(object):
         except ValueError:
             # RDKit doesn't allow change bonds for non-bonding atoms
             # A workaround may be form a bond and change the distance
-            edit_conf_by_add_bonds(self, 'SetTorsionDeg', torsion, degree)
+            edit_conf_by_add_bonds(self, 'SetDihedralDeg', torsion, degree)
 
     def SetAllTorsionsDeg(self, angles: list):
         """
@@ -385,5 +385,5 @@ def edit_conf_by_add_bonds(conf, function_name, atoms, value):
     tmp_mol = tmp_mol.AddRedundantBonds(bonds_to_add)
     tmp_mol.SetPositions(conf.GetPositions())
     tmp_conf = tmp_mol.GetConformer()
-    getattr(tmp_conf, function_name)(atoms, value)
+    getattr(rdMT, function_name)(tmp_conf._conf, *atoms, value)
     conf.SetPositions(tmp_conf.GetPositions())
