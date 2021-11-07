@@ -476,12 +476,19 @@ class GaussianLog(object):
         # Assuming it is a 1D scan
         scan_name = self.get_scannames(as_list=True, index_0=True)[0]
         if converged:
-            params = np.array(self.cclib_results.scanparm[0])
+            try:
+                params = np.array(self.cclib_results.scanparm[0])
+            except AttributeError:
+                # When job fails, cclib may not be able to parse scanparm
+                mol = self.get_mol(converged=False, backend=backend)
+                get_val_fun = {2: 'GetBondLength', 3: 'GetAngleDeg', 4: 'GetTorsionDeg'}[len(scan_name)]
+                params = np.array([getattr(mol.GetConformer(id=i), get_val_fun)(scan_name)
+                                   for i in range(mol.GetNumConformers())])
         else:
             mol = self.get_mol(converged=False, backend=backend)
             get_val_fun = {2: 'GetBondLength', 3: 'GetAngleDeg', 4: 'GetTorsionDeg'}[len(scan_name)]
             params = np.array([getattr(mol.GetConformer(id=i), get_val_fun)(scan_name)
-                                    for i in range(mol.GetNumConformers())])
+                               for i in range(mol.GetNumConformers())])
         if relative:
             params -= params[0]
             if len(scan_name) == 3:
