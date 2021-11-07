@@ -545,17 +545,20 @@ class GaussianLog(object):
             np.array: The SCF energies.
         """
         num_opt_geoms = self.num_all_geoms
-        if only_opt and 'opt' in self.job_type:
+        if (only_opt and 'opt' in self.job_type) or 'scan' in self.job_type:
             scf_energies = self.cclib_results.scfenergies[:num_opt_geoms]
         else:
             scf_energies = self.cclib_results.scfenergies
 
         if converged:
-            if 'opt' in self.job_type:
+            if 'opt' in self.job_type or 'scan' in self.job_type:
                 sub1 = scf_energies[:num_opt_geoms][self.get_converged_geom_idx()]
             else:
                 sub1 = scf_energies[self.get_converged_geom_idx()]
-            sub2 = scf_energies[num_opt_geoms:]
+            if 'scan' not in self.job_type:
+                sub2 = scf_energies[num_opt_geoms:]
+            else:
+                sub2 = []
             scf_energies = np.concatenate([sub1, sub2])
 
         # Convert from eV to hartree to kcal/mol
