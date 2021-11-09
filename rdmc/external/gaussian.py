@@ -480,7 +480,7 @@ class GaussianLog(object):
                 params = np.array(self.cclib_results.scanparm[0])
             except AttributeError:
                 # When job fails, cclib may not be able to parse scanparm
-                mol = self.get_mol(converged=False, backend=backend)
+                mol = self.get_mol(converged=True, backend=backend)
                 get_val_fun = {2: 'GetBondLength', 3: 'GetAngleDeg', 4: 'GetTorsionDeg'}[len(scan_name)]
                 params = np.array([getattr(mol.GetConformer(id=i), get_val_fun)(scan_name)
                                    for i in range(mol.GetNumConformers())])
