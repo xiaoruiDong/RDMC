@@ -208,7 +208,7 @@ class RDKitConf(object):
     def HasCollidingAtoms(self) -> np.ndarray:
         dist_mat = np.triu(self.GetDistanceMatrix())
         # if the distance is smaller than a threshold, the atom has a high chance of colliding
-        return not not np.all(self.GetVdwMatrix() <= dist_mat)
+        return not np.all(self.GetVdwMatrix() <= dist_mat)
 
     def HasOwningMol(self):
         """
