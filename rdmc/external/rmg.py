@@ -153,7 +153,7 @@ def find_reaction_family(database: 'RMGDatabase',
     all_matches = []
     for rxn in reaction_list:
         if verbose:
-            print(f'{rxn}\nRMG family: {rxn.family}\nIs forward reaction: {rxn.forward}')
+            print(f'{rxn}\nRMG family: {rxn.family}\nIs forward reaction: {rxn.is_forward}')
         if unique:
             return rxn.family, rxn.is_forward
         else:
