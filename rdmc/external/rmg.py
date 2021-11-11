@@ -82,10 +82,10 @@ def from_rdkit_mol(rdkitmol,
         charge = rdkitatom.GetFormalCharge()
         radical_electrons = rdkitatom.GetNumRadicalElectrons()
 
-        if (radical_electrons == 2 and element.symbol == "C") or smiles == "[CH2]":
+        if (radical_electrons == 2 and element.symbol == "C") or "[CH2]" in smiles:
             is_carbene_or_nitrene = True
             atom = mm.Atom(element, 0, charge, '', 1)
-        elif (radical_electrons == 2 and element.symbol == "N") or smiles == "[NH]":
+        elif (radical_electrons == 2 and element.symbol == "N") or "[NH]" in smiles:
             is_carbene_or_nitrene = True
             atom = mm.Atom(element, 0, charge, '', 1)
         else:
