@@ -189,10 +189,13 @@ class RDKitConf(object):
             self._torsions = find_internal_torsions(self._owning_mol)
             return self._torsions
 
-    def GetVdwMatrix(self) -> Optional[np.ndarray]:
+    def GetVdwMatrix(self, threshold=0.4) -> Optional[np.ndarray]:
         """
         Get the derived Van der Waals matrix, which can be used to analyze
         the collision of atoms. More information can be found from ``generate_vdw_mat``.
+
+        Args:
+            threshold: float indicating the threshold to use in the vdw matrix
 
         Returns:
             Optional[np.ndarray]: A 2D array of the derived Van der Waals Matrix, if the
@@ -202,13 +205,17 @@ class RDKitConf(object):
             return self._vdw_mat
         except AttributeError:
             # Try to obtain from its Owning molecule
-            self._vdw_mat = self._owning_mol.GetVdwMatrix()
+            self._vdw_mat = self._owning_mol.GetVdwMatrix(threshold=threshold)
             return self._vdw_mat
 
-    def HasCollidingAtoms(self) -> np.ndarray:
+    def HasCollidingAtoms(self, threshold=0.4) -> np.ndarray:
+        """
+        Args:
+            threshold: float indicating the threshold to use in the vdw matrix
+        """
         dist_mat = np.triu(self.GetDistanceMatrix())
         # if the distance is smaller than a threshold, the atom has a high chance of colliding
-        return not np.all(self.GetVdwMatrix() <= dist_mat)
+        return not np.all(self.GetVdwMatrix(threshold=threshold) <= dist_mat)
 
     def HasOwningMol(self):
         """
