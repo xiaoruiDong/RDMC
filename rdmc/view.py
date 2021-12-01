@@ -59,8 +59,7 @@ def mol_viewer(obj: str,
 
     if style_spec is None:
         viewer.setStyle({'stick': {'radius': 0.05, 'color': '#f2f2f2'},
-                         'sphere': {'scale': 0.25},},)
-
+                         'sphere': {'scale': 0.25},}, viewer=viewer_loc)
     else:
         viewer.setStyle(style_spec, viewer=viewer_loc)
 
@@ -80,6 +79,65 @@ def mol_viewer(obj: str,
                                  }, viewer=viewer_loc)
     if gv_background:
         viewer.setBackgroundColor('#e5e5ff')
+    viewer.zoomTo(viewer=viewer_loc)
+    return viewer
+
+
+def conformer_viewer(mol: 'RDKitMol',
+                     conf_ids: Optional[list] = None,
+                     highlight_ids: Optional[list] = None,
+                     opacity: float = 0.5,
+                     style_spec: Optional[dict] = None,
+                     viewer: Optional[py3Dmol.view] = None,
+                     viewer_size: tuple = (400, 400),
+                     viewer_loc: Optional[tuple] = None,
+                    ) -> py3Dmol.view:
+    """
+    This is a viewer for viewing multiple overlaid conformers.
+
+    Args:
+        mol (RDKitMol): An RDKitMol object with embedded conformers.
+        conf_ids (list, optional): A list of conformer ids (int) to be overlaid and viewed.
+                                   If not provided, all embedded conformers will be used.
+        highlight_ids (list, optional): It is possible to highlight some of the conformers while greying out
+                                        other conformers by providing the conformer IDs you want to highlight.
+        opacity (float, optional): Set the opacity of the non-highlighted conformers and is only used with the highlighting feature.
+                                   the value should be a float number between 0 to 1. The default value is 0.5.
+                                   Values below 0.3 may be hard to see.
+        style_spec (dict, Optional): Style of the shown molecule. The default setting is
+                                     {'stick': {'radius': 0.05, 'color': '#f2f2f2'},
+                                      'sphere': {'scale': 0.25},}
+                                     which set both bond width/color and atom sizes. For more details, please refer to the
+                                     original APIs in 3DMol.js.
+        viewer (py3Dmol.view, optional): Provide an existing viewer, instead of create a new one.
+        viewer_size (tuple, optional): Set the viewer size. Only useful if ``viewer`` is not provided.
+                                       Defaults to (400, 400).
+        viewer_loc (tuple, optional): The location of the viewer in the grid. E.g., (0, 1). Defaults to None.
+
+    Returns:
+        py3Dmol.view: The molecule viewer.
+    """
+    if not viewer:
+        viewer = py3Dmol.view(width=viewer_size[0], height=viewer_size[1])
+    if not conf_ids:
+        conf_ids = list(range(mol.GetNumConformers()))
+    for i in range(len(conf_ids)):
+            viewer.addModel(mol.ToMolBlock(confId=conf_ids[i]), 'sdf')
+
+    if style_spec is None:
+        style_spec = {'stick': {'radius': 0.05, 'color': '#f2f2f2'},
+                      'sphere': {'scale': 0.25},}
+    if highlight_ids is None:
+        viewer.setStyle(style_spec, viewer=viewer_loc)
+    else:
+        # We need to figure out the sequence number of the highlighted IDs,
+        # since it is the actual input for setting styles
+        highlight_seq = [conf_ids.index(i) for i in highlight_ids]
+        viewer.setStyle({'model': highlight_seq},
+                        style_spec, viewer=viewer_loc)
+        viewer.setStyle({'model': [i for i in range(len(conf_ids)) if i not in highlight_seq]},
+                        {key: {**value, **{'opacity': opacity}} for key, value in style_spec.items()},
+                        viewer=viewer_loc)
     viewer.zoomTo(viewer=viewer_loc)
     return viewer
 
