@@ -100,16 +100,16 @@ class RDKitMol(object):
         return RDKitMol.FromMol(rw_mol)
 
     def AlignMol(self,
-                 refMol: Union['RDKitMol', 'RWMol', 'Mol'],
+                 prbMol: Union['RDKitMol', 'RWMol', 'Mol'],
                  prbCid: int = 0,
                  refCid: int = 0,
                  reflect: bool = False,
-                 atomMap: list = [],
+                 atomMaps: list = None,
                  maxIters: int = 1000,
                  weights: list = [],
                  ) -> float:
         """
-        Align molecules based on a reference molecule.
+        Align molecules based on a reference molecule. This function will also return the RMSD value for the best alignment.
 
         Args:
             refMol (Mol): RDKit molecule as a reference.
@@ -125,19 +125,67 @@ class RDKitMol(object):
         Returns:
             float: RMSD value.
         """
+        if atomMaps is None:
+            atomMaps = [list(enumerate(range(self.GetNumAtoms())))]
+        if reflect:
+            prbMol.Reflect(id=prbCid)
+        rmsd = np.inf
+        for atom_map in atomMaps:
+            cur_rmsd = Chem.rdMolAlign.AlignMol(refMol=self._mol,
+                                            prbMol=prbMol._mol,
+                                            prbCid=prbCid,
+                                            refCid=refCid,
+                                            atomMap=atom_map,
+                                            reflect=reflect,
+                                            maxIters=maxIters,
+                                            weights=weights,
+                                            )
+            if cur_rmsd < rmsd:
+                rmsd = cur_rmsd
+            if reflect:
+                prbMol.Reflect(id=prbCid)
+        return rmsd
+
+    def CalcRMSD(self,
+                prbMol: 'RDKitMol',
+                prbCid: int = 0,
+                refCid: int = 0,
+                reflect: bool = False,
+                atomMaps: list = None,
+                weights: list = [],
+               ):
+        """
+        Calculate the RMSD for between conformers of two molecules. Note this function will not align molecule, thus molecules geometries
+        in the calculation are not translated or rotated. You can expect a larger number compared to the RMSD from AlignMol.
+
+        Args:
+            prbMol ('RDKitMol'): The other molecule to compare with. This can be the instance as the current molecule.
+            prbCid (int, optional): The conformer ID of the current molecule to calculate RMSD. Defaults to 0.
+            refCid (int, optional): The conformer ID of the other molecule to calculate RMSD. Defaults to 0.
+            reflect (bool, optional): Whether to reflect the conformation of the prbMol. Defaults to ``False``.
+            atomMaps (list, optional): Provide an atom mapping to calculate the RMSD. By default, prbMol and current molecule
+                                      will be assumed to have the same atom order.
+            weights (list, optional): Specify weights to each atom pairs. E.g., use atom weights to highlight the importance of
+                                      heavy atoms.
+        """
+        if atomMaps is None:
+            atomMaps = [list(enumerate(range(self.GetNumAtoms())))]
+
+        if reflect:
+            prbMol.Reflect(id=prbCid)
         try:
-            ref_mol = refMol.ToRWMol()
+            rmsd = Chem.rdMolAlign.CalcRMS(refMol=self._mol,
+                                           prbMol=prbMol.ToRWMol(),
+                                           prbId=prbCid,
+                                           refId=refCid,
+                                           map=atomMaps,
+                                           weights=weights,
+                                           )
         except AttributeError:
-            ref_mol = refMol
-        return Chem.rdMolAlign.AlignMol(prbMol=self._mol,
-                                        refMol=ref_mol,
-                                        prbCid=prbCid,
-                                        refCid=refCid,
-                                        atomMap=atomMap,
-                                        reflect=reflect,
-                                        maxIters=maxIters,
-                                        weights=weights,
-                                        )
+            raise NotImplementedError(f'The RDKit version used doesn\'t support this calculation.')
+        if reflect:
+            prbMol.Reflect(id=prbCid)
+        return rmsd
 
     def AssignStereochemistryFrom3D(self, confId: int = 0):
         """
