@@ -811,8 +811,8 @@ class RDKitMol(object):
         Generate a RDKit Mol instance for output purpose, to ensure that the original molecule is not modified.
 
         Args:
-            removeHs (bool, optional): Remove less useful explicity H atoms. E.g., When output SMILES, H atoms,
-                if explicitly added, will be included and reduce the readablity. Defaults to ``False``.
+            removeHs (bool, optional): Remove less useful explicit H atoms. E.g., When output SMILES, H atoms,
+                if explicitly added, will be included and reduce the readability. Defaults to ``False``.
                 Note, following Hs are not removed:
 
                     1. H which aren’t connected to a heavy atom. E.g.,[H][H].
@@ -837,12 +837,12 @@ class RDKitMol(object):
     def RemoveHs(self,
                  sanitize: bool=True):
         """
-        Remove H atoms. Useful when trying to match heavy atoms.py
+        Remove H atoms. Useful when trying to match heavy atoms.
 
         Args:
             sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
         """
-        return Chem.rdmolops.RemoveHs(self._mol, sanitize=sanitize)
+        return Chem.rdmolops.RemoveHs(self._mol, sanitize=sanitize, updateExplicitCount=True)
 
     def RenumberAtoms(self,
                       newOrder: list):
