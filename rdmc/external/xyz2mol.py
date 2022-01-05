@@ -789,6 +789,8 @@ def parse_xyz_by_jensen(xyz: str,
     except IndexError:
         raise ValueError(f'Cannot perceive the xyz by Jensen et al. method')
     else:
+        for atom in mol.GetAtoms():
+            atom.SetNoImplicit(True)
         return mol
 
 
