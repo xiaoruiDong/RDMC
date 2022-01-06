@@ -58,7 +58,7 @@ def from_rdkit_mol(rdkitmol,
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
-    is_carbene_or_nitrene = False
+    is_carbene_or_nitrene_or_singlet_O_atom = False
 
     mol = mm.Molecule()
     mol.vertices = []
@@ -82,12 +82,14 @@ def from_rdkit_mol(rdkitmol,
         charge = rdkitatom.GetFormalCharge()
         radical_electrons = rdkitatom.GetNumRadicalElectrons()
 
-        if (radical_electrons == 2 and element.symbol == "C") or "[CH2]" in smiles:
-            is_carbene_or_nitrene = True
+        if (radical_electrons == 2 and element.symbol == "C") or "[CH2]" == smiles or "[CH]C" == smiles or 'C[C]C' == smiles:
+            is_carbene_or_nitrene_or_singlet_O_atom = True
             atom = mm.Atom(element, 0, charge, '', 1)
-        elif (radical_electrons == 2 and element.symbol == "N") or "[NH]" in smiles:
-            is_carbene_or_nitrene = True
+        elif (radical_electrons == 2 and element.symbol == "N") or "[NH]" == smiles:
+            is_carbene_or_nitrene_or_singlet_O_atom = True
             atom = mm.Atom(element, 0, charge, '', 1)
+        elif (radical_electrons == 2 and element.symbol == "O") or "[O]" == smiles:
+            atom = mm.Atom(element, 0, charge, '', 3)
         else:
             atom = mm.Atom(element, radical_electrons, charge, '', 0)
         mol.vertices.append(atom)
@@ -124,7 +126,7 @@ def from_rdkit_mol(rdkitmol,
     # There are cases where 2 radical_electrons is a singlet, but
     # the triplet is often more stable,
 
-    if is_carbene_or_nitrene:
+    if is_carbene_or_nitrene_or_singlet_O_atom:
         mol.multiplicity = 1
     else:
         mol.multiplicity = mol.get_radical_count() + 1
