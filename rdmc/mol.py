@@ -112,7 +112,8 @@ class RDKitMol(object):
         Align molecules based on a reference molecule. This function will also return the RMSD value for the best alignment.
 
         Args:
-            refMol (Mol): RDKit molecule as a reference.
+            refMol (Mol): RDKit molecule as a reference. Should not be provided with ``prbMol``.
+            prbMol (Mol): RDKit molecules to align to the current molecule. Should not be provided with ``refMol``.
             prbCid (int, optional): The conformer id to be aligned. Defaults to ``0``.
             refCid (int, optional): The id of reference conformer. Defaults to ``0``.
             reflect (bool, optional): Whether to reflect the conformation of the probe molecule.
@@ -125,21 +126,31 @@ class RDKitMol(object):
         Returns:
             float: RMSD value.
         """
+        if prbMol == None:
+            if refMol == None:
+                raise ValueError('refMol or prbMol must be provided to use this function.')
+            else:
+                prbMol = self
+        elif refMol == None:
+            refMol = self._mol
+        else:
+            raise ValueError('refMol and prbMol should not be provided simultaneously.')
+
         if atomMaps is None:
             atomMaps = [list(enumerate(range(self.GetNumAtoms())))]
         if reflect:
             prbMol.Reflect(id=prbCid)
         rmsd = np.inf
         for atom_map in atomMaps:
-            cur_rmsd = Chem.rdMolAlign.AlignMol(refMol=self._mol,
-                                            prbMol=prbMol._mol,
-                                            prbCid=prbCid,
-                                            refCid=refCid,
-                                            atomMap=atom_map,
-                                            reflect=reflect,
-                                            maxIters=maxIters,
-                                            weights=weights,
-                                            )
+            cur_rmsd = Chem.rdMolAlign.AlignMol(refMol=refMol._mol,
+                                                prbMol=prbMol._mol,
+                                                prbCid=prbCid,
+                                                refCid=refCid,
+                                                atomMap=atom_map,
+                                                reflect=reflect,
+                                                maxIters=maxIters,
+                                                weights=weights,
+                                                )
             if cur_rmsd < rmsd:
                 rmsd = cur_rmsd
             if reflect:

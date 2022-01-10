@@ -684,7 +684,7 @@ class GaussianLog(object):
                 atom_map = [(i, i) for i in scan_name[-len(scan_name) + 1:]]
             for idx in range(1, mol.GetNumConformers()):
                 mol.AlignMol(refMol=mol, prbCid=idx,
-                            refCid=0, atomMap=atom_map)
+                            refCid=0, atomMaps=[atom_map])
         return mol
 
     def _process_irc_mol(self,
