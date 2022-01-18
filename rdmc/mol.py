@@ -100,7 +100,8 @@ class RDKitMol(object):
         return RDKitMol.FromMol(rw_mol)
 
     def AlignMol(self,
-                 prbMol: Union['RDKitMol', 'RWMol', 'Mol'],
+                 prbMol: Union['RDKitMol', 'RWMol', 'Mol'] = None,
+                 refMol: Union['RDKitMol', 'RWMol', 'Mol'] = None,
                  prbCid: int = 0,
                  refCid: int = 0,
                  reflect: bool = False,
@@ -110,6 +111,8 @@ class RDKitMol(object):
                  ) -> float:
         """
         Align molecules based on a reference molecule. This function will also return the RMSD value for the best alignment.
+        When leaving both ``prbMol`` and ``refMol`` blank, then the function will match the current molecules' conformers, and
+        PrbCid or refCid must be provided.
 
         Args:
             refMol (Mol): RDKit molecule as a reference. Should not be provided with ``prbMol``.
@@ -126,15 +129,14 @@ class RDKitMol(object):
         Returns:
             float: RMSD value.
         """
-        if prbMol == None:
-            if refMol == None:
-                raise ValueError('refMol or prbMol must be provided to use this function.')
-            else:
-                prbMol = self
-        elif refMol == None:
-            refMol = self._mol
-        else:
-            raise ValueError('refMol and prbMol should not be provided simultaneously.')
+        if prbMol != None and refMol != None:
+            raise ValueError('`refMol` and `prbMol` should not be provided simultaneously.')
+        elif prbMol == None and refMol == None and prbCid == refCid:
+            raise ValueError('Cannot match the same conformer for the given molecule. `prbCid` and `refCid` needs'
+                             'to be different if either `prbMol` or `refMol` is not provided.')
+
+        refMol  = refMol or self
+        prbMol = prbMol or self
 
         if atomMaps is None:
             atomMaps = [list(enumerate(range(self.GetNumAtoms())))]
@@ -822,8 +824,8 @@ class RDKitMol(object):
         Generate a RDKit Mol instance for output purpose, to ensure that the original molecule is not modified.
 
         Args:
-            removeHs (bool, optional): Remove less useful explicit H atoms. E.g., When output SMILES, H atoms,
-                if explicitly added, will be included and reduce the readability. Defaults to ``False``.
+            removeHs (bool, optional): Remove less useful explicity H atoms. E.g., When output SMILES, H atoms,
+                if explicitly added, will be included and reduce the readablity. Defaults to ``False``.
                 Note, following Hs are not removed:
 
                     1. H which aren’t connected to a heavy atom. E.g.,[H][H].
@@ -848,12 +850,12 @@ class RDKitMol(object):
     def RemoveHs(self,
                  sanitize: bool=True):
         """
-        Remove H atoms. Useful when trying to match heavy atoms.
+        Remove H atoms. Useful when trying to match heavy atoms.py
 
         Args:
             sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
         """
-        return Chem.rdmolops.RemoveHs(self._mol, sanitize=sanitize, updateExplicitCount=True)
+        return Chem.rdmolops.RemoveHs(self._mol, sanitize=sanitize)
 
     def RenumberAtoms(self,
                       newOrder: list):
