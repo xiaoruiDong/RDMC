@@ -58,10 +58,10 @@ class RDKitMol(object):
                                           be created based on atom indexes.
         """
         # keep the link to original molecule so we can easily recover it if needed.
-        if isinstance(mol, Mol):
-            self._mol = RWMol(mol)  # Make the original Mol a writable object
-        elif isinstance(mol, RWMol):
+        if isinstance(mol, RWMol):
             self._mol = mol
+        elif isinstance(mol, Mol):
+            self._mol = RWMol(mol)   # Make the original Mol a writable object
         else:
             raise ValueError(f'mol should be rdkit.Chem.rdchem.Mol / RWMol. '
                              f'Got: {type(mol)}')
@@ -379,17 +379,21 @@ class RDKitMol(object):
     @classmethod
     def FromMol(cls,
                 mol: Union[Mol, RWMol],
+                keepAtomMap: bool = True,
                 ) -> 'RDKitMol':
         """
         Convert a RDKit ``Chem.rdchem.Mol`` molecule to ``RDKitMol`` Molecule.
 
         Args:
             rdmol (Union[Mol, RWMol]): The RDKit ``Chem.rdchem.Mol`` / ``RWMol`` molecule to be converted.
+            keepAtomMap (bool, optional): Whether keep the original atom mapping. Defaults to True.
+                                          If no atom mapping is stored in the molecule, atom mapping will
+                                          be created based on atom indexes.
 
         Returns:
             RDKitMol: An RDKitMol molecule.
         """
-        return cls(mol)
+        return cls(mol, keepAtomMap=keepAtomMap)
 
     @classmethod
     def FromSmiles(cls,
