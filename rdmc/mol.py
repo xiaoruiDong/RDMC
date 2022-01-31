@@ -429,18 +429,25 @@ class RDKitMol(object):
         if not removeHs:
             mol = Chem.rdmolops.AddHs(mol)
 
-        # Atom map may be different than atom index in the generated mol
-        # Reset those index
-        rdkitmol = cls(mol, keepAtomMap=keepAtomMap)
+        # Create RDKitMol
+        mol = cls(mol, keepAtomMap=keepAtomMap)
+
+        # By default in RDKit, the atom index may not have the same sequence as the
+        # atom map number. For convenience, renumber atoms.
         if keepAtomMap:
-            for idx in range(rdkitmol.GetNumAtoms()):
-                atom = rdkitmol.GetAtomWithIdx(idx)
-                atommap_num = atom.GetAtomMapNum()
-                if idx != atommap_num:
-                    rdkitmol.GetAtomMapNumbers()
-                    new_order = np.argsort(rdkitmol.GetAtomMapNumbers()).tolist()
-                    return rdkitmol.RenumberAtoms(new_order)
-        return rdkitmol
+            for idx, map_num in enumerate(mol.GetAtomMapNumbers()):
+                # Check if the current index order is the same as the atom mapping
+                # 1. The atom mapping numbers defaults to starting from 1
+                # 2. If the atom map numbers are not from 0 or they are discontinued numbers
+                #    The new molecule's index will have the sequence as the atom map number
+                #    But the atom map number will be kept. E.g., [H:9][C:2]([C:4]([H:1])[H:3])([H:5])[H:8]
+                #    will result in a molecule with indexes and atom map numbers as
+                #    [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 8), (6, 9)]. This kind of smiles
+                #    may be from reaction templates.
+                if idx + 1 != map_num:
+                    new_order = np.argsort(mol.GetAtomMapNumbers()).tolist()
+                    return mol.RenumberAtoms(new_order, updateAtomMap=False)
+        return mol
 
     @classmethod
     def FromSmarts(cls,
@@ -862,19 +869,26 @@ class RDKitMol(object):
         return Chem.rdmolops.RemoveHs(self._mol, sanitize=sanitize)
 
     def RenumberAtoms(self,
-                      newOrder: list):
+                      newOrder: list,
+                      updateAtomMap: bool = True,
+                      )-> 'RDKitMol':
         """
-        Return a new copy of RDKitMol that has atom reordered.
+        Return a new copy of RDKitMol that has atom (index) reordered.
 
         Args:
             newOrder (list): the new ordering the atoms (should be numAtoms long). E.g,
                 if newOrder is [3,2,0,1], then atom 3 in the original molecule
                 will be atom 0 in the new one.
+            updateAtomMap (bool): Whether to update the atom map number based on the
+                                  new order.
 
         Returns:
             RDKitMol: Molecule with reordered atoms.
         """
         rwmol = Chem.rdmolops.RenumberAtoms(self._mol, newOrder)
+        # Correct the AtomMapNum
+        if updateAtomMap:
+            [rwmol.GetAtomWithIdx(i).SetAtomMapNum(i + 1) for i in range(rwmol.GetNumAtoms())]
         return RDKitMol(rwmol)
 
     def Sanitize(self):
@@ -897,11 +911,14 @@ class RDKitMol(object):
             if len(atomMap) != num_atoms:
                 raise ValueError('Invalid atomMap provided. It should have the same length as atom numbers.')
         else:
-            atomMap = list(range(num_atoms))
+            # Set a atom map numbers based on the order of atom index
+            # As suggested by the developer of RDKit
+            # It is better to start atom map number from 1
+            atomMap = list(range(1, num_atoms + 1))
 
         for idx in range(num_atoms):
             atom = self.GetAtomWithIdx(idx)
-            atom.SetProp('molAtomMapNumber', str(atomMap[idx]))
+            atom.SetAtomMapNum(atomMap[idx])
 
     def GetAtomMapNumbers(self) -> tuple:
         """
@@ -989,7 +1006,7 @@ class RDKitMol(object):
                  stereo: bool = True,
                  kekule: bool = False,
                  canonical: bool = True,
-                 RemoveAtomMap: bool = True,
+                 removeAtomMap: bool = True,
                  removeHs: bool = True,
                  ) -> str:
         """
@@ -1008,7 +1025,7 @@ class RDKitMol(object):
         mol = self.PrepareOutputMol(removeHs=removeHs, sanitize=True)
 
         # Remove atom map numbers, otherwise the smiles string is long and non-readable
-        if RemoveAtomMap:
+        if removeAtomMap:
             for atom in mol.GetAtoms():
                 atom.SetAtomMapNum(0)
 
@@ -1427,14 +1444,14 @@ def generate_vdw_mat(rd_mol,
     threshold * sum( R(atom i) + R(atom j) ). If two atoms are bonded, the value is
     set to be zero. When threshold = 0.4, the value is close to the covalent bond
     length.
-    
+
     Args:
         threshold (float): The threshold used to calculate the derived Van der Waals
                             matrix. A larger value results in a matrix with larger values;
                             When compared with distance matrix, it may overestiate the
                             overlapping between atoms. The default value is 0.4.
         vdw_radii (dict): A dict stores the Van der Waals radii of different elements.
-    
+
     Raises:
         ValueError: Invalid threshold is supplied.
     """
