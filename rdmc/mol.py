@@ -969,7 +969,7 @@ class RDKitMol(object):
                 conf = self.GetConformer()
             else:
                 raise
-        conf.SetPositions(coords)
+        conf.SetPositions(np.array(coords, dtype=float))
 
     def ToOBMol(self) -> 'openbabel.OBMol':
         """
