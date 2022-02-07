@@ -94,10 +94,10 @@ class RDKitMol(object):
         Args:
             bonds: a list of length-2 Iterables containing the index of the ended atoms.
         """
-        rw_mol = self.Copy().ToRWMol()
+        mol_cp = self.Copy()
         for bond in bonds:
-            rw_mol.AddBond(*bond, Chem.BondType.SINGLE)
-        return RDKitMol.FromMol(rw_mol)
+            mol_cp.AddBond(*bond, Chem.BondType.SINGLE)
+        return mol_cp
 
     def AlignMol(self,
                  prbMol: Union['RDKitMol', 'RWMol', 'Mol'] = None,
@@ -256,7 +256,8 @@ class RDKitMol(object):
         Returns:
             RDKitMol: a copied molecule
         """
-        return self.RenumberAtoms(list(range(self.GetNumAtoms())))
+        return self.RenumberAtoms(list(range(self.GetNumAtoms())),
+                                  updateAtomMap=False)
 
     def EmbedConformer(self,
                        embed_null: bool = True,
