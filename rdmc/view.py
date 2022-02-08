@@ -10,6 +10,8 @@ from typing import Optional
 import py3Dmol
 
 from rdmc.mol import RDKitMol
+from ipywidgets import interact, IntSlider
+
 
 def mol_viewer(obj: str,
                model: str = 'xyz',
@@ -21,6 +23,7 @@ def mol_viewer(obj: str,
                viewer_size: tuple = (400, 400),
                viewer_loc: Optional[tuple] = None,
                gv_background: bool = False,
+               confId: int = 0,
                ) -> py3Dmol.view:
     """
     This is the most general function to view a molecule powered by py3Dmol
@@ -43,12 +46,13 @@ def mol_viewer(obj: str,
         viewer_loc (tuple, optional): The location of the viewer in the grid. E.g., (0, 1). Defaults to None.
         gv_background (optional, bool): To use a background that is similar to the style of GaussView.
                                         Defaults to ``False``.
+        confId (int): Integer of embedded conformer to view
 
     Returns:
         py3Dmol.view: The molecule viewer.
     """
     if isinstance(obj, RDKitMol):
-        obj, model = obj.ToMolBlock(), 'sdf'
+        obj, model = obj.ToMolBlock(confId=confId), 'sdf'
     if not viewer:
         viewer = py3Dmol.view(width=viewer_size[0], height=viewer_size[1])
 
@@ -140,6 +144,23 @@ def conformer_viewer(mol: 'RDKitMol',
                         viewer=viewer_loc)
     viewer.zoomTo(viewer=viewer_loc)
     return viewer
+
+
+def interactive_conformer_viewer(mol, **kwargs):
+    """
+    This is a viewer for individually viewing multiple conformers using an ipython slider widget.
+    Uses keywords from mol_viewer function, so all arguments of that function are available here.
+
+    Args:
+        mol (RDKitMol): An RDKitMol object with embedded conformers.
+    Returns:
+        py3Dmol.view: The molecule viewer with slider to view different conformers.
+    """
+    viewer = lambda confId: mol_viewer(obj=mol, confId=confId, **kwargs)
+    return interact(
+        viewer,
+        confId=IntSlider(min=0, max=mol.GetNumConformers()-1, step=1)
+    )
 
 
 def freq_viewer(obj: str,
