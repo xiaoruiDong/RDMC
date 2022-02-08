@@ -10,6 +10,7 @@ from typing import Optional
 import py3Dmol
 
 from rdmc.mol import RDKitMol
+from rdmc.ts import clean_ts
 from ipywidgets import interact, IntSlider
 
 
@@ -222,6 +223,56 @@ def grid_viewer(viewer_grid: tuple,
         height = viewer_grid[0] * 400
 
     return py3Dmol.view(width=width, height=height, linked=linked, viewergrid=viewer_grid)
+
+
+def ts_viewer(r_mol: 'RDKitMol',
+              p_mol: 'RDKitMol',
+              ts_mol: 'RDKitMol',
+              **kwargs):
+    """
+    View reactant, product and ts of a given reaction. The broken bonds in the TS will be shown with red
+    lines while the formed bonds in the TS will be shown with green lines. Uses keywords from mol_viewer
+    function, so all arguments of that function are available here.
+
+    Args:
+        r_mol (RDKitMol): the reactant complex.
+        p_mol (RDKitMol): the product complex.
+        ts_mol (RDKitMol): the ts corresponding to r_mol and p_mol
+    """
+    view_shape = (3, 1)
+    viewer = grid_viewer(view_shape)
+    edited_ts_mol, broken_bonds, formed_bonds = clean_ts(r_mol, p_mol, ts_mol)
+    mols = (r_mol, p_mol, ts_mol)
+
+    for i in range(3):
+
+        mol = mols[i]
+        viewer_loc = (i, 0)
+        viewer = mol_viewer(mol,
+                            viewer=viewer,
+                            viewer_loc=viewer_loc,
+                            **kwargs)
+        if i == 2:
+            for bbs in broken_bonds:
+                start, end = mol.GetPositions()[bbs, :]
+                viewer.addCylinder({"start": dict(x=start[0], y=start[1], z=start[2]),
+                                    "end": dict(x=end[0], y=end[1], z=end[2]),
+                                    "color": "red",
+                                    "radius": .1,
+                                    "dashed": True,
+                                    }, viewer=viewer_loc, **kwargs)
+            for fbs in formed_bonds:
+                start, end = mol.GetPositions()[fbs, :]
+                viewer.addCylinder({"start": dict(x=start[0], y=start[1], z=start[2]),
+                                    "end": dict(x=end[0], y=end[1], z=end[2]),
+                                    "color": "green",
+                                    "radius": .1,
+                                    "dashed": True,
+                                    }, viewer=viewer_loc, **kwargs)
+
+        viewer.zoomTo(viewer=viewer_loc)
+
+    return viewer
 
 
 def mol_animation(obj: str,
