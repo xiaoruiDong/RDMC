@@ -101,6 +101,41 @@ def get_all_changing_bonds(r_mol: Union['RDKitMol', 'Mol'],
     return formed_bonds, broken_bonds, changed_bonds
 
 
+def clean_ts(r_mol: 'RDKitMol',
+             p_mol: 'RDKitMol',
+             ts_mol: 'RDKitMol'):
+    """
+    Cleans ts mol by removing all bonds that correspond to broken or formed bonds in ts.
+
+    Args:
+        r_mol (RDKitMol): the reactant complex.
+        p_mol (RDKitMol): the product complex.
+        ts_mol (RDKitMol): the ts corresponding to r_mol and p_mol
+
+    Returns:
+        RDKitMol: edited_ts_mol, which is the original ts mol with cleaned bonding
+        list: broken bonds: A list of length-2 tuples that contains the atom indexes of the bonds broken in the rxn.
+              formed bonds: A list of length-2 tuples that contains the atom indexes of the bonds formed in the rxn.
+    """
+    r_bonds = r_mol.GetBondsAsTuples()
+    r_bonds = [tuple(sorted(b)) for b in r_bonds]
+    p_bonds = p_mol.GetBondsAsTuples()
+    p_bonds = [tuple(sorted(b)) for b in p_bonds]
+    common_bonds = list(set(r_bonds) & set(p_bonds))  # ignore bond order changes
+
+    edited_ts_mol = ts_mol.Copy()
+    for bond_idxs in edited_ts_mol.GetBondsAsTuples():
+        bond_idx = tuple(sorted(bond_idxs))
+        if bond_idx not in common_bonds:
+            edited_ts_mol.RemoveBond(bond_idx[0], bond_idx[1])
+            edited_ts_mol.AddBond(bond_idx[0], bond_idx[1])
+
+    broken_bonds = set(r_bonds).difference(set(common_bonds))
+    formed_bonds = set(p_bonds).difference(set(common_bonds))
+
+    return edited_ts_mol, list(broken_bonds), list(formed_bonds)
+
+
 def is_DA_rxn_endo(r_mol: 'RDKitMol',
                    p_mol: 'RDKitMol',
                    embed: bool = False):
