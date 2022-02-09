@@ -889,10 +889,11 @@ def edit_conf_by_add_bonds(conf, function_name, atoms, value):
     """
     tmp_mol = conf.GetOwningMol()
     all_bonds = tmp_mol.GetBondsAsTuples()
+    tmp_atoms = sorted(atoms)
     bonds_to_add = []
-    for i in range(len(atoms)-1):
-        if not {atoms[i], atoms[i+1]} in all_bonds:
-            bonds_to_add.append([atoms[i], atoms[i+1]])
+    for i in range(len(tmp_atoms) - 1):
+        if not (tmp_atoms[i], tmp_atoms[i+1]) in all_bonds:
+            bonds_to_add.append([tmp_atoms[i], tmp_atoms[i+1]])
     tmp_mol = tmp_mol.AddRedundantBonds(bonds_to_add)
     tmp_mol.SetPositions(conf.GetPositions())
     tmp_conf = tmp_mol.GetConformer()

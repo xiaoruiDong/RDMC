@@ -603,7 +603,7 @@ class RDKitMol(object):
         Generate a list of length-2 sets indicating the bonding atoms
         in the molecule
         """
-        return [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in self.GetBonds()]
+        return [tuple(sorted((bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()))) for bond in self.GetBonds()]
 
     def GetElementSymbols(self):
         """
