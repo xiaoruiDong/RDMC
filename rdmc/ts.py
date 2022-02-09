@@ -5,12 +5,26 @@
 This module provides class and methods for dealing with Transition states.
 """
 
-from typing import List, Union
+from typing import List, Set, Tuple, Union
 
 import numpy as np
 
 from rdmc import RDKitMol
 from rdmc.utils import PERIODIC_TABLE as PT
+
+
+def _get_bonds_as_sets(*mols: Union['RDKitMol', 'Mol'],
+                       ) -> Tuple[Set]:
+    """
+    Get the set of bonds for the provided list of mols.
+
+    Args:
+        mols ('RDKitMol' or 'Mol'): a RDKit Mol object
+
+    Returns
+        Tuple[Set]: (bond set in the reactant, bond set in the product)
+    """
+    return tuple(set(mol.GetBondsAsTuples()) for mol in mols)
 
 
 def get_formed_bonds(r_mol: Union['RDKitMol', 'Mol'],
@@ -25,11 +39,10 @@ def get_formed_bonds(r_mol: Union['RDKitMol', 'Mol'],
         p_mol ('RDKitMol' or 'Mol'): the product complex.
 
     Returns
-        list: A list of length-2 set that contains the atom indexes of the bonded atoms.
+        list: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
-    r_bonds = [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in r_mol.GetBonds()]
-    p_bonds = [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in p_mol.GetBonds()]
-    return [bond for bond in p_bonds if bond not in r_bonds]
+    r_bonds, p_bonds = _get_bonds_as_sets(r_mol, p_mol)
+    return list(p_bonds - r_bonds)
 
 
 def get_broken_bonds(r_mol: Union['RDKitMol', 'Mol'],
@@ -44,11 +57,10 @@ def get_broken_bonds(r_mol: Union['RDKitMol', 'Mol'],
         p_mol ('RDKitMol' or 'Mol'): the product complex.
 
     Returns:
-        list: A list of length-2 set that contains the atom indexes of the bonded atoms.
+        list: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
-    r_bonds = [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in r_mol.GetBonds()]
-    p_bonds = [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in p_mol.GetBonds()]
-    return [bond for bond in r_bonds if bond not in p_bonds]
+    r_bonds, p_bonds = _get_bonds_as_sets(r_mol, p_mol)
+    return list(r_bonds - p_bonds)
 
 
 def get_formed_and_broken_bonds(r_mol: Union['RDKitMol', 'Mol'],
@@ -64,14 +76,12 @@ def get_formed_and_broken_bonds(r_mol: Union['RDKitMol', 'Mol'],
         p_mol ('RDKitMol' or 'Mol'): the product complex.
 
     Returns:
-        list: - formed bonds: A list of length-2 set that contains the atom indexes of the bonded atoms.
-              - broken bonds: A list of length-2 set that contains the atom indexes of the bonded atoms.
+        list: - formed bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+              - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
-    r_bonds = [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in r_mol.GetBonds()]
-    p_bonds = [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in p_mol.GetBonds()]
-    formed_bonds = [bond for bond in p_bonds if bond not in r_bonds]
-    broken_bonds = [bond for bond in r_bonds if bond not in p_bonds]
-    return formed_bonds, broken_bonds
+    r_bonds, p_bonds = _get_bonds_as_sets(r_mol, p_mol)
+    return (list(p_bonds - r_bonds),
+            list(r_bonds - p_bonds))
 
 
 def get_all_changing_bonds(r_mol: Union['RDKitMol', 'Mol'],
@@ -86,52 +96,43 @@ def get_all_changing_bonds(r_mol: Union['RDKitMol', 'Mol'],
         p_mol ('RDKitMol' or 'Mol'): the product complex.
 
     Returns:
-        list: - formed bonds: A list of length-2 set that contains the atom indexes of the bonded atoms.
-              - broken bonds: A list of length-2 set that contains the atom indexes of the bonded atoms.
-              - bonds with BO changed: A list of length-2 set that contains the atom indexes of the bonded atoms.
+        list: - formed bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+              - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+              - bonds with BO changed: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
-    r_bonds = [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in r_mol.GetBonds()]
-    p_bonds = [{bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()} for bond in p_mol.GetBonds()]
-    formed_bonds = [bond for bond in p_bonds if bond not in r_bonds]
-    broken_bonds = [bond for bond in r_bonds if bond not in p_bonds]
-    other_bonds = [bond for bond in r_bonds if bond not in broken_bonds]
-    changed_bonds = [bond for bond in other_bonds
+    r_bonds, p_bonds = _get_bonds_as_sets(r_mol, p_mol)
+    formed_bonds, broken_bonds = p_bonds - r_bonds, r_bonds - p_bonds
+    changed_bonds = [bond for bond in (r_bonds & p_bonds)
                      if r_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble() != \
                         p_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()]
-    return formed_bonds, broken_bonds, changed_bonds
+    return list(formed_bonds), list(broken_bonds), changed_bonds
 
 
 def clean_ts(r_mol: 'RDKitMol',
              p_mol: 'RDKitMol',
              ts_mol: 'RDKitMol'):
     """
-    Cleans ts mol by removing all bonds that correspond to broken or formed bonds in ts.
+    Cleans transition state `ts_mol` by removing all bonds that correspond to broken or formed bonds.
+    `r_mol`, `p_mol`, and `ts_mol` need to be atom mapped. Bond order changes are not considered.
 
     Args:
         r_mol (RDKitMol): the reactant complex.
         p_mol (RDKitMol): the product complex.
-        ts_mol (RDKitMol): the ts corresponding to r_mol and p_mol
+        ts_mol (RDKitMol): the transition state corresponding to `r_mol` and `p_mol`.
 
     Returns:
-        RDKitMol: edited_ts_mol, which is the original ts mol with cleaned bonding
+        RDKitMol: an edited version of ts_mol, which is the original `ts_mol` with cleaned bonding.
         list: broken bonds: A list of length-2 tuples that contains the atom indexes of the bonds broken in the rxn.
               formed bonds: A list of length-2 tuples that contains the atom indexes of the bonds formed in the rxn.
     """
-    r_bonds = r_mol.GetBondsAsTuples()
-    r_bonds = [tuple(sorted(b)) for b in r_bonds]
-    p_bonds = p_mol.GetBondsAsTuples()
-    p_bonds = [tuple(sorted(b)) for b in p_bonds]
-    common_bonds = list(set(r_bonds) & set(p_bonds))  # ignore bond order changes
+    r_bonds, p_bonds, ts_bonds = _get_bonds_as_sets(r_mol, p_mol, ts_mol)
+    formed_bonds, broken_bonds = p_bonds - r_bonds, r_bonds - p_bonds
 
     edited_ts_mol = ts_mol.Copy()
-    for bond_idxs in edited_ts_mol.GetBondsAsTuples():
-        bond_idx = tuple(sorted(bond_idxs))
-        if bond_idx not in common_bonds:
-            edited_ts_mol.RemoveBond(bond_idx[0], bond_idx[1])
-            edited_ts_mol.AddBond(bond_idx[0], bond_idx[1])
-
-    broken_bonds = set(r_bonds).difference(set(common_bonds))
-    formed_bonds = set(p_bonds).difference(set(common_bonds))
+    edit_bonds = ts_bonds - (r_bonds & p_bonds)  # bonds in ts but not in r_mol and p_mol simultaneously
+    for bond_idxs in edit_bonds:
+        edited_ts_mol.RemoveBond(*bond_idxs)
+        edited_ts_mol.AddBond(*bond_idxs)
 
     return edited_ts_mol, list(broken_bonds), list(formed_bonds)
 
@@ -170,6 +171,7 @@ def is_DA_rxn_endo(r_mol: 'RDKitMol',
     # `fbond_atoms` are atoms in the formed bonds
     fbond_atoms = set([atom for bond in formed for atom in bond])
     for bond in changing:
+        bond = set(bond)
         if len(bond & fbond_atoms) == 0:
             # Find the single bond in the diene
             dien_sb = list(bond)
