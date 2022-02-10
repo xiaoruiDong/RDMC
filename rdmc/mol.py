@@ -541,7 +541,7 @@ class RDKitMol(object):
                      refMol,
                      prbCid: int = 0,
                      refCid: int = 0,
-                     atomMap: list = [],
+                     atomMaps: list = None,
                      maxIters: int = 1000,
                      keepBestConformer: bool = True):
         """
@@ -569,14 +569,14 @@ class RDKitMol(object):
         rmsd = self.AlignMol(refMol=refMol,
                              prbCid=prbCid,
                              refCid=refCid,
-                             atomMap=atomMap,
+                             atomMaps=atomMaps,
                              maxIters=maxIters)
 
         # Align with refection
         rmsd_r = self.AlignMol(refMol=refMol,
                                prbCid=prbCid,
                                refCid=refCid,
-                               atomMap=atomMap,
+                               atomMaps=atomMaps,
                                maxIters=maxIters,
                                reflect=True)
 
@@ -590,7 +590,7 @@ class RDKitMol(object):
             rmsd = self.AlignMol(refMol=refMol,
                                  prbCid=prbCid,
                                  refCid=refCid,
-                                 atomMap=atomMap,
+                                 atomMaps=atomMaps,
                                  maxIters=maxIters,
                                  reflect=reflect,)
         else:
@@ -937,10 +937,12 @@ class RDKitMol(object):
         Args:
             id (int, optional): The conformer id to reflect.
         """
-        self.AlignMol(refMol=self,
-                      prbCid=id,
-                      maxIters=0,
-                      reflect=True)
+        Chem.rdMolAlign.AlignMol(refMol=self._mol,
+                                 prbMol=self._mol,
+                                 prbCid=id,
+                                 refCid=0,
+                                 reflect=True,
+                                 maxIters=0,)
 
     def SetPositions(self,
                      coords: Union[Sequence, str],
