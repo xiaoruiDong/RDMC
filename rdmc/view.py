@@ -242,7 +242,7 @@ def ts_viewer(r_mol: 'RDKitMol',
     view_shape = (3, 1)
     viewer = grid_viewer(view_shape)
     edited_ts_mol, broken_bonds, formed_bonds = clean_ts(r_mol, p_mol, ts_mol)
-    mols = (r_mol, p_mol, ts_mol)
+    mols = (r_mol, p_mol, edited_ts_mol)
 
     for i in range(3):
 
