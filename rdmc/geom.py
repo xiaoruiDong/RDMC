@@ -95,7 +95,7 @@ def translate_centroid(coords: np.array,
 
 def get_distances_from_a_point(coords: np.array,
                                pos: np.array,
-                               keepdims: False):
+                               keepdims: bool = False):
     """
     Get the Euclidiean distance to a point for all elements.
 
@@ -107,7 +107,7 @@ def get_distances_from_a_point(coords: np.array,
     Returns:
         np.array: 1D array indicate the distances.
     """
-    return np.sum((coords - pos.reshape(1, -1)) ** 2, axis=1, keepdims=keepdims)
+    return np.sqrt(np.sum((coords - pos.reshape(1, -1)) ** 2, axis=1, keepdims=keepdims))
 
 
 def get_max_distance_from_center(coords: np.array, ) -> float:
