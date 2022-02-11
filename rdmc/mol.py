@@ -1105,6 +1105,29 @@ class RDKitMol(object):
             num_radical_elec += atom.GetNumRadicalElectrons()
         return num_radical_elec + 1
 
+    def GetTorsionTops(self,
+                       torsion: Iterable,
+                       ) -> tuple:
+        """
+        Generate tops for the given torsion. Top atoms are defined as atoms on one side of the torsion.
+        The mol should be in one-piece when using this function, otherwise, the results will be
+        misleading.
+
+        Args:
+            torsion (Iterable): An iterable with four elements and the 2nd and 3rd are the pivot of the torsion.
+
+        Returns:
+            - one of the top of the torsion
+            - the other top of the torsion
+        """
+        pivot = [int(i) for i in torsion[1:3]]
+        try:
+            idx = self.GetBondBetweenAtoms(*pivot).GetIdx()
+        except AttributeError:  # when get bond fails, and None.GetIdx()
+            raise ValueError(f'Atom {pivot[0]} and {pivot[1]} are not bonded.')
+        split_mol = Chem.rdmolops.FragmentOnBonds(self._mol, [idx], addDummies=False)
+        return Chem.rdmolops.GetMolFrags(split_mol, asMols=False, sanitizeFrags=False,)
+
     def SaturateBiradicalSites12(self,
                                  multiplicity: int,
                                  verbose: bool = True):
