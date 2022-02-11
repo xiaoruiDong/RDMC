@@ -5,7 +5,7 @@
 A module contains py3Dmol functions to draw molecules
 """
 
-from typing import Optional
+from typing import Optional, Tuple, Union
 
 import py3Dmol
 
@@ -228,6 +228,11 @@ def grid_viewer(viewer_grid: tuple,
 def ts_viewer(r_mol: 'RDKitMol',
               p_mol: 'RDKitMol',
               ts_mol: 'RDKitMol',
+              only_ts: bool = False,
+              alignment: list = ['r', 'p', 'ts'],
+              vertically_aligned: bool = True,
+              ts_bond_color: Union[str, Tuple[str]] = ("red", "green"),
+              ts_bond_width: float = 0.1,
               **kwargs):
     """
     View reactant, product and ts of a given reaction. The broken bonds in the TS will be shown with red
@@ -235,42 +240,67 @@ def ts_viewer(r_mol: 'RDKitMol',
     function, so all arguments of that function are available here.
 
     Args:
-        r_mol (RDKitMol): the reactant complex.
-        p_mol (RDKitMol): the product complex.
-        ts_mol (RDKitMol): the ts corresponding to r_mol and p_mol
+        r_mol (RDKitMol): The reactant complex.
+        p_mol (RDKitMol): The product complex.
+        ts_mol (RDKitMol): The ts corresponding to r_mol and p_mol.
+        only_ts (bool, optional): Only shows TS. Defaults to showing reactant, product, and TS. Defaults to False.
+        alignment (list, optional): The alignment of reactant, product, and TS. Defaults to `['r', 'p', 'ts']`.
+                                    It can be changed to `['r', 'ts', 'p']` to make TS in the middle. You can even remove
+                                    'r' or 'p' to only show TS and one side of the reaction, e.g., `['r', 'ts']`.
+                                    This argument is only valid when `only_ts` is False.
+        vertically_aligned(bool, optional): Reactant, product, and TS are vertically aligned. Defaults to `True`.
+                                            Only valid when `only_ts` is `False`.
+        ts_bond_color (tuple or str, optional): The TS bond color for broken bonds (defaults to `"red"`) and formed bonds (defaults to `"green"`).
+                                                If a single str is input, the same color will be used. If a length-2 tuple is provided, then the
+                                                first color will be used as the broken bond color. As a reference, normal bond color is '#f2f2f2'.
+        ts_bond_width (float): The width of the TS bonds. Defaults to 0.1. As a reference, normal bond width is 0.05.
     """
-    view_shape = (3, 1)
+    # Create grid viewer
+    if only_ts:
+        view_shape = (1, 1)
+        alignment = ['ts']
+    elif vertically_aligned:
+        view_shape = (len(alignment), 1)
+    else:
+        view_shape = (1, len(alignment))
     viewer = grid_viewer(view_shape)
+    if isinstance(ts_bond_color, str):
+        ts_bond_color = (ts_bond_color,) * 2
+
+    # Clean up TS by removing formed and broken bonds
     edited_ts_mol, broken_bonds, formed_bonds = clean_ts(r_mol, p_mol, ts_mol)
-    mols = (r_mol, p_mol, edited_ts_mol)
+    mols = {'r': r_mol, 'p': p_mol, 'ts': edited_ts_mol}
 
-    for i in range(3):
+    i = 0
+    for label in alignment:
 
-        mol = mols[i]
-        viewer_loc = (i, 0)
+        mol = mols[label]
+        viewer_loc = (i, 0) if vertically_aligned else (0, i)
         viewer = mol_viewer(mol,
                             viewer=viewer,
                             viewer_loc=viewer_loc,
                             **kwargs)
-        if i == 2:
+        if label == 'ts':
+            # Recreate broken bonds and formed bonds
             for bbs in broken_bonds:
                 start, end = mol.GetPositions()[bbs, :]
                 viewer.addCylinder({"start": dict(x=start[0], y=start[1], z=start[2]),
                                     "end": dict(x=end[0], y=end[1], z=end[2]),
-                                    "color": "red",
-                                    "radius": .1,
+                                    "color": ts_bond_color[0],
+                                    "radius": ts_bond_width,
                                     "dashed": True,
                                     }, viewer=viewer_loc, **kwargs)
             for fbs in formed_bonds:
                 start, end = mol.GetPositions()[fbs, :]
                 viewer.addCylinder({"start": dict(x=start[0], y=start[1], z=start[2]),
                                     "end": dict(x=end[0], y=end[1], z=end[2]),
-                                    "color": "green",
-                                    "radius": .1,
+                                    "color": ts_bond_color[1],
+                                    "radius": ts_bond_width,
                                     "dashed": True,
                                     }, viewer=viewer_loc, **kwargs)
 
         viewer.zoomTo(viewer=viewer_loc)
+        i += 1
 
     return viewer
 
