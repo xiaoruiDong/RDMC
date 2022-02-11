@@ -1107,6 +1107,7 @@ class RDKitMol(object):
 
     def GetTorsionTops(self,
                        torsion: Iterable,
+                       allowNonbondPivots: bool = False,
                        ) -> tuple:
         """
         Generate tops for the given torsion. Top atoms are defined as atoms on one side of the torsion.
@@ -1115,6 +1116,7 @@ class RDKitMol(object):
 
         Args:
             torsion (Iterable): An iterable with four elements and the 2nd and 3rd are the pivot of the torsion.
+            allowNonbondPivots (bool, optional): Allow non-bonding pivots
 
         Returns:
             - one of the top of the torsion
@@ -1122,11 +1124,36 @@ class RDKitMol(object):
         """
         pivot = [int(i) for i in torsion[1:3]]
         try:
-            idx = self.GetBondBetweenAtoms(*pivot).GetIdx()
+            bond_idx = [self.GetBondBetweenAtoms(*pivot).GetIdx()]
         except AttributeError:  # when get bond fails, and None.GetIdx()
-            raise ValueError(f'Atom {pivot[0]} and {pivot[1]} are not bonded.')
-        split_mol = Chem.rdmolops.FragmentOnBonds(self._mol, [idx], addDummies=False)
-        return Chem.rdmolops.GetMolFrags(split_mol, asMols=False, sanitizeFrags=False,)
+            # There are cases like CC#CC or X...H...Y, where a user may want to
+            # define a torsion with a nonbonding pivots.
+            if allowNonbondPivots:
+                # Get the shortest path between pivot atoms
+                # There should be only one path connecting pivot atoms
+                # Otherwise, they may not be torsions
+                connecting_atoms = list(Chem.rdmolops.GetShortestPath(self._mol, pivot[0], pivot[1]))
+                [connecting_atoms.remove(i) for i in pivot]
+                bond_idx = []
+                # Mark bonds to be cut
+                for i in pivot:
+                    for neighbor in self.GetAtomWithIdx(i).GetNeighbors():
+                        n = neighbor.GetIdx()
+                        if n in connecting_atoms:
+                            bond_idx.append(self.GetBondBetweenAtoms(i, n).GetIdx())
+                            break
+            else:
+                raise ValueError(f'Atom {pivot[0]} and {pivot[1]} are not bonded.')
+
+        # Cut bonds connecting pivots
+        split_mol = Chem.rdmolops.FragmentOnBonds(self._mol, bond_idx, addDummies=False)
+
+        # Generate the indexes for each fragment from the cutting
+        frags = Chem.rdmolops.GetMolFrags(split_mol, asMols=False, sanitizeFrags=False,)
+        if len(frags) == 2:
+            return frags
+        # only remain the fragment that containing pivot atoms
+        return tuple(frag for i in pivot for frag in frags if i in frag)
 
     def SaturateBiradicalSites12(self,
                                  multiplicity: int,
