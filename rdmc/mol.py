@@ -5,6 +5,7 @@
 This module provides class and methods for dealing with RDKit RWMol, Mol.
 """
 
+import pathlib
 from itertools import combinations
 from typing import Iterable, List, Optional, Sequence, Union
 
@@ -526,6 +527,69 @@ class RDKitMol(object):
 
         else:
             raise NotImplementedError(f'Backend ({backend}) is not supported. Only `openbabel` and `jensen`'
+                                      f' are supported.')
+
+    @classmethod
+    def FromSDF(cls,
+                sdf: str,
+                removeHs: bool = False,
+                sanitize: bool = True,
+                ) -> 'RDKitMol':
+        """
+        Convert xyz string to RDKitMol.
+
+        Args:
+            sdf (str): An SDF string.
+            removeHs (bool): Whether or not to remove hydrogens from the input (defaults to False)
+            sanitize (bool): Whether or not to use RDKit's sanitization algorithm to clean input; helpful to set this
+                             to False when reading TS files (defaults to True)
+
+        Returns:
+            RDKitMol: An RDKit molecule object corresponding to the sdf.
+        """
+        mol = Chem.MolFromMolBlock(sdf, removeHs=removeHs, sanitize=sanitize)
+        return cls(mol)
+
+    @classmethod
+    def FromFile(cls,
+                 path: str,
+                 backend: str = 'openbabel',
+                 header: bool = True,
+                 correctCO: bool = True,
+                 removeHs: bool = False,
+                 sanitize: bool = True,
+                 **kwargs
+                 ) -> 'RDKitMol':
+        """
+        Read RDKitMol from file.
+
+        Args:
+            path (str): File path to data.
+            backend (str): The backend used to perceive molecule. Defaults to ``openbabel``.
+                           Currently, we only support ``openbabel`` and ``jensen``.
+            header (bool, optional): If lines of the number of atoms and title are included.
+                                     Defaults to ``True.``
+            removeHs (bool): Whether or not to remove hydrogens from the input (defaults to False)
+            sanitize (bool): Whether or not to use RDKit's sanitization algorithm to clean input; helpful to set this
+                             to False when reading TS files (defaults to True)
+
+        Returns:
+            RDKitMol: An RDKit molecule object corresponding to the file.
+        """
+        extension = pathlib.Path(path).suffix
+
+        if extension == ".xyz":
+            with open(path, "r") as f:
+                xyz = f.readlines()
+            return cls.FromXYZ(xyz, batcken=backend, header=header, correctCO=correctCO, **kwargs)
+
+        # use rdkit's sdf reader to read in multiple mols
+        elif extension == ".sdf":
+            reader = Chem.SDMolSupplier(path, removeHs=removeHs, sanitize=sanitize)
+            return [cls(m) for m in reader]
+
+        else:
+            raise NotImplementedError(f'Extension ({extension}) is not supported. Only `.xyz` and `.sdf`'
                                       f' are supported.')
 
     def GetAtomicNumbers(self):
