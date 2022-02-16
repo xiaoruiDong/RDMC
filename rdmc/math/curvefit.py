@@ -18,14 +18,17 @@ class FourierSeries1D(object):
     max_num_term = None
 
     def __init__(self,
-                 max_num_term: int = None,):
+                 max_num_term: int = None,
+                 verbose: bool = False):
         """
         Initialize the Fourier Series 1D fitting class
 
         Args:
             max_num_term (int, optional): The max number of cosine terms used in fitting. Defaults to None.
+            verbose (bool, optional): Whether to show details in the fitting procedure. Defaults to False.
         """
         self.max_num_term = max_num_term or self.max_num_term
+        self.verbose = verbose
 
     def fit(self,
             X: np.ndarray,
@@ -58,7 +61,7 @@ class FourierSeries1D(object):
             b = np.concatenate([y, np.array([0.])])
 
             # Least square linear regression
-            coef, _, _, _ = np.linalg.lstsq(A, b)
+            coef, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
 
             # This checks if there are any negative values in the Fourier fit.
             negative_barrier = False
@@ -69,12 +72,15 @@ class FourierSeries1D(object):
                 V0 -= self.coef_[0, k] * (k + 1) * (k + 1)
             if V0 < 0:
                 negative_barrier = True
-                print(f"Fourier fit for hindered rotor gave a negative barrier when fit with {2 * self.num_terms} terms, "
-                      f"retrying with {2 * self.num_terms + 4} terms...")
+                if self.verbose:
+                    print(f"Fourier fit for hindered rotor gave a negative barrier when fit with {2 * self.num_terms} terms, "
+                          f"retrying with {2 * self.num_terms + 4} terms...")
                 self.num_terms = self.num_terms + 2
             if V0 < 0:
-                print(f"Fourier fit for hindered rotor gave a negative barrier on final try with "
-                      f"{self.num_terms * 2} terms")
+                if self.verbose:
+                    print(f"Fourier fit for hindered rotor gave a negative barrier on final try with "
+                          f"{self.num_terms * 2} terms")
+        return self
 
     def _preprocess_x(self,
                       X: np.ndarray,):
