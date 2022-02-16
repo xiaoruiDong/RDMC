@@ -962,8 +962,8 @@ class GaussianLog(object):
         x_params = self.get_scanparams(converged=converged, relative=relative_x)
 
         if draw_fit and len(self.get_scannames(as_list=True)[0]) == 4:
-            fs = FourierSeries1D().fit(x_params/180., y_params-baseline_y)
-            fitted_y_params = fs.predict(x_params/180.) + baseline_y
+            fs = FourierSeries1D().fit(x_params/ 180. * np.pi, y_params-baseline_y)
+            fitted_y_params = fs.predict(x_params/180. * np.pi) + baseline_y
 
         ax = ax or plt.axes()
         ax.plot(x_params, y_params, '.-', label='scan')
