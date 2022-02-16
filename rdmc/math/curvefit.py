@@ -75,11 +75,12 @@ class FourierSeries1D(object):
                 if self.verbose:
                     print(f"Fourier fit for hindered rotor gave a negative barrier when fit with {2 * self.num_terms} terms, "
                           f"retrying with {2 * self.num_terms + 4} terms...")
-                self.num_terms = self.num_terms + 2
-            if V0 < 0:
-                if self.verbose:
-                    print(f"Fourier fit for hindered rotor gave a negative barrier on final try with "
-                          f"{self.num_terms * 2} terms")
+                self.num_terms += 2
+        if V0 < 0:
+            self.num_terms -= 2
+            if self.verbose:
+                print(f"Fourier fit for hindered rotor gave a negative barrier on final try with "
+                      f"{self.num_terms * 2} terms")
         return self
 
     def _preprocess_x(self,
