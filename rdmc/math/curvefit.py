@@ -56,7 +56,7 @@ class FourierSeries1D(object):
             A = self._preprocess_x(X)
             # Last row correspond to dy/dX(0), equivalent to forces stationary point at angle = 0
             dydX_0 = np.zeros((1, A.shape[1]))
-            dydX_0[0, self.num_terms:] = 1
+            dydX_0[0, self.num_terms:] = np.arange(1., self.num_terms)
             A = np.vstack([A, dydX_0])
             b = np.concatenate([y, np.array([0.])])
 
