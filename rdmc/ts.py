@@ -496,7 +496,7 @@ class NaiveAlign(object):
             conf_id (int, optional): The conformer id to be used in the `complex`. Defaults to 0.
         """
         coords = r_complex.GetPositions(id=conf_id)
-        atom_maps = [list(atom_map) for atom_map in complex.r_GetMolFrags()]
+        atom_maps = [list(atom_map) for atom_map in r_complex.GetMolFrags()]
         return cls(coords, atom_maps, formed_bonds, broken_bonds)
 
     @classmethod
