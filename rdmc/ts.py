@@ -11,7 +11,7 @@ import numpy as np
 from scipy import optimize
 
 from rdmc import RDKitMol
-from rdmc.geom import get_centroid, get_max_distance_from_center, rotate, translate_centroid
+from rdmc.math.geom import get_centroid, get_max_distance_from_center, rotate, translate_centroid
 from rdmc.utils import PERIODIC_TABLE as PT
 
 

@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import cclib.io
 
 from rdmc import RDKitMol
+from rdmc.math.curvefit import FourierSeries1D
 from rdmc.ts import guess_rxn_from_normal_mode
 from rdmc.view import mol_viewer, freq_viewer, mol_animation
 from rdmc.utils import PERIODIC_TABLE as PT
@@ -495,6 +496,8 @@ class GaussianLog(object):
                 params[params < 0] += 180.
             elif len(scan_name) == 4:
                 params[params < 0] += 360.
+                if params[-1] < 5:
+                    params[-1] = params[-1] + 360.
         return params
 
     def get_xyzs(self,
@@ -935,6 +938,7 @@ class GaussianLog(object):
                          relative_y: bool = True,
                          highlight_index: Optional[int] = None,
                          ax: 'matplotlib.pyplot.axes' = None,
+                         draw_fit: bool = True,
                          ):
         """
         Plot the energy curve for the scan trajectory.
@@ -944,10 +948,12 @@ class GaussianLog(object):
             relative_x (bool): If plot relative values (to the initial values).
                                Only valid for `scan` trajectories. Defaults to ``True``.
             relative_y (bool): If plot relative values (to the lowest values). Defaults to ``True``.
-            highlight_index (int): highlight the data corresponding to the given index.
-            ax (axes): An existing matplotlib axes instance.
+            highlight_index (int): Highlight the data corresponding to the given index. Defaults to None, no hightlighting.
+            ax (axes): Draw on an existing matplotlib axes instance. Defaults to None, creating a new axes.
+            draw_fit (bool, optional): Whether to draw a Fouries series fitted to the energies. Only valid for dihedral scans.
+                                       It will be drawn as an orange dotted curve. Defaults to True.
         """
-        y_params = self.get_scf_energies(converged=converged, only_opt=('opt' in self.job_type), relative=True)
+        y_params = self.get_scf_energies(converged=converged, only_opt=('opt' in self.job_type), relative=relative_y)
         if relative_y:
             baseline_y = 0
         else:
@@ -955,8 +961,12 @@ class GaussianLog(object):
 
         x_params = self.get_scanparams(converged=converged, relative=relative_x)
 
+        if draw_fit and len(self.get_scannames(as_list=True)[0]) == 4:
+            fs = FourierSeries1D().fit(x_params/ 180. * np.pi, y_params-baseline_y)
+            fitted_y_params = fs.predict(x_params/180. * np.pi) + baseline_y
+
         ax = ax or plt.axes()
-        ax.plot(x_params, y_params)
+        ax.plot(x_params, y_params, '.-', label='scan')
 
         xlabel = {2: 'Distance (A)',
                   3: 'Angle (deg)',
@@ -971,8 +981,12 @@ class GaussianLog(object):
                   colors='grey', linestyles='dashed',
                   label='ref', alpha=0.5)
 
+        if xlabel == 'Dihedral (deg)' and draw_fit:
+            ax.plot(x_params, fitted_y_params, ':', label='fitted')
+
         if highlight_index and highlight_index < x_params.shape[0]:
             ax.plot(x_params[0], y_params[0], 'ro')
+        ax.legend()
         return ax
 
     def plot_irc_energies(self,
