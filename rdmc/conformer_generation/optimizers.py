@@ -42,8 +42,9 @@ class MMFFOptimizer:
 
 
 class XTBOptimizer:
-    def __init__(self, method="gff"):
+    def __init__(self, method="gff", level="normal"):
         self.method = method
+        self.level = level
 
     def __call__(self, mol_data):
 
@@ -59,7 +60,7 @@ class XTBOptimizer:
             pos = c_data["conf"].GetPositions()
             new_mol.SetPositions(pos)
             try:
-                _, opt_mol = run_xtb_calc(new_mol, opt=True, return_optmol=True, method=self.method)
+                _, opt_mol = run_xtb_calc(new_mol, opt=True, return_optmol=True, method=self.method, level=self.level)
             except ValueError as e:
                 failed_ids.add(c_id)
                 print(e)
