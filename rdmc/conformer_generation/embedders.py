@@ -95,7 +95,8 @@ class GeoMolEmbedder(ConfGenEmbedder):
             positions = x.squeeze(axis=1)
             conf.SetPositions(positions)
             mol_data.append({"positions": positions,
-                             "conf": conf})
+                             "conf": conf,
+                             "iter": self.iter})
 
         n_success = len(mol_data)
         self.n_success = n_success
@@ -116,7 +117,7 @@ class ETKDGEmbedder(ConfGenEmbedder):
 
         mol = self.mol.Copy()
         mol.EmbedMultipleConfs(n_conformers)
-        mol_data = mol_to_dict(mol)
+        mol_data = mol_to_dict(mol, iter=self.iter)
 
         n_success = mol.GetNumConformers()
         self.n_success = n_success
@@ -142,4 +143,4 @@ class RandomEmbedder(ConfGenEmbedder):
         self.n_success = n_success
         self.percent_success = n_success / n_conformers * 100
 
-        return mol_to_dict(mol)
+        return mol_to_dict(mol, iter=self.iter)
