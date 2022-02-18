@@ -158,8 +158,9 @@ def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2", level="norm
             env=XTB_ENV,
         )
     if xtb_run.returncode != 0:
-        error_out = os.path.join(temp_dir, "xtb.log")
-        raise ValueError(f"xTB calculation failed. See {error_out} for details.")
+        # error_out = os.path.join(temp_dir, "xtb.log")
+        rmtree(temp_dir)
+        raise ValueError(f"xTB calculation failed.")
 
     else:
         if method == "--gff":
