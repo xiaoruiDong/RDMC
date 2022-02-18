@@ -90,8 +90,12 @@ class TorsionPruner:
 
 
 class CRESTPruner:
-    def __init__(self):
-        pass
+    def __init__(self, ethr=0.15, rthr=0.125, bthr=0.01, ewin=10000):
+
+        self.ethr = ethr
+        self.rthr = rthr
+        self.bthr = bthr
+        self.ewin = ewin
 
     def __call__(self, current_mol_data, unique_mol_data=None):
 
@@ -99,6 +103,11 @@ class CRESTPruner:
             unique_mol_data = []
 
         all_mol_data = unique_mol_data + current_mol_data
-        updated_unique_mol_data = run_cre_check(all_mol_data)
+        updated_unique_mol_data = run_cre_check(all_mol_data,
+                                                ethr=self.ethr,
+                                                rthr=self.rthr,
+                                                bthr=self.bthr,
+                                                ewin=self.ewin
+                                                )
         updated_unique_mol_data = sorted(updated_unique_mol_data, key=lambda x: x["energy"])
         return updated_unique_mol_data
