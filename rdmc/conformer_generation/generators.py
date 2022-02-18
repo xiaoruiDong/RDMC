@@ -102,10 +102,12 @@ class StochasticConformerGenerator:
                 for module in self.final_modules:
                     self.logger.info(f"Calling {module.__class__.__name__}")
                     unique_mol_data = module(unique_mol_data)
+                    self.unique_mol_data = unique_mol_data
                 return unique_mol_data
 
         self.logger.info(f"Iteration {self.iter}: max iterations reached\n")
         for module in self.final_modules:
             self.logger.info(f"Calling {module.__class__.__name__}")
             unique_mol_data = module(unique_mol_data)
+            self.unique_mol_data = unique_mol_data
         return unique_mol_data
