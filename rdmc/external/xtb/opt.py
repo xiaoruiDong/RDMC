@@ -102,7 +102,7 @@ def get_wbo(wbo_file):
     return wbo_dict
 
 
-def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2"):
+def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2", level="normal"):
     """Runs xTB single-point calculation with optional geometry optimization.
     Parameters
     ----------
@@ -145,8 +145,7 @@ def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2"):
                 sdf_path,
                 xtb_command,
                 method,
-                "--input",
-                XTB_INPUT_FILE,
+                level,
                 "--chrg",
                 str(mol.GetFormalCharge()),
                 "--wbo",
