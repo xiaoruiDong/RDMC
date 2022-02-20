@@ -256,14 +256,19 @@ def ts_viewer(r_mol: 'RDKitMol',
         ts_bond_width (float): The width of the TS bonds. Defaults to 0.1. As a reference, normal bond width is 0.05.
     """
     # Create grid viewer
+    grid_arguments = {}
     if only_ts:
-        view_shape = (1, 1)
+        grid_arguments['viewer_grid'] = (1, 1)
         alignment = ['ts']
     elif vertically_aligned:
-        view_shape = (len(alignment), 1)
+        grid_arguments['viewer_grid'] = (len(alignment), 1)
     else:
-        view_shape = (1, len(alignment))
-    viewer = grid_viewer(view_shape)
+        grid_arguments['viewer_grid'] = (1, len(alignment))
+    if kwargs.get('viewer_size'):
+        grid_arguments['viewer_size'] = (grid_arguments['viewer_grid'][0] * kwargs['viewer_size'][0],
+                                         grid_arguments['viewer_grid'][1] * kwargs['viewer_size'][1],)
+    grid_arguments['linked'] = kwargs.get('linked', False)
+    viewer = grid_viewer(**grid_arguments)
     if isinstance(ts_bond_color, str):
         ts_bond_color = (ts_bond_color,) * 2
 
