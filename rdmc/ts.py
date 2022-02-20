@@ -532,6 +532,7 @@ class NaiveAlign(object):
 
     def rotate_fragment_separately(self,
                                    *angles: np.array,
+                                   about_reacting: bool = False,
                                    ) -> np.array:
         """
         Rotate the molecule fragments in the complex by angles. The length of angles should be same as the length of
@@ -540,15 +541,21 @@ class NaiveAlign(object):
         Args:
             angles (np.array): Rotation angles for molecule fragment 1. It should be an array with a
                                size of (1,3) indicate the rotation angles about the x, y, and z axes, respectively.
+            about_reacting (bool, optional): If rotate about the reactor center instead of the centroid. Defaults to False.
 
         Returns:
             np.array: The coordinates after the rotation operation.
         """
         coords = np.copy(self.coords)
-        for angle, atom_map in zip(angles, self.atom_maps):
+        for i in range(len(angles)):
+            atom_map = self.atom_maps[i]
+            if about_reacting:
+                kwargs = {'about': get_centroid(coords[self.reacting_atoms[i], :])}
+            else:
+                kwargs = {'about_center': True}
             coords[atom_map, :] = rotate(self.coords[atom_map, :],
-                                         angle,
-                                         about_center=True)
+                                         angles[i],
+                                         **kwargs)
         return coords
 
     def initialize_align(self,
