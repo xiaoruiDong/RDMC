@@ -445,7 +445,17 @@ class NaiveAlign(object):
             - A list of the list of reacting atoms in each reactant.
             - A list of the list of non reacting atoms in each reactant.
         """
-        # reacting_atoms = set([i for bond in self.formed_bonds + self.broken_bonds for i in bond])
+        # Only formed bonds are considered. Bond breaking only takes place within the molecule and they are
+        # less important when aligning molecules. If they are usually because the atoms that are connected by
+        # the broken bonds are both reacting with the other reactant molecule. Also neglect bonds that are formed
+        # within a single molecule
+        new_formed_bonds = []
+        for bond in self.formed_bonds:
+            for atom_map in self.atom_maps:
+                if np.logical_xor(bond[0] in atom_map, bond[1] in atom_map):
+                    new_formed_bonds.append(bond)
+                    break
+        self.formed_bonds = new_formed_bonds
         reacting_atoms = set([i for bond in self.formed_bonds for i in bond])
         return ([[i for i in atom_map if i in reacting_atoms] for atom_map in self.atom_maps],
                 [[i for i in atom_map if i not in reacting_atoms] for atom_map in self.atom_maps])
