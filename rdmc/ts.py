@@ -9,9 +9,10 @@ from typing import List, Set, Tuple, Union
 
 import numpy as np
 from scipy import optimize
+from scipy.spatial import distance
 
 from rdmc import RDKitMol
-from rdmc.math.geom import get_centroid, get_max_distance_from_center, rotate, translate_centroid
+from rdmc.math.geom import get_centroid, get_max_distance_from_center, rotate, translate, translate_centroid
 from rdmc.utils import PERIODIC_TABLE as PT
 
 
@@ -395,7 +396,7 @@ class NaiveAlign(object):
         depending on the max number of interactions among fragments.
     """
 
-    dist = 1.0
+    dist = 2.0
 
     def __init__(self,
                  coords: np.array,
@@ -421,6 +422,8 @@ class NaiveAlign(object):
         self.formed_bonds = formed_bonds
         self.broken_bonds = broken_bonds
         self.reacting_atoms, self.non_reacting_atoms = self.get_reacting_atoms_in_fragments()
+        # `interaction` is not used in the current scheme, but can be helpful when dealing with
+        # multiple mol alignemnt problems
         self.interactions = [0] * len(atom_maps)
         for formed_bond in self.formed_bonds:
             for i, reacting_atom in enumerate(self.reacting_atoms):
@@ -445,7 +448,17 @@ class NaiveAlign(object):
             - A list of the list of reacting atoms in each reactant.
             - A list of the list of non reacting atoms in each reactant.
         """
-        # reacting_atoms = set([i for bond in self.formed_bonds + self.broken_bonds for i in bond])
+        # Only formed bonds are considered. Bond breaking only takes place within the molecule and they are
+        # less important when aligning molecules. If they are usually because the atoms that are connected by
+        # the broken bonds are both reacting with the other reactant molecule. Also neglect bonds that are formed
+        # within a single molecule
+        new_formed_bonds = []
+        for bond in self.formed_bonds:
+            for atom_map in self.atom_maps:
+                if np.logical_xor(bond[0] in atom_map, bond[1] in atom_map):
+                    new_formed_bonds.append(bond)
+                    break
+        self.formed_bonds = new_formed_bonds
         reacting_atoms = set([i for bond in self.formed_bonds for i in bond])
         return ([[i for i in atom_map if i in reacting_atoms] for atom_map in self.atom_maps],
                 [[i for i in atom_map if i not in reacting_atoms] for atom_map in self.atom_maps])
@@ -522,6 +535,7 @@ class NaiveAlign(object):
 
     def rotate_fragment_separately(self,
                                    *angles: np.array,
+                                   about_reacting: bool = False,
                                    ) -> np.array:
         """
         Rotate the molecule fragments in the complex by angles. The length of angles should be same as the length of
@@ -530,20 +544,26 @@ class NaiveAlign(object):
         Args:
             angles (np.array): Rotation angles for molecule fragment 1. It should be an array with a
                                size of (1,3) indicate the rotation angles about the x, y, and z axes, respectively.
+            about_reacting (bool, optional): If rotate about the reactor center instead of the centroid. Defaults to False.
 
         Returns:
             np.array: The coordinates after the rotation operation.
         """
         coords = np.copy(self.coords)
-        for angle, atom_map in zip(angles, self.atom_maps):
+        for i in range(len(angles)):
+            atom_map = self.atom_maps[i]
+            if about_reacting:
+                kwargs = {'about': get_centroid(coords[self.reacting_atoms[i], :])}
+            else:
+                kwargs = {'about_center': True}
             coords[atom_map, :] = rotate(self.coords[atom_map, :],
-                                         angle,
-                                         about_center=True)
+                                         angles[i],
+                                         **kwargs)
         return coords
 
     def initialize_align(self,
-                      dist: float = None,
-                      ):
+                         dist: float = None,
+                         ):
         """
         Initialize the alignment for the reactants. Currently only available for 1 reactant and 2 reactant systems.
 
@@ -557,13 +577,13 @@ class NaiveAlign(object):
             self.coords = translate_centroid(self.coords,
                                              np.zeros(3))
         elif len(self.atom_maps) == 2:
-            dist = dist if dist is not None else self.dist
-            dist += np.sum(self.get_fragment_radii())
-            for atom_map, centroid in zip(self.atom_maps, [np.zeros(3), np.array([dist, 0., 0.])]):
+            pos = [np.zeros(3), np.array([self.dist, 0., 0.])]
+            for i in [0, 1] :
+                atom_map = self.atom_maps[i]
                 # Make the first fragment centered at (0, 0, 0)
                 # Make the second fragment centered at (R1 + R2 + dist)
-                self.coords[atom_map, :] = translate_centroid(self.coords[atom_map, :],
-                                                              centroid)
+                self.coords[atom_map, :] = translate(self.coords[atom_map, :],
+                                                     -get_centroid(self.coords[self.reacting_atoms[i], :] + pos[i]))
         else:
             raise NotImplementedError('Hasn\'t been implemented for 3 and 4 reactant systems.')
 
@@ -581,80 +601,65 @@ class NaiveAlign(object):
             float: The score value.
         """
         angles = angles[:3].reshape(1, -1), angles[3:].reshape(1, -1)
-        coords = self.rotate_fragment_separately(*angles)
+        # Rotate fragment according to the input angle
+        coords = self.rotate_fragment_separately(*angles, about_reacting=True)
+        # A reference distance matrix
+        dist_ref = self.dist
 
-        # Calculate cosine score for the angle between (1,0,0) and (0,0,0) -> reacting center in fragment 1
-        # For most cases, this will make sure reacting center point to each other
+        # An orientation related score. This makes parallel alignment more favorable then normal alignment
+        # This is motivated by the fact that when computing the distance between a point and two points
+        # while fixing the distance between their centroid. The two points always favor a normal alignment
+        # if min d^1 or no favor over any alignment if min d^2
+        score1 = 0.
         v1 = np.array([1., 0., 0.])
-        v2 = get_centroid(coords[self.reacting_atoms[0], :])
-        v2_norm = np.linalg.norm(v2, ord=2)
-        if len(self.reacting_atoms[0]) == 2 and self.interactions[0] > 1:
-            # If two reacting sites are both interacting with the other fragment,
-            # it makes more sense both reacting sites are facing to the other fragment
-            # this majorly solves many cases involving C2H4, etc.
+        if len(self.reacting_atoms[0]) == 2:
             v2 = coords[self.reacting_atoms[0][0], :] - coords[self.reacting_atoms[0][1], :]
             v2_norm = np.linalg.norm(v2, ord=2)
-            score1 = (v1 @ v2 / v2_norm) ** 2  # range from 0 - 1
-        else:
-            score1 = 1 - v1 @ v2 / v2_norm  # range from 0 - 2
+            score1 += (v1 @ v2 / v2_norm) ** 2  # range from 0 - 1
+        if len(self.reacting_atoms[1]) == 2:
+            v2 = coords[self.reacting_atoms[1][0], :] - coords[self.reacting_atoms[1][1], :]
+            v2_norm = np.linalg.norm(v2, ord=2)
+            score1 += (v1 @ v2 / v2_norm) ** 2  # range from 0 - 1
 
-        # Calculate cosine score for the angle between (1,0,0) and reacting center in fragment 2 -> (R1 + R2 + dist,0,0)
-        # For most cases, this will make sure reacting center point to each other
-        v3 = get_centroid(coords[self.atom_maps[1],:]) - get_centroid(coords[self.reacting_atoms[1], :])
-        v3_norm = np.linalg.norm(v3, ord=2)
-        if len(self.reacting_atoms[1]) == 2 and self.interactions[0] > 1:
-            # If two reacting sites are both interacting with the other fragment,
-            # it makes more sense both reacting sites are facing to the other fragment
-            # this majorly solves many cases involving C2H4, etc.
-            v3 = coords[self.reacting_atoms[1][0], :] - coords[self.reacting_atoms[1][1], :]
-            v3_norm = np.linalg.norm(v3, ord=2)
-            score2 = (v1 @ v3 / v3_norm) ** 2  # range from 0 - 1
-        else:
-            score2 = 1 - v1 @ v3 / np.linalg.norm(v3, ord=2)  # range from 0 - 2
-
-        # Calculate the average distance between atoms to form bonds
-        # this distance should be minimized
-        # score3 is O(1)
-        dist_ref = np.sum(self.get_fragment_radii()) + self.dist
-
-        score3, count = 0., 0
+        # An bonding related score. This makes the atoms that are forming bonds tend to get closer.
+        # Square euclideans distance is used as score for each bond.
+        score2 = 0.
         for bond in self.formed_bonds:
-            score3 += np.linalg.norm(coords[bond[0], :] - coords[bond[1], :], ord=2)
-            count += 1
-        score3 = score3 / count / dist_ref
+                # Only bonds form between fragments will help decrease this score3
+                # Bonds formed inside a fragment will not change this score since molecules are rigid and the distances are fixed
+            score2 += np.sum((coords[bond[0], :] - coords[bond[1], :]) ** 2)
+        score2 = score2 / len(self.formed_bonds) / dist_ref
 
-        # Calculate the average distance between non reacting atoms and reacting atoms
-        # This distance should be maximized.
-        # score4 is O(1)
-        score4, count = 0., 0
-        if len(self.non_reacting_atoms[0]) and len(self.reacting_atoms[1]):
-            score4 += np.sqrt(np.sum((get_centroid(coords[self.non_reacting_atoms[0], :]) - get_centroid(coords[self.reacting_atoms[1], :])) ** 2))
-            count += 1
-        if len(self.non_reacting_atoms[1]) and len(self.reacting_atoms[0]):
-            score4 += np.sqrt(np.sum((get_centroid(coords[self.non_reacting_atoms[1], :]) - get_centroid(coords[self.reacting_atoms[0], :])) ** 2))
-            count += 1
-        count = count or 1
-        score4 = - score4 / count / dist_ref / 5
-        return score1 + score2 + score3 + score4
+        # An interaction related score. Briefly, it (may) be more favorable to have non-reacting atoms in one fragment
+        # being away from the reacting fragment. Use a coulomb like interaction as the score 1/r^2. This calculation scales with N.
+        score3 = 0.
+        # Get the centroids of reacting centers
+        react_atom_center = [get_centroid(coords[self.reacting_atoms[i], :]) for i in range(2)]
+        for i in [0, 1]:
+            if len(self.non_reacting_atoms[i]):
+                score3 += np.sum(1 / distance.cdist(coords[self.non_reacting_atoms[i],:], react_atom_center, 'sqeuclidean'))
+
+        return score1 + score2 + score3
 
     def get_alignment_coords(self,
-                      dist: float = None,):
+                             dist: float = None,):
         """
         Get coordinates of the alignment.
 
         Args:
             dist (float, optional): The a preset distance used to separate molecules. Defaults to None meaning using the value of `self.dist`.
         """
-        self.initialize_align(dist=dist)
+        self.initialize_align(dist=dist,)
+
         if len(self.atom_maps) == 1:
             return self.coords
         elif len(self.atom_maps) == 2:
             result = optimize.minimize(self.score_bimolecule,
-                                       (np.random.rand(6) - 0.5) * 2 * np.pi,
+                                       2 * np.pi * (np.random.rand(6) - 0.5),
                                        method='BFGS',
                                        options={'maxiter': 5000, 'disp': False})
             angles = result.x[:3].reshape(1, -1), result.x[3:].reshape(1, -1)
-            return self.rotate_fragment_separately(*angles)
+            return self.rotate_fragment_separately(*angles, about_reacting=True)
         else:
             raise NotImplementedError('Hasn\'t been implemented for 3 and 4 reactant systems.')
 
