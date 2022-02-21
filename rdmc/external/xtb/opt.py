@@ -151,6 +151,7 @@ def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2", level="norm
                 "--wbo",
                 "--json",
                 "true",
+                "--parallel",
             ],
             stdout=f,
             stderr=subprocess.STDOUT,
