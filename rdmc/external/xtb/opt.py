@@ -164,11 +164,19 @@ def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2", level="norm
         raise ValueError(f"xTB calculation failed.")
 
     else:
+        props = {}
+        if opt:
+            with open(logfile, "r") as f:
+                log_data = f.readlines()
+            n_opt_cycles = int(
+                [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
+            props.update({"n_opt_cycles": n_opt_cycles})
+
         if method == "--gff":
             opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
             rmtree(temp_dir)
-            return (None, opt_mol) if return_optmol else None
-        props = read_xtb_json(xtb_out, mol)
+            return (props, opt_mol) if return_optmol else props
+        props.update(read_xtb_json(xtb_out, mol))
         if return_optmol:
             opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
         props.update({"wbo": get_wbo(xtb_wbo)})
