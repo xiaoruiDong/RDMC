@@ -10,7 +10,7 @@ from time import time
 import numpy as np
 from .utils import *
 try:
-    from rdmc.external.xtb.opt import run_xtb_calc
+    from rdmc.external.xtb_tools.opt import run_xtb_calc
 except ImportError:
     pass
 
@@ -101,7 +101,7 @@ class XTBOptimizer(ConfGenOptimizer):
             pos = c_data["conf"].GetPositions()
             new_mol.SetPositions(pos)
             try:
-                props, opt_mol = run_xtb_calc(new_mol, opt=True, return_optmol=True, method=self.method, level=self.level)
+                props, opt_mol = run_xtb_calc(new_mol, job="--opt", return_optmol=True, method=self.method, level=self.level)
                 all_props.append(props)
             except ValueError as e:
                 failed_ids.add(c_id)

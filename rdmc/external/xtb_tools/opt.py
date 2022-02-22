@@ -14,7 +14,7 @@ import tempfile
 import numpy as np
 
 from rdmc import RDKitMol
-from rdmc.external.xtb.utils import (
+from rdmc.external.xtb_tools.utils import (
     ATOM_ENERGIES_XTB,
     ATOMNUM_TO_ELEM,
     AU_TO_DEBYE,
@@ -22,6 +22,7 @@ from rdmc.external.xtb.utils import (
     UTILS_PATH,
     XTB_BINARY,
     XTB_ENV,
+    TS_PATH_INP,
 )
 
 XTB_INPUT_FILE = os.path.join(UTILS_PATH, "xtb.inp")
@@ -102,7 +103,7 @@ def get_wbo(wbo_file):
     return wbo_dict
 
 
-def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2", level="normal"):
+def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", level="normal", pconfId=0):
     """Runs xTB single-point calculation with optional geometry optimization.
     Parameters
     ----------
@@ -121,38 +122,44 @@ def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2", level="norm
     ValueError
         If xTB calculation yield a non-zero return code.
     """
+    if isinstance(mol, list) or isinstance(mol, tuple):
+        mol, pmol = mol
 
-    if return_optmol and not opt:
-        LOGGER.info(
-            "Can't have `return_optmol` set to True with `opt` set to False. Setting the latter to True now."
-        )
-        opt = True
-
-    xtb_command = "--opt" if opt else ""
+    xtb_command = job
     method = "--" + method
+    input_file = TS_PATH_INP if job == "--path" else ""
+
     temp_dir = tempfile.mkdtemp()
     logfile = os.path.join(temp_dir, "xtb.log")
     xtb_out = os.path.join(temp_dir, "xtbout.json")
     xtb_wbo = os.path.join(temp_dir, "wbo")
+    xtb_g98 = os.path.join(temp_dir, "g98.out")
+    xtb_ts = os.path.join(temp_dir, "xtbpath_ts.xyz")
 
     sdf_path = os.path.join(temp_dir, "mol.sdf")
-    mol.ToSDFFile(sdf_path)
+    mol.ToSDFFile(sdf_path, confId=confId)
+
+    command = [
+        XTB_BINARY,
+        sdf_path,
+        xtb_command,
+        method,
+        level,
+        "--json",
+        "true",
+        "--parallel",
+        "--input",
+        input_file
+    ]
+
+    if job == "--path":
+        p_sdf_path = os.path.join(temp_dir, "pmol.sdf")
+        pmol.ToSDFFile(p_sdf_path, confId=pconfId)
+        command.insert(3, p_sdf_path)
 
     with open(logfile, "w") as f:
         xtb_run = subprocess.run(
-            [
-                XTB_BINARY,
-                sdf_path,
-                xtb_command,
-                method,
-                level,
-                "--chrg",
-                str(mol.GetFormalCharge()),
-                "--wbo",
-                "--json",
-                "true",
-                "--parallel",
-            ],
+            command,
             stdout=f,
             stderr=subprocess.STDOUT,
             cwd=temp_dir,
@@ -165,17 +172,30 @@ def run_xtb_calc(mol, opt=False, return_optmol=False, method="gfn2", level="norm
 
     else:
         props = {}
-        if opt:
+        if job == "--opt":
             with open(logfile, "r") as f:
                 log_data = f.readlines()
             n_opt_cycles = int(
                 [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
             props.update({"n_opt_cycles": n_opt_cycles})
 
+        if job == "--hess":
+            with open(xtb_g98) as f:
+                data = f.readlines()
+            frequencies = np.array([l.split()[-3:] for l in data if "Frequencies" in l], dtype=float).ravel()
+            props.update({"frequencies": frequencies})
+
+        if job == "--path":
+            opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbpath_ts.xyz"))
+            props.update(read_xtb_json(xtb_out, opt_mol))
+            rmtree(temp_dir)
+            return (props, opt_mol) if return_optmol else props
+
         if method == "--gff":
             opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
             rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
+
         props.update(read_xtb_json(xtb_out, mol))
         if return_optmol:
             opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
