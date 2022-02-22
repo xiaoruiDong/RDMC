@@ -9,7 +9,7 @@ from rdmc.mol import RDKitMol
 import numpy as np
 from time import time
 try:
-    from rdmc.external.xtb.crest import run_cre_check
+    from rdmc.external.xtb_tools.crest import run_cre_check
 except ImportError:
     pass
 
