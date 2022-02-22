@@ -1056,7 +1056,7 @@ class RDKitMol(object):
         """
         return self._mol
 
-    def ToSDFFile(self, path: str):
+    def ToSDFFile(self, path: str, confId: int = -1):
         """
         Write molecule information to .sdf file.
 
@@ -1066,7 +1066,7 @@ class RDKitMol(object):
         writer = Chem.rdmolfiles.SDWriter(path)
         # Not sure what may cause exceptions and errors here
         # If any issues found, add try...except...finally
-        writer.write(self._mol)
+        writer.write(self._mol, confId=confId)
         writer.close()
 
     def ToSmiles(self,

@@ -9,6 +9,7 @@ from rdmc import RDKitMol
 import os.path as osp
 import yaml
 import numpy as np
+from time import time
 import torch
 from torch_geometric.data import Batch
 from .utils import *
@@ -21,8 +22,40 @@ except ImportError:
     print("No GeoMol installation detected. Skipping import...")
 
 
-class GeoMolEmbedder:
-    def __init__(self, trained_model_dir):
+class ConfGenEmbedder:
+    def __init__(self, track_stats=False):
+
+        self.iter = 0
+        self.track_stats = track_stats
+        self.n_success = None
+        self.percent_success = None
+        self.stats = []
+
+    def embed_conformers(self, smiles, n_conformers):
+        raise NotImplementedError
+
+    def __call__(self, smiles, n_conformers):
+
+        self.iter += 1
+        time_start = time()
+        mol_data = self.embed_conformers(smiles, n_conformers)
+
+        if not self.track_stats:
+            return mol_data
+
+        time_end = time()
+        stats = {"iter": self.iter,
+                 "time": time_end - time_start,
+                 "n_success": self.n_success,
+                 "percent_success": self.percent_success}
+        self.stats.append(stats)
+        return mol_data
+
+
+class GeoMolEmbedder(ConfGenEmbedder):
+    def __init__(self, trained_model_dir, track_stats=False):
+        super(GeoMolEmbedder, self).__init__(track_stats)
+
         # TODO: add option of pre-pruning geometries using alpha values
         # TODO: inverstigate option of changing "temperature" each iteration to sample diverse geometries
 
@@ -35,13 +68,12 @@ class GeoMolEmbedder:
         model.eval()
         self.model = model
         self.tg_data = None
-        self.iter = 0
+        self.std = model_parameters["hyperparams"]["random_vec_std"]
 
-    def __call__(self, smiles, n_conformers, std=1.0):
-        self.iter += 1
+    def embed_conformers(self, smiles, n_conformers):
 
         # set "temperature"
-        self.model.random_vec_std = std * (1 + self.iter / 10)
+        self.model.random_vec_std = self.std * (1 + self.iter / 10)
 
         # featurize data and run GeoMol
         if self.tg_data is None:
@@ -63,32 +95,52 @@ class GeoMolEmbedder:
             positions = x.squeeze(axis=1)
             conf.SetPositions(positions)
             mol_data.append({"positions": positions,
-                             "conf": conf})
+                             "conf": conf,
+                             "iter": self.iter})
+
+        n_success = len(mol_data)
+        self.n_success = n_success
+        self.percent_success = n_success / n_conformers * 100
 
         return mol_data
 
 
-class ETKDGEmbedder:
-    def __init__(self):
+class ETKDGEmbedder(ConfGenEmbedder):
+    def __init__(self, track_stats=False):
+        super(ETKDGEmbedder, self).__init__(track_stats)
+
         self.mol = None
 
-    def __call__(self, smiles, n_conformers):
+    def embed_conformers(self, smiles, n_conformers):
         if self.mol is None:
             self.mol = RDKitMol.FromSmiles(smiles)
 
         mol = self.mol.Copy()
         mol.EmbedMultipleConfs(n_conformers)
-        return mol_to_dict(mol)
+        mol_data = mol_to_dict(mol, iter=self.iter)
+
+        n_success = mol.GetNumConformers()
+        self.n_success = n_success
+        self.percent_success = n_success / n_conformers * 100
+
+        return mol_data
 
 
-class RandomEmbedder:
-    def __init__(self):
+class RandomEmbedder(ConfGenEmbedder):
+    def __init__(self, track_stats=False):
+        super(RandomEmbedder, self).__init__(track_stats)
+
         self.mol = None
 
-    def __call__(self, smiles, n_conformers):
+    def embed_conformers(self, smiles, n_conformers):
         if self.mol is None:
             self.mol = RDKitMol.FromSmiles(smiles)
 
         mol = self.mol.Copy()
         mol.EmbedMultipleNullConfs(n_conformers)
-        return mol_to_dict(mol)
+
+        n_success = mol.GetNumConformers()
+        self.n_success = n_success
+        self.percent_success = n_success / n_conformers * 100
+
+        return mol_to_dict(mol, iter=self.iter)

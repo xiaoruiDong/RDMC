@@ -12,10 +12,8 @@ import numpy as np
 
 # Path handling shortcuts
 
-ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
-DATA_PATH = os.path.join(ROOT_PATH, "data")
-TESTS_PATH = os.path.join(DATA_PATH, "test_data")
-MODEL_PATH = os.path.join(ROOT_PATH, "models")
+ROOT_PATH = os.path.dirname(__file__)
+TS_PATH_INP = os.path.join(ROOT_PATH, "ts_path.inp")
 UTILS_PATH = os.path.join(ROOT_PATH, "utils")
 XTB_BINARY = os.path.join(os.environ.get("CONDA_PREFIX"), "bin", "xtb")
 CREST_BINARY = os.path.join(os.environ.get("CONDA_PREFIX"), "bin", "crest")

@@ -6,7 +6,10 @@ Modules for conformer generation workflows
 """
 
 from rdmc.mol import RDKitMol
-from .pruners import TorsionPruner
+from .embedders import *
+from .pruners import *
+from .optimizers import *
+from .metrics import *
 import numpy as np
 import logging
 
@@ -23,8 +26,9 @@ class StochasticConformerGenerator:
     A module for stochastic conformer generation. The workflow follows an embed -> optimize -> prune cycle with
     custom stopping criteria. Additional final modules can be added at the user's discretion.
     """
-    def __init__(self, smiles, embedder, optimizer, pruner,
-                 metric, min_iters=5, max_iters=100, final_modules=None):
+    def __init__(self, smiles, embedder=None, optimizer=None, pruner=None,
+                 metric=None, min_iters=5, max_iters=100, final_modules=None,
+                 config=None):
         """
         Generate an RDKitMol Molecule instance from a RDKit ``Chem.rdchem.Mol`` or ``RWMol`` molecule.
 
@@ -40,23 +44,27 @@ class StochasticConformerGenerator:
         """
 
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
-
         self.smiles = smiles
+
         self.embedder = embedder
         self.optimizer = optimizer
         self.pruner = pruner
         self.metric = metric
+        self.final_modules = [] if not final_modules else final_modules
+        self.min_iters = min_iters
+        self.max_iters = max_iters
 
-        if not optimizer:
+        if config:
+            self.logger.info(f"Config specified: using default settings for {config} config")
+            self.set_config(config, embedder, optimizer, pruner, metric, final_modules)
+
+        if not self.optimizer:
             self.metric.metric = "total conformers"
             self.logger.info("No optimizer selected: termination criteria set to total conformers")
 
         self.mol = RDKitMol.FromSmiles(smiles)
         self.unique_mol_data = []
         self.iter = 0
-        self.min_iters = min_iters
-        self.max_iters = max_iters
-        self.final_modules = [] if not final_modules else final_modules
 
         if isinstance(self.pruner, TorsionPruner):
             self.pruner.initialize_torsions_list(smiles)
@@ -102,10 +110,33 @@ class StochasticConformerGenerator:
                 for module in self.final_modules:
                     self.logger.info(f"Calling {module.__class__.__name__}")
                     unique_mol_data = module(unique_mol_data)
+                    self.unique_mol_data = unique_mol_data
                 return unique_mol_data
 
         self.logger.info(f"Iteration {self.iter}: max iterations reached\n")
         for module in self.final_modules:
             self.logger.info(f"Calling {module.__class__.__name__}")
             unique_mol_data = module(unique_mol_data)
+            self.unique_mol_data = unique_mol_data
         return unique_mol_data
+
+    def set_config(self, config, embedder=None, optimizer=None, pruner=None, metric=None, final_modules=None):
+
+        if config == "loose":
+            self.embedder = ETKDGEmbedder() if not embedder else embedder
+            self.optimizer = XTBOptimizer(method="gff") if not optimizer else optimizer
+            self.pruner = TorsionPruner(mean_chk_threshold=20, max_chk_threshold=30) if not pruner else pruner
+            self.metric = SCGMetric(metric="entropy", window=3, threshold=0.05) if not metric else metric
+            self.final_modules = [] if not final_modules else final_modules
+            self.max_iters = 20
+
+        elif config == "normal":
+            self.embedder = ETKDGEmbedder() if not embedder else embedder
+            self.optimizer = XTBOptimizer(method="gff") if not optimizer else optimizer
+            self.pruner = CRESTPruner()
+            self.metric = SCGMetric(metric="entropy", window=5, threshold=0.01) if not metric else metric
+            self.final_modules = [
+                CRESTPruner(ewin=10),
+                XTBOptimizer(method="gfn2", level="vtight"),
+                CRESTPruner(ewin=6)
+            ] if not final_modules else final_modules

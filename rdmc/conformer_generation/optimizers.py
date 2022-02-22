@@ -6,21 +6,56 @@ Modules for optimizing initial guess geometries
 """
 
 from rdmc.forcefield import RDKitFF
+from time import time
+import numpy as np
 from .utils import *
 try:
-    from rdmc.external.xtb.opt import run_xtb_calc
+    from rdmc.external.xtb_tools.opt import run_xtb_calc
 except ImportError:
     pass
 
 
-class MMFFOptimizer:
-    def __init__(self, method="rdkit"):
+class ConfGenOptimizer:
+    def __init__(self, track_stats=False):
+
+        self.iter = 0
+        self.track_stats = track_stats
+        self.n_failures = None
+        self.percent_failures = None
+        self.n_opt_cycles = None
+        self.stats = []
+
+    def optimize_conformers(self, mol_data):
+        raise NotImplementedError
+
+    def __call__(self, mol_data):
+
+        self.iter += 1
+        time_start = time()
+        mol_data = self.optimize_conformers(mol_data)
+
+        if not self.track_stats:
+            return mol_data
+
+        time_end = time()
+        stats = {"iter": self.iter,
+                 "time": time_end - time_start,
+                 "n_failures": self.n_failures,
+                 "percent_failures": self.percent_failures,
+                 "n_opt_cycles": self.n_opt_cycles}
+        self.stats.append(stats)
+        return mol_data
+
+
+class MMFFOptimizer(ConfGenOptimizer):
+    def __init__(self, method="rdkit", track_stats=False):
+        super(MMFFOptimizer, self).__init__(track_stats)
         if method == "rdkit":
             self.ff = RDKitFF()
         elif method == "openbabel":
             raise NotImplementedError
 
-    def __call__(self, mol_data):
+    def optimize_conformers(self, mol_data):
 
         if len(mol_data) == 0:
             return mol_data
@@ -38,14 +73,20 @@ class MMFFOptimizer:
                                    "conf": conf,
                                    "energy": energy})
 
+        if self.track_stats:
+            self.n_failures = np.sum([r[0] == 1 for r in results])
+            self.percent_failures = self.n_failures / len(mol_data) * 100
+
         return sorted(mol_data, key=lambda x: x["energy"])
 
 
-class XTBOptimizer:
-    def __init__(self, method="gff"):
+class XTBOptimizer(ConfGenOptimizer):
+    def __init__(self, method="gff", level="normal", track_stats=False):
+        super(XTBOptimizer, self).__init__(track_stats)
         self.method = method
+        self.level = level
 
-    def __call__(self, mol_data):
+    def optimize_conformers(self, mol_data):
 
         if len(mol_data) == 0:
             return mol_data
@@ -55,11 +96,13 @@ class XTBOptimizer:
         new_mol.EmbedNullConformer()
 
         failed_ids = set()
+        all_props = []
         for c_id, c_data in enumerate(mol_data):
             pos = c_data["conf"].GetPositions()
             new_mol.SetPositions(pos)
             try:
-                _, opt_mol = run_xtb_calc(new_mol, opt=True, return_optmol=True, method=self.method)
+                props, opt_mol = run_xtb_calc(new_mol, job="--opt", return_optmol=True, method=self.method, level=self.level)
+                all_props.append(props)
             except ValueError as e:
                 failed_ids.add(c_id)
                 print(e)
@@ -73,4 +116,10 @@ class XTBOptimizer:
                                    "energy": energy})
 
         mol_data = [c for i, c in enumerate(mol_data) if i not in failed_ids]
+
+        if self.track_stats:
+            self.n_failures = len(failed_ids)
+            self.percent_failures = self.n_failures / len(mol_data) * 100
+            self.n_opt_cycles = [p["n_opt_cycles"] if "n_opt_cycles" in p else -1 for p in all_props]
+
         return sorted(mol_data, key=lambda x: x["energy"])

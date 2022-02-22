@@ -10,7 +10,7 @@ import os
 from shutil import rmtree
 import subprocess
 import tempfile
-from rdmc.external.xtb.utils import CREST_BINARY, XTB_ENV
+from rdmc.external.xtb_tools.utils import CREST_BINARY, XTB_ENV
 
 
 def make_xyz_text(rd_mol,

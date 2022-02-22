@@ -6,13 +6,15 @@ Utilities for conformer generation modules
 """
 
 
-def mol_to_dict(mol):
+def mol_to_dict(mol, iter=None):
     mol_data = []
     for c_id in range(mol.GetNumConformers()):
         conf = mol.Copy().GetConformer(c_id)
         positions = conf.GetPositions()
         mol_data.append({"positions": positions,
                          "conf": conf})
+        if iter:
+            mol_data[c_id].update({"iter": iter})
     return mol_data
 
 
