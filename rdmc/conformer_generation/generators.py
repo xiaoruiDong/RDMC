@@ -12,6 +12,7 @@ from .optimizers import *
 from .metrics import *
 import numpy as np
 import logging
+from time import time
 
 
 logging.basicConfig(
@@ -28,7 +29,7 @@ class StochasticConformerGenerator:
     """
     def __init__(self, smiles, embedder=None, optimizer=None, pruner=None,
                  metric=None, min_iters=5, max_iters=100, final_modules=None,
-                 config=None):
+                 config=None, track_stats=False):
         """
         Generate an RDKitMol Molecule instance from a RDKit ``Chem.rdchem.Mol`` or ``RWMol`` molecule.
 
@@ -53,6 +54,7 @@ class StochasticConformerGenerator:
         self.final_modules = [] if not final_modules else final_modules
         self.min_iters = min_iters
         self.max_iters = max_iters
+        self.track_stats = track_stats
 
         if config:
             self.logger.info(f"Config specified: using default settings for {config} config")
@@ -64,6 +66,7 @@ class StochasticConformerGenerator:
 
         self.mol = RDKitMol.FromSmiles(smiles)
         self.unique_mol_data = []
+        self.stats = []
         self.iter = 0
 
         if isinstance(self.pruner, TorsionPruner):
@@ -72,6 +75,7 @@ class StochasticConformerGenerator:
     def __call__(self, n_conformers_per_iter):
 
         self.logger.info(f"Generating conformers for {self.smiles}")
+        time_start = time()
         for it in range(self.max_iters):
             self.iter += 1
 
@@ -102,22 +106,27 @@ class StochasticConformerGenerator:
             self.unique_mol_data = unique_mol_data
             self.logger.info(f"Iteration {self.iter}: kept {len(unique_mol_data)} unique conformers")
 
-            if it < self.min_iters:
+            if self.iter < self.min_iters:
                 continue
 
             if self.metric.check_metric():
                 self.logger.info(f"Iteration {self.iter}: stop crietria reached\n")
-                for module in self.final_modules:
-                    self.logger.info(f"Calling {module.__class__.__name__}")
-                    unique_mol_data = module(unique_mol_data)
-                    self.unique_mol_data = unique_mol_data
-                return unique_mol_data
+                break
 
-        self.logger.info(f"Iteration {self.iter}: max iterations reached\n")
+        if self.iter == self.max_iters:
+            self.logger.info(f"Iteration {self.iter}: max iterations reached\n")
         for module in self.final_modules:
             self.logger.info(f"Calling {module.__class__.__name__}")
             unique_mol_data = module(unique_mol_data)
             self.unique_mol_data = unique_mol_data
+
+        if self.track_stats:
+            time_end = time()
+            stats = {"iter": self.iter,
+                     "time": time_end - time_start,
+                     }
+            self.stats.append(stats)
+
         return unique_mol_data
 
     def set_config(self, config, embedder=None, optimizer=None, pruner=None, metric=None, final_modules=None):
@@ -131,12 +140,12 @@ class StochasticConformerGenerator:
             self.max_iters = 20
 
         elif config == "normal":
-            self.embedder = ETKDGEmbedder() if not embedder else embedder
-            self.optimizer = XTBOptimizer(method="gff") if not optimizer else optimizer
-            self.pruner = CRESTPruner()
+            self.embedder = ETKDGEmbedder(track_stats=self.track_stats) if not embedder else embedder
+            self.optimizer = XTBOptimizer(method="gff", track_stats=self.track_stats) if not optimizer else optimizer
+            self.pruner = CRESTPruner(track_stats=self.track_stats)
             self.metric = SCGMetric(metric="entropy", window=5, threshold=0.01) if not metric else metric
             self.final_modules = [
-                CRESTPruner(ewin=10),
-                XTBOptimizer(method="gfn2", level="vtight"),
-                CRESTPruner(ewin=6)
+                CRESTPruner(ewin=12, track_stats=self.track_stats),
+                XTBOptimizer(method="gfn2", level="vtight", track_stats=self.track_stats),
+                CRESTPruner(ewin=6, track_stats=self.track_stats)
             ] if not final_modules else final_modules
