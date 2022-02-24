@@ -115,11 +115,11 @@ class XTBOptimizer(ConfGenOptimizer):
                                    "conf": conf,
                                    "energy": energy})
 
-        mol_data = [c for i, c in enumerate(mol_data) if i not in failed_ids]
+        final_mol_data = [c for i, c in enumerate(mol_data) if i not in failed_ids]
 
         if self.track_stats:
             self.n_failures = len(failed_ids)
             self.percent_failures = self.n_failures / len(mol_data) * 100
             self.n_opt_cycles = [p["n_opt_cycles"] if "n_opt_cycles" in p else -1 for p in all_props]
 
-        return sorted(mol_data, key=lambda x: x["energy"])
+        return sorted(final_mol_data, key=lambda x: x["energy"])
