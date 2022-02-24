@@ -175,8 +175,12 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
         if job == "--opt":
             with open(logfile, "r") as f:
                 log_data = f.readlines()
-            n_opt_cycles = int(
-                [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
+                try:
+                    n_opt_cycles = int(
+                        [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
+                except IndexError:
+                    rmtree(temp_dir)
+                    raise ValueError(f"xTB calculation failed.")
             props.update({"n_opt_cycles": n_opt_cycles})
 
         if job == "--hess":
@@ -186,7 +190,10 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
             props.update({"frequencies": frequencies})
 
         if job == "--path":
-            opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbpath_ts.xyz"))
+            try:
+                opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbpath_ts.xyz"))
+            except FileNotFoundError:
+                return (props, None) if return_optmol else props
             props.update(read_xtb_json(xtb_out, opt_mol))
             rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
