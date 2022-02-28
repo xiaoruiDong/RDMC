@@ -53,7 +53,7 @@ class ConfGenEmbedder:
 
 
 class GeoMolEmbedder(ConfGenEmbedder):
-    def __init__(self, trained_model_dir, track_stats=False):
+    def __init__(self, trained_model_dir, dataset="drugs", temp_schedule="linear", track_stats=False):
         super(GeoMolEmbedder, self).__init__(track_stats)
 
         # TODO: add option of pre-pruning geometries using alpha values
@@ -69,15 +69,20 @@ class GeoMolEmbedder(ConfGenEmbedder):
         self.model = model
         self.tg_data = None
         self.std = model_parameters["hyperparams"]["random_vec_std"]
+        self.temp_schedule = temp_schedule
+        self.dataset = dataset
 
     def embed_conformers(self, smiles, n_conformers):
 
         # set "temperature"
-        self.model.random_vec_std = self.std * (1 + self.iter / 10)
+        if self.temp_schedule == "none":
+            self.model.random_vec_std = self.std
+        elif self.temp_schedule == "linear":
+            self.model.random_vec_std = self.std * (1 + self.iter / 10)
 
         # featurize data and run GeoMol
         if self.tg_data is None:
-            self.tg_data = featurize_mol_from_smiles(smiles, dataset="drugs")
+            self.tg_data = featurize_mol_from_smiles(smiles, dataset=self.dataset)
         data = Batch.from_data_list([self.tg_data])  # need to run this bc of dumb internal GeoMol processing
         self.model(data, inference=True, n_model_confs=n_conformers)
 
