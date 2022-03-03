@@ -28,7 +28,7 @@ class StochasticConformerGenerator:
     custom stopping criteria. Additional final modules can be added at the user's discretion.
     """
     def __init__(self, smiles, embedder=None, optimizer=None, pruner=None,
-                 metric=None, min_iters=5, max_iters=100, final_modules=None,
+                 metric=None, min_iters=None, max_iters=None, final_modules=None,
                  config=None, track_stats=False):
         """
         Generate an RDKitMol Molecule instance from a RDKit ``Chem.rdchem.Mol`` or ``RWMol`` molecule.
@@ -52,13 +52,11 @@ class StochasticConformerGenerator:
         self.pruner = pruner
         self.metric = metric
         self.final_modules = [] if not final_modules else final_modules
-        self.min_iters = min_iters
-        self.max_iters = max_iters
         self.track_stats = track_stats
 
         if config:
             self.logger.info(f"Config specified: using default settings for {config} config")
-            self.set_config(config, embedder, optimizer, pruner, metric, final_modules)
+            self.set_config(config, embedder, optimizer, pruner, metric, final_modules, min_iters, max_iters)
 
         if not self.optimizer:
             self.metric.metric = "total conformers"
@@ -67,6 +65,8 @@ class StochasticConformerGenerator:
         self.mol = RDKitMol.FromSmiles(smiles)
         self.unique_mol_data = []
         self.stats = []
+        self.min_iters = 1 if not self.min_iters else self.min_iters
+        self.max_iters = 1000 if not self.max_iters else self.max_iters
         self.iter = 0
 
         if isinstance(self.pruner, TorsionPruner):
@@ -129,7 +129,8 @@ class StochasticConformerGenerator:
 
         return unique_mol_data
 
-    def set_config(self, config, embedder=None, optimizer=None, pruner=None, metric=None, final_modules=None):
+    def set_config(self, config, embedder=None, optimizer=None, pruner=None, metric=None, final_modules=None,
+                   min_iters=None, max_iters=None):
 
         if config == "loose":
             self.embedder = ETKDGEmbedder() if not embedder else embedder
@@ -137,7 +138,8 @@ class StochasticConformerGenerator:
             self.pruner = TorsionPruner(mean_chk_threshold=20, max_chk_threshold=30) if not pruner else pruner
             self.metric = SCGMetric(metric="entropy", window=3, threshold=0.05) if not metric else metric
             self.final_modules = [] if not final_modules else final_modules
-            self.max_iters = 20
+            self.min_iters = 3 if not min_iters else min_iters
+            self.max_iters = 20 if not max_iters else max_iters
 
         elif config == "normal":
             self.embedder = ETKDGEmbedder(track_stats=self.track_stats) if not embedder else embedder
@@ -149,3 +151,5 @@ class StochasticConformerGenerator:
                 XTBOptimizer(method="gfn2", level="vtight", track_stats=self.track_stats),
                 CRESTPruner(ewin=6, track_stats=self.track_stats)
             ] if not final_modules else final_modules
+            self.min_iters = 5 if not min_iters else min_iters
+            self.max_iters = 100 if not max_iters else max_iters
