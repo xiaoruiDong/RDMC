@@ -12,7 +12,7 @@ from scipy import optimize
 from scipy.spatial import distance
 
 from rdmc import RDKitMol
-from rdmc.math.geom import get_centroid, get_max_distance_from_center, rotate, translate, translate_centroid
+from rdmc.mathlib.geom import get_centroid, get_max_distance_from_center, rotate, translate, translate_centroid
 from rdmc.utils import PERIODIC_TABLE as PT
 
 
