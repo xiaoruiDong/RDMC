@@ -101,7 +101,7 @@ class StochasticConformerGenerator:
                 continue
 
             self.logger.info(f"Iteration {self.iter}: pruning conformers...")
-            unique_mol_data = self.pruner(opt_mol_data, self.unique_mol_data)
+            unique_mol_data = self.pruner(opt_mol_data, self.unique_mol_data) if self.pruner else opt_mol_data
             self.metric.calculate_metric(unique_mol_data)
             self.unique_mol_data = unique_mol_data
             self.logger.info(f"Iteration {self.iter}: kept {len(unique_mol_data)} unique conformers")
