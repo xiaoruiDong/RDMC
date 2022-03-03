@@ -7,6 +7,7 @@ This module provides class and methods for dealing with RDKit RWMol, Mol.
 
 import pathlib
 from itertools import combinations
+from itertools import product as cartesian_product
 from typing import Iterable, List, Optional, Sequence, Union
 
 import numpy as np
@@ -208,47 +209,65 @@ class RDKitMol(object):
         Chem.rdmolops.AssignStereochemistryFrom3D(self._mol, confId=confId)
 
     def CombineMol(self,
-                   molFrag: 'Mol',
-                   offset: Union[list, tuple, float] = 0,
+                   molFrag: Union['RDKitMol', 'Mol'],
+                   offset: Union[list, tuple, float, np.array] = 0,
+                   c_product: bool = False,
                    ) -> 'RDKitMol':
         """
         A function to combine the current molecule with the given ``molFrag`` (another molecule
         or fragment). It will return a new RDKitMol instance without changing the input molecules.
 
         Args:
-            molFrag (Mol): the molecule or fragment to be combined into the current one.
+            molFrag (RDKitMol, Mol): the molecule or fragment to be combined into the current one.
             offset:
                 - (list, tuple): A 3D vector used to define the offset.
-                - (float): An ratio times the distance vector between the two centroids as the offset.
+                - (float): Distance in Angstrom between the current mol and the `molFrag` along the x axis.
+            c_product (bool, optional): If `True`, generate conformers for every possible combination
+                                        between the current molecule and the `molFrag`. E.g.,
+                                        (1,1), (1,2), ... (1,n), (2,1), ...(m,1), ... (m,n)
+                                        Defaults to `False`, meaning it generates conformers pairwise. E.g.,
+                                        (1,1), (2,2), ...
+                                        When `c_product=True`, N(conformer) = m x n.
+                                        When `c_product=False`, if the current molecule has 0 conformer, N(conformer)
+                                        will be equal to the N(conformer) of `molFrag`; Otherwise, N(conformer)
+                                        will be equal to the N(conformer) of the current molecule object. Some
+                                        coordinates may be filled by zeros if the current molecule and `molFrag`
+                                        have different N(conformer).
 
         Returns:
             RDKitMol: The combined molecule.
         """
+        m1 = self._mol
         try:
-            mol = molFrag.ToRWMol()
+            m2 = molFrag.ToRWMol()
         except AttributeError:
-            mol = molFrag
+            m2 = molFrag
 
-        # Manually assign a 3D vector for offset
-        if isinstance(offset, (list, tuple)) and len(offset) == 3:
-            vector = Point3D()
-            for i, coord in enumerate(['x', 'y', 'z']):
-                setattr(vector, coord, offset[i])
-
-        # Assign an offset according to the centroid vector
-        elif isinstance(offset, (int, float)):
-            conf = self.GetConformer()
-            conf_from_mol = mol.GetConformer()
-            vector = Chem.rdMolTransforms.ComputeCentroid(conf_from_mol, ignoreHs=False) - \
-                     Chem.rdMolTransforms.ComputeCentroid(conf.ToConformer(), ignoreHs=False)
-            for coord in ['x', 'y', 'z']:
-                setattr(vector, coord, getattr(vector, coord) * offset)
-
+        vector = Point3D()
+        if c_product:
+            if isinstance(offset, (list, tuple)):
+                offset = np.array(offset)
+            elif isinstance(offset, (int, float)):
+                offset = np.array([[offset, 0., 0.]])
         else:
-            raise ValueError(f'Invalid input for offset. Got: {offset}')
+            if isinstance(offset, (list, tuple, np.ndarray)):
+                for i, coord in enumerate(['x', 'y', 'z']):
+                    setattr(vector, coord, float(offset[0, i]))
+            else:
+                vector.x = float(offset)
 
-        combined = Chem.rdmolops.CombineMols(self._mol, mol, vector)
-        return RDKitMol(combined)
+        combined = RDKitMol(Chem.rdmolops.CombineMols(m1, m2, vector))
+        if c_product:
+            c1s = m1.GetConformers()
+            c2s = m2.GetConformers()
+            pos_list = [[c1.GetPositions(), c2.GetPositions() + offset]
+                        for c1, c2 in cartesian_product(c1s, c2s)]
+
+            combined.EmbedMultipleNullConfs(len(c1s)*len(c2s), random=False)
+            for i, pos_pair in enumerate(pos_list):
+                combined.SetPositions(np.concatenate(pos_pair), id=i)
+
+        return combined
 
     def Copy(self) -> 'RDKitMol':
         """

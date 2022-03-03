@@ -350,6 +350,60 @@ class TestRDKitMol(unittest.TestCase):
         tops = mol.GetTorsionTops([3, 0, 1, 6], allowNonbondPivots=True)
         self.assertCountEqual(tops, ((0, 3, 4, 5), (1, 6)))
 
+    def test_combined_mol(self):
+        """
+        Test combining molecules using CombineMol.
+        """
+        xyz_1 = np.array([[-0.01841209, -0.00118705,  0.00757447],
+                          [-0.66894707, -0.81279485, -0.34820667],
+                          [-0.36500814,  1.00785186, -0.31659064],
+                          [ 0.08216461, -0.04465528,  1.09970299],
+                          [ 0.97020269, -0.14921467, -0.44248015]])
+        xyz_2 = np.array([[ 0.49911347,  0.        ,  0.        ],
+                          [-0.49911347,  0.        ,  0.        ]])
+        m1 = RDKitMol.FromSmiles('C')
+        m1.EmbedConformer()
+        m1.SetPositions(xyz_1)
+
+        m2 = RDKitMol.FromSmiles('[OH]')
+        m2.EmbedConformer()
+        m2.SetPositions(xyz_2)
+
+        combined = m1.CombineMol(m2)
+        self.assertTrue(np.allclose(np.concatenate([xyz_1, xyz_2],),
+                                    combined.GetPositions()))
+
+        combined = m1.CombineMol(m2, 1.)
+        self.assertTrue(np.allclose(np.concatenate([xyz_1, xyz_2+np.array([[1., 0., 0.]])],),
+                                    combined.GetPositions()))
+
+        combined = m1.CombineMol(m2, np.array([[1., 1., 0.]]))
+        self.assertTrue(np.allclose(np.concatenate([xyz_1, xyz_2+np.array([[1., 1., 0.]])],),
+                                    combined.GetPositions()))
+
+        combined = m2.CombineMol(m1, np.array([[0., 0., 1.]]))
+        self.assertTrue(np.allclose(np.concatenate([xyz_2, xyz_1+np.array([[0., 0., 1.]])],),
+                                    combined.GetPositions()))
+
+        m1.EmbedMultipleConfs(10)
+        m2.RemoveAllConformers()
+        self.assertEqual(10, m1.CombineMol(m2).GetNumConformers())
+        self.assertEqual(10, m2.CombineMol(m1).GetNumConformers())
+        self.assertEqual(0, m1.CombineMol(m2, c_product=True).GetNumConformers())
+        self.assertEqual(0, m2.CombineMol(m1, c_product=True).GetNumConformers())
+
+        m2.EmbedMultipleConfs(10)
+        self.assertEqual(10, m1.CombineMol(m2).GetNumConformers())
+        self.assertEqual(10, m2.CombineMol(m1).GetNumConformers())
+        self.assertEqual(100, m1.CombineMol(m2, c_product=True).GetNumConformers())
+        self.assertEqual(100, m2.CombineMol(m1, c_product=True).GetNumConformers())
+
+        m2.EmbedMultipleConfs(20)
+        self.assertEqual(10, m1.CombineMol(m2).GetNumConformers())
+        self.assertEqual(20, m2.CombineMol(m1).GetNumConformers())
+        self.assertEqual(200, m1.CombineMol(m2, c_product=True).GetNumConformers())
+        self.assertEqual(200, m2.CombineMol(m1, c_product=True).GetNumConformers())
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
