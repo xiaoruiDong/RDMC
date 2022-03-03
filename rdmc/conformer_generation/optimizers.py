@@ -94,6 +94,7 @@ class XTBOptimizer(ConfGenOptimizer):
         new_mol = mol_data[0]["conf"].GetOwningMol().Copy()
         new_mol._mol.RemoveAllConformers()
         new_mol.EmbedNullConformer()
+        correct_atom_mapping = new_mol.GetAtomMapNumbers()
 
         failed_ids = set()
         all_props = []
@@ -108,6 +109,7 @@ class XTBOptimizer(ConfGenOptimizer):
                 print(e)
                 continue
 
+            opt_mol.SetAtomMapNumbers(correct_atom_mapping)
             conf = opt_mol.Copy().GetConformer(0)
             positions = conf.GetPositions()
             energy = float(opt_mol.GetProp('total energy / Eh'))  # * HARTREE_TO_KCAL_MOL  # kcal/mol (TODO: check)
