@@ -35,7 +35,7 @@ def run_sella_xtb_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None):
         opt.run(fmax, steps)
 
     opt_rdmc_mol = rdmc_mol.Copy()
-    opt_rdmc_mol.GetConformer(confId).SetPositions(opt.atoms.positions)
+    opt_rdmc_mol.SetPositions(opt.atoms.positions, id=confId)
 
     if not save_dir:
         rmtree(temp_dir)

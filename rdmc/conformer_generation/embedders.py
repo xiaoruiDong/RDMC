@@ -96,11 +96,11 @@ class GeoMolEmbedder(ConfGenEmbedder):
         mol.EmbedMultipleNullConfs(n=n_conformers)
         mol_data = []
         for i, x in enumerate(split_model_coords):
-            conf = mol.Copy().GetConformer(i)
+            conf = mol.GetConformer(i)
             positions = x.squeeze(axis=1)
             conf.SetPositions(positions)
             mol_data.append({"positions": positions,
-                             "conf": conf,
+                             "conf": conf,  # confs share the same owning molecule
                              "iter": self.iter})
 
         n_success = len(mol_data)
@@ -122,13 +122,12 @@ class ETKDGEmbedder(ConfGenEmbedder):
 
         mol = self.mol.Copy()
         mol.EmbedMultipleConfs(n_conformers)
-        mol_data = mol_to_dict(mol, iter=self.iter)
 
         n_success = mol.GetNumConformers()
         self.n_success = n_success
         self.percent_success = n_success / n_conformers * 100
 
-        return mol_data
+        return mol_to_dict(mol, copy=False, iter=self.iter)
 
 
 class RandomEmbedder(ConfGenEmbedder):
@@ -148,4 +147,4 @@ class RandomEmbedder(ConfGenEmbedder):
         self.n_success = n_success
         self.percent_success = n_success / n_conformers * 100
 
-        return mol_to_dict(mol, iter=self.iter)
+        return mol_to_dict(mol, copy=False, iter=self.iter)

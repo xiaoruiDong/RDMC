@@ -9,19 +9,30 @@ from rdkit.Chem import AllChem
 from rdkit.ML.Cluster import Butina
 
 
-def mol_to_dict(mol, iter=None):
-    mol_data = []
-    for c_id in range(mol.GetNumConformers()):
+def mol_to_dict(mol,
+                copy: bool = True,
+                iter: int = None):
+    """
+    Convert a molecule to a dictionary that stores its conformers object, atom coordinates,
+    and iteration numbers for a certain calculation (optional).
 
-        conf = mol.Copy().GetConformer(c_id)
-        new_mol = mol.Copy()
-        new_mol.RemoveAllConformers()
-        new_mol._mol.AddConformer(conf.ToConformer(), assignId=True)
-        conf.SetOwningMol(new_mol)
+    Args:
+        mol ('RDKitMol'): An RDKitMol object.
+        copy (bool, optional): Use a copy of the molecule to process data. Defaults to True.
+        iter (int, optional): Number of iterations. Defaults to None.
+
+    Returns:
+        list: mol data as a list of dict; each dict corresponds to a conformer.
+    """
+    mol_data = []
+    if copy:
+        mol = mol.Copy()
+    for c_id in range(mol.GetNumConformers()):
+        conf = mol.GetConformer(id=c_id)
         positions = conf.GetPositions()
         mol_data.append({"positions": positions,
                          "conf": conf})
-        if iter:
+        if iter is not None:
             mol_data[c_id].update({"iter": iter})
     return mol_data
 
@@ -29,7 +40,7 @@ def mol_to_dict(mol, iter=None):
 def dict_to_mol(mol_data):
     mol = mol_data[0]["conf"].GetOwningMol().Copy()
     mol.RemoveAllConformers()
-    [mol._mol.AddConformer(c["conf"].ToConformer(), assignId=True) for c in mol_data]
+    [mol.AddConformer(c["conf"].ToConformer(), assignId=True) for c in mol_data]
     return mol
 
 
