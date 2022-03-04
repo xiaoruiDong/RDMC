@@ -112,10 +112,7 @@ def find_ring_torsions(mol: Union['Mol', 'RWMol']) -> list:
     Returns:
         list: A list of ring torsions.
     """
-    try:
-        _, ring_torsions = CalculateTorsionLists(mol)
-    except ArgumentError:
-        _, ring_torsions = CalculateTorsionLists(mol.ToRWMol())
+    _, ring_torsions = CalculateTorsionLists(mol.ToRWMol())
     if ring_torsions:
         ring_torsions = [list(t) for t in ring_torsions[0][0]]
     return ring_torsions
