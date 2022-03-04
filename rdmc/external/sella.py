@@ -14,10 +14,11 @@ from ase import Atoms
 from xtb.ase.calculator import XTB
 from sella import Sella
 import pandas as pd
+from ase.io.trajectory import Trajectory
 
 
-def run_sella_xtb_opt(rdmc_mol, confId=0):
-    temp_dir = tempfile.mkdtemp()
+def run_sella_xtb_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None):
+    temp_dir = tempfile.mkdtemp() if not save_dir else save_dir
     trajfile = os.path.join(temp_dir, "ts.traj")
     logfile = os.path.join(temp_dir, "ts.log")
 
@@ -33,15 +34,12 @@ def run_sella_xtb_opt(rdmc_mol, confId=0):
             logfile=logfile,
             trajectory=trajfile,
         )
-        opt.run(1e-3, 1000)
+        opt.run(fmax, steps)
 
     opt_rdmc_mol = rdmc_mol.Copy()
     opt_rdmc_mol.GetConformer(confId).SetPositions(opt.atoms.positions)
 
-    prop_headers = ["step", "time", "energy", "fmax", "cmax", "trust", "rho"]
-    with open(logfile) as f:
-        data = f.readlines()
-    props = pd.DataFrame([l.split()[1:] for l in data[1:]], columns=prop_headers, dtype=float).set_index("step").to_dict()
-    rmtree(temp_dir)
+    if not save_dir:
+        rmtree(temp_dir)
 
-    return props, opt_rdmc_mol
+    return opt_rdmc_mol
