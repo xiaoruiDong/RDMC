@@ -12,6 +12,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import BondType, Mol, RWMol
 from rdkit import RDLogger
+from rdkit.Chem.TorsionFingerprints import CalculateTorsionLists
 
 # Mute RDKit's error logs
 # They can be confusing at places where try ... except ... are implemented.
@@ -99,6 +100,25 @@ def find_internal_torsions(mol: Union['Mol', 'RWMol'],
         last_atom_ind = determine_smallest_atom_index_in_torsion(*pivots)
         torsions.append([first_atom_ind, *atoms_ind, last_atom_ind])
     return torsions
+
+
+def find_ring_torsions(mol: Union['Mol', 'RWMol']) -> list:
+    """
+    Find the ring from RDkit molecule.
+
+    Args:
+        mol (Union[Mol, RWMol]): RDKit molecule.
+
+    Returns:
+        list: A list of ring torsions.
+    """
+    try:
+        _, ring_torsions = CalculateTorsionLists(mol)
+    except ArgumentError:
+        _, ring_torsions = CalculateTorsionLists(mol.ToRWMol())
+    if ring_torsions:
+        ring_torsions = [list(t) for t in ring_torsions[0][0]]
+    return ring_torsions
 
 
 def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',

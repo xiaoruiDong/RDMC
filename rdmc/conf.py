@@ -15,7 +15,10 @@ from rdkit.Chem import rdMolTransforms as rdMT
 from rdkit.Chem.rdchem import Conformer
 from scipy.spatial import distance_matrix
 
-from rdmc.utils import find_internal_torsions, set_rdconf_coordinates, VDW_RADII
+from rdmc.utils import (find_internal_torsions,
+                        find_ring_torsions,
+                        set_rdconf_coordinates,
+                        VDW_RADII)
 
 
 class RDKitConf(object):
@@ -172,7 +175,8 @@ class RDKitConf(object):
         return rdMT.GetDihedralDeg(self._conf, *torsion)
 
     def GetTorsionalModes(self,
-                          indexed1: bool = False):
+                          indexed1: bool = False,
+                          includeRings: bool = False):
         """
         Get all of the torsional modes (rotors) of the Conformer. This information
         is obtained from its owning molecule.
@@ -180,6 +184,7 @@ class RDKitConf(object):
         Args:
             indexed1: The atom index in RDKit starts from 0. If you want to have
                        indexed 1 atom indexes, please set this argument to ``True``.
+            includeRings (bool): Whether or not to include ring torsions. Defaults to ``False``.
 
         Returns:
             Optinal[list]: A list of four-atom-indice to indicating the torsional modes.
@@ -189,6 +194,8 @@ class RDKitConf(object):
                 else [[ind + 1 for ind in tor] for tor in self._torsions]
         except AttributeError:
             self._torsions = find_internal_torsions(self._owning_mol)
+            if includeRings:
+                self._torsions += find_ring_torsions(self._owning_mol)
             return self._torsions
 
     def GetVdwMatrix(self, threshold=0.4) -> Optional[np.ndarray]:

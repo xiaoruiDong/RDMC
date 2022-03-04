@@ -870,18 +870,22 @@ class RDKitMol(object):
 
     def GetTorsionalModes(self,
                           excludeMethyl: bool = False,
+                          includeRings: bool = False,
                           ) -> list:
         """
         Get all of the torsional modes (rotors) from the molecule.
 
         Args:
             excludeMethyl (bool): Whether exclude the torsions with methyl groups. Defaults to ``False``.
+            includeRings (bool): Whether or not to exclude ring torsions. Defaults to ``False``.
 
         Returns:
             list: A list of four-atom-indice to indicating the torsional modes.
         """
-        return find_internal_torsions(self._mol,
-                                      exclude_methyl=excludeMethyl)
+        torsions = find_internal_torsions(self._mol, exclude_methyl=excludeMethyl)
+        if includeRings:
+            torsions += find_ring_torsions(self._mol)
+        return
 
     def GetVdwMatrix(self, threshold=0.4) -> Optional[np.ndarray]:
         """
