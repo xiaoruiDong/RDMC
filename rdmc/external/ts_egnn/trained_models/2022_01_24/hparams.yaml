@@ -1,0 +1,21 @@
+config:
+  batch_size: 32
+  coordinate_loss_coeff: 1.0
+  data_dir: data/intra_gsm_clean
+  depth: 6
+  distance_loss_coeff: 0.1
+  edge_dim: 16
+  gpus: 1
+  hard_sphere_loss_coeff: 0.1
+  hidden_dim: 64
+  log_dir: exps/
+  lr: 0.001
+  n_epochs: 150
+  n_layers: 2
+  node_dim: 5
+  num_workers: 20
+  prep_mols: true
+  prod_feat: dist
+  set_similar_mols: false
+  shuffle_mols: true
+  split_path: data/intra_gsm_clean/splits/split0.npy
