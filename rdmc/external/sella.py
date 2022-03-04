@@ -13,6 +13,7 @@ import tempfile
 from ase import Atoms
 from xtb.ase.calculator import XTB
 from sella import Sella
+import pandas as pd
 
 
 def run_sella_xtb_opt(rdmc_mol, confId=0):
@@ -36,6 +37,11 @@ def run_sella_xtb_opt(rdmc_mol, confId=0):
 
     opt_rdmc_mol = rdmc_mol.Copy()
     opt_rdmc_mol.GetConformer(confId).SetPositions(opt.atoms.positions)
+
+    prop_headers = ["step", "time", "energy", "fmax", "cmax", "trust", "rho"]
+    with open(logfile) as f:
+        data = f.readlines()
+    props = pd.DataFrame([l.split()[1:] for l in data[1:]], columns=prop_headers, dtype=float).set_index("step").to_dict()
     rmtree(temp_dir)
 
-    return opt_rdmc_mol
+    return props, opt_rdmc_mol
