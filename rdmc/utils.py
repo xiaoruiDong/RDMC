@@ -530,19 +530,25 @@ def get_internal_coords(obmol,
         torsions = non_red_torsions
     return bonds, angles, torsions
 
-def reverse_match(match: Iterable):
+def reverse_map(map: Iterable,
+                as_list: bool = True):
     """
-    Reverse the match from subgraphmatch. When doing subgraph match, RDKit will returns a list
-    that the index corresponds to the reference molecule and the value corresponds to the probing
-    molecule. This function inverse-transform the index and value relationship.
-    
+    Inverse-transform the index and value relationship in a mapping.
+    E.g., when doing a subgraph match, RDKit will returns a list
+    that the indexes correspond to the reference molecule and the values
+    correspond to the probing molecule. One by renumber the atoms in the
+    probing molecule according to the reverse_map, the atom numbering between
+    the two molecules should be consistent
+
     Args:
-        match (Iterable): A subgraph match results from RDKit.
-        
-    Returns"
-        list: A inverted atom map from the given ``match`` atom map.
+        map (Iterable): An atom mapping.
+        as_list (bool, optional): Output result as a `list` object. Otherwise,
+                                  the output is a np.ndarray.
+
+    Returns:
+        An inverted atom map from the given ``match`` atom map
     """
-    reverse_match = np.zeros(len(match), dtype=int)
-    for i, val in enumerate(match):
-        reverse_match[val] = i
-    return reverse_match.tolist()
+    if as_list:
+        return np.argsort(map).tolist()
+    else:
+        return np.argsort(map)
