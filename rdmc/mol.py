@@ -466,8 +466,7 @@ class RDKitMol(object):
                 #    [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 8), (6, 9)]. This kind of smiles
                 #    may be from reaction templates.
                 if idx + 1 != map_num:
-                    new_order = np.argsort(mol.GetAtomMapNumbers()).tolist()
-                    return mol.RenumberAtoms(new_order, updateAtomMap=False)
+                    return mol.RenumberAtoms(updateAtomMap=False)
         return mol
 
     @classmethod
@@ -957,23 +956,31 @@ class RDKitMol(object):
         return Chem.rdmolops.RemoveHs(self._mol, sanitize=sanitize)
 
     def RenumberAtoms(self,
-                      newOrder: list,
+                      newOrder: Optional[list] = None,
                       updateAtomMap: bool = True,
                       )-> 'RDKitMol':
         """
         Return a new copy of RDKitMol that has atom (index) reordered.
 
         Args:
-            newOrder (list): the new ordering the atoms (should be numAtoms long). E.g,
-                if newOrder is [3,2,0,1], then atom 3 in the original molecule
-                will be atom 0 in the new one.
+            newOrder (list, optional): the new ordering the atoms (should be numAtoms long). E.g,
+                                       if newOrder is [3,2,0,1], then atom 3 in the original molecule
+                                       will be atom 0 in the new one. If no value provided, then the molecule
+                                       will be renumbered based on the current atom map numbers. The latter is helpful
+                                       when the sequence of atom map numbers and atom indexes are inconsistent.
             updateAtomMap (bool): Whether to update the atom map number based on the
                                   new order.
 
         Returns:
             RDKitMol: Molecule with reordered atoms.
         """
-        rwmol = Chem.rdmolops.RenumberAtoms(self._mol, newOrder)
+        if newOrder is None:
+            newOrder = reverse_map(self.GetAtomMapNumbers())
+        try:
+            rwmol = Chem.rdmolops.RenumberAtoms(self._mol, newOrder)
+        except RuntimeError:
+            raise ValueError(f'The input newOrder ({newOrder}) is invalid. If no newOrder is provided'
+                             f', it may due to the atoms doesn\'t have atom map numbers.')
         # Correct the AtomMapNum
         if updateAtomMap:
             [rwmol.GetAtomWithIdx(i).SetAtomMapNum(i + 1) for i in range(rwmol.GetNumAtoms())]

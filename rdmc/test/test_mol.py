@@ -404,6 +404,52 @@ class TestRDKitMol(unittest.TestCase):
         self.assertEqual(200, m1.CombineMol(m2, c_product=True).GetNumConformers())
         self.assertEqual(200, m2.CombineMol(m1, c_product=True).GetNumConformers())
 
+    def test_renumber_atoms(self):
+        """
+        Test the functionality of renumber atoms of a molecule.
+        """
+        # A molecule complex
+        smi = '[C:1]([C:2]([C:3]([H:20])([H:21])[H:22])([O:4])[C:5]([H:23])([H:24])[H:25])' \
+              '([H:17])([H:18])[H:19].[C:6]([C:7]([C:8]([H:29])([H:30])[H:31])([C:9]([H:32])' \
+              '([H:33])[H:34])[c:10]1[c:11]([H:35])[c:12]([H:36])[c:13]([O:14][H:37])[c:15]' \
+              '([H:38])[c:16]1[H:39])([H:26])([H:27])[H:28]'
+              
+        # The generated molecule will maintain all the atom map numbers and the atom indexes
+        # have the same sequence as the atom map numbers
+        ref_mol = RDKitMol.FromSmiles(smi, keepAtomMap=True)
+
+        # Since the molecule atom indexes are consistent with the atom map numbers
+        # The generated molecule should have the same atom map numbers
+        self.assertSequenceEqual(ref_mol.RenumberAtoms(updateAtomMap=False).GetAtomMapNumbers(),
+                                 ref_mol.GetAtomMapNumbers())
+
+        # Create a molecule with different atom indexes
+        mols = [RDKitMol.FromSmiles(smi, keepAtomMap=True) for smi in smi.split('.')]
+        combined = mols[0].CombineMol(mols[1])
+        # If not renumbered, then atom maps and atom sequences are different
+        self.assertNotEqual(combined.GetAtomMapNumbers(), ref_mol.GetAtomMapNumbers())
+        self.assertNotEqual(combined.GetAtomicNumbers(), ref_mol.GetAtomicNumbers())
+        # Atom maps and atom sequences are the same to the reference molecule now
+        self.assertSequenceEqual(combined.RenumberAtoms(updateAtomMap=False).GetAtomMapNumbers(),
+                                 ref_mol.GetAtomMapNumbers())
+        self.assertSequenceEqual(combined.RenumberAtoms(updateAtomMap=False).GetAtomicNumbers(),
+                                 ref_mol.GetAtomicNumbers())
+
+        smi = '[C:1]([H:2])([H:3])([H:4])[H:5]'
+        ref_mol = RDKitMol.FromSmiles(smi)
+        # Renumber molecule but keep the original atom map
+        renumbered = ref_mol.RenumberAtoms([1, 2, 3, 4, 0], updateAtomMap=False)
+        self.assertSequenceEqual(renumbered.GetAtomMapNumbers(),
+                                 (2, 3, 4, 5, 1))
+        self.assertSequenceEqual(renumbered.GetAtomicNumbers(),
+                                 [1, 1, 1, 1, 6])
+        # Renumber molecule but also update the atom map after renumbering
+        renumbered = ref_mol.RenumberAtoms([1, 2, 3, 4, 0], updateAtomMap=True)
+        self.assertSequenceEqual(renumbered.GetAtomMapNumbers(),
+                                 (1, 2, 3, 4, 5))
+        self.assertSequenceEqual(renumbered.GetAtomicNumbers(),
+                                 [1, 1, 1, 1, 6])
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
