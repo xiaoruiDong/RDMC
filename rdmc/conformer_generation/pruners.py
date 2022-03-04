@@ -67,7 +67,7 @@ class TorsionPruner(ConfGenPruner):
 
         mol = RDKitMol.FromSmiles(smiles)
         mol.EmbedNullConformer()
-        self.torsions_list = mol.GetConformer().GetTorsionalModes()
+        self.torsions_list = mol.GetConformer().GetTorsionalModes(includeRings=True)
 
     def calculate_torsions(self, mol_data):
 
