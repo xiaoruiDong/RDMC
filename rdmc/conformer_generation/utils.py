@@ -38,8 +38,7 @@ def mol_to_dict(mol,
 
 
 def dict_to_mol(mol_data):
-    mol = mol_data[0]["conf"].GetOwningMol().Copy()
-    mol.RemoveAllConformers()
+    mol = mol_data[0]["conf"].GetOwningMol().Copy(quickCopy=True)
     [mol.AddConformer(c["conf"].ToConformer(), assignId=True) for c in mol_data]
     return mol
 
@@ -50,8 +49,7 @@ def cluster_confs(mol, cutoff=1.0):
     clusters = Butina.ClusterData(rmsmat, num, cutoff, isDistData=True, reordering=True)
     confs_to_keep = [c[0] for c in clusters]
 
-    updated_mol = mol.Copy()
-    updated_mol.RemoveAllConformers()
+    updated_mol = mol.Copy(quickCopy=True)
     [updated_mol.AddConformer(c.ToConformer(), assignId=True) for c in mol.GetConformers(confs_to_keep)]
 
     return updated_mol
