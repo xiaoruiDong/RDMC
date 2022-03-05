@@ -11,7 +11,10 @@ import yaml
 import numpy as np
 from time import time
 import torch
-from torch_geometric.data import Batch
+try:
+    from torch_geometric.data import Batch
+except ImportError:
+    pass
 from .utils import *
 
 try:
@@ -30,25 +33,51 @@ class ConfGenEmbedder:
         self.n_success = None
         self.percent_success = None
         self.stats = []
+        self.smiles = None
 
-    def embed_conformers(self, smiles, n_conformers):
+    def update_mol(self, smiles):
+        # Only update the molecule if smiles is changed
+        # Only copy the molecule graph from the previous run rather than conformers
+        if smiles != self.smiles:
+            self.smiles = smiles
+            self.mol = RDKitMol.FromSmiles(smiles)
+        else:
+            # Copy the graph but remove conformers
+            self.mol = self.mol.Copy(quickCopy=True)
+
+    def embed_conformers(self, n_conformers):
         raise NotImplementedError
+
+    def update_stats(self,
+                     n_trials,
+                     time=0.):
+        n_success = self.mol.GetNumConformers()
+        self.n_success = n_success
+        self.percent_success = n_success / n_trials * 100
+        stats = {"iter": self.iter,
+                 "time": time,
+                 "n_success": self.n_success,
+                 "percent_success": self.percent_success}
+        self.stats.append(stats)
+        return stats
+
+    def write_mol_data(self):
+        return mol_to_dict(self.mol, copy=False, iter=self.iter)
 
     def __call__(self, smiles, n_conformers):
 
         self.iter += 1
         time_start = time()
-        mol_data = self.embed_conformers(smiles, n_conformers)
+        self.update_mol(smiles)
+        self.embed_conformers(n_conformers)
+        mol_data = self.write_mol_data()
 
         if not self.track_stats:
             return mol_data
 
         time_end = time()
-        stats = {"iter": self.iter,
-                 "time": time_end - time_start,
-                 "n_success": self.n_success,
-                 "percent_success": self.percent_success}
-        self.stats.append(stats)
+        self.update_stats(n_trials=n_conformers,
+                          time=time_end - time_start)
         return mol_data
 
 
@@ -72,7 +101,7 @@ class GeoMolEmbedder(ConfGenEmbedder):
         self.temp_schedule = temp_schedule
         self.dataset = dataset
 
-    def embed_conformers(self, smiles, n_conformers):
+    def embed_conformers(self, n_conformers):
 
         # set "temperature"
         if self.temp_schedule == "none":
@@ -82,69 +111,29 @@ class GeoMolEmbedder(ConfGenEmbedder):
 
         # featurize data and run GeoMol
         if self.tg_data is None:
-            self.tg_data = featurize_mol_from_smiles(smiles, dataset=self.dataset)
+            self.tg_data = featurize_mol_from_smiles(self.smiles, dataset=self.dataset)
         data = Batch.from_data_list([self.tg_data])  # need to run this bc of dumb internal GeoMol processing
         self.model(data, inference=True, n_model_confs=n_conformers)
 
         # process predictions
-        n_atoms = self.tg_data.x.size(0)
         model_coords = construct_conformers(data, self.model).double().cpu().detach().numpy()
         split_model_coords = np.split(model_coords, n_conformers, axis=1)
 
         # package in mol and return
-        mol = RDKitMol.FromSmiles(smiles)
-        mol.EmbedMultipleNullConfs(n=n_conformers)
-        mol_data = []
+        self.mol.EmbedMultipleNullConfs(n=n_conformers, random=False)
         for i, x in enumerate(split_model_coords):
-            conf = mol.GetConformer(i)
-            positions = x.squeeze(axis=1)
-            conf.SetPositions(positions)
-            mol_data.append({"positions": positions,
-                             "conf": conf,  # confs share the same owning molecule
-                             "iter": self.iter})
-
-        n_success = len(mol_data)
-        self.n_success = n_success
-        self.percent_success = n_success / n_conformers * 100
-
-        return mol_data
-
+            conf = self.mol.GetConformer(i)
+            conf.SetPositions(x.squeeze(axis=1))
+        return self.mol
 
 class ETKDGEmbedder(ConfGenEmbedder):
-    def __init__(self, track_stats=False):
-        super(ETKDGEmbedder, self).__init__(track_stats)
 
-        self.mol = None
-
-    def embed_conformers(self, smiles, n_conformers):
-        if self.mol is None:
-            self.mol = RDKitMol.FromSmiles(smiles)
-
-        mol = self.mol.Copy()
-        mol.EmbedMultipleConfs(n_conformers)
-
-        n_success = mol.GetNumConformers()
-        self.n_success = n_success
-        self.percent_success = n_success / n_conformers * 100
-
-        return mol_to_dict(mol, copy=False, iter=self.iter)
-
+    def embed_conformers(self, n_conformers):
+        self.mol.EmbedMultipleConfs(n_conformers)
+        return self.mol
 
 class RandomEmbedder(ConfGenEmbedder):
-    def __init__(self, track_stats=False):
-        super(RandomEmbedder, self).__init__(track_stats)
 
-        self.mol = None
-
-    def embed_conformers(self, smiles, n_conformers):
-        if self.mol is None:
-            self.mol = RDKitMol.FromSmiles(smiles)
-
-        mol = self.mol.Copy()
-        mol.EmbedMultipleNullConfs(n_conformers)
-
-        n_success = mol.GetNumConformers()
-        self.n_success = n_success
-        self.percent_success = n_success / n_conformers * 100
-
-        return mol_to_dict(mol, copy=False, iter=self.iter)
+    def embed_conformers(self, n_conformers):
+        self.mol.EmbedMultipleNullConfs(n_conformers, random=True)
+        return self.mol
