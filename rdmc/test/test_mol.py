@@ -450,6 +450,29 @@ class TestRDKitMol(unittest.TestCase):
         self.assertSequenceEqual(renumbered.GetAtomicNumbers(),
                                  [1, 1, 1, 1, 6])
 
+    def test_copy(self):
+        """
+        Test copy molecule functionality.
+        """
+        smi = '[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]'
+        mol = RDKitMol.FromSmiles(smi)
+        mol.EmbedConformer()
+
+        mol_copy = mol.Copy()
+        self.assertNotEqual(mol.__hash__(), mol_copy.__hash__())
+        self.assertEqual(mol.GetAtomicNumbers(),
+                         mol_copy.GetAtomicNumbers())
+        self.assertEqual(mol.GetNumConformers(),
+                         mol_copy.GetNumConformers())
+        self.assertTrue(np.allclose(mol.GetPositions(),
+                                    mol_copy.GetPositions()))
+
+        mol_copy = mol.Copy(quickCopy=True)
+        self.assertNotEqual(mol.__hash__(), mol_copy.__hash__())
+        self.assertEqual(mol.GetAtomicNumbers(),
+                         mol_copy.GetAtomicNumbers())
+        self.assertEqual(mol_copy.GetNumConformers(), 0)
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))

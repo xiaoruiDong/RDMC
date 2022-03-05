@@ -269,15 +269,18 @@ class RDKitMol(object):
 
         return combined
 
-    def Copy(self) -> 'RDKitMol':
+    def Copy(self,
+             quickCopy: bool = False,) -> 'RDKitMol':
         """
         Make a copy of the RDKitMol.
+
+        Args:
+            quickCopy (bool, optional): Use the quick copy mode without copying conformers. Defaults to False.
 
         Returns:
             RDKitMol: a copied molecule
         """
-        return self.RenumberAtoms(list(range(self.GetNumAtoms())),
-                                  updateAtomMap=False)
+        return RDKitMol(Chem.RWMol(self._mol, quickCopy))
 
     def EmbedConformer(self,
                        embed_null: bool = True,
