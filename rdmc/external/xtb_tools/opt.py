@@ -188,13 +188,14 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
                 data = f.readlines()
             frequencies = np.array([l.split()[-3:] for l in data if "Frequencies" in l], dtype=float).ravel()
             props.update({"frequencies": frequencies})
+            return props
 
         if job == "--path":
             try:
                 opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbpath_ts.xyz"))
             except FileNotFoundError:
                 return (props, None) if return_optmol else props
-            props.update(read_xtb_json(xtb_out, opt_mol))
+            # props.update(read_xtb_json(xtb_out, opt_mol))
             rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
 
