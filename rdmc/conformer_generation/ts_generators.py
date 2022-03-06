@@ -10,7 +10,7 @@ import numpy as np
 import logging
 from.utils import *
 from .generators import StochasticConformerGenerator
-from .pruners import TorsionPruner
+from .pruners import *
 
 
 class TSConformerGenerator:
@@ -40,12 +40,21 @@ class TSConformerGenerator:
 
         mols = []
         for smi in smiles_list:
+
+            rdmc_mol = RDKitMol.FromSmiles(smi)
+            if rdmc_mol.GetNumAtoms() < 4:
+                pruner = CRESTPruner()
+                min_iters = 1
+            else:
+                pruner = TorsionPruner()
+                min_iters = 5
+
             n_conformers_per_iter = 20
             scg = StochasticConformerGenerator(
                 smiles=smi,
                 config="loose",
-                pruner=TorsionPruner(),
-                min_iters=5,
+                pruner=pruner,
+                min_iters=min_iters,
                 max_iters=10,
             )
 
