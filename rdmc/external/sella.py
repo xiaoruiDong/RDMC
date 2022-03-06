@@ -13,8 +13,6 @@ import tempfile
 from ase import Atoms
 from xtb.ase.calculator import XTB
 from sella import Sella
-import pandas as pd
-from ase.io.trajectory import Trajectory
 
 
 def run_sella_xtb_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None):
@@ -26,7 +24,7 @@ def run_sella_xtb_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None):
     numbers = rdmc_mol.GetAtomicNumbers()
 
     atoms = Atoms(positions=coords, numbers=numbers)
-    atoms.calc = XTB()
+    atoms.calc = XTB(method="GFN2-xTB")
 
     with io.StringIO() as buf, redirect_stdout(buf):
         opt = Sella(
