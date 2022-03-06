@@ -98,16 +98,31 @@ class TSEGNNGuesser(TSInitialGuesser):
         # TODO: separate instances of uni/bimolecular reactions
         n_reactants = len(mols[0].GetMolFrags())
         n_products = len(mols[1].GetMolFrags())
+        n_reactant_rings = len([tuple(x) for x in mols[0].GetSymmSSSR()])
+        n_product_rings = len([tuple(x) for x in mols[1].GetSymmSSSR()])
+
         r_mols, p_mols = mol_to_dict(mols[0]), mol_to_dict(mols[1])  # TODO: speed this up (or remove)
         random.shuffle(r_mols)
         random.shuffle(p_mols)
 
-        # prepare ts inputs
         n_stable_conformers = n_conformers // 2
-        rdkit_rmols = [r["conf"].GetOwningMol().ToRWMol() for r in r_mols[:n_stable_conformers]]
-        rdkit_pmols = [p["conf"].GetOwningMol().ToRWMol() for p in p_mols[:n_stable_conformers]]
+        rdkit_rmols = [r["conf"].GetOwningMol().ToRWMol() for r in r_mols[:n_conformers]]
+        rdkit_pmols = [p["conf"].GetOwningMol().ToRWMol() for p in p_mols[:n_conformers]]
+        print(len(rdkit_rmols), len(rdkit_pmols))
 
-        rp_combos = list(zip(rdkit_rmols + rdkit_pmols, rdkit_pmols + rdkit_rmols))
+        # prepare ts inputs
+        if n_reactants > n_products:
+            rp_combos = list(zip(rdkit_pmols[:n_conformers], rdkit_rmols[:n_conformers]))
+        elif n_reactants < n_products:
+            rp_combos = list(zip(rdkit_rmols[:n_conformers], rdkit_pmols[:n_conformers]))
+        elif n_reactant_rings > n_product_rings:
+            rp_combos = list(zip(rdkit_rmols[:n_conformers], rdkit_pmols[:n_conformers]))
+        elif n_reactant_rings < n_product_rings:
+            rp_combos = list(zip(rdkit_pmols[:n_conformers], rdkit_rmols[:n_conformers]))
+        else:
+            rp_combos = list(zip(rdkit_rmols[:n_conformers//2] + rdkit_pmols[:n_conformers//2],
+                                 rdkit_pmols[:n_conformers//2] + rdkit_rmols[:n_conformers//2]))
+
         rp_inputs = [(x[0], None, x[1]) for x in rp_combos]
         rp_data = [self.test_dataset.process_mols(m, no_ts=True) for m in rp_inputs]
         batch_data = Batch.from_data_list(rp_data)
@@ -118,7 +133,7 @@ class TSEGNNGuesser(TSInitialGuesser):
 
         # copy data to mol
         ts_mol = r_mols[0]["conf"].GetOwningMol().Copy()
-        ts_mol._mol.RemoveAllConformers()
+        ts_mol.RemoveAllConformers()
         ts_mol.EmbedMultipleNullConfs(len(rp_inputs))
         [ts_mol.GetConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float)) for i in
          range(len(rp_inputs))];
