@@ -5,13 +5,12 @@
 Modules for ts conformer generation workflows
 """
 
-from rdmc.mol import RDKitMol
 import os
 import numpy as np
 import logging
-from time import time
 from.utils import *
 from .generators import StochasticConformerGenerator
+from .pruners import TorsionPruner
 
 
 class TSConformerGenerator:
@@ -45,13 +44,14 @@ class TSConformerGenerator:
             scg = StochasticConformerGenerator(
                 smiles=smi,
                 config="loose",
-                min_iters=3,
-                max_iters=3,
+                pruner=TorsionPruner(),
+                min_iters=5,
+                max_iters=10,
             )
 
             confs = scg(n_conformers_per_iter)
             mol = dict_to_mol(confs)
-            mols.append(cluster_confs(mol))
+            mols.append(mol)
 
         if len(mols) > 1:
             new_mol = [mols[0].CombineMol(m, offset=1, c_product=True) for m in mols[1:]][0]
