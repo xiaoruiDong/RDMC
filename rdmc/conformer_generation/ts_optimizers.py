@@ -8,7 +8,6 @@ Modules for optimizing transition state geometries
 from rdkit import Chem
 import os
 from time import time
-import pickle
 from rdmc.external.sella import run_sella_xtb_opt
 
 
@@ -53,12 +52,13 @@ class SellaOptimizer(TSOptimizer):
 
     def optimize_ts_guesses(self, mol, save_dir=None):
 
+        opt_mol = mol.Copy()
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"conf{i}")
                 if not os.path.exists(ts_conf_dir):
                     os.makedirs(ts_conf_dir)
-            opt_mol = run_sella_xtb_opt(mol, confId=i, fmax=self.fmax, steps=self.steps, save_dir=ts_conf_dir)
+            opt_mol = run_sella_xtb_opt(opt_mol, confId=i, fmax=self.fmax, steps=self.steps, save_dir=ts_conf_dir)
 
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
