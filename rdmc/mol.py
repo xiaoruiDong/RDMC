@@ -887,7 +887,7 @@ class RDKitMol(object):
         torsions = find_internal_torsions(self._mol, exclude_methyl=excludeMethyl)
         if includeRings:
             torsions += find_ring_torsions(self._mol)
-        return
+        return torsions
 
     def GetVdwMatrix(self, threshold=0.4) -> Optional[np.ndarray]:
         """
