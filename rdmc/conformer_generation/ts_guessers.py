@@ -108,7 +108,6 @@ class TSEGNNGuesser(TSInitialGuesser):
         n_stable_conformers = n_conformers // 2
         rdkit_rmols = [r["conf"].GetOwningMol().ToRWMol() for r in r_mols[:n_conformers]]
         rdkit_pmols = [p["conf"].GetOwningMol().ToRWMol() for p in p_mols[:n_conformers]]
-        print(len(rdkit_rmols), len(rdkit_pmols))
 
         # prepare ts inputs
         if n_reactants > n_products:
