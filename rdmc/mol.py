@@ -99,6 +99,7 @@ class RDKitMol(object):
         mol_cp = self.Copy()
         for bond in bonds:
             mol_cp.AddBond(*bond, Chem.BondType.SINGLE)
+        mol_cp.GetSymmSSSR()
         return mol_cp
 
     def AlignMol(self,
