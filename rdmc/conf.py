@@ -400,6 +400,18 @@ class RDKitConf(object):
         """
         return self._conf
 
+    def ToMol(self) -> 'RDKitMol':
+        """
+        Convert conformer to mol.
+
+        Returns:
+            RDKitMol: The new mol generated from the conformer
+        """
+        new_mol = self._owning_mol.Copy(quickCopy=True)
+        new_mol.RemoveAllConformers()
+        new_mol.AddConformer(self._conf, assignId=True)
+        return new_mol
+
 
 class ConformerCluster(object):
 
