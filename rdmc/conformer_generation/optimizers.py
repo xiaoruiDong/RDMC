@@ -60,17 +60,19 @@ class MMFFOptimizer(ConfGenOptimizer):
         if len(mol_data) == 0:
             return mol_data
 
+        # Everytime calling dict_to_mol create a new molecule object
+        # No need to Copy the molecule object in this function
         mol = dict_to_mol(mol_data)
-        self.ff.setup(mol.Copy())
+        self.ff.setup(mol)
         results = self.ff.optimize_confs()
         _, energies = zip(*results)  # kcal/mol
         opt_mol = self.ff.get_optimized_mol()
 
         for c_id, energy in zip(range(len(mol_data)), energies):
-            conf = opt_mol.Copy().GetConformer(c_id)
+            conf = opt_mol.GetConformer(c_id)
             positions = conf.GetPositions()
             mol_data[c_id].update({"positions": positions,  # issues if not all opts succeeded?
-                                   "conf": conf,
+                                   "conf": conf,  # all confs share the same owning molecule `opt_mol`
                                    "energy": energy})
 
         if self.track_stats:
@@ -91,18 +93,14 @@ class XTBOptimizer(ConfGenOptimizer):
         if len(mol_data) == 0:
             return mol_data
 
-        new_mol = mol_data[0]["conf"].GetOwningMol().Copy()
-        new_mol._mol.RemoveAllConformers()
-        new_mol.EmbedNullConformer()
+        new_mol = dict_to_mol(mol_data)
         correct_atom_mapping = new_mol.GetAtomMapNumbers()
 
         failed_ids = set()
         all_props = []
-        for c_id, c_data in enumerate(mol_data):
-            pos = c_data["conf"].GetPositions()
-            new_mol.SetPositions(pos)
+        for c_id in range(len(mol_data)):
             try:
-                props, opt_mol = run_xtb_calc(new_mol, job="--opt", return_optmol=True, method=self.method, level=self.level)
+                props, opt_mol = run_xtb_calc(new_mol, confId=c_id, job="--opt", return_optmol=True, method=self.method, level=self.level)
                 all_props.append(props)
             except ValueError as e:
                 failed_ids.add(c_id)
@@ -110,8 +108,11 @@ class XTBOptimizer(ConfGenOptimizer):
                 continue
 
             opt_mol.SetAtomMapNumbers(correct_atom_mapping)
-            conf = opt_mol.Copy().GetConformer(0)
-            positions = conf.GetPositions()
+            # Renumber the molecule based on the atom mapping just set
+            opt_mol.RenumberAtoms()
+            positions = opt_mol.GetPositions()
+            conf = new_mol.GetConformer(id=c_id)
+            conf.SetPositions(positions)
             energy = float(opt_mol.GetProp('total energy / Eh'))  # * HARTREE_TO_KCAL_MOL  # kcal/mol (TODO: check)
             mol_data[c_id].update({"positions": positions,  # issues if not all opts succeeded?
                                    "conf": conf,

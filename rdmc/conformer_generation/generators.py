@@ -65,8 +65,8 @@ class StochasticConformerGenerator:
         self.mol = RDKitMol.FromSmiles(smiles)
         self.unique_mol_data = []
         self.stats = []
-        self.min_iters = 1 if not self.min_iters else self.min_iters
-        self.max_iters = 1000 if not self.max_iters else self.max_iters
+        self.min_iters = 1 if not min_iters else min_iters
+        self.max_iters = 1000 if not max_iters else max_iters
         self.iter = 0
 
         if isinstance(self.pruner, TorsionPruner):
@@ -76,7 +76,7 @@ class StochasticConformerGenerator:
 
         self.logger.info(f"Generating conformers for {self.smiles}")
         time_start = time()
-        for it in range(self.max_iters):
+        for _ in range(self.max_iters):
             self.iter += 1
 
             self.logger.info(f"\nIteration {self.iter}: embedding {n_conformers_per_iter} initial guesses...")
