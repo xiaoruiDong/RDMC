@@ -12,10 +12,7 @@ import yaml
 import random
 import numpy as np
 from time import time
-
-import torch
 from torch_geometric.data import Batch
-from .utils import mol_to_dict
 
 try:
     from rdmc.external.ts_egnn.model.ts_trainer import LitTSModule
@@ -95,19 +92,17 @@ class TSEGNNGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self, mols, n_conformers=10, save_dir=None):
 
-        # TODO: separate instances of uni/bimolecular reactions
-        n_reactants = len(mols[0].GetMolFrags())
-        n_products = len(mols[1].GetMolFrags())
-        n_reactant_rings = len([tuple(x) for x in mols[0].GetSymmSSSR()])
-        n_product_rings = len([tuple(x) for x in mols[1].GetSymmSSSR()])
-
-        r_mols, p_mols = mol_to_dict(mols[0]), mol_to_dict(mols[1])  # TODO: speed this up (or remove)
-        random.shuffle(r_mols)
-        random.shuffle(p_mols)
+        r_mol, p_mol = mols
+        n_reactants = len(r_mol.GetMolFrags())
+        n_products = len(p_mol.GetMolFrags())
+        n_reactant_rings = len([tuple(x) for x in r_mol.GetSymmSSSR()])
+        n_product_rings = len([tuple(x) for x in p_mol.GetSymmSSSR()])
 
         n_stable_conformers = n_conformers // 2
-        rdkit_rmols = [r["conf"].GetOwningMol().ToRWMol() for r in r_mols[:n_conformers]]
-        rdkit_pmols = [p["conf"].GetOwningMol().ToRWMol() for p in p_mols[:n_conformers]]
+        rdkit_rmols = [r_mol.GetConformer(i).ToMol().ToRWMol() for i in range(r_mol.GetNumConformers())]
+        rdkit_pmols = [p_mol.GetConformer(i).ToMol().ToRWMol() for i in range(p_mol.GetNumConformers())]
+        random.shuffle(rdkit_rmols)
+        random.shuffle(rdkit_pmols)
 
         # prepare ts inputs
         if n_reactants > n_products:
@@ -131,8 +126,7 @@ class TSEGNNGuesser(TSInitialGuesser):
         predicted_ts_coords = np.array_split(predicted_ts_coords, len(rp_inputs))
 
         # copy data to mol
-        ts_mol = r_mols[0]["conf"].GetOwningMol().Copy()
-        ts_mol.RemoveAllConformers()
+        ts_mol = r_mol.Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(rp_inputs))
         [ts_mol.GetConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float)) for i in
          range(len(rp_inputs))];
