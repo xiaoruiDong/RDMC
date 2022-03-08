@@ -42,7 +42,7 @@ class TSConformerGenerator:
         for smi in smiles_list:
 
             rdmc_mol = RDKitMol.FromSmiles(smi)
-            if rdmc_mol.GetTorsionalModes(includeRings=True) < 1:
+            if len(rdmc_mol.GetTorsionalModes(includeRings=True)) < 1:
                 pruner = CRESTPruner()
                 min_iters = 1
             else:
