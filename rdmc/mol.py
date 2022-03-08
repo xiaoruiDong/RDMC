@@ -580,6 +580,7 @@ class RDKitMol(object):
                  correctCO: bool = True,
                  removeHs: bool = False,
                  sanitize: bool = True,
+                 sameMol: bool = False,
                  **kwargs
                  ) -> 'RDKitMol':
         """
@@ -594,6 +595,8 @@ class RDKitMol(object):
             removeHs (bool): Whether or not to remove hydrogens from the input (defaults to False)
             sanitize (bool): Whether or not to use RDKit's sanitization algorithm to clean input; helpful to set this
                              to False when reading TS files (defaults to True)
+            sameMol (bool): Whether or not all the conformers in the (sdf) file are for the same mol, in which case
+                            we will copy conformers directly to the mol  (defaults to False)
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the file.
@@ -608,7 +611,15 @@ class RDKitMol(object):
         # use rdkit's sdf reader to read in multiple mols
         elif extension == ".sdf":
             reader = Chem.SDMolSupplier(path, removeHs=removeHs, sanitize=sanitize)
-            return [cls(m) for m in reader]
+            mols = [cls(m) for m in reader]
+
+            if sameMol:
+                new_mol = mols[0].Copy(quickCopy=True)
+                [new_mol.AddConformer(m.GetConformer().ToConformer(), assignId=True) for m in mols]
+                return new_mol
+
+            else:
+                return mols
 
         else:
             raise NotImplementedError(f'Extension ({extension}) is not supported. Only `.xyz` and `.sdf`'
