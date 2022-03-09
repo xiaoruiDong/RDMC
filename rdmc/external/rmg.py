@@ -16,6 +16,7 @@ try:
     from rmgpy.exceptions import ForbiddenStructureException
     import rmgpy.molecule.element as elements
     import rmgpy.molecule.molecule as mm
+    from rmgpy.species import Species
 except ModuleNotFoundError:
     print('You need to install RMG-Py first!')
     raise
@@ -124,6 +125,7 @@ def find_reaction_family(database: 'RMGDatabase',
                          only_families: list = None,
                          unique: bool = True,
                          verbose: bool = True,
+                         resonance: bool = True,
                          ) -> Optional[tuple]:
     """
     A helper function to find reaction families for given reactants and products.txt
@@ -136,6 +138,8 @@ def find_reaction_family(database: 'RMGDatabase',
                                         for unlimited.
         unique (bool): Whether to only return a single results. Defaults to ``True``.
         verbose (bool, optional): Whether to print results. Defaults to print.
+        resonance (bool): Whether to generate resonance strucuture when searching for reaction 
+                          family. Defauls to ```True``.
 
     Returns:
         - tuple: (family_label, is_forward) if ``unique == True``.
@@ -145,9 +149,17 @@ def find_reaction_family(database: 'RMGDatabase',
     # Check if the RMG can find this reaction. Use ``copy``` to avoid changing reactants and products.
     for family in database.kinetics.families.values():
         family.save_order = False
+
+    if resonance:
+        reactants = [Species().from_smiles(mol.smiles) for mol in reactants]
+        products = [Species().from_smiles(mol.smiles) for mol in products]
+    else:
+        reactants = [mol.copy() for mol in reactants]
+        products = [mol.copy() for mol in products]
+
     reaction_list = database.kinetics.generate_reactions_from_families(
-                                                        reactants=[mol.copy() for mol in reactants],
-                                                        products=[mol.copy() for mol in products],
+                                                        reactants=reactants,
+                                                        products=products,
                                                         only_families=only_families)
     # Get reaction information
     all_matches = []
@@ -197,7 +209,8 @@ def generate_reaction_complex(database: 'RMGDatabase',
                                                      reactants,
                                                      products,
                                                      only_families=only_families,
-                                                     verbose=verbose)
+                                                     verbose=verbose,
+                                                     resonance=resonance)
     except TypeError:
         # Cannot find any matches
         return None, None
