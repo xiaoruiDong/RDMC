@@ -226,7 +226,7 @@ def generate_reaction_complex(database: 'RMGDatabase',
                                                      products,
                                                      only_families=only_families,
                                                      verbose=verbose,
-                                                     resonance=resonance)
+                                                     resonance=True)
     except TypeError:
         # Cannot find any matches
         return None, None
