@@ -12,19 +12,30 @@ from shutil import rmtree
 import tempfile
 from ase import Atoms
 from xtb.ase.calculator import XTB
+from ase.calculators.orca import ORCA
 from sella import Sella
 
 
-def run_sella_xtb_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None):
+def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, method="GFN2-xTB"):
     temp_dir = tempfile.mkdtemp() if not save_dir else save_dir
     trajfile = os.path.join(temp_dir, "ts.traj")
     logfile = os.path.join(temp_dir, "ts.log")
+    orca_name = os.path.join(temp_dir, "ts")
 
     coords = rdmc_mol.GetConformer(confId).GetPositions()
     numbers = rdmc_mol.GetAtomicNumbers()
-
     atoms = Atoms(positions=coords, numbers=numbers)
-    atoms.calc = XTB(method="GFN2-xTB")
+
+    # set calculator; use xtb-python for xtb and orca for everything else
+    if method == "GFN2-xTB":
+        atoms.calc = XTB(method="GFN2-xTB")
+    elif method == "AM1":
+        atoms.calc = ORCA(label=orca_name, orcasimpleinput='AM1')
+    elif method == "PM3":
+        atoms.calc = ORCA(label=orca_name, orcasimpleinput='PM3')
+    else:
+        raise NotImplementedError(f'Method ({method}) is not supported with Sella. Only `GFN2-xTB`, `AM1`, and `PM3` '
+                                  f'are supported.')
 
     with io.StringIO() as buf, redirect_stdout(buf):
         opt = Sella(

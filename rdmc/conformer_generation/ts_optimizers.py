@@ -8,7 +8,7 @@ Modules for optimizing transition state geometries
 from rdkit import Chem
 import os
 from time import time
-from rdmc.external.sella import run_sella_xtb_opt
+from rdmc.external.sella import run_sella_opt
 
 
 class TSOptimizer:
@@ -37,9 +37,10 @@ class TSOptimizer:
 
 
 class SellaOptimizer(TSOptimizer):
-    def __init__(self, fmax=1e-3, steps=1000, track_stats=False):
+    def __init__(self, method="GFN2-xTB", fmax=1e-3, steps=1000, track_stats=False):
         super(SellaOptimizer, self).__init__(track_stats)
 
+        self.method = method
         self.fmax = fmax
         self.steps = steps
 
@@ -58,8 +59,14 @@ class SellaOptimizer(TSOptimizer):
                 ts_conf_dir = os.path.join(save_dir, f"conf{i}")
                 if not os.path.exists(ts_conf_dir):
                     os.makedirs(ts_conf_dir)
-            opt_mol = run_sella_xtb_opt(opt_mol, confId=i, fmax=self.fmax, steps=self.steps, save_dir=ts_conf_dir)
 
+            opt_mol = run_sella_opt(opt_mol,
+                                    method=self.method,
+                                    confId=i,
+                                    fmax=self.fmax,
+                                    steps=self.steps,
+                                    save_dir=ts_conf_dir
+                                    )
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
 
