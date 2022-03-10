@@ -151,8 +151,8 @@ def find_reaction_family(database: 'RMGDatabase',
         family.save_order = False
 
     if resonance:
-        reactants = [Species().from_smiles(mol.smiles) for mol in reactants]
-        products = [Species().from_smiles(mol.smiles) for mol in products]
+        reactants = [Species(molecule=[mol.copy()]) for mol in reactants]
+        products = [Species(molecule=[mol.copy()]) for mol in products]
     else:
         reactants = [mol.copy() for mol in reactants]
         products = [mol.copy() for mol in products]
