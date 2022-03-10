@@ -816,10 +816,6 @@ class OpenBabelFF:
         if constraints:
             self.constraints = constraints
 
-        if self.constraints:
-            return self.ff.Setup(self.obmol, self.constraints)
-        else:
-            return self.ff.Setup(self.obmol)
 
     def set_solver(self,
                    solver_type: str):
@@ -834,6 +830,10 @@ class OpenBabelFF:
         """
         Optimize the openbabel molecule.
         """
+        if self.constraints:
+            self.ff.Setup(self.obmol, self.constraints)
+        else:
+            self.ff.Setup(self.obmol)
         initial_fun = getattr(self.ff, self.solver_type+'Initialize')
         take_n_step_fun = getattr(self.ff, self.solver_type+'TakeNSteps')
 
