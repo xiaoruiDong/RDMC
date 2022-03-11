@@ -333,8 +333,8 @@ def reset_pmol(r_mol, p_mol):
     obff = OpenBabelFF()
     obff.setup(p_mol_new)
     broken_bonds = get_broken_bonds(r_mol, p_mol)
-    r_dmat = r_mol.GetDistanceMatrix()
-    current_distances = [r_dmat[b] for b in broken_bonds]
+    r_conf = r_mol.GetConformer()
+    current_distances = [r_conf.GetBondLength(b) for b in broken_bonds]
     [obff.add_distance_constraint(b, d) for b, d in zip(broken_bonds, current_distances)];
     obff.optimize(max_step=2000)
 
