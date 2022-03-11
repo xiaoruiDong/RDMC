@@ -344,7 +344,7 @@ def reset_pmol(r_mol, p_mol):
     return obff.get_optimized_mol()
 
 
-def realistic_mol_prep(r_mol, p_mol):
+def prepare_mols(r_mol, p_mol):
     """
     Prepare mols for reaction path analysis. If reactant has multiple fragments, first orient reactants in reacting
     orientation. Then, reinitialize coordinates of product using reset_pmol function
