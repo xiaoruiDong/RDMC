@@ -335,7 +335,7 @@ def reset_pmol(r_mol, p_mol):
     broken_bonds = get_broken_bonds(r_mol, p_mol)
     r_conf = r_mol.GetConformer()
     current_distances = [r_conf.GetBondLength(b) for b in broken_bonds]
-    [obff.add_distance_constraint(b, d) for b, d in zip(broken_bonds, current_distances)];
+    [obff.add_distance_constraint(b, 1.5*d) for b, d in zip(broken_bonds, current_distances)]
     obff.optimize(max_step=2000)
 
     # second minimization without constraints
