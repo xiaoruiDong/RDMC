@@ -6,10 +6,7 @@ Modules for providing transition state initial guess geometries
 """
 
 from rdkit import Chem
-from rdmc import RDKitMol
 import os.path as osp
-import yaml
-import random
 import numpy as np
 from time import time
 from torch_geometric.data import Batch
@@ -37,12 +34,12 @@ class TSInitialGuesser:
         self.percent_success = None
         self.stats = []
 
-    def generate_ts_guesses(self, mols, n_conformers, save_dir):
+    def generate_ts_guesses(self, mols, save_dir=None):
         raise NotImplementedError
 
-    def __call__(self, mols, n_conformers, save_dir):
+    def __call__(self, mols, save_dir=None):
         time_start = time()
-        ts_mol_data = self.generate_ts_guesses(mols, n_conformers, save_dir)
+        ts_mol_data = self.generate_ts_guesses(mols, save_dir)
 
         if not self.track_stats:
             return ts_mol_data
@@ -65,7 +62,7 @@ class TSEGNNGuesser(TSInitialGuesser):
         self.config = self.module.config
         self.module.model.eval()
         self.config["shuffle_mols"] = False
-        self.config["prep_mols"] = True
+        self.config["prep_mols"] = False  # ts_generator class takes care of prep
         self.test_dataset = EvalTSDataset(self.config)
 
     def save_guesses(self, save_dir, rp_combos, ts_mol):
@@ -77,6 +74,7 @@ class TSEGNNGuesser(TSInitialGuesser):
         p_writer = Chem.rdmolfiles.SDWriter(p_path)
 
         for r, p in rp_combos:
+            r, p = r.ToRWMol(), p.ToRWMol()
             r.SetProp("_Name", f"{Chem.MolToSmiles(r)}")
             p.SetProp("_Name", f"{Chem.MolToSmiles(p)}")
             r_writer.write(r)
@@ -90,34 +88,9 @@ class TSEGNNGuesser(TSInitialGuesser):
         with Chem.rdmolfiles.SDWriter(ts_path) as ts_writer:
             [ts_writer.write(ts_mol, confId=i) for i in range(ts_mol.GetNumConformers())]
 
-    def generate_ts_guesses(self, mols, n_conformers=10, save_dir=None):
+    def generate_ts_guesses(self, mols, save_dir=None):
 
-        r_mol, p_mol = mols
-        n_reactants = len(r_mol.GetMolFrags())
-        n_products = len(p_mol.GetMolFrags())
-        n_reactant_rings = len([tuple(x) for x in r_mol.GetSymmSSSR()])
-        n_product_rings = len([tuple(x) for x in p_mol.GetSymmSSSR()])
-
-        n_stable_conformers = n_conformers // 2
-        rdkit_rmols = [r_mol.GetConformer(i).ToMol().ToRWMol() for i in range(r_mol.GetNumConformers())]
-        rdkit_pmols = [p_mol.GetConformer(i).ToMol().ToRWMol() for i in range(p_mol.GetNumConformers())]
-        random.shuffle(rdkit_rmols)
-        random.shuffle(rdkit_pmols)
-
-        # prepare ts inputs
-        if n_reactants > n_products:
-            rp_combos = list(zip(rdkit_pmols[:n_conformers], rdkit_rmols[:n_conformers]))
-        elif n_reactants < n_products:
-            rp_combos = list(zip(rdkit_rmols[:n_conformers], rdkit_pmols[:n_conformers]))
-        elif n_reactant_rings > n_product_rings:
-            rp_combos = list(zip(rdkit_rmols[:n_conformers], rdkit_pmols[:n_conformers]))
-        elif n_reactant_rings < n_product_rings:
-            rp_combos = list(zip(rdkit_pmols[:n_conformers], rdkit_rmols[:n_conformers]))
-        else:
-            rp_combos = list(zip(rdkit_rmols[:n_conformers//2] + rdkit_pmols[:n_conformers//2],
-                                 rdkit_pmols[:n_conformers//2] + rdkit_rmols[:n_conformers//2]))
-
-        rp_inputs = [(x[0], None, x[1]) for x in rp_combos]
+        rp_inputs = [(x[0].ToRWMol(), None, x[1].ToRWMol()) for x in mols]
         rp_data = [self.test_dataset.process_mols(m, no_ts=True) for m in rp_inputs]
         batch_data = Batch.from_data_list(rp_data)
 
@@ -126,12 +99,12 @@ class TSEGNNGuesser(TSInitialGuesser):
         predicted_ts_coords = np.array_split(predicted_ts_coords, len(rp_inputs))
 
         # copy data to mol
-        ts_mol = r_mol.Copy(quickCopy=True)
+        ts_mol = mols[0][0].Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(rp_inputs))
         [ts_mol.GetConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float)) for i in
          range(len(rp_inputs))];
 
         if save_dir:
-            self.save_guesses(save_dir, rp_combos, ts_mol.ToRWMol())
+            self.save_guesses(save_dir, mols, ts_mol.ToRWMol())
 
         return ts_mol
