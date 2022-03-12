@@ -37,6 +37,29 @@ class TSInitialGuesser:
     def generate_ts_guesses(self, mols, save_dir=None):
         raise NotImplementedError
 
+    def save_guesses(self, save_dir, rp_combos, ts_mol):
+
+        # save stable species used to generate guesses
+        r_path = osp.join(save_dir, "reactant_confs.sdf")
+        p_path = osp.join(save_dir, "product_confs.sdf")
+        r_writer = Chem.rdmolfiles.SDWriter(r_path)
+        p_writer = Chem.rdmolfiles.SDWriter(p_path)
+
+        for r, p in rp_combos:
+            r, p = r.ToRWMol(), p.ToRWMol()
+            r.SetProp("_Name", f"{Chem.MolToSmiles(r)}")
+            p.SetProp("_Name", f"{Chem.MolToSmiles(p)}")
+            r_writer.write(r)
+            p_writer.write(p)
+
+        r_writer.close()
+        p_writer.close()
+
+        # save ts initial guesses
+        ts_path = osp.join(save_dir, "ts_initial_guess_confs.sdf")
+        with Chem.rdmolfiles.SDWriter(ts_path) as ts_writer:
+            [ts_writer.write(ts_mol, confId=i) for i in range(ts_mol.GetNumConformers())]
+
     def __call__(self, mols, save_dir=None):
         time_start = time()
         ts_mol_data = self.generate_ts_guesses(mols, save_dir)
@@ -64,29 +87,6 @@ class TSEGNNGuesser(TSInitialGuesser):
         self.config["shuffle_mols"] = False
         self.config["prep_mols"] = False  # ts_generator class takes care of prep
         self.test_dataset = EvalTSDataset(self.config)
-
-    def save_guesses(self, save_dir, rp_combos, ts_mol):
-
-        # save stable species used to generate guesses
-        r_path = osp.join(save_dir, "reactant_confs.sdf")
-        p_path = osp.join(save_dir, "product_confs.sdf")
-        r_writer = Chem.rdmolfiles.SDWriter(r_path)
-        p_writer = Chem.rdmolfiles.SDWriter(p_path)
-
-        for r, p in rp_combos:
-            r, p = r.ToRWMol(), p.ToRWMol()
-            r.SetProp("_Name", f"{Chem.MolToSmiles(r)}")
-            p.SetProp("_Name", f"{Chem.MolToSmiles(p)}")
-            r_writer.write(r)
-            p_writer.write(p)
-
-        r_writer.close()
-        p_writer.close()
-
-        # save ts initial guesses
-        ts_path = osp.join(save_dir, "ts_initial_guess_confs.sdf")
-        with Chem.rdmolfiles.SDWriter(ts_path) as ts_writer:
-            [ts_writer.write(ts_mol, confId=i) for i in range(ts_mol.GetNumConformers())]
 
     def generate_ts_guesses(self, mols, save_dir=None):
 
