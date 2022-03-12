@@ -10,6 +10,7 @@ import os.path as osp
 import numpy as np
 from time import time
 from torch_geometric.data import Batch
+from rdmc.external.xtb_tools.opt import run_xtb_calc
 
 try:
     from rdmc.external.ts_egnn.model.ts_trainer import LitTSModule
@@ -106,5 +107,33 @@ class TSEGNNGuesser(TSInitialGuesser):
 
         if save_dir:
             self.save_guesses(save_dir, mols, ts_mol.ToRWMol())
+
+        return ts_mol
+
+
+class RMSDPPGuesser(TSInitialGuesser):
+    def __init__(self, track_stats=False):
+        super(RMSDPPGuesser, self).__init__(track_stats)
+
+        pass
+
+    def generate_ts_guesses(self, mols, save_dir=None):
+
+        ts_guesses, used_rp_combos = [], []
+        for r_mol, p_mol in mols:
+            _, ts_guess = run_xtb_calc((r_mol, p_mol), return_optmol=True, job="--path")
+            if ts_guess:
+                ts_guesses.append(ts_guess)
+                used_rp_combos.append((r_mol, p_mol))
+
+        if len(ts_guesses) == 0:
+            return None
+
+        # copy data to mol
+        ts_mol = mols[0][0].Copy(quickCopy=True)
+        [ts_mol.AddConformer(t.GetConformer().ToConformer(), assignId=True) for t in ts_guesses]
+
+        if save_dir:
+            self.save_guesses(save_dir, used_rp_combos, ts_mol.ToRWMol())
 
         return ts_mol
