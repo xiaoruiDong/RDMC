@@ -12,6 +12,13 @@ from time import time
 from torch_geometric.data import Batch
 from rdmc.external.xtb_tools.opt import run_xtb_calc
 
+import os
+from ase import Atoms
+from xtb.ase.calculator import XTB
+from ase.optimize import QuasiNewton
+from ase.autoneb import AutoNEB
+from ase.calculators.calculator import CalculationFailed
+
 try:
     from rdmc.external.ts_egnn.model.ts_trainer import LitTSModule
     from rdmc.external.ts_egnn.model.data import TSDataset
@@ -132,6 +139,84 @@ class RMSDPPGuesser(TSInitialGuesser):
         # copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
         [ts_mol.AddConformer(t.GetConformer().ToConformer(), assignId=True) for t in ts_guesses]
+
+        if save_dir:
+            self.save_guesses(save_dir, used_rp_combos, ts_mol.ToRWMol())
+
+        return ts_mol
+
+
+def attach_calculators(images):
+    for i in range(len(images)):
+        images[i].set_calculator(XTB())
+
+
+class AutoNEBGuesser(TSInitialGuesser):
+    def __init__(self, track_stats=False):
+        super(AutoNEBGuesser, self).__init__(track_stats)
+
+        pass
+
+    def generate_ts_guesses(self, mols, save_dir=None):
+
+        ts_guesses, used_rp_combos = [], []
+        for i, (r_mol, p_mol) in enumerate(mols):
+
+            if save_dir:
+                ts_conf_dir = os.path.join(save_dir, f"neb_conf{i}")
+                if not os.path.exists(ts_conf_dir):
+                    os.makedirs(ts_conf_dir)
+
+            r_traj = os.path.join(ts_conf_dir, "ts000.traj")
+            p_traj = os.path.join(ts_conf_dir, "ts001.traj")
+
+            r_coords = r_mol.GetConformer().GetPositions()
+            r_numbers = r_mol.GetAtomicNumbers()
+            r_atoms = Atoms(positions=r_coords, numbers=r_numbers)
+            r_atoms.set_calculator(XTB())
+            qn = QuasiNewton(r_atoms, trajectory=r_traj, logfile=None)
+            qn.run(fmax=0.05)
+
+            p_coords = p_mol.GetConformer().GetPositions()
+            p_numbers = p_mol.GetAtomicNumbers()
+            p_atoms = Atoms(positions=p_coords, numbers=p_numbers)
+            p_atoms.set_calculator(XTB())
+            qn = QuasiNewton(p_atoms, trajectory=p_traj, logfile=None)
+            qn.run(fmax=0.05)
+
+            # need to change dirs bc autoneb path settings are messed up
+            cwd = os.getcwd()
+
+            try:
+                os.chdir(ts_conf_dir)
+
+                autoneb = AutoNEB(attach_calculators,
+                                  prefix='ts',
+                                  optimizer='BFGS',
+                                  n_simul=3,
+                                  n_max=7,
+                                  fmax=0.05,
+                                  k=0.5,
+                                  parallel=False,
+                                  maxsteps=[50, 1000])
+
+                autoneb.run()
+                os.chdir(cwd)
+
+                used_rp_combos.append((r_mol, p_mol))
+                ts_guess_idx = np.argmax(autoneb.get_energies())
+                ts_guesses.append(autoneb.all_images[ts_guess_idx].positions)
+
+            except (CalculationFailed, AssertionError) as e:
+                os.chdir(cwd)
+
+        if len(ts_guesses) == 0:
+            return None
+
+        # copy data to mol
+        ts_mol = mols[0][0].Copy(quickCopy=True)
+        ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
+        [ts_mol.GetConformer(i).SetPositions(p) for i, p in enumerate(ts_guesses)]
 
         if save_dir:
             self.save_guesses(save_dir, used_rp_combos, ts_mol.ToRWMol())
