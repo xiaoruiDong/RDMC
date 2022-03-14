@@ -65,7 +65,7 @@ class OrcaIRCVerifier:
                         [ORCA_BINARY, orca_input_file],
                         stdout=f,
                         stderr=subprocess.STDOUT,
-                        cwd=orca_dir,
+                        cwd=os.getcwd(),
                     )
                 if orca_run.returncode != 0:
                     irc_checks.append(False)
