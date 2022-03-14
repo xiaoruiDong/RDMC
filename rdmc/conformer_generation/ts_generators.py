@@ -19,7 +19,7 @@ class TSConformerGenerator:
     """
     stuff
     """
-    def __init__(self, rxn_smiles, embedder=None, optimizer=None, pruner=None, save_dir=None):
+    def __init__(self, rxn_smiles, embedder=None, optimizer=None, pruner=None, verifiers=None, save_dir=None):
         """
 
         Args:
@@ -34,6 +34,7 @@ class TSConformerGenerator:
         self.embedder = embedder
         self.optimizer = optimizer
         self.pruner = pruner
+        self.verifiers = [] if not verifiers else verifiers
         self.save_dir = save_dir
 
     def embed_stable_species(self, smiles):
@@ -135,5 +136,10 @@ class TSConformerGenerator:
 
         self.logger.info("Optimizing TS guesses...")
         opt_ts_mol = self.optimizer(ts_mol, save_dir=self.save_dir)
+
+        self.logger.info("Verifying TS guesses...")
+        keep_ids = [True] * opt_ts_mol.GetNumConformers()
+        for verifier in self.verifiers:
+            keep_ids = verifier(opt_ts_mol, keep_ids=keep_ids, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
         return opt_ts_mol
