@@ -625,6 +625,16 @@ class RDKitMol(object):
             raise NotImplementedError(f'Extension ({extension}) is not supported. Only `.xyz` and `.sdf`'
                                       f' are supported.')
 
+    def GetAdjacencyMatrix(self):
+        """
+        Get the adjacency matrix of the molecule.
+
+        Returns:
+            numpy.ndarray: A square adjacency matrix of the molecule, where a "1" indicates that atoms are bonded
+            and a "0" indicates that atoms aren't bonded
+        """
+        return Chem.GetAdjacencyMatrix(self._mol)
+
     def GetAtomicNumbers(self):
         """
         Get the Atomic numbers of the molecules. The atomic numbers are sorted by the atom indexes.
