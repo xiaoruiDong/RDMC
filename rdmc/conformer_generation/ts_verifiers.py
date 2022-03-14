@@ -76,8 +76,13 @@ class OrcaIRCVerifier:
                 r_adj = RDKitMol.FromSmiles(r_smi).GetAdjacencyMatrix()
                 p_adj = RDKitMol.FromSmiles(p_smi).GetAdjacencyMatrix()
 
-                irc_f_mol = RDKitMol.FromFile(os.path.join(orca_dir, "orca_irc_IRC_F.xyz"))
-                irc_b_mol = RDKitMol.FromFile(os.path.join(orca_dir, "orca_irc_IRC_B.xyz"))
+                try:
+                    irc_f_mol = RDKitMol.FromFile(os.path.join(orca_dir, "orca_irc_IRC_F.xyz"))
+                    irc_b_mol = RDKitMol.FromFile(os.path.join(orca_dir, "orca_irc_IRC_B.xyz"))
+                except FileNotFoundError:
+                    irc_checks.append(False)
+                    continue
+
                 f_adj = irc_f_mol.GetAdjacencyMatrix()
                 b_adj = irc_b_mol.GetAdjacencyMatrix()
 
