@@ -252,9 +252,15 @@ def generate_reaction_complex(database: 'RMGDatabase',
 
     # Resonance structure is generated for both reactants and product
     if resonance:
-        r_to_gen = [r.copy(deep=True).generate_resonance_structures(keep_isomorphic=False,
-                                                                    filter_structures=True,
-                                                                    save_order=True) for r in reactants]
+        r_to_gen = []
+        for r in reactants:
+            try:
+                resonanced_r = r.copy(deep=True).generate_resonance_structures(keep_isomorphic=False,
+                                                                        filter_structures=True,
+                                                                        save_order=True)
+                r_to_gen.append(resonanced_r)
+            except:
+                r_to_gen.append([r])
         rs_to_gen = list(set_product(*r_to_gen))
         p_to_match = [p.copy(deep=True).generate_resonance_structures() for p in products]
         ps_to_match = list(set_product(*p_to_match))
