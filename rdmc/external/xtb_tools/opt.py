@@ -103,7 +103,7 @@ def get_wbo(wbo_file):
     return wbo_dict
 
 
-def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", level="normal", pconfId=0):
+def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", level="normal", pconfId=0, save_dir=None):
     """Runs xTB single-point calculation with optional geometry optimization.
     Parameters
     ----------
@@ -129,7 +129,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
     method = "--" + method
     input_file = TS_PATH_INP if job == "--path" else ""
 
-    temp_dir = tempfile.mkdtemp()
+    temp_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
     logfile = os.path.join(temp_dir, "xtb.log")
     xtb_out = os.path.join(temp_dir, "xtbout.json")
     xtb_wbo = os.path.join(temp_dir, "wbo")
@@ -167,7 +167,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
         )
     if xtb_run.returncode != 0:
         # error_out = os.path.join(temp_dir, "xtb.log")
-        rmtree(temp_dir)
+        not save_dir and rmtree(temp_dir)
         raise ValueError(f"xTB calculation failed.")
 
     else:
@@ -179,7 +179,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
                     n_opt_cycles = int(
                         [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
                 except IndexError:
-                    rmtree(temp_dir)
+                    not save_dir and rmtree(temp_dir)
                     raise ValueError(f"xTB calculation failed.")
             props.update({"n_opt_cycles": n_opt_cycles})
 
@@ -188,6 +188,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
                 data = f.readlines()
             frequencies = np.array([l.split()[-3:] for l in data if "Frequencies" in l], dtype=float).ravel()
             props.update({"frequencies": frequencies})
+            not save_dir and rmtree(temp_dir)
             return props
 
         if job == "--path":
@@ -196,17 +197,17 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
             except FileNotFoundError:
                 return (props, None) if return_optmol else props
             # props.update(read_xtb_json(xtb_out, opt_mol))
-            rmtree(temp_dir)
+            not save_dir and rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
 
         if method == "--gff":
             opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
-            rmtree(temp_dir)
+            not save_dir and rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
 
         props.update(read_xtb_json(xtb_out, mol))
         if return_optmol:
             opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
         props.update({"wbo": get_wbo(xtb_wbo)})
-        rmtree(temp_dir)
+        not save_dir and rmtree(temp_dir)
         return (props, opt_mol) if return_optmol else props
