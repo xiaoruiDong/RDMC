@@ -606,7 +606,7 @@ class RDKitMol(object):
         if extension == ".xyz":
             with open(path, "r") as f:
                 xyz = f.read()
-            return cls.FromXYZ(xyz, batcken=backend, header=header, correctCO=correctCO, **kwargs)
+            return cls.FromXYZ(xyz, backend=backend, header=header, correctCO=correctCO, **kwargs)
 
         # use rdkit's sdf reader to read in multiple mols
         elif extension == ".sdf":
