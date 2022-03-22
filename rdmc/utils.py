@@ -179,7 +179,6 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         conf = Chem.rdchem.Conformer(coords.shape[0])  # Create a conformer that has number of atoms specified
         set_rdconf_coordinates(conf, coords)
         rw_mol.AddConformer(conf, assignId=True)
-        set_rdconf_coordinates(rw_mol.GetConformer(), coords)
     return rw_mol
 
 def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
