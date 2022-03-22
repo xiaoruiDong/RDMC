@@ -99,7 +99,7 @@ class OrcaOptimizer(TSOptimizer):
                 if not os.path.exists(ts_conf_dir):
                     os.makedirs(ts_conf_dir)
 
-            orca_str = write_orca_opt(mol, confId=i)
+            orca_str = write_orca_opt(mol, confId=i, method=self.method)
             orca_input_file = os.path.join(ts_conf_dir, "orca_opt.inp")
             with open(orca_input_file, "w") as f:
                 f.writelines(orca_str)
