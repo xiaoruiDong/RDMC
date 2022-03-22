@@ -512,6 +512,7 @@ class RDKitMol(object):
                 backend: str = 'openbabel',
                 header: bool = True,
                 correctCO: bool = True,
+                sanitize: bool = True,
                 **kwargs):
         """
         Convert xyz string to RDKitMol.
@@ -522,6 +523,8 @@ class RDKitMol(object):
                            Currently, we only support ``openbabel`` and ``jensen``.
             header (bool, optional): If lines of the number of atoms and title are included.
                                      Defaults to ``True.``
+            sanitize (bool): Sanitize the RDKit mol created using openbabel or not. Helpful to set this to False
+                             when reading in TSs. Defaults to ``True.``
             supported kwargs:
                 jensen:
                     - charge: The charge of the species. Defaults to ``0``.
@@ -539,7 +542,7 @@ class RDKitMol(object):
         # Openbabel support read xyz and perceive atom connectivities
         if backend.lower() == 'openbabel':
             obmol = parse_xyz_by_openbabel(xyz, correct_CO=correctCO)
-            return cls.FromOBMol(obmol)
+            return cls.FromOBMol(obmol, sanitize=sanitize)
 
         # https://github.com/jensengroup/xyz2mol/blob/master/xyz2mol.py
         # provides an approach to convert xyz to mol
@@ -606,7 +609,7 @@ class RDKitMol(object):
         if extension == ".xyz":
             with open(path, "r") as f:
                 xyz = f.read()
-            return cls.FromXYZ(xyz, backend=backend, header=header, correctCO=correctCO, **kwargs)
+            return cls.FromXYZ(xyz, backend=backend, header=header, correctCO=correctCO, sanitize=sanitize, **kwargs)
 
         # use rdkit's sdf reader to read in multiple mols
         elif extension == ".sdf":
