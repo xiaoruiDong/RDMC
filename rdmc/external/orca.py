@@ -6,9 +6,9 @@ A module contains functions to interface with Orca.
 """
 
 
-def write_orca_irc(mol, confId=0, maxcores=1000, nprocs=1):
+def write_orca_irc(mol, confId=0, maxcores=1000, nprocs=1, method="XTB2"):
 
-    orca_irc_input = f"""! XTB2 TightSCF IRC
+    orca_irc_input = f"""! {method} TightSCF IRC
     %maxcore {maxcores}
     %pal
     nprocs {nprocs}
