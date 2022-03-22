@@ -42,8 +42,9 @@ class XTBFrequencyVerifier:
 
 
 class OrcaIRCVerifier:
-    def __init__(self, track_stats=False):
+    def __init__(self, method="XTB2", track_stats=False):
         self.track_stats = track_stats
+        self.method = method
 
     def __call__(self, ts_mol, keep_ids, save_dir, **kwargs):
 
@@ -52,7 +53,7 @@ class OrcaIRCVerifier:
 
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
-                orca_str = write_orca_irc(ts_mol, confId=i)
+                orca_str = write_orca_irc(ts_mol, confId=i, method=self.method)
                 orca_dir = os.path.join(save_dir, f"orca_conf{i}")
                 os.makedirs(orca_dir)
 
