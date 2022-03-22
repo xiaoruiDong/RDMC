@@ -111,10 +111,10 @@ class OrcaOptimizer(TSOptimizer):
                     stderr=subprocess.STDOUT,
                     cwd=os.getcwd(),
                 )
-            if orca_run.returncode != 0:
+            if orca_run.returncode == 0:
                 mol = RDKitMol.FromFile(os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False)
                 opt_mol.AddConformer(mol.GetConformer().ToConformer(), assignId=True)
-                continue
+
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
 
