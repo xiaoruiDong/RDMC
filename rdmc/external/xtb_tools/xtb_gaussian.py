@@ -1,19 +1,57 @@
-#!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+#!/home/gridsan/xiaorui/.conda/envs/rmg_arc/bin/python
+
 
 """
 XTB + gaussian optimization. Modified based on https://github.com/jensengroup/ReactionDiscovery/blob/main/xtb_ts_test/xtb_external.py
+This can be used as an external script for Gaussian. In the shebang, make sure to use the python binary that has the correct environment.
+Also, change the file's mode to 755, so that Gaussian can call this file. SET XTB_BINARY to the xtb's binary.
 """
 
 import os
 import sys
+import subprocess
 
 import numpy as np
-import fortranformat as ff # Extra dependency
+import fortranformat as ff
+# Extra dependency
+# Use conda install -c conda-forge fortranformat or pip install fortranformat
 
-from rdmc.external.xtb_tools.utils import XTB_BINARY
-from rdmc.utils import PERIODIC_TABLE as pt
+# Hard coded to avoid over head
+XTB_BINARY = "/home/gridsan/groups/RMG/Software/xtb-6.4.1/bin/xtb"
 
+XTB_ENV = {
+    "OMP_STACKSIZE": "1G",
+    "OMP_NUM_THREADS": "1",
+    "OMP_MAX_ACTIVE_LEVELS": "1",
+    "MKL_NUM_THREADS": "1",
+}
+
+# Avoid the usage of Chem periodic table
+ELEM_TO_ATOMNUM = {
+    "H": 1,
+    "C": 6,
+    "N": 7,
+    "O": 8,
+    "F": 9,
+    "P": 15,
+    "S": 16,
+    "Cl": 17,
+    "Br": 35,
+    "I": 53,
+}
+
+ATOMNUM_TO_ELEM = {
+    1: "H",
+    6: "C",
+    7: "N",
+    8: "O",
+    9: "F",
+    15: "P",
+    16: "S",
+    17: "Cl",
+    35: "Br",
+    53: "I",
+}
 
 def parse_ifile(ifile):
     """
@@ -29,7 +67,7 @@ def parse_ifile(ifile):
     atomtypes = []
     for i, line in enumerate(gau_input[1:1 + natoms]):
         line = line.split()
-        atomtypes.append(pt.GetElementSymbol(int(line[0])))
+        atomtypes.append(ATOMNUM_TO_ELEM.get(int(line[0])))
         coords[i] = np.array(list(map(float, line[1 : 1 + 3]))) * 0.529177249  # bohr to angstrom
     return natoms, nderiv, chrg, spin, atomtypes, coords
 
@@ -117,7 +155,7 @@ def get_gradient(natoms):
     gradient = np.empty((natoms, 3))
     for i, line in enumerate(gradient_data[:natoms]):
         line = line.split()
-        line = [num.replace("D", "E") for num in line]  # remove for new xtb version
+        line = [num.replace("D", "E") for num in line]  # Original authors's comment: remove for new xtb version
         gradient[i, :] = line
     return gradient
 
@@ -145,9 +183,7 @@ def run_xtb(natoms, nderiv, chrg, spin, atomtypes, coords, solvent=None):
 
     write_xyz(natoms, atomtypes, coords)
 
-    os.environ["OMP_NUM_THREADS"] = str(1)
-    os.environ["MKL_NUM_THREADS"] = str(1)
-    cmd = f"{XTB_BINARY} mol.xyz --chrg {chrg} --uhf {spin - 1} --gfn 2 "
+    cmd = f"{XTB_BINARY} mol.xyz --chrg {chrg} --uhf {spin - 1} --gfn 2 --parallel "
     if nderiv == 1:
         cmd += "--grad "
     elif nderiv == 2:
@@ -158,8 +194,16 @@ def run_xtb(natoms, nderiv, chrg, spin, atomtypes, coords, solvent=None):
         cmd += f"--{method} {solvent} "
 
     print(cmd)
-    with os.popen(cmd) as xtb:
-        output = xtb.read()
+    p = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=XTB_ENV,
+        )
+
+    output, _ = p.communicate()
+    output = output.decode('utf-8')
 
     energy = get_energy(output)
     dipole = get_dipole(output)
