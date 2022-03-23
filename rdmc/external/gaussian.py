@@ -20,6 +20,7 @@ from rdmc.mathlib.curvefit import FourierSeries1D
 from rdmc.ts import guess_rxn_from_normal_mode
 from rdmc.view import mol_viewer, freq_viewer, mol_animation
 from rdmc.utils import PERIODIC_TABLE as PT
+from rdmc.external.xtb_tools.utils import XTB_GAUSSIAN_PL
 
 try:
     from ipywidgets import interact, IntSlider, Dropdown, FloatLogSlider
@@ -1328,3 +1329,47 @@ def scheme_to_dict(scheme_str: str) -> dict:
         schemes['LOT']['freq'] = schemes['LOT']['LOT']
 
     return schemes
+
+
+def write_gaussian_ts_opt(mol, confId=0, memory=1, nprocs=1, method="AM1"):
+
+    if method == "GFN2-xTB":
+        title_section = (
+            f'#opt=(ts,calcall,maxcycle=128,noeig,nomicro)\n'
+            f'external="{XTB_GAUSSIAN_PL} --gfn 2"'
+        )
+    else:
+        title_section = f"#opt=(ts,calcall,maxcycle=128,noeig) {method}"
+
+    gaussian_opt_input = (f'%mem={memory}gb\n'
+                          f'%nprocshared={nprocs}\n'
+                          f'{title_section}\n'
+                          f'\n'
+                          f'Title Card Required\n'
+                          f'\n'
+                          f'{mol.GetFormalCharge()} 1\n'
+                          f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
+    )
+    return gaussian_opt_input
+
+
+def write_gaussian_irc(mol, confId=0, memory=1, nprocs=1, method="AM1", direction="forward"):
+
+    if method == "GFN2-xTB":
+        title_section = (
+            f'#irc=(calcall,{direction},maxpoints=100,stepsize=7,nomicro)\n'
+            f'external="{XTB_GAUSSIAN_PL} --gfn 2"'
+        )
+    else:
+        title_section = f"#irc=(calcall,{direction},maxpoints=100,stepsize=7) {method}"
+
+    gaussian_opt_input = (f'%mem={memory}gb\n'
+                          f'%nprocshared={nprocs}\n'
+                          f'{title_section}\n'
+                          f'\n'
+                          f'Title Card Required\n'
+                          f'\n'
+                          f'{mol.GetFormalCharge()} 1\n'
+                          f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
+    )
+    return gaussian_opt_input
