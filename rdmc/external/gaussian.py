@@ -607,8 +607,7 @@ class GaussianLog(object):
                embed_conformers: bool = True,
                converged: bool = True,
                neglect_spin: bool = True,
-               backend: str = 'openbabel',
-               sanitize: bool = False,
+               backend: str = 'openbabel'
                ) -> 'RDKitMol':
         """
         Perceive the xyzs in the file and turn the geometries to conformers.
@@ -623,7 +622,6 @@ class GaussianLog(object):
                                  between the generated mol and the value in the output file. This
                                  can be useful for calculations involves TS. Defaults to ``True``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
-            sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
 
         Returns:
             RDKitMol: a molecule generated from the output file.
@@ -643,7 +641,7 @@ class GaussianLog(object):
             # If not converged, use the initial guess geometry
             xyz = self.cclib_results.writexyz(indices=-self.num_all_geoms)
 
-        mol = RDKitMol.FromXYZ(xyz, backend=backend, sanitize=sanitize)
+        mol = RDKitMol.FromXYZ(xyz, backend=backend)
 
         if mol.GetSpinMultiplicity() != self.multiplicity:
             mol.SaturateMol(multiplicity=self.multiplicity)
