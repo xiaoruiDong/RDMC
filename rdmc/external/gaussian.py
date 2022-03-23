@@ -602,52 +602,82 @@ class GaussianLog(object):
     ###################################################################
 
     def get_mol(self,
-               refid: int = -1,
-               embed_conformers: bool = True,
-               converged: bool = True,
-               neglect_spin: bool = True,
-               backend: str = 'openbabel'
+                refid: int = -1,
+                embed_conformers: bool = True,
+                converged: bool = True,
+                neglect_spin: bool = True,
+                backend: str = 'openbabel',
+                sanitize: bool = True,
                ) -> 'RDKitMol':
         """
         Perceive the xyzs in the file and turn the geometries to conformers.
 
         Args:
-            refid (int): The id of the conformer to be used as a reference for mol generation.
+            refid (int): The conformer ID in the log file to be used as the reference for mol perception.
+                         Defaults to -1, meaning it is determined by the following criteria:
+                         - For opt, it is the last geometry if succeeded; otherwise, the initial geometry;
+                         - For freq, it is the geometry input;
+                         - For scan, it is the geometry input;
+                         - For IRC, uses the initial geometry if bidirectional job; uses the last converged
+                           geometry if uni-directional job.
             embed_confs (bool): Whether to embed intermediate conformers in the file to the mol.
-                                Defaults to ``True``.
+                                Defaults to ``True``. To clear, at least one conformer will be included in
+                                obtained mol, and its geometry is determined by `refid`.
             converged (bool): Whether to only embed converged conformers to the mol. This option
                               is only valid when ``embed_confs`` is ``True``.
             neglect_spin (bool): Whether to neglect the error when spin multiplicity are different
                                  between the generated mol and the value in the output file. This
                                  can be useful for calculations involves TS. Defaults to ``True``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            sanitize (bool): Whether to sanitize the generated mol. Defaults to `True`.
+                             If a TS involved in the job, better to set it `False`
 
         Returns:
             RDKitMol: a molecule generated from the output file.
         """
-        if refid not in [-1, 0]:
-            try:
-                xyz = self.cclib_results.writexyz(indices=refid)
-            except IndexError:
-                raise ValueError(f'The provided refid {refid} is invalid.')
-        elif 'scan' in self.job_type or 'irc' in self.job_type:
-            # Use the starting geometry as the reference geometry for IRC job and Scan Job.
-            xyz = self.cclib_results.writexyz(indices=-self.num_all_geoms)
-        elif self.success:
-            # If succeeded, use the default (converged) geometry
-            xyz = self.cclib_results.writexyz()
-        else:
-            # If not converged, use the initial guess geometry
-            xyz = self.cclib_results.writexyz(indices=-self.num_all_geoms)
+        if refid in [-1, 0]:
+            # Currently -1 and 0 point to the same geometry in the backend cclib,
+            # the case of refid = 0 is a bit confusing, since it doesn't point to
+            # the first geometry of the job. we use `- num_all_geoms` to query the initial geometry
 
-        mol = RDKitMol.FromXYZ(xyz, backend=backend)
+            if not self.success:
+                # Use the starting geometry as the reference geometry if the job doesn't succeed
+                refid = -self.num_all_geoms
+                if 'irc' in self.job_type and ('forward' in self.schemes['irc'] or 'reverse' in self.schemes['irc']):
+                    try:
+                        refid = self.get_converged_geom_idx[-1]
+                    except:
+                        pass
 
+            # successful jobs
+            # Except the following cases, uses the last geometries (with refid=-1 and 0)
+            # for freq, it is the same geometry as the input geometry
+            # for other types, it is the last converged geometry
+
+            elif 'scan' in self.job_type:
+                # Use the starting geometry as the reference geometry for scan Jobs.
+                refid = - self.num_all_geoms
+
+            elif 'irc' in self.job_type and ('forward' not in self.schemes['irc'] and 'reverse' not in self.schemes['irc']):
+                # Use the starting geometry as the reference geometry for bi-directional .
+                refid = -self.num_all_geoms
+
+        # Get the xyz of the conformer at `refid`
+        try:
+            xyz = self.cclib_results.writexyz(indices=refid)
+        except IndexError:
+            raise ValueError(f'The provided refid {refid} is invalid.')
+
+        # Convert xyz to mol
+        mol = RDKitMol.FromXYZ(xyz, backend=backend, sanitize=sanitize)
+
+        # Correct multiplicity if possible
         if mol.GetSpinMultiplicity() != self.multiplicity:
             mol.SaturateMol(multiplicity=self.multiplicity)
-
         if mol.GetSpinMultiplicity() != self.multiplicity and not neglect_spin:
             raise RuntimeError('Cannot generate a molecule with the exact multiplicity in the output file')
 
+        # Embedding intermediate conformers
         if embed_conformers and converged:
             mol.EmbedMultipleNullConfs(n=self.num_converged_geoms)
             for i in range(self.num_converged_geoms):
