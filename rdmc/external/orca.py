@@ -13,7 +13,7 @@ def write_orca_irc(mol, confId=0, maxcores=1000, nprocs=1, method="XTB2"):
     %pal
     nprocs {nprocs}
     end
-    *xyz {mol.GetFormalCharge()} {mol.GetSpinMultiplicity()}
+    *xyz {mol.GetFormalCharge()} 1
     {mol.ToXYZ(header=False, confId=confId)}
     *
     """
@@ -32,7 +32,7 @@ def write_orca_opt(mol, confId=0, maxcores=1000, nprocs=1, method="XTB2"):
     NumHess true  # Numerical hessian for semiempirical methods
     Recalc_Hess 5  # Recalculate the Hessian every 5 steps
     end
-    *xyz {mol.GetFormalCharge()} {mol.GetSpinMultiplicity()}
+    *xyz {mol.GetFormalCharge()} 1
     {mol.ToXYZ(header=False, confId=confId)}
     *
     """

@@ -1317,7 +1317,7 @@ def write_gaussian_ts_opt(mol, confId=0, memory=1, nprocs=1, method="AM1"):
                           f'\n'
                           f'Title Card Required\n'
                           f'\n'
-                          f'{mol.GetFormalCharge()} {mol.GetSpinMultiplicity()}\n'
+                          f'{mol.GetFormalCharge()} 1\n'
                           f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
     )
     return gaussian_opt_input
