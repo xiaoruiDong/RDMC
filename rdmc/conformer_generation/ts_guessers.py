@@ -20,8 +20,8 @@ from ase.autoneb import AutoNEB
 from ase.calculators.calculator import CalculationFailed
 
 try:
-    from rdmc.external.ts_egnn.model.ts_trainer import LitTSModule
-    from rdmc.external.ts_egnn.model.data import TSDataset
+    from rdmc.external.ts_egnn.ts_ml.trainers.ts_egnn_trainer import LitTSModule
+    from rdmc.external.ts_egnn.ts_ml.dataloaders.ts_egnn_loader import TSDataset
 
     class EvalTSDataset(TSDataset):
         def __init__(self, config):
