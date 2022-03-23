@@ -40,10 +40,3 @@ def eval_stats(data, predicted_ts_coords):
         rmses.append(rmse)
 
     return maes, rmses, rmsds
-
-
-def radius_graph(pos, cutoff, edge_index, edge_attr):
-    row, col = edge_index
-    dist = (pos[row] - pos[col]).norm(dim=-1)
-    mask = dist < cutoff
-    return edge_index[:, mask], edge_attr[mask]

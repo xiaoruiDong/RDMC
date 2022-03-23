@@ -3,8 +3,8 @@ from torch.nn import functional as F
 import pytorch_lightning as pl
 from torch_geometric.utils import to_dense_adj
 import numpy as np
-from .ts_egnn import TS_EGNN
-from .utils import hard_sphere_loss_fn, eval_stats
+from ..models.ts_egnn import TS_EGNN
+from ..trainers.utils import hard_sphere_loss_fn, eval_stats
 
 
 class LitTSModule(pl.LightningModule):
@@ -145,7 +145,7 @@ class LitTSModule(pl.LightningModule):
 
     @staticmethod
     def add_model_specific_args(parent_parser):
-        parser = parent_parser.add_argument_group("model")
+        parser = parent_parser.add_argument_group("models")
         parser.add_argument("--depth", type=int, default=6)
         parser.add_argument("--hidden_dim", type=int, default=64)
         parser.add_argument("--cutoff", type=float, default=10.0,
@@ -192,5 +192,5 @@ class LitTSModule(pl.LightningModule):
     def add_args(cls, parent_parser):
         parser = cls.add_program_args(parent_parser)  # program options
         parser = cls.add_argparse_args(parser)  # trainer options
-        parser = cls.add_model_specific_args(parser)  # model specific args
+        parser = cls.add_model_specific_args(parser)  # models specific args
         return parser

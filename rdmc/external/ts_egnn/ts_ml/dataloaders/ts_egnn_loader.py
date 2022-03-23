@@ -7,7 +7,9 @@ from torch_geometric.data import Dataset, DataLoader
 import os
 import glob
 import numpy as np
-from .features import MolGraph, shuffle_mols, realistic_mol_prep
+from ..dataloaders.features import MolGraph, shuffle_mols
+from rdmc import RDKitMol
+from rdmc.conformer_generation.align import prepare_mols
 
 
 class TSDataset(Dataset):
@@ -35,7 +37,9 @@ class TSDataset(Dataset):
         if self.shuffle_mols:
             mols = shuffle_mols(mols)
         if self.prep_mols:
-            mols = realistic_mol_prep(mols)
+            r_mol, ts_mol, p_mol = mols
+            new_r_mol, new_p_mol = prepare_mols(RDKitMol.FromMol(r_mol), RDKitMol.FromMol(p_mol))
+            mols = (new_r_mol.ToRWMol(), ts_mol, new_p_mol.ToRWMol())
         molgraph = MolGraph(mols, self.prod_feat)
         mol_data = self.molgraph2data(molgraph)
         mol_data.pos_r = torch.tensor(mols[0].GetConformer().GetPositions(), dtype=torch.float)

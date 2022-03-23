@@ -1,31 +1,21 @@
 from rdkit import Chem  # need to import this for some reason w pytorch lightning imports
 import pytorch_lightning as pl  # causing issues
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint, EarlyStopping
-from pytorch_lightning.loggers import NeptuneLogger
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning import seed_everything
+from pytorch_lightning import loggers as pl_loggers
 
-from model.data import TSDataModule
-from model.ts_trainer import LitTSModule
+from ts_ml.dataloaders.ts_gcn_loader import TSDataModule
+from ts_ml.trainers.ts_gcn_trainer import LitTSModule
 
 from argparse import ArgumentParser
 
 
-def train_ts_egnn(config):
+def train_ts_gcn(config):
     seed_everything(config["seed"], workers=True)
     ts_data = TSDataModule(config)
     config["node_dim"] = ts_data.num_node_features
     config["edge_dim"] = ts_data.num_edge_features
     model = LitTSModule(config)
-    early_stopping_nan_loss = EarlyStopping(
-        monitor="train_loss",
-        min_delta=0.0,
-        check_finite=True
-    )
-    early_stopping_val_rmsd = EarlyStopping(
-        monitor="val_rmsd",
-        min_delta=0.0,
-        divergence_threshold=1.0
-    )
     checkpoint_callback = ModelCheckpoint(
         dirpath=config["log_dir"],
         filename='best_model',
@@ -35,13 +25,13 @@ def train_ts_egnn(config):
         save_weights_only=True
     )
     trainer = pl.Trainer(
+        logger=pl_loggers.TensorBoardLogger(config["log_dir"]),
         gpus=config["gpus"],
         max_epochs=config["n_epochs"],
         callbacks=[LearningRateMonitor(),
                    checkpoint_callback,
                    ],
         gradient_clip_val=10.0,
-        # profiler="pytorch"
     )
     trainer.fit(model, ts_data)
 
@@ -50,4 +40,4 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser = LitTSModule.add_args(parser)
     args = parser.parse_args()
-    train_ts_egnn(vars(args))
+    train_ts_gcn(vars(args))

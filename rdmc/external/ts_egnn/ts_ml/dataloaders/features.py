@@ -1,7 +1,5 @@
 from rdkit import Chem
 from rdmc.mol import RDKitMol
-from rdmc.ts import NaiveAlign, get_formed_and_broken_bonds
-from .align import reset_pmol
 import numpy as np
 from typing import List, Union
 from scipy.spatial.transform import Rotation
@@ -154,21 +152,3 @@ def find_similar_mol(mols):
         return r_mol, ts_mol, p_mol
     else:
         return p_mol, ts_mol, r_mol
-
-
-def realistic_mol_prep(mols):
-    r_mol, ts_mol, p_mol = mols
-    r_rdmc, p_rdmc = RDKitMol.FromMol(r_mol), RDKitMol.FromMol(p_mol)
-    if len(r_rdmc.GetMolFrags()) == 2:
-        r_rdmc = align_reactant_fragments(r_rdmc, p_rdmc)
-    p_mol_new = reset_pmol(r_rdmc, p_rdmc)  # reconfigure pmol as if starting from SMILES
-    # p_mol_new = optimize_rotatable_bonds(r_rdmc, p_mol_new)  # optimize rotatable bonds
-    return r_rdmc.ToRWMol(), ts_mol, p_mol_new.ToRWMol()
-
-
-def align_reactant_fragments(r_rdmc, p_rdmc):
-    formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_rdmc, p_rdmc)
-    naive_align = NaiveAlign.from_complex(r_rdmc, formed_bonds, broken_bonds)
-    r_rdmc_naive_align = r_rdmc.Copy()
-    r_rdmc_naive_align.SetPositions(naive_align())
-    return r_rdmc_naive_align

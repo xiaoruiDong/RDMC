@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 from egnn_pytorch import EGNN_Sparse
-from .utils import radius_graph
 
 
 class TS_EGNN(nn.Module):
@@ -40,3 +39,10 @@ class TS_EGNN(nn.Module):
             x = layer(x, edge_index, edge_attr, batch)
             self.coords.append(x[:, :3])
         return x
+
+
+def radius_graph(pos, cutoff, edge_index, edge_attr):
+    row, col = edge_index
+    dist = (pos[row] - pos[col]).norm(dim=-1)
+    mask = dist < cutoff
+    return edge_index[:, mask], edge_attr[mask]

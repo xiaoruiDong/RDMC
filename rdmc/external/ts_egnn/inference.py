@@ -12,8 +12,8 @@ import os
 from typing import List
 
 import numpy as np
-from model.ts_trainer import LitTSModule
-from model.data import TSDataset
+from models.ts_trainer import LitTSModule
+from models.data import TSDataset
 from torch_geometric.data import Batch
 
 
