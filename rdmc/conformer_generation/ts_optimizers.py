@@ -26,6 +26,13 @@ class TSOptimizer:
     def optimize_ts_guesses(self, mol, save_dir):
         raise NotImplementedError
 
+    def save_opt_mols(self, save_dir, opt_mol):
+
+        # save optimized ts mols
+        ts_path = os.path.join(save_dir, "ts_optimized_confs.sdf")
+        with Chem.rdmolfiles.SDWriter(ts_path) as ts_writer:
+            [ts_writer.write(opt_mol, confId=i) for i in range(opt_mol.GetNumConformers())]
+
     def __call__(self, mol, save_dir):
         time_start = time()
         opt_mol = self.optimize_ts_guesses(mol, save_dir)
@@ -47,13 +54,6 @@ class SellaOptimizer(TSOptimizer):
         self.method = method
         self.fmax = fmax
         self.steps = steps
-
-    def save_opt_mols(self, save_dir, opt_mol):
-
-        # save optimized ts mols
-        ts_path = os.path.join(save_dir, "ts_optimized_confs.sdf")
-        with Chem.rdmolfiles.SDWriter(ts_path) as ts_writer:
-            [ts_writer.write(opt_mol, confId=i) for i in range(opt_mol.GetNumConformers())]
 
     def optimize_ts_guesses(self, mol, save_dir=None):
 
@@ -82,13 +82,6 @@ class OrcaOptimizer(TSOptimizer):
         super(OrcaOptimizer, self).__init__(track_stats)
 
         self.method = method
-
-    def save_opt_mols(self, save_dir, opt_mol):
-
-        # save optimized ts mols
-        ts_path = os.path.join(save_dir, "ts_optimized_confs.sdf")
-        with Chem.rdmolfiles.SDWriter(ts_path) as ts_writer:
-            [ts_writer.write(opt_mol, confId=i) for i in range(opt_mol.GetNumConformers())]
 
     def optimize_ts_guesses(self, mol, save_dir=None):
 
