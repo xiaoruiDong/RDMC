@@ -144,7 +144,7 @@ class GaussianIRCVerifier:
 
                 with open(os.path.join(gaussian_dir, "gaussian_irc_reverse.log"), "w") as f:
                     gaussian_r_run = subprocess.run(
-                        [GAUSSIAN_BINARY, gaussian_f_input_file],
+                        [GAUSSIAN_BINARY, gaussian_r_input_file],
                         stdout=f,
                         stderr=subprocess.STDOUT,
                         cwd=os.getcwd(),
