@@ -54,7 +54,7 @@ class OrcaIRCVerifier:
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
                 orca_str = write_orca_irc(ts_mol, confId=i, method=self.method)
-                orca_dir = os.path.join(save_dir, f"orca_conf{i}")
+                orca_dir = os.path.join(save_dir, f"orca_irc{i}")
                 os.makedirs(orca_dir)
 
                 orca_input_file = os.path.join(orca_dir, "orca_irc.inp")
