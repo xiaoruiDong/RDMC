@@ -11,6 +11,7 @@ import os
 from time import time
 from rdmc.external.sella import run_sella_opt
 from rdmc.external.orca import write_orca_opt
+from rdmc.external.gaussian import GaussianLog, write_gaussian_ts_opt
 import subprocess
 
 
@@ -114,6 +115,49 @@ class OrcaOptimizer(TSOptimizer):
             if orca_run.returncode == 0:
                 mol = RDKitMol.FromFile(os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False)
                 opt_mol.AddConformer(mol.GetConformer().ToConformer(), assignId=True)
+
+        if save_dir:
+            self.save_opt_mols(save_dir, opt_mol.ToRWMol())
+
+        return opt_mol
+
+
+class GaussianOptimizer(TSOptimizer):
+    def __init__(self, method="GFN2-xTB", track_stats=False):
+        super(GaussianOptimizer, self).__init__(track_stats)
+
+        self.method = method
+
+    def optimize_ts_guesses(self, mol, save_dir=None):
+
+        GAUSSIAN_BINARY = os.path.join(os.environ.get("g16root"), "g16", "g16")
+        opt_mol = mol.Copy(quickCopy=True)
+        for i in range(mol.GetNumConformers()):
+            if save_dir:
+                ts_conf_dir = os.path.join(save_dir, f"gaussian_opt{i}")
+                if not os.path.exists(ts_conf_dir):
+                    os.makedirs(ts_conf_dir)
+
+            gaussian_str = write_gaussian_ts_opt(mol, confId=i, method=self.method)
+            gaussian_input_file = os.path.join(ts_conf_dir, "gaussian_opt.gjf")
+            with open(gaussian_input_file, "w") as f:
+                f.writelines(gaussian_str)
+
+            with open(os.path.join(ts_conf_dir, "gaussian_opt.log"), "w") as f:
+                gaussian_run = subprocess.run(
+                    [GAUSSIAN_BINARY, gaussian_input_file],
+                    stdout=f,
+                    stderr=subprocess.STDOUT,
+                    cwd=os.getcwd(),
+                )
+            if gaussian_run.returncode == 0:
+                g16_log = GaussianLog(os.path.join(ts_conf_dir, "gaussian_opt.log"))
+                if g16_log.success():
+                    opt_coords = g16_log.get_best_opt_geom()
+                    new_mol = mol.Copy(quickCopy=True)
+                    new_mol.EmbedNullConformer()
+                    new_mol.SetPositions(opt_coords)
+                    opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
 
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
