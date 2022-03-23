@@ -1321,3 +1321,25 @@ def write_gaussian_ts_opt(mol, confId=0, memory=1, nprocs=1, method="AM1"):
                           f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
     )
     return gaussian_opt_input
+
+
+def write_gaussian_irc(mol, confId=0, memory=1, nprocs=1, method="AM1", direction="forward"):
+
+    if method == "GFN2-xTB":
+        title_section = (
+            f'#irc=(calcall,{direction},maxpoints=100,stepsize=7,nomicro)\n'
+            f'external="{XTB_GAUSSIAN_PL} --gfn 2"'
+        )
+    else:
+        title_section = f"#irc=(calcall,{direction},maxpoints=100,stepsize=7) {method}"
+
+    gaussian_opt_input = (f'%mem={memory}gb\n'
+                          f'%nprocshared={nprocs}\n'
+                          f'{title_section}\n'
+                          f'\n'
+                          f'Title Card Required\n'
+                          f'\n'
+                          f'{mol.GetFormalCharge()} 1\n'
+                          f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
+    )
+    return gaussian_opt_input
