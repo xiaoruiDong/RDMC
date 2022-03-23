@@ -17,6 +17,7 @@ TS_PATH_INP = os.path.join(ROOT_PATH, "ts_path.inp")
 UTILS_PATH = os.path.join(ROOT_PATH, "utils")
 XTB_BINARY = os.path.join(os.environ.get("CONDA_PREFIX"), "bin", "xtb")
 CREST_BINARY = os.path.join(os.environ.get("CONDA_PREFIX"), "bin", "crest")
+XTB_GAUSSIAN_PL = os.path.join(ROOT_PATH, "xtb_gaussian.pl")
 
 XTB_ENV = {
     "OMP_STACKSIZE": "1G",
