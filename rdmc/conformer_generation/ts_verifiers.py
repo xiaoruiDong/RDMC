@@ -161,8 +161,8 @@ class GaussianIRCVerifier:
                 g16_r_log = GaussianLog(os.path.join(gaussian_dir, "gaussian_irc_reverse.log"))
 
                 if g16_f_log.success and g16_r_log.success:
-                    irc_f_mol = g16_f_log.get_mol(embed_conformers=False)
-                    irc_r_mol = g16_r_log.get_mol(embed_conformers=False)
+                    irc_f_mol = g16_f_log.get_mol(embed_conformers=False, sanitize=False)
+                    irc_r_mol = g16_r_log.get_mol(embed_conformers=False, sanitize=False)
                 else:
                     irc_checks.append(False)
                     continue
