@@ -1349,7 +1349,7 @@ def scheme_to_dict(scheme_str: str) -> dict:
     return schemes
 
 
-def write_gaussian_ts_opt(mol, confId=0, memory=1, nprocs=1, method="AM1"):
+def write_gaussian_ts_opt(mol, confId=0, memory=1, nprocs=1, method="GFN2-xTB"):
 
     if method == "GFN2-xTB":
         title_section = (
@@ -1371,7 +1371,7 @@ def write_gaussian_ts_opt(mol, confId=0, memory=1, nprocs=1, method="AM1"):
     return gaussian_opt_input
 
 
-def write_gaussian_irc(mol, confId=0, memory=1, nprocs=1, method="AM1", direction="forward"):
+def write_gaussian_irc(mol, confId=0, memory=1, nprocs=1, method="GFN2-xTB", direction="forward"):
 
     if method == "GFN2-xTB":
         title_section = (
