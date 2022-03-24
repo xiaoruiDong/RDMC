@@ -24,10 +24,14 @@ class XTBFrequencyVerifier:
 
     def __call__(self, ts_mol, keep_ids, save_dir=None, **kwargs):
 
+        r_smi, _ = kwargs["rxn_smiles"].split(">>")
+        r_mol = RDKitMol.FromSmiles(r_smi)
+        uhf = r_mol.GetSpinMultiplicity() - 1
+
         freq_checks = []
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
-                props = run_xtb_calc(ts_mol, confId=i, job="--hess")
+                props = run_xtb_calc(ts_mol, confId=i, job="--hess", uhf=uhf)
                 if sum(props["frequencies"] < 0) == 1:
                     freq_checks.append(True)
                 else:
