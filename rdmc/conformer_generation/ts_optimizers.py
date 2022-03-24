@@ -86,10 +86,6 @@ class OrcaOptimizer(TSOptimizer):
 
     def optimize_ts_guesses(self, mol, save_dir=None, **kwargs):
 
-        r_smi, _ = kwargs["rxn_smiles"].split(">>")
-        r_mol = RDKitMol.FromSmiles(r_smi)
-        multiplicity = r_mol.GetSpinMultiplicity()
-
         ORCA_BINARY = os.environ.get("ORCA")
         opt_mol = mol.Copy(quickCopy=True)
         for i in range(mol.GetNumConformers()):
@@ -98,7 +94,7 @@ class OrcaOptimizer(TSOptimizer):
                 if not os.path.exists(ts_conf_dir):
                     os.makedirs(ts_conf_dir)
 
-            orca_str = write_orca_opt(mol, confId=i, method=self.method, mult=multiplicity, nprocs=self.nprocs)
+            orca_str = write_orca_opt(mol, confId=i, method=self.method, mult=1, nprocs=self.nprocs)
             orca_input_file = os.path.join(ts_conf_dir, "orca_opt.inp")
             with open(orca_input_file, "w") as f:
                 f.writelines(orca_str)
@@ -129,10 +125,6 @@ class GaussianOptimizer(TSOptimizer):
 
     def optimize_ts_guesses(self, mol, save_dir=None, **kwargs):
 
-        r_smi, _ = kwargs["rxn_smiles"].split(">>")
-        r_mol = RDKitMol.FromSmiles(r_smi)
-        multiplicity = r_mol.GetSpinMultiplicity()
-
         GAUSSIAN_BINARY = os.path.join(os.environ.get("g16root"), "g16", "g16")
         opt_mol = mol.Copy(quickCopy=True)
         for i in range(mol.GetNumConformers()):
@@ -141,7 +133,7 @@ class GaussianOptimizer(TSOptimizer):
                 if not os.path.exists(ts_conf_dir):
                     os.makedirs(ts_conf_dir)
 
-            gaussian_str = write_gaussian_ts_opt(mol, confId=i, method=self.method, mult=multiplicity, nprocs=self.nprocs)
+            gaussian_str = write_gaussian_ts_opt(mol, confId=i, method=self.method, mult=1, nprocs=self.nprocs)
             gaussian_input_file = os.path.join(ts_conf_dir, "gaussian_opt.gjf")
             with open(gaussian_input_file, "w") as f:
                 f.writelines(gaussian_str)
