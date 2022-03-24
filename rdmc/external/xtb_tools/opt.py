@@ -103,7 +103,8 @@ def get_wbo(wbo_file):
     return wbo_dict
 
 
-def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", level="normal", pconfId=0, save_dir=None):
+def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", level="normal",
+                 pconfId=0, save_dir=None, uhf=0):
     """Runs xTB single-point calculation with optional geometry optimization.
     Parameters
     ----------
@@ -145,6 +146,8 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
         xtb_command,
         method,
         level,
+        "--uhf",
+        str(uhf),
         "--json",
         "true",
         "--parallel",
