@@ -148,7 +148,7 @@ class GaussianOptimizer(TSOptimizer):
             if gaussian_run.returncode == 0:
                 g16_log = GaussianLog(os.path.join(ts_conf_dir, "gaussian_opt.log"))
                 if g16_log.success:
-                    new_mol = g16_log.get_mol(embed_conformers=False)
+                    new_mol = g16_log.get_mol(embed_conformers=False, sanitize=False)
                     opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
 
         if save_dir:
