@@ -53,12 +53,16 @@ class OrcaIRCVerifier:
 
     def __call__(self, ts_mol, keep_ids, save_dir, **kwargs):
 
+        r_smi, _ = kwargs["rxn_smiles"].split(">>")
+        r_mol = RDKitMol.FromSmiles(r_smi)
+        multiplicity = r_mol.GetSpinMultiplicity()
+
         ORCA_BINARY = os.environ.get("ORCA")
         irc_checks = []
 
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
-                orca_str = write_orca_irc(ts_mol, confId=i, method=self.method)
+                orca_str = write_orca_irc(ts_mol, confId=i, method=self.method, mult=multiplicity)
                 orca_dir = os.path.join(save_dir, f"orca_irc{i}")
                 os.makedirs(orca_dir)
 
@@ -120,13 +124,19 @@ class GaussianIRCVerifier:
 
     def __call__(self, ts_mol, keep_ids, save_dir, **kwargs):
 
+        r_smi, _ = kwargs["rxn_smiles"].split(">>")
+        r_mol = RDKitMol.FromSmiles(r_smi)
+        multiplicity = r_mol.GetSpinMultiplicity()
+
         GAUSSIAN_BINARY = os.path.join(os.environ.get("g16root"), "g16", "g16")
         irc_checks = []
 
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
-                gaussian_f_str = write_gaussian_irc(ts_mol, confId=i, method=self.method, direction="forward")
-                gaussian_r_str = write_gaussian_irc(ts_mol, confId=i, method=self.method, direction="reverse")
+                gaussian_f_str = write_gaussian_irc(ts_mol, confId=i, method=self.method,
+                                                    direction="forward", mult=multiplicity)
+                gaussian_r_str = write_gaussian_irc(ts_mol, confId=i, method=self.method,
+                                                    direction="reverse", mult=multiplicity)
                 gaussian_dir = os.path.join(save_dir, f"gaussian_irc{i}")
                 os.makedirs(gaussian_dir)
 
