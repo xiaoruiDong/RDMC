@@ -1271,6 +1271,20 @@ def scheme_to_dict(scheme_str: str) -> dict:
     Args:
         scheme_str (str): the calculation scheme used in a Gaussian job.
     """
+    # Remove the header of the line
+    if scheme_str.startswith('#'):
+        scheme_str = scheme_str[1:]
+    elif scheme_str.startswith('#p') or scheme_str.startswith('#n'):
+        scheme_str = scheme_str[2:]
+
+    # External
+    if 'external' in scheme_str:
+        scheme_str, external_str = scheme_str.split('external', 1)
+        external_dict = {'external': external_str.strip()[1:]}
+    else:
+        external_dict = {}
+
+    # split other scheme arguments
     args = re.findall(SCHEME_REGEX, scheme_str)
 
     schemes = defaultdict(lambda:{})
@@ -1319,13 +1333,17 @@ def scheme_to_dict(scheme_str: str) -> dict:
         else:
             schemes[arg.strip()] = True
 
-    if 'LOT' not in schemes:
+    schemes.update(external_dict)
+
+    if not schemes.get('LOT') and schemes.get('external'):
+        schemes['LOT'] = {'LOT': schemes['external']}
+    elif not schemes.get('LOT'):
         schemes['LOT'] = {'LOT': f'{DEFAULT_METHOD}/{DEFAULT_BASIS_SET}'}
-    elif 'method' in schemes['LOT'] and 'basis_set' not in schemes['LOT']:
+    elif schemes['LOT'].get('method') and not schemes['LOT'].get('basis_set'):
         schemes['LOT']['LOT'] = f"{schemes['LOT']['method']}/{DEFAULT_BASIS_SET}"
-    elif 'method' not in schemes['LOT'] and 'basis_set' in schemes['LOT']:
+    elif not schemes['LOT'].get('method') and schemes['LOT'].get('basis_set'):
         schemes['LOT']['LOT'] = f"{DEFAULT_METHOD}/{schemes['LOT']['basis_set']}"
-    if 'freq' in schemes:
+    if schemes.get('freq'):
         schemes['LOT']['freq'] = schemes['LOT']['LOT']
 
     return schemes
