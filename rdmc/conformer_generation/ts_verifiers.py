@@ -88,8 +88,12 @@ class OrcaIRCVerifier:
                 f_adj = irc_f_mol.GetAdjacencyMatrix()
                 b_adj = irc_b_mol.GetAdjacencyMatrix()
 
-                rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
-                rb_pf_check = ((r_adj == b_adj).all() and (p_adj == f_adj).all())
+                try:
+                    rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
+                    rb_pf_check = ((r_adj == b_adj).all() and (p_adj == f_adj).all())
+                except AttributeError:
+                    print("Error! Likely that the reaction smiles doesn't correspond to this reaction.")
+
                 if rf_pb_check or rb_pf_check:
                     irc_checks.append(True)
                 else:
@@ -170,8 +174,12 @@ class GaussianIRCVerifier:
                 f_adj = irc_f_mol.GetAdjacencyMatrix()
                 b_adj = irc_r_mol.GetAdjacencyMatrix()
 
-                rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
-                rb_pf_check = ((r_adj == b_adj).all() and (p_adj == f_adj).all())
+                try:
+                    rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
+                    rb_pf_check = ((r_adj == b_adj).all() and (p_adj == f_adj).all())
+                except AttributeError:
+                    print("Error! Likely that the reaction smiles doesn't correspond to this reaction.")
+
                 if rf_pb_check or rb_pf_check:
                     irc_checks.append(True)
                 else:
