@@ -47,9 +47,10 @@ class XTBFrequencyVerifier:
 
 
 class OrcaIRCVerifier:
-    def __init__(self, method="XTB2", track_stats=False):
+    def __init__(self, method="XTB2", nprocs=1, track_stats=False):
         self.track_stats = track_stats
         self.method = method
+        self.nprocs = nprocs
 
     def __call__(self, ts_mol, keep_ids, save_dir, **kwargs):
 
@@ -62,7 +63,7 @@ class OrcaIRCVerifier:
 
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
-                orca_str = write_orca_irc(ts_mol, confId=i, method=self.method, mult=multiplicity)
+                orca_str = write_orca_irc(ts_mol, confId=i, method=self.method, mult=multiplicity, nprocs=self.nprocs)
                 orca_dir = os.path.join(save_dir, f"orca_irc{i}")
                 os.makedirs(orca_dir)
 
@@ -118,9 +119,10 @@ class OrcaIRCVerifier:
 
 
 class GaussianIRCVerifier:
-    def __init__(self, method="GFN2-xTB", track_stats=False):
+    def __init__(self, method="GFN2-xTB", nprocs=1, track_stats=False):
         self.track_stats = track_stats
         self.method = method
+        self.nprocs = nprocs
 
     def __call__(self, ts_mol, keep_ids, save_dir, **kwargs):
 
@@ -133,10 +135,10 @@ class GaussianIRCVerifier:
 
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
-                gaussian_f_str = write_gaussian_irc(ts_mol, confId=i, method=self.method,
-                                                    direction="forward", mult=multiplicity)
-                gaussian_r_str = write_gaussian_irc(ts_mol, confId=i, method=self.method,
-                                                    direction="reverse", mult=multiplicity)
+                gaussian_f_str = write_gaussian_irc(ts_mol, confId=i, method=self.method, direction="forward",
+                                                    mult=multiplicity, nprocs=self.nprocs)
+                gaussian_r_str = write_gaussian_irc(ts_mol, confId=i, method=self.method, direction="reverse",
+                                                    mult=multiplicity, nprocs=self.nprocs)
                 gaussian_dir = os.path.join(save_dir, f"gaussian_irc{i}")
                 os.makedirs(gaussian_dir)
 
