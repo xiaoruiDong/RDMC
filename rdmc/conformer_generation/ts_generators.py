@@ -135,7 +135,7 @@ class TSConformerGenerator:
         ts_mol = self.embedder(seed_mols, save_dir=self.save_dir)
 
         self.logger.info("Optimizing TS guesses...")
-        opt_ts_mol = self.optimizer(ts_mol, save_dir=self.save_dir)
+        opt_ts_mol = self.optimizer(ts_mol, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
         self.logger.info("Verifying TS guesses...")
         keep_ids = [True] * opt_ts_mol.GetNumConformers()
