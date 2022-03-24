@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import cclib.io
+import multiprocessing
 
 from rdmc import RDKitMol
 from rdmc.mathlib.curvefit import FourierSeries1D
@@ -1354,7 +1355,7 @@ def write_gaussian_ts_opt(mol, confId=0, memory=1, nprocs=1, method="GFN2-xTB"):
     if method == "GFN2-xTB":
         title_section = (
             f'#opt=(ts,calcall,maxcycle=128,noeig,nomicro)\n'
-            f'external="{XTB_GAUSSIAN_PL} --gfn 2"'
+            f'external="{XTB_GAUSSIAN_PL} --gfn 2 -P"'
         )
     else:
         title_section = f"#opt=(ts,calcall,maxcycle=128,noeig) {method}"
@@ -1376,7 +1377,7 @@ def write_gaussian_irc(mol, confId=0, memory=1, nprocs=1, method="GFN2-xTB", dir
     if method == "GFN2-xTB":
         title_section = (
             f'#irc=(calcall,{direction},maxpoints=100,stepsize=7,nomicro)\n'
-            f'external="{XTB_GAUSSIAN_PL} --gfn 2"'
+            f'external="{XTB_GAUSSIAN_PL} --gfn 2 -P"'
         )
     else:
         title_section = f"#irc=(calcall,{direction},maxpoints=100,stepsize=7) {method}"
