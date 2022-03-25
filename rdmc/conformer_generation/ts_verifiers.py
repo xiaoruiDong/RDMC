@@ -5,16 +5,17 @@
 Modules for verifying optimized ts
 """
 
-import os
-import pickle
-import subprocess
 from rdmc import RDKitMol
 from rdmc.external.xtb_tools.opt import run_xtb_calc
 from rdmc.external.orca import write_orca_irc
 from rdmc.external.gaussian import GaussianLog, write_gaussian_irc
+import os
+import pickle
+import subprocess
+from time import time
 
 
-class XTBFrequencyVerifier:
+class TSVerifier:
     def __init__(self, track_stats=False):
         self.track_stats = track_stats
         self.n_failures = None
@@ -22,7 +23,28 @@ class XTBFrequencyVerifier:
         self.n_opt_cycles = None
         self.stats = []
 
+    def verify_ts_guesses(self, ts_mol, keep_ids, save_dir=None, **kwargs):
+        raise NotImplementedError
+
     def __call__(self, ts_mol, keep_ids, save_dir=None, **kwargs):
+        time_start = time()
+        keep_ids = self.verify_ts_guesses(ts_mol, keep_ids, save_dir=None, **kwargs)
+
+        if not self.track_stats:
+            return keep_ids
+
+        time_end = time()
+        stats = {"time": time_end - time_start}
+        self.stats.append(stats)
+
+        return keep_ids
+
+
+class XTBFrequencyVerifier(TSVerifier):
+    def __init__(self, track_stats=False):
+        super(XTBFrequencyVerifier, self).__init__(track_stats)
+
+    def verify_ts_guesses(self, ts_mol, keep_ids, save_dir=None, **kwargs):
 
         r_smi, _ = kwargs["rxn_smiles"].split(">>")
         r_mol = RDKitMol.FromSmiles(r_smi)
@@ -46,13 +68,14 @@ class XTBFrequencyVerifier:
         return freq_checks
 
 
-class OrcaIRCVerifier:
+class OrcaIRCVerifier(TSVerifier):
     def __init__(self, method="XTB2", nprocs=1, track_stats=False):
-        self.track_stats = track_stats
+        super(OrcaIRCVerifier, self).__init__(track_stats)
+
         self.method = method
         self.nprocs = nprocs
 
-    def __call__(self, ts_mol, keep_ids, save_dir, **kwargs):
+    def verify_ts_guesses(self, ts_mol, keep_ids, save_dir=None, **kwargs):
 
         ORCA_BINARY = os.environ.get("ORCA")
         irc_checks = []
@@ -114,13 +137,14 @@ class OrcaIRCVerifier:
         return irc_checks
 
 
-class GaussianIRCVerifier:
+class GaussianIRCVerifier(TSVerifier):
     def __init__(self, method="GFN2-xTB", nprocs=1, track_stats=False):
-        self.track_stats = track_stats
+        super(GaussianIRCVerifier, self).__init__(track_stats)
+
         self.method = method
         self.nprocs = nprocs
 
-    def __call__(self, ts_mol, keep_ids, save_dir, **kwargs):
+    def verify_ts_guesses(self, ts_mol, keep_ids, save_dir=None, **kwargs):
 
         GAUSSIAN_BINARY = os.path.join(os.environ.get("g16root"), "g16", "g16")
         irc_checks = []
