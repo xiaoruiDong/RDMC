@@ -28,7 +28,7 @@ class TSVerifier:
 
     def __call__(self, ts_mol, keep_ids, save_dir=None, **kwargs):
         time_start = time()
-        keep_ids = self.verify_ts_guesses(ts_mol, keep_ids, save_dir=None, **kwargs)
+        keep_ids = self.verify_ts_guesses(ts_mol, keep_ids, save_dir, **kwargs)
 
         if not self.track_stats:
             return keep_ids
