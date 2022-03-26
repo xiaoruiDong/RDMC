@@ -37,7 +37,7 @@ class TSGCNDataset(Dataset):
             r_mol, ts_mol, p_mol = mols
             new_r_mol, new_p_mol = prepare_mols(RDKitMol.FromMol(r_mol), RDKitMol.FromMol(p_mol))
             mols = (new_r_mol.ToRWMol(), ts_mol, new_p_mol.ToRWMol())
-        molgraph = MolGraph(mols)
+        molgraph = MolGraph(mols, no_ts)
         mol_data = self.molgraph2data(molgraph)
         mol_data.pos_r = torch.tensor(mols[0].GetConformer().GetPositions(), dtype=torch.float)
         mol_data.pos_ts = None if no_ts else torch.tensor(mols[1].GetConformer().GetPositions(), dtype=torch.float)

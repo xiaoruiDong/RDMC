@@ -4,8 +4,8 @@ import torch.nn.functional as F
 from torch.nn import Linear
 import torch_geometric as tg
 
-from ts_ml.models.gnn import GNN, MLP
-from ts_ml.models.utils import check_volume_constraints
+from ..models.gnn import GNN, MLP
+from ..models.utils import check_volume_constraints
 from rdkit import Chem, Geometry
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

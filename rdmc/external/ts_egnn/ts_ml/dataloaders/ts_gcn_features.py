@@ -62,7 +62,7 @@ def bond_features(bond: Chem.rdchem.Bond) -> List[Union[bool, int, float]]:
 
 class MolGraph:
 
-    def __init__(self, mols):
+    def __init__(self, mols, no_ts=False):
 
         self.f_atoms = []  # mapping from atom index to atom features
         self.f_bonds = []  # mapping from bond index to concat(in_atom, bond) features
@@ -84,7 +84,8 @@ class MolGraph:
         tD_p = Chem.GetDistanceMatrix(p_mol)
         D_r = Chem.Get3DDistanceMatrix(r_mol)
         D_p = Chem.Get3DDistanceMatrix(p_mol)
-        D_ts = Chem.Get3DDistanceMatrix(ts_mol)
+        if not no_ts:
+            D_ts = Chem.Get3DDistanceMatrix(ts_mol)
 
         # temporary featurization
         for a1 in range(n_atoms):
@@ -111,4 +112,5 @@ class MolGraph:
 
                 self.f_bonds.append(b1_feats)
                 self.f_bonds.append(b2_feats)
-                self.y.extend([D_ts[a1][a2], D_ts[a2][a1]])
+                if not no_ts:
+                    self.y.extend([D_ts[a1][a2], D_ts[a2][a1]])
