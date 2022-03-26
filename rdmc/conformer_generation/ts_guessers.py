@@ -9,6 +9,7 @@ from rdkit import Chem
 import os.path as osp
 import numpy as np
 from time import time
+import torch
 from torch_geometric.data import Batch
 from rdmc.external.xtb_tools.opt import run_xtb_calc
 
@@ -33,6 +34,19 @@ try:
 
 except ImportError:
     print("No TS-EGNN installation detected. Skipping import...")
+
+try:
+    from rdmc.external.ts_egnn.ts_ml.trainers.ts_gcn_trainer import LitTSModule
+    from rdmc.external.ts_egnn.ts_ml.dataloaders.ts_gcn_loader import TSGCNDataset
+
+    class EvalTSGCNDataset(TSGCNDataset):
+        def __init__(self, config):
+
+            self.shuffle_mols = config["shuffle_mols"]  # randomize which is reactant/product
+            self.prep_mols = config["prep_mols"]  # prep as if starting from SMILES
+
+except ImportError:
+    print("No TS-GCN installation detected. Skipping import...")
 
 
 class TSInitialGuesser:
@@ -105,6 +119,44 @@ class TSEGNNGuesser(TSInitialGuesser):
         # use ts_egnn to make initial guesses
         predicted_ts_coords = self.module.model(batch_data)[:, :3].cpu().detach().numpy()
         predicted_ts_coords = np.array_split(predicted_ts_coords, len(rp_inputs))
+
+        # copy data to mol
+        ts_mol = mols[0][0].Copy(quickCopy=True)
+        ts_mol.EmbedMultipleNullConfs(len(rp_inputs))
+        [ts_mol.GetConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float)) for i in
+         range(len(rp_inputs))];
+
+        if save_dir:
+            self.save_guesses(save_dir, mols, ts_mol.ToRWMol())
+
+        return ts_mol
+
+
+class TSGCNGuesser(TSInitialGuesser):
+    def __init__(self, trained_model_dir, track_stats=False):
+        super(TSGCNGuesser, self).__init__(track_stats)
+
+        self.module = LitTSModule.load_from_checkpoint(
+            checkpoint_path=osp.join(trained_model_dir, "best_model.ckpt"),
+            strict=False,  # TODO: make sure d_init can be properly loaded
+        )
+
+        self.config = self.module.config
+        self.module.model.eval()
+        self.config["shuffle_mols"] = False
+        self.config["prep_mols"] = False  # ts_generator class takes care of prep
+        self.test_dataset = EvalTSGCNDataset(self.config)
+
+    def generate_ts_guesses(self, mols, save_dir=None):
+
+        rp_inputs = [(x[0].ToRWMol(), None, x[1].ToRWMol()) for x in mols]
+        rp_data = [self.test_dataset.process_mols(m, no_ts=True) for m in rp_inputs]
+        batch_data = Batch.from_data_list(rp_data)
+
+        # use ts_gcn to make initial guesses
+        _ = self.module.model(batch_data)
+        predicted_ts_coords = torch.vstack([c[:m[0].GetNumAtoms()] for c, m in zip(batch_data.coords, batch_data.mols)])
+        predicted_ts_coords = np.array_split(predicted_ts_coords.cpu().detach().numpy(), len(rp_inputs))
 
         # copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
