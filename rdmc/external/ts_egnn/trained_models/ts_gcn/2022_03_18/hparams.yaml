@@ -1,0 +1,18 @@
+config:
+  batch_size: 32
+  chiral_corrections: false
+  data_dir: data/gsm_clean
+  depth: 3
+  edge_dim: 16
+  gpus: 1
+  hidden_dim: 100
+  log_dir: exps/2022_03_18/ts_gcn
+  lr: 0.001
+  n_epochs: 200
+  n_layers: 2
+  node_dim: 26
+  num_workers: 20
+  prep_mols: true
+  seed: 0
+  shuffle_mols: true
+  split_path: data/gsm_clean/splits/split0.pkl
