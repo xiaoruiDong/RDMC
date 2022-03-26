@@ -36,7 +36,7 @@ except ImportError:
     print("No TS-EGNN installation detected. Skipping import...")
 
 try:
-    from rdmc.external.ts_egnn.ts_ml.trainers.ts_gcn_trainer import LitTSModule
+    from rdmc.external.ts_egnn.ts_ml.trainers.ts_gcn_trainer import LitTSModule as LitTSGCNModule
     from rdmc.external.ts_egnn.ts_ml.dataloaders.ts_gcn_loader import TSGCNDataset
 
     class EvalTSGCNDataset(TSGCNDataset):
@@ -136,7 +136,7 @@ class TSGCNGuesser(TSInitialGuesser):
     def __init__(self, trained_model_dir, track_stats=False):
         super(TSGCNGuesser, self).__init__(track_stats)
 
-        self.module = LitTSModule.load_from_checkpoint(
+        self.module = LitTSGCNModule.load_from_checkpoint(
             checkpoint_path=osp.join(trained_model_dir, "best_model.ckpt"),
             strict=False,  # TODO: make sure d_init can be properly loaded
         )
