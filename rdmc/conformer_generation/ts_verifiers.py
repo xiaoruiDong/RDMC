@@ -179,22 +179,11 @@ class GaussianIRCVerifier(TSVerifier):
                         cwd=os.getcwd(),
                     )
 
-                # check forward irc mol
+                # extract forward irc mol
                 g16_f_log = GaussianLog(os.path.join(gaussian_dir, "gaussian_irc_forward.log"))
                 irc_f_mol = g16_f_log.get_mol(converged=False, sanitize=False)
                 n_f_confs = irc_f_mol.GetNumConformers()
                 f_adj = irc_f_mol.GetConformer(n_f_confs - 1).ToMol().GetAdjacencyMatrix()
-                try:
-                    fr_check = (r_adj == f_adj).all()
-                    fp_check = (p_adj == f_adj).all()
-                except AttributeError:
-                    print("Error! Likely that the reaction smiles doesn't correspond to this reaction.")
-                    irc_checks.append(False)
-                    continue
-
-                if not fr_check or fp_check:
-                    irc_checks.append(False)
-                    continue
 
                 with open(os.path.join(gaussian_dir, "gaussian_irc_reverse.log"), "w") as f:
                     gaussian_r_run = subprocess.run(
