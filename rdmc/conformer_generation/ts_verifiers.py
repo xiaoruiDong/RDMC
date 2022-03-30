@@ -183,7 +183,7 @@ class GaussianIRCVerifier(TSVerifier):
                 g16_f_log = GaussianLog(os.path.join(gaussian_dir, "gaussian_irc_forward.log"))
                 irc_f_mol = g16_f_log.get_mol(converged=False, sanitize=False)
                 n_f_confs = irc_f_mol.GetNumConformers()
-                f_adj = irc_f_mol.GetConformer(n_f_confs - 1).ToMol().GetAdjacencyMatrix()
+                f_adj = RDKitMol.FromXYZ(irc_f_mol.ToXYZ(confId=n_f_confs-1), sanitize=False).GetAdjacencyMatrix()
 
                 with open(os.path.join(gaussian_dir, "gaussian_irc_reverse.log"), "w") as f:
                     gaussian_r_run = subprocess.run(
@@ -197,7 +197,7 @@ class GaussianIRCVerifier(TSVerifier):
                 g16_b_log = GaussianLog(os.path.join(gaussian_dir, "gaussian_irc_reverse.log"))
                 irc_b_mol = g16_b_log.get_mol(converged=False, sanitize=False)
                 n_b_confs = irc_b_mol.GetNumConformers()
-                b_adj = irc_b_mol.GetConformer(n_b_confs - 1).ToMol().GetAdjacencyMatrix()
+                b_adj = RDKitMol.FromXYZ(irc_b_mol.ToXYZ(confId=n_b_confs-1), sanitize=False).GetAdjacencyMatrix()
 
                 try:
                     rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
