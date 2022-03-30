@@ -166,6 +166,10 @@ class GaussianIRCVerifier(TSVerifier):
                 with open(gaussian_r_input_file, "w") as f:
                     f.writelines(gaussian_r_str)
 
+                r_smi, p_smi = kwargs["rxn_smiles"].split(">>")
+                r_adj = RDKitMol.FromSmiles(r_smi).GetAdjacencyMatrix()
+                p_adj = RDKitMol.FromSmiles(p_smi).GetAdjacencyMatrix()
+
                 # do irc
                 with open(os.path.join(gaussian_dir, "gaussian_irc_forward.log"), "w") as f:
                     gaussian_f_run = subprocess.run(
@@ -174,7 +178,21 @@ class GaussianIRCVerifier(TSVerifier):
                         stderr=subprocess.STDOUT,
                         cwd=os.getcwd(),
                     )
-                if gaussian_f_run.returncode != 0:
+
+                # check forward irc mol
+                g16_f_log = GaussianLog(os.path.join(gaussian_dir, "gaussian_irc_forward.log"))
+                irc_f_mol = g16_f_log.get_mol(converged=False, sanitize=False)
+                n_f_confs = irc_f_mol.GetNumConformers()
+                f_adj = irc_f_mol.GetConformer(n_f_confs - 1).ToMol().GetAdjacencyMatrix()
+                try:
+                    fr_check = (r_adj == f_adj).all()
+                    fp_check = (p_adj == f_adj).all()
+                except AttributeError:
+                    print("Error! Likely that the reaction smiles doesn't correspond to this reaction.")
+                    irc_checks.append(False)
+                    continue
+
+                if not fr_check or fp_check:
                     irc_checks.append(False)
                     continue
 
@@ -185,26 +203,12 @@ class GaussianIRCVerifier(TSVerifier):
                         stderr=subprocess.STDOUT,
                         cwd=os.getcwd(),
                     )
-                if gaussian_r_run.returncode != 0:
-                    irc_checks.append(False)
-                    continue
 
-                r_smi, p_smi = kwargs["rxn_smiles"].split(">>")
-                r_adj = RDKitMol.FromSmiles(r_smi).GetAdjacencyMatrix()
-                p_adj = RDKitMol.FromSmiles(p_smi).GetAdjacencyMatrix()
-
-                g16_f_log = GaussianLog(os.path.join(gaussian_dir, "gaussian_irc_forward.log"))
-                g16_r_log = GaussianLog(os.path.join(gaussian_dir, "gaussian_irc_reverse.log"))
-
-                if g16_f_log.success and g16_r_log.success:
-                    irc_f_mol = g16_f_log.get_mol(embed_conformers=False, sanitize=False)
-                    irc_r_mol = g16_r_log.get_mol(embed_conformers=False, sanitize=False)
-                else:
-                    irc_checks.append(False)
-                    continue
-
-                f_adj = irc_f_mol.GetAdjacencyMatrix()
-                b_adj = irc_r_mol.GetAdjacencyMatrix()
+                # check reverse irc mol and full irc
+                g16_b_log = GaussianLog(os.path.join(gaussian_dir, "gaussian_irc_reverse.log"))
+                irc_b_mol = g16_b_log.get_mol(converged=False, sanitize=False)
+                n_b_confs = irc_b_mol.GetNumConformers()
+                b_adj = irc_b_mol.GetConformer(n_b_confs - 1).ToMol().GetAdjacencyMatrix()
 
                 try:
                     rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
