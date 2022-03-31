@@ -30,8 +30,10 @@ class TSOptimizer:
 
         # save optimized ts mols
         ts_path = os.path.join(save_dir, "ts_optimized_confs.sdf")
-        with Chem.rdmolfiles.SDWriter(ts_path) as ts_writer:
-            [ts_writer.write(opt_mol, confId=i) for i in range(opt_mol.GetNumConformers())]
+        ts_writer = Chem.rdmolfiles.SDWriter(ts_path)
+        for i in range(opt_mol.GetNumConformers()):
+            ts_writer.write(opt_mol, confId=i)
+        ts_writer.close()
 
     def __call__(self, mol, save_dir, **kwargs):
         time_start = time()
