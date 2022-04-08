@@ -130,6 +130,7 @@ class GaussianOptimizer(TSOptimizer):
 
         GAUSSIAN_BINARY = os.path.join(os.environ.get("g16root"), "g16", "g16")
         opt_mol = mol.Copy(quickCopy=True)
+        opt_mol.energies = {}
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"gaussian_opt{i}")
@@ -153,6 +154,7 @@ class GaussianOptimizer(TSOptimizer):
                 if g16_log.success:
                     new_mol = g16_log.get_mol(embed_conformers=False, sanitize=False)
                     opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
+                    opt_mol.energies.update({opt_mol.GetNumConformers()-1: g16_log.get_scf_energies()[-1]})
 
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
