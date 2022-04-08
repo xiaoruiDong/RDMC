@@ -9,6 +9,7 @@ import os
 import numpy as np
 import logging
 import random
+from typing import List, Optional, Union
 
 from rdmc.conformer_generation.utils import *
 from rdmc.conformer_generation.generators import StochasticConformerGenerator
@@ -18,17 +19,33 @@ from rdmc.conformer_generation.align import prepare_mols
 
 class TSConformerGenerator:
     """
-    The class used to define a workflow for generating a 
+    The class used to define a workflow for generating a set of TS conformers.
     """
-    def __init__(self, rxn_smiles, multiplicity=1, embedder=None, optimizer=None, pruner=None, verifiers=None, save_dir=None):
+
+    def __init__(self,
+                 rxn_smiles: str,
+                 multiplicity: int = 1,
+                 embedder: Optional['TSInitialGuesser'] = None,
+                 optimizer: Optional['TSOptimizer'] = None,
+                 pruner: Optional['ConfGenPruner'] = None,
+                 verifiers: Optional[Union['TSVerifier',List['TSVerifier']]] = None,
+                 save_dir: Optional[str] = None,
+                 ) -> 'TSConformerGenerator':
         """
+        Initiate the TS conformer generator object. The best practice is set all information here
 
         Args:
-            rxn_smiles:
-            embedder:
-            optimizer:
-            pruner:
-            save_dir:
+            rxn_smiles (str): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
+            multiplicity (int): The spin multiplicity of the reaction. Defaults to 1.
+            embedder (TSInitialGuesser, optional): The embedder used to generate TS initial guessers. Available options are `TSEGNNGuesser`, `TSGCNGuesser`.
+                                                   `RMSDPPGuesser`, and `AutoNEBGuesser`.
+            optimizer (TSOptimizer, optional): The optimizer used to optimize TS geometries. Available options are `SellaOptimizer`, `OrcaOptimizer`, and
+                                               `GaussianOptimizer`.
+            pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
+                                              `CRESTPruner` and `TorsionPruner`.
+            verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer. Available
+                                                                     options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
+            save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.rxn_smiles = rxn_smiles
@@ -39,10 +56,23 @@ class TSConformerGenerator:
         self.verifiers = [] if not verifiers else verifiers
         self.save_dir = save_dir
 
-    def embed_stable_species(self, smiles):
+    def embed_stable_species(self,
+                             smiles: str,
+                             ) -> 'rdmc.RDKitMol':
+        """
+        Embed the reactant and product complex according to the SMILES provided.
 
+        Args:
+            smiles (str): The reactant or product complex in SMILES. if multiple molecules involve,
+                          use `.` to separate them.
+
+        Returns:
+            An RDKitMol of the reactant or product complex with 3D geometry embedded.
+        """
+        # Split the complex smiles into a list of molecule smiles
         smiles_list = smiles.split(".")
 
+        # Create molecules
         mols = []
         for smi in smiles_list:
 
@@ -54,6 +84,8 @@ class TSConformerGenerator:
                 pruner = TorsionPruner()
                 min_iters = 5
 
+            # Since the reactant and the product is not the key here,
+            # the ETKDG generator and only a loose threshold is used.
             n_conformers_per_iter = 20
             scg = StochasticConformerGenerator(
                 smiles=smi,
@@ -68,7 +100,12 @@ class TSConformerGenerator:
             mols.append(mol)
 
         if len(mols) > 1:
+            # If more than one molecule is involved, combining them
+            # their geometry back into one piece. c_product is set to true
+            # so all combination are generated.
             new_mol = [mols[0].CombineMol(m, offset=1, c_product=True) for m in mols[1:]][0]
+            # TODO: new_mol = new_mol.RenumberAtoms() can be replaced the following two lines
+            # Make the change afterwards.
             new_order = np.argsort(new_mol.GetAtomMapNumbers()).tolist()
             new_mol = new_mol.RenumberAtoms(new_order)
         else:
@@ -76,17 +113,32 @@ class TSConformerGenerator:
 
         return new_mol
 
-    def generate_seed_mols(self, rxn_smiles, n_conformers=20):
+    def generate_seed_mols(self,
+                           rxn_smiles: str,
+                           n_conformers: int = 20,
+                           ) -> list:
+        """
+        Genereate seeds of reactant/product pairs to be passed to the following steps.
 
+        Args:
+            rxn_smiles (str): The reaction smiles of the reaction.
+            n_conformers (int, optional): The maximum number of conformers to be generated. Defaults to 20.
+
+        Returns:
+            list
+        """
+        # Convert SMILES to reactant and product complexes
         r_smi, p_smi = rxn_smiles.split(">>")
         r_mol = RDKitMol.FromSmiles(r_smi)
         p_mol = RDKitMol.FromSmiles(p_smi)
 
+        # Generate information about number of reacants/products and number of rings
         n_reactants = len(r_mol.GetMolFrags())
         n_products = len(p_mol.GetMolFrags())
         n_reactant_rings = len([tuple(x) for x in r_mol.GetSymmSSSR()])
         n_product_rings = len([tuple(x) for x in p_mol.GetSymmSSSR()])
 
+        # TODO: Lucky: add some detailed explanation for the following block
         if n_reactants > n_products:
             n_reactant_confs = 0
             n_product_confs = n_conformers
@@ -107,6 +159,7 @@ class TSConformerGenerator:
             n_reactant_confs = n_conformers // 2
             n_product_confs = n_conformers // 2
 
+        # Create reactant conformer and product in pairs and store them as seed_mols
         seed_mols = []
         if n_reactant_confs > 0:
             r_embedded_mol = self.embed_stable_species(r_smi)
@@ -124,7 +177,14 @@ class TSConformerGenerator:
 
         return seed_mols
 
-    def __call__(self, n_conformers):
+    def __call__(self,
+                 n_conformers: int = 20):
+        """
+        Run the workflow of TS conformer generation.
+
+        Args:
+            n_conformers (int): The maximum number of conformers to be generated. Defaults to 20.
+        """
 
         if self.save_dir:
             if not os.path.exists(self.save_dir):
@@ -133,6 +193,8 @@ class TSConformerGenerator:
         self.logger.info("Embedding stable species conformers...")
         seed_mols = self.generate_seed_mols(self.rxn_smiles, n_conformers)
 
+        # TODO: Need to double check if multiplicity is generally needed for embedder
+        # It is needed for QST2, probably 
         self.logger.info("Generating initial TS guesses...")
         ts_mol = self.embedder(seed_mols, save_dir=self.save_dir)
 
