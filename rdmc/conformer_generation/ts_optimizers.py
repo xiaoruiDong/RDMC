@@ -60,6 +60,7 @@ class SellaOptimizer(TSOptimizer):
     def optimize_ts_guesses(self, mol, save_dir=None, **kwargs):
 
         opt_mol = mol.Copy()
+        opt_mol.energies = {}
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"conf{i}")
