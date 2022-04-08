@@ -69,6 +69,17 @@ class TorsionPruner(ConfGenPruner):
         mol.EmbedNullConformer()
         self.torsions_list = mol.GetConformer().GetTorsionalModes(includeRings=True)
 
+    def initialize_ts_torsions_list(self, rxn_smiles):
+
+        r_smi, p_smi = rxn_smiles.split(">>")
+        r_mol = RDKitMol.FromSmiles(r_smi)
+        p_mol = RDKitMol.FromSmiles(p_smi)
+        r_mol.EmbedNullConformer()
+        p_mol.EmbedNullConformer()
+        torsions_list = r_mol.GetConformer().GetTorsionalModes(includeRings=True) + \
+                        p_mol.GetConformer().GetTorsionalModes(includeRings=True)
+        self.torsions_list = [list(x) for x in set(tuple(x) for x in torsions_list)]
+
     def calculate_torsions(self, mol_data):
 
         for conf_data in mol_data:
