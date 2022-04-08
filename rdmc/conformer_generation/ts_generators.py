@@ -9,17 +9,18 @@ import os
 import numpy as np
 import logging
 import random
-from.utils import *
-from .generators import StochasticConformerGenerator
-from .pruners import *
-from.align import prepare_mols
+
+from rdmc.conformer_generation.utils import *
+from rdmc.conformer_generation.generators import StochasticConformerGenerator
+from rdmc.conformer_generation.pruners import *
+from rdmc.conformer_generation.align import prepare_mols
 
 
 class TSConformerGenerator:
     """
-    stuff
+    The class used to define a workflow for generating a 
     """
-    def __init__(self, rxn_smiles, embedder=None, optimizer=None, pruner=None, verifiers=None, save_dir=None):
+    def __init__(self, rxn_smiles, multiplicity=1, embedder=None, optimizer=None, pruner=None, verifiers=None, save_dir=None):
         """
 
         Args:
@@ -31,6 +32,7 @@ class TSConformerGenerator:
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.rxn_smiles = rxn_smiles
+        self.multiplicity = multiplicity
         self.embedder = embedder
         self.optimizer = optimizer
         self.pruner = pruner
@@ -135,11 +137,11 @@ class TSConformerGenerator:
         ts_mol = self.embedder(seed_mols, save_dir=self.save_dir)
 
         self.logger.info("Optimizing TS guesses...")
-        opt_ts_mol = self.optimizer(ts_mol, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+        opt_ts_mol = self.optimizer(ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
         self.logger.info("Verifying TS guesses...")
         keep_ids = [True] * opt_ts_mol.GetNumConformers()
         for verifier in self.verifiers:
-            keep_ids = verifier(opt_ts_mol, keep_ids=keep_ids, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+            keep_ids = verifier(opt_ts_mol, keep_ids=keep_ids, multiplicity=self.multiplicty, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
         return opt_ts_mol
