@@ -13,6 +13,7 @@ from.utils import *
 from .generators import StochasticConformerGenerator
 from .pruners import *
 from.align import prepare_mols
+from .utils import *
 
 
 class TSConformerGenerator:
@@ -34,6 +35,9 @@ class TSConformerGenerator:
         self.embedder = embedder
         self.optimizer = optimizer
         self.pruner = pruner
+        if isinstance(self.pruner, TorsionPruner):
+            self.pruner.initialize_ts_torsions_list(rxn_smiles)
+
         self.verifiers = [] if not verifiers else verifiers
         self.save_dir = save_dir
 
@@ -136,6 +140,11 @@ class TSConformerGenerator:
 
         self.logger.info("Optimizing TS guesses...")
         opt_ts_mol = self.optimizer(ts_mol, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+
+        if self.pruner:
+            self.logger.info("Pruning TS guesses...")
+            opt_ts_mol_dict = self.pruner(mol_to_dict(opt_ts_mol, energies=True))
+            opt_ts_mol = dict_to_mol(opt_ts_mol_dict)
 
         self.logger.info("Verifying TS guesses...")
         keep_ids = [True] * opt_ts_mol.GetNumConformers()
