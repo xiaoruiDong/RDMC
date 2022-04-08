@@ -80,10 +80,11 @@ class SellaOptimizer(TSOptimizer):
 
 
 class OrcaOptimizer(TSOptimizer):
-    def __init__(self, method="XTB2", nprocs=1, track_stats=False):
+    def __init__(self, method="XTB2", multiplicity=1, nprocs=1, track_stats=False):
         super(OrcaOptimizer, self).__init__(track_stats)
 
         self.method = method
+        self.multiplicity = multiplicity
         self.nprocs = nprocs
 
     def optimize_ts_guesses(self, mol, save_dir=None, **kwargs):
@@ -96,7 +97,7 @@ class OrcaOptimizer(TSOptimizer):
                 if not os.path.exists(ts_conf_dir):
                     os.makedirs(ts_conf_dir)
 
-            orca_str = write_orca_opt(mol, confId=i, method=self.method, mult=1, nprocs=self.nprocs)
+            orca_str = write_orca_opt(mol, confId=i, method=self.method, mult=self.multiplicity, nprocs=self.nprocs)
             orca_input_file = os.path.join(ts_conf_dir, "orca_opt.inp")
             with open(orca_input_file, "w") as f:
                 f.writelines(orca_str)
@@ -119,10 +120,11 @@ class OrcaOptimizer(TSOptimizer):
 
 
 class GaussianOptimizer(TSOptimizer):
-    def __init__(self, method="GFN2-xTB", nprocs=1, track_stats=False):
+    def __init__(self, method="GFN2-xTB", multiplicity=1, nprocs=1, track_stats=False):
         super(GaussianOptimizer, self).__init__(track_stats)
 
         self.method = method
+        self.multiplicity = multiplicity
         self.nprocs = nprocs
 
     def optimize_ts_guesses(self, mol, save_dir=None, **kwargs):
@@ -135,7 +137,8 @@ class GaussianOptimizer(TSOptimizer):
                 if not os.path.exists(ts_conf_dir):
                     os.makedirs(ts_conf_dir)
 
-            gaussian_str = write_gaussian_ts_opt(mol, confId=i, method=self.method, mult=1, nprocs=self.nprocs)
+            gaussian_str = write_gaussian_ts_opt(mol, confId=i, method=self.method, 
+                                                 mult=self.multiplicity, nprocs=self.nprocs)
             gaussian_input_file = os.path.join(ts_conf_dir, "gaussian_opt.gjf")
             with open(gaussian_input_file, "w") as f:
                 f.writelines(gaussian_str)
