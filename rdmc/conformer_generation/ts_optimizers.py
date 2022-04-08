@@ -5,66 +5,144 @@
 Modules for optimizing transition state geometries
 """
 
+# Import RDKit and RDMC first to avoid unexpected errors
 from rdkit import Chem
 from rdmc import RDKitMol
+
 import os
-from time import time
-from rdmc.external.sella import run_sella_opt
-from rdmc.external.orca import write_orca_opt
-from rdmc.external.gaussian import GaussianLog, write_gaussian_ts_opt
 import subprocess
+from time import time
+from typing import Optional
+
+from rdmc.external.gaussian import GaussianLog, write_gaussian_ts_opt
+from rdmc.external.orca import write_orca_opt
+from rdmc.external.sella import run_sella_opt
 
 
 class TSOptimizer:
-    def __init__(self, track_stats=False):
+    """
+    The abstract class for TS optimizer.
+    """
+    def __init__(self,
+                 track_stats: Optional[bool] = False):
+        """
+        Initialize the TS optimizer.
+        """
         self.track_stats = track_stats
         self.n_failures = None
         self.percent_failures = None
         self.n_opt_cycles = None
         self.stats = []
 
-    def optimize_ts_guesses(self, mol, save_dir, **kwargs):
+    def optimize_ts_guesses(self,
+                            mol: 'RDKitMol',
+                            save_dir: str,
+                            **kwargs):
+        """
+        The abstract method for optimizing TS guesses. It will be implemented in actual classes.
+        The method needs to take `mol` in `RDKitMol` and `save_dir` as `str` as input arguments, and
+        return the optimized molecule as `RDKitMol`.
+
+        Args:
+            mol (RDKitMol): The TS in RDKitMol object with geometries embedded as conformers.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+
+        Returns:
+            RDKitMol
+        """
         raise NotImplementedError
 
-    def save_opt_mols(self, save_dir, opt_mol):
+    def save_opt_mols(self,
+                      save_dir: str,
+                      opt_mol: 'RDKitMol',
+                      ):
+        """
+        Save the information of the optimized TS geometries into the directory.
 
-        # save optimized ts mols
+        Args:
+            save_dir (str): The path to the directory to save the results.
+            opt_mol (RDKitMol): The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
+        """
+        # Save optimized ts mols
         ts_path = os.path.join(save_dir, "ts_optimized_confs.sdf")
-        ts_writer = Chem.rdmolfiles.SDWriter(ts_path)
-        for i in range(opt_mol.GetNumConformers()):
-            ts_writer.write(opt_mol, confId=i)
-        ts_writer.close()
+        try:
+            ts_writer = Chem.rdmolfiles.SDWriter(ts_path)
+            for i in range(opt_mol.GetNumConformers()):
+                ts_writer.write(opt_mol, confId=i)
+        except Exception:
+            raise
+        finally:
+            ts_writer.close()
 
-    def __call__(self, mol, save_dir, **kwargs):
+    def __call__(self,
+                 mol: 'RDKitMol',
+                 save_dir: str,
+                 **kwargs):
+        """
+        Run the workflow to generate optimize TS guesses.
+
+        Args:
+            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
+            save_dir (str, optional): The path to save results. Defaults to None.
+
+        Returns:
+            'RDKitMol': The optimized molecule as RDKitMol with 3D geometries embedded.
+        """
         time_start = time()
         opt_mol = self.optimize_ts_guesses(mol, save_dir, **kwargs)
 
-        if not self.track_stats:
-            return opt_mol
-
-        time_end = time()
-        stats = {"time": time_end - time_start}
-        self.stats.append(stats)
+        if self.track_stats:
+            time_end = time()
+            stats = {"time": time_end - time_start}
+            self.stats.append(stats)
 
         return opt_mol
 
 
 class SellaOptimizer(TSOptimizer):
-    def __init__(self, method="GFN2-xTB", fmax=1e-3, steps=1000, track_stats=False):
+    """
+    The class to optimize TS geometries using the Sella algorithm.
+    It uses XTB as the backend calculator, ASE as the interface, and Sella module from the Sella repo.
+    """
+    def __init__(self,
+                 method: str = "GFN2-xTB",
+                 fmax: float = 1e-3,
+                 steps: int = 1000,
+                 track_stats: bool = False):
+        """
+        Initiate the Sella optimizer.
+
+        Args:
+            method (str, optional): The method in XTB used to optimize the geometry. Options are 'GFN1-xTB' and 'GFN2-xTB'. Defaults to "GFN2-xTB".
+            fmax (float, optional): The force threshold used in the optimization. Defaults to 1e-3.
+            steps (int, optional): Max number of steps allowed in the optimization. Defaults to 1000.
+            track_stats (bool, optional): Whether to track the status. Defaults to False.
+        """
         super(SellaOptimizer, self).__init__(track_stats)
 
         self.method = method
         self.fmax = fmax
         self.steps = steps
 
-    def optimize_ts_guesses(self, mol, save_dir=None, **kwargs):
+    def optimize_ts_guesses(self,
+                            mol: 'RDKitMol',
+                            save_dir: Optional[str] = None,
+                            **kwargs):
+        """
+        Optimize the TS guesses.
 
+        Args:
+            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
+            save_dir (str, optional): The path to save results. Defaults to None.
+
+        Returns:
+            RDKitMol
+        """
         opt_mol = mol.Copy()
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"conf{i}")
-                if not os.path.exists(ts_conf_dir):
-                    os.makedirs(ts_conf_dir)
+                os.makedirs(ts_conf_dir, exist_ok=True)
 
             opt_mol = run_sella_opt(opt_mol,
                                     method=self.method,
@@ -80,37 +158,84 @@ class SellaOptimizer(TSOptimizer):
 
 
 class OrcaOptimizer(TSOptimizer):
-    def __init__(self, method="XTB2", nprocs=1, track_stats=False):
+    """
+    The class to optimize TS geometries using the Berny algorithm built in Orca.
+    You have to have the Orca package installed to run this optimizer
+    """
+    def __init__(self,
+                 method: str = "XTB2",
+                 nprocs: int = 1,
+                 track_stats: bool = False,
+                 ):
+        """
+        Initiate the Orca berny optimizer.
+
+        Args:
+            method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Orca.
+                                    If you want to use XTB methods, you need to put the xtb binary into the Orca directory. Defaults to XTB2.
+            nprocs (int, optional): The number of processors to use. Defaults to 1.
+            track_stats (bool, optional): Whether to track the status. Defaults to False.
+        """
         super(OrcaOptimizer, self).__init__(track_stats)
 
         self.method = method
         self.nprocs = nprocs
 
-    def optimize_ts_guesses(self, mol, multiplicity=1, save_dir=None, **kwargs):
-
         ORCA_BINARY = os.environ.get("ORCA")
+        if not ORCA_BINARY:
+            raise RuntimeError('No Orca binary is found in the PATH.')
+        else:
+            self.orca_binary = ORCA_BINARY
+
+    def optimize_ts_guesses(self,
+                            mol,
+                            multiplicity=1,
+                            save_dir=None,
+                            **kwargs):
+        """
+        Optimize the TS guesses.
+
+        Args:
+            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
+            multiplicity (int): The multiplicity of the molecule. Defaults to 1.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+
+        Returns:
+            RDKitMol
+        """
         opt_mol = mol.Copy(quickCopy=True)
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"orca_opt{i}")
-                if not os.path.exists(ts_conf_dir):
-                    os.makedirs(ts_conf_dir)
+                os.makedirs(ts_conf_dir, exist_ok=True)
 
-            orca_str = write_orca_opt(mol, confId=i, method=self.method, mult=multiplicity, nprocs=self.nprocs)
+            # Generate and save the ORCA input file
+            orca_str = write_orca_opt(mol,
+                                      confId=i,
+                                      method=self.method,
+                                      mult=multiplicity,
+                                      nprocs=self.nprocs)
+
             orca_input_file = os.path.join(ts_conf_dir, "orca_opt.inp")
             with open(orca_input_file, "w") as f:
                 f.writelines(orca_str)
 
+            # Run the optimization using subprocess
             with open(os.path.join(ts_conf_dir, "orca_opt.log"), "w") as f:
                 orca_run = subprocess.run(
-                    [ORCA_BINARY, orca_input_file],
+                    [self.orca_binary, orca_input_file],
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=os.getcwd(),
                 )
+
+            # Check the Orca results
             if orca_run.returncode == 0:
-                new_mol = RDKitMol.FromFile(os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False)
-                opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
+                try:
+                    new_mol = RDKitMol.FromFile(os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False)
+                    opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
+                except Exception as e:
+                    print(f'Cannot read Orca output, got: {e}')
 
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
@@ -119,40 +244,88 @@ class OrcaOptimizer(TSOptimizer):
 
 
 class GaussianOptimizer(TSOptimizer):
-    def __init__(self, method="GFN2-xTB", nprocs=1, track_stats=False):
+    """
+    The class to optimize TS geometries using the Berny algorithm built in Gaussian.
+    You have to have the Gaussian package installed to run this optimizer
+    """
+
+    def __init__(self,
+                 method: str = "GFN2-xTB",
+                 nprocs: int = 1,
+                 track_stats: bool = False):
+        """
+        Initiate the Orca berny optimizer.
+
+        Args:
+            method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
+                                    We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
+            nprocs (int, optional): The number of processors to use. Defaults to 1.
+            track_stats (bool, optional): Whether to track the status. Defaults to False.
+        """
         super(GaussianOptimizer, self).__init__(track_stats)
 
         self.method = method
         self.nprocs = nprocs
 
-    def optimize_ts_guesses(self, mol, multiplicity=1, save_dir=None, **kwargs):
+        for version in ['g16', 'g09', 'g03']:
+            GAUSSIAN_ROOT = os.environ.get(f"{version}root")
+            if GAUSSIAN_ROOT:
+                break
+        else:
+            raise RuntimeError('No Gaussian installation found.')
 
-        GAUSSIAN_BINARY = os.path.join(os.environ.get("g16root"), "g16", "g16")
+        self.gaussian_binary = os.path.join(GAUSSIAN_ROOT, version, version)
+
+    def optimize_ts_guesses(self,
+                            mol: 'RDKitMol',
+                            multiplicity: int = 1,
+                            save_dir: Optional[str] = None,
+                            **kwargs):
+        """
+        Optimize the TS guesses.
+
+        Args:
+            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
+            multiplicity (int): The multiplicity of the molecule. Defaults to 1.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+
+        Returns:
+            RDKitMol
+        """
         opt_mol = mol.Copy(quickCopy=True)
         for i in range(mol.GetNumConformers()):
+
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"gaussian_opt{i}")
-                if not os.path.exists(ts_conf_dir):
-                    os.makedirs(ts_conf_dir)
+                os.makedirs(ts_conf_dir, exist_ok=True)
 
-            gaussian_str = write_gaussian_ts_opt(mol, confId=i, method=self.method,
-                                                 mult=multiplicity, nprocs=self.nprocs)
+            # Generate and save the gaussian input file
+            gaussian_str = write_gaussian_ts_opt(mol,
+                                                 confId=i,
+                                                 method=self.method,
+                                                 mult=multiplicity,
+                                                 nprocs=self.nprocs)
             gaussian_input_file = os.path.join(ts_conf_dir, "gaussian_opt.gjf")
             with open(gaussian_input_file, "w") as f:
                 f.writelines(gaussian_str)
 
+            # Run the gaussian via subprocess
             with open(os.path.join(ts_conf_dir, "gaussian_opt.log"), "w") as f:
                 gaussian_run = subprocess.run(
-                    [GAUSSIAN_BINARY, gaussian_input_file],
+                    [self.gaussian_binary, gaussian_input_file],
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=os.getcwd(),
                 )
+            # Check the output of the gaussian
             if gaussian_run.returncode == 0:
-                g16_log = GaussianLog(os.path.join(ts_conf_dir, "gaussian_opt.log"))
-                if g16_log.success:
-                    new_mol = g16_log.get_mol(embed_conformers=False, sanitize=False)
-                    opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
+                try:
+                    g16_log = GaussianLog(os.path.join(ts_conf_dir, "gaussian_opt.log"))
+                    if g16_log.success:
+                        new_mol = g16_log.get_mol(embed_conformers=False, sanitize=False)
+                        opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
+                except Exception as e:
+                    print(f'Got an error when reading the Gaussian output: {e}')
 
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
