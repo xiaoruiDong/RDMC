@@ -11,7 +11,8 @@ from rdkit.ML.Cluster import Butina
 
 def mol_to_dict(mol,
                 copy: bool = True,
-                iter: int = None):
+                iter: int = None,
+                energies: bool = False):
     """
     Convert a molecule to a dictionary that stores its conformers object, atom coordinates,
     and iteration numbers for a certain calculation (optional).
@@ -26,6 +27,8 @@ def mol_to_dict(mol,
     """
     mol_data = []
     if copy:
+        if energies:
+            energies_list = mol.energies
         mol = mol.Copy()
     for c_id in range(mol.GetNumConformers()):
         conf = mol.GetConformer(id=c_id)
@@ -34,6 +37,8 @@ def mol_to_dict(mol,
                          "conf": conf})
         if iter is not None:
             mol_data[c_id].update({"iter": iter})
+        if energies:
+            mol_data[c_id].update({"energy": energies_list[c_id]})
     return mol_data
 
 
