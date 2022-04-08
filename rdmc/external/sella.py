@@ -14,6 +14,7 @@ from ase import Atoms
 from xtb.ase.calculator import XTB
 from ase.calculators.orca import ORCA
 from sella import Sella
+import pandas as pd
 
 
 def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, method="GFN2-xTB"):
@@ -47,6 +48,10 @@ def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, meth
 
     opt_rdmc_mol = rdmc_mol.Copy()
     opt_rdmc_mol.SetPositions(opt.atoms.positions, id=confId)
+
+    energy = float(pd.read_csv(logfile).iloc[-1].values[0].split()[3])
+    opt_rdmc_mol.energies = rdmc_mol.energies
+    opt_rdmc_mol.energies.update({confId: energy})
 
     if not save_dir:
         rmtree(temp_dir)
