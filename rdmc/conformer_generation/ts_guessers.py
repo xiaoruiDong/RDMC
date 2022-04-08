@@ -352,7 +352,7 @@ class AutoNEBGuesser(TSInitialGuesser):
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
         super(AutoNEBGuesser, self).__init__(track_stats)
-        self.optimizer = XTB
+        self.optimizer = optimizer
 
     @property
     def attach_calculators(self):
