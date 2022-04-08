@@ -254,7 +254,7 @@ class GaussianOptimizer(TSOptimizer):
                  nprocs: int = 1,
                  track_stats: bool = False):
         """
-        Initiate the Orca berny optimizer.
+        Initiate the Gaussian berny optimizer.
 
         Args:
             method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
