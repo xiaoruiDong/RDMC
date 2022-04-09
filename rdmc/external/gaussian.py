@@ -695,21 +695,24 @@ class GaussianLog(object):
                           converged: bool = True,
                           align_scan: bool = True,
                           align_frag_idx: int = 1,
+                          sanitize: bool = True,
                           backend: str = 'openbabel'):
         """
         A function helps to process molecule conformers from a scan job.
 
         Args:
-            align_scan (bool): If align the molecule to make the animation cleaner.
+            converged (bool, optional): Only create molecule for converged geometries. Defaults to True.
+            align_scan (bool, optional): If align the molecule to make the animation cleaner.
                                Defaults to ``True``
-            align_frag_idx (int): Value should be either 1 or 2. Assign which of the part to be
+            align_frag_idx (int, optional): Value should be either 1 or 2. Assign which of the part to be
                                   aligned.
-            backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            sanitize (bool, optional): Whether to sanitize the mol when generating from XYZ. Defaults to True.
+            backend (str, optional): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
 
         Returns:
             RDKitMol
         """
-        mol = self.get_mol(converged=converged, backend=backend)
+        mol = self.get_mol(converged=converged, backend=backend, sanitize=sanitize)
         if align_scan:
             # Assume it is 1D scan
             scan_name = self.get_scannames(as_list=True, index_0=True)[0]
@@ -725,6 +728,7 @@ class GaussianLog(object):
     def _process_irc_mol(self,
                          converged: bool = True,
                          bothway: bool = True,
+                         sanitize: bool = False,
                          backend: str = 'openbabel'):
         """
         A function helps to process molecule conformers from a IRC job.
@@ -733,6 +737,7 @@ class GaussianLog(object):
             converged (bool): Whether only process converged conformers. Defaults to ``True``.
             bothway (bool): Whether is a two-way IRC job. Defaults to ``True``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            sanitize (bool): Whether to sanitize the molecule when generating from XYZ. Defaults to True.
 
         Returns:
             RDKitMol
@@ -740,7 +745,7 @@ class GaussianLog(object):
         # Figure out if there is an 'inverse' point in the IRC path
         midpoint = self.get_irc_midpoint(converged=converged)
         if bothway and midpoint:
-            mol = self.get_mol(converged=converged, embed_conformers=False, backend=backend)
+            mol = self.get_mol(converged=converged, embed_conformers=False, backend=backend, sanitize=sanitize)
             num_confs = self.num_converged_geoms if converged else self.num_all_geoms
             mol.EmbedMultipleNullConfs(n=num_confs)
             coords = self.converged_geometries if converged else self.all_geometries
@@ -749,7 +754,7 @@ class GaussianLog(object):
             for i in range(num_confs):
                 mol.SetPositions(coords=coords[i], id=i)
         else:
-            mol = self.get_mol(converged=converged, backend=backend)
+            mol = self.get_mol(converged=converged, backend=backend, sanitize=sanitize)
         return mol
 
     ###################################################################
@@ -1129,14 +1134,15 @@ class GaussianLog(object):
     ####                                                           ####
     ###################################################################
 
-    def interact_convergence(self, backend: str = 'openbabel'):
+    def interact_convergence(self, sanitize: bool = True, backend: str = 'openbabel'):
         """
         Create a IPython interactive widget to investigate the optimization convergence.
 
         Args:
+            sanitize (bool, optional): Whether to sanitize the molecule. Defaults to True.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
-        mol = self.get_mol(converged=False, backend=backend)
+        mol = self.get_mol(converged=False, sanitize=sanitize, backend=backend)
         xyzs = self.get_xyzs(converged=False)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         def visual(idx):
@@ -1175,6 +1181,7 @@ class GaussianLog(object):
                         frames=slider1, amplitude=slider2)
 
     def interact_scan(self,
+                      sanitize: bool = True,
                       align_scan: bool = True,
                       align_frag_idx: int = 1,
                       backend: str = 'openbabel',
@@ -1183,6 +1190,7 @@ class GaussianLog(object):
         Create a IPython interactive widget to investigate the scan results.
 
         Args:
+            sanitize (bool, optional): Whether to sanitize the molecule. Defaults to True.
             align_scan (bool): If align the molecule to make the animation cleaner.
                                Defaults to ``True``
             align_frag_idx (int): Value should be either 1 or 2. Assign which of the part to be
@@ -1191,6 +1199,7 @@ class GaussianLog(object):
         """
         mol = self._process_scan_mol(align_scan=align_scan,
                                      align_frag_idx=align_frag_idx,
+                                     sanitize=sanitize,
                                      backend=backend)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         xyzs = self.get_xyzs(converged=True)
@@ -1227,14 +1236,15 @@ class GaussianLog(object):
 
         return interact(visual, idx=slider)
 
-    def interact_irc(self, backend: str = 'openbabel'):
+    def interact_irc(self, sanitize: bool = False, backend: str = 'openbabel'):
         """
         Create a IPython interactive widget to investigate the IRC results.
 
         Args:
+            sanitize (bool): Whether to sanitize the molecule. Defaults to ``False``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
-        mol = self._process_irc_mol(backend=backend)
+        mol = self._process_irc_mol(sanitize=sanitize, backend=backend)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         xyzs = self.get_xyzs(converged=True)
         y_params = self.get_scf_energies(converged=True)
