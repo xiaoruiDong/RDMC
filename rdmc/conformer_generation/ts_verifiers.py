@@ -287,25 +287,29 @@ class GaussianIRCVerifier(TSVerifier):
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
 
-                irc_check = True
-
+                # Create folder to save Gaussian IRC input and output files
                 gaussian_dir = os.path.join(save_dir, f"gaussian_irc{i}")
                 os.makedirs(gaussian_dir, exist_ok=True)
 
+                irc_check = True
+                # Conduct forward and reverse IRCs
                 for direction in ['forward', 'reverse']:
-                    gaussian_str = write_gaussian_irc(ts_mol,
-                                                        confId=i,
-                                                        method=self.method,
-                                                        direction=direction,
-                                                        mult=multiplicity,
-                                                        nprocs=self.nprocs)
 
                     gaussian_input_file = os.path.join(gaussian_dir, f"gaussian_irc_{direction}.gjf")
+                    gaussian_output_file = os.path.join(gaussian_dir, f"gaussian_irc_{direction}.log")
+
+                    # Generate and save input file
+                    gaussian_str = write_gaussian_irc(ts_mol,
+                                                      confId=i,
+                                                      method=self.method,
+                                                      direction=direction,
+                                                      mult=multiplicity,
+                                                      nprocs=self.nprocs)
                     with open(gaussian_input_file, "w") as f:
                         f.writelines(gaussian_str)
 
                     # Run IRC using subprocess
-                    with open(os.path.join(gaussian_dir, f"gaussian_irc_{direction}.log"), "w") as f:
+                    with open(gaussian_output_file, "w") as f:
                         gaussian_run = subprocess.run(
                             [self.gaussian_binary, gaussian_input_file],
                             stdout=f,
@@ -319,12 +323,13 @@ class GaussianIRCVerifier(TSVerifier):
                     adj_mat = []
                     if gaussian_run.returncode == 0:
                         try:
-                            glog = GaussianLog(os.path.join(gaussian_dir, f"gaussian_irc_{direction}.log"))
-                            adj_mat.append(glog.get_mol(refid=glog.num_all_geoms-1,
+                            glog = GaussianLog(gaussian_output_file)
+                            adj_mat.append(glog.get_mol(refid=glog.num_all_geoms-1,  # The last geometry in the job
                                                         converged=False,
                                                         sanitize=False,
                                                         backend='openbabel').GetAdjacencyMatrix())
-                        except:
+                        except Exception as e:
+                            print('Run into error when obtaining adjacency matrix from IRC output file. Got: {e}')
                             irc_check = False
                     else:
                         irc_check = False
@@ -333,13 +338,12 @@ class GaussianIRCVerifier(TSVerifier):
                 if not irc_check and len(adj_mat) != 2:
                     irc_checks.append(False)
                     continue
-                f_adj, b_adj = adj_mat
 
                 # Generate the adjacency matrix from the SMILES
                 r_smi, p_smi = kwargs["rxn_smiles"].split(">>")
                 r_adj = RDKitMol.FromSmiles(r_smi).GetAdjacencyMatrix()
                 p_adj = RDKitMol.FromSmiles(p_smi).GetAdjacencyMatrix()
-
+                f_adj, b_adj = adj_mat
                 try:
                     rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
                     rb_pf_check = ((r_adj == b_adj).all() and (p_adj == f_adj).all())
