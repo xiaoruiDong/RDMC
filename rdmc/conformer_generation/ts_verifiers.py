@@ -287,7 +287,6 @@ class GaussianIRCVerifier(TSVerifier):
         for i in range(ts_mol.GetNumConformers()):
             if keep_ids[i]:
 
-                adj_mat = []
                 irc_check = True
 
                 gaussian_dir = os.path.join(save_dir, f"gaussian_irc{i}")
@@ -317,12 +316,14 @@ class GaussianIRCVerifier(TSVerifier):
                     # Extract molecule adjacency matrix from IRC results
                     # TBD: We can stop running IRC if one side of IRC fails
                     # I personally think it is worth to continue to run the other IRC just to provide more sights
+                    adj_mat = []
                     if gaussian_run.returncode == 0:
                         try:
                             glog = GaussianLog(os.path.join(gaussian_dir, f"gaussian_irc_{direction}.log"))
-                            irc_mol = glog.get_mol(converged=False, sanitize=False)
-                            n_confs = irc_mol.GetNumConformers()
-                            adj_mat.append(RDKitMol.FromXYZ(irc_mol.ToXYZ(confId=n_confs-1), sanitize=False).GetAdjacencyMatrix())
+                            adj_mat.append(glog.get_mol(refid=glog.num_all_geoms-1,
+                                                        converged=False,
+                                                        sanitize=False,
+                                                        backend='openbabel').GetAdjacencyMatrix())
                         except:
                             irc_check = False
                     else:
