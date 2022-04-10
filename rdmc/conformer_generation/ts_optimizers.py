@@ -142,7 +142,7 @@ class SellaOptimizer(TSOptimizer):
         opt_mol.energies = {}
         for i in range(mol.GetNumConformers()):
             if save_dir:
-                ts_conf_dir = os.path.join(save_dir, f"conf{i}")
+                ts_conf_dir = os.path.join(save_dir, f"sella_opt{i}")
                 os.makedirs(ts_conf_dir, exist_ok=True)
 
             opt_mol = run_sella_opt(opt_mol,
