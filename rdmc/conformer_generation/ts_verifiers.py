@@ -78,7 +78,13 @@ class TSVerifier:
             list: a list of true and false
         """
         time_start = time()
-        keep_ids = self.verify_ts_guesses(ts_mol, keep_ids, save_dir, multiplicity=multiplicity, **kwargs)
+        keep_ids = self.verify_ts_guesses(
+            ts_mol=ts_mol,
+            keep_ids=keep_ids,
+            multiplicity=multiplicity,
+            save_dir=save_dir,
+            **kwargs
+        )
 
         if self.track_stats:
             time_end = time()

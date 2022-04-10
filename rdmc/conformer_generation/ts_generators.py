@@ -9,20 +9,12 @@ import os
 import numpy as np
 import logging
 import random
-<<<<<<< HEAD
-from.utils import *
-from .generators import StochasticConformerGenerator
-from .pruners import *
-from.align import prepare_mols
-from .utils import *
-=======
 from typing import List, Optional, Union
 
 from rdmc.conformer_generation.utils import *
 from rdmc.conformer_generation.generators import StochasticConformerGenerator
 from rdmc.conformer_generation.pruners import *
 from rdmc.conformer_generation.align import prepare_mols
->>>>>>> multiplicity
 
 
 class TSConformerGenerator:
@@ -220,6 +212,6 @@ class TSConformerGenerator:
         self.logger.info("Verifying TS guesses...")
         keep_ids = [True] * opt_ts_mol.GetNumConformers()
         for verifier in self.verifiers:
-            keep_ids = verifier(opt_ts_mol, keep_ids=keep_ids, multiplicity=self.multiplicty, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+            keep_ids = verifier(opt_ts_mol, keep_ids=keep_ids, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
         return opt_ts_mol
