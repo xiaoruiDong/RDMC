@@ -298,6 +298,7 @@ class GaussianIRCVerifier(TSVerifier):
                 os.makedirs(gaussian_dir, exist_ok=True)
 
                 irc_check = True
+                adj_mat = []
                 # Conduct forward and reverse IRCs
                 for direction in ['forward', 'reverse']:
 
@@ -326,7 +327,6 @@ class GaussianIRCVerifier(TSVerifier):
                     # Extract molecule adjacency matrix from IRC results
                     # TBD: We can stop running IRC if one side of IRC fails
                     # I personally think it is worth to continue to run the other IRC just to provide more sights
-                    adj_mat = []
                     if gaussian_run.returncode == 0:
                         try:
                             glog = GaussianLog(gaussian_output_file)
