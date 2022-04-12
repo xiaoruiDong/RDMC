@@ -24,14 +24,14 @@ class ConfGenPruner:
         self.n_output_confs = None
         self.stats = []
 
-    def prune_conformers(self, current_mol_data, unique_mol_data=None):
+    def prune_conformers(self, current_mol_data, unique_mol_data=None, sort_by_energy=True, return_ids=False):
         raise NotImplementedError
 
-    def __call__(self, current_mol_data, unique_mol_data=None):
+    def __call__(self, current_mol_data, unique_mol_data=None, sort_by_energy=True, return_ids=False):
 
         self.iter += 1
         time_start = time()
-        mol_data = self.prune_conformers(current_mol_data, unique_mol_data)
+        mol_data = self.prune_conformers(current_mol_data, unique_mol_data, sort_by_energy, return_ids)
 
         if not self.track_stats:
             return mol_data
@@ -98,7 +98,7 @@ class TorsionPruner(ConfGenPruner):
         # compare two lists of torsions in radians
         return [self.rad_angle_compare(t1, t2) for t1, t2 in zip(c1_ts, c2_ts)]
 
-    def prune_conformers(self, current_mol_data, unique_mol_data=None):
+    def prune_conformers(self, current_mol_data, unique_mol_data=None, sort_by_energy=True, return_ids=False):
 
         if unique_mol_data is None:
             unique_mol_data = []
@@ -130,13 +130,19 @@ class TorsionPruner(ConfGenPruner):
                 conf_ids.remove(i)
 
         # update mols and sort by energy
-        updated_unique_mol_data = sorted([all_mol_data[i] for i in conf_ids], key=lambda x: x["energy"])
+        if sort_by_energy:
+            updated_unique_mol_data = sorted([all_mol_data[i] for i in conf_ids], key=lambda x: x["energy"])
+        else:
+            updated_unique_mol_data = [all_mol_data[i] for i in conf_ids]
 
         self.n_input_confs = len(all_mol_data)
         self.n_output_confs = len(updated_unique_mol_data)
         self.n_pruned_confs = self.n_input_confs - self.n_output_confs
 
-        return updated_unique_mol_data
+        if return_ids:
+            return updated_unique_mol_data, conf_ids
+        else:
+            return updated_unique_mol_data
 
 
 class CRESTPruner(ConfGenPruner):
@@ -148,7 +154,7 @@ class CRESTPruner(ConfGenPruner):
         self.bthr = bthr
         self.ewin = ewin
 
-    def prune_conformers(self, current_mol_data, unique_mol_data=None):
+    def prune_conformers(self, current_mol_data, unique_mol_data=None, sort_by_energy=True, return_ids=False):
 
         if unique_mol_data is None:
             unique_mol_data = []
