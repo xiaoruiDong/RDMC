@@ -55,6 +55,8 @@ class TSConformerGenerator:
         self.pruner = pruner
         if isinstance(self.pruner, TorsionPruner):
             self.pruner.initialize_ts_torsions_list(rxn_smiles)
+        elif isinstance(self.pruner, CRESTPruner):
+            raise NotImplementedError("The CRESTPruner is not yes compatible with TS conformer generation!")
 
         self.verifiers = [] if not verifiers else verifiers
         self.save_dir = save_dir
@@ -211,11 +213,12 @@ class TSConformerGenerator:
 
         if self.pruner:
             self.logger.info("Pruning TS guesses...")
-            opt_ts_mol_dict = self.pruner(mol_to_dict(opt_ts_mol, energies=True))
+            opt_ts_mol_dict, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, energies=True), sort_by_energy=False, return_ids=True)
             opt_ts_mol = dict_to_mol(opt_ts_mol_dict)
+            keep_ids = [i in unique_ids for i in range(opt_ts_mol.GetNumConformers())]
 
         self.logger.info("Verifying TS guesses...")
-        keep_ids = [True] * opt_ts_mol.GetNumConformers()
+        if not self.pruner: keep_ids = [True] * opt_ts_mol.GetNumConformers()
         for verifier in self.verifiers:
             keep_ids = verifier(opt_ts_mol, keep_ids=keep_ids, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
