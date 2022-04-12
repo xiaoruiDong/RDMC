@@ -89,7 +89,7 @@ class TSOptimizer:
             'RDKitMol': The optimized molecule as RDKitMol with 3D geometries embedded.
         """
         time_start = time()
-        opt_mol = self.optimize_ts_guesses(mol, save_dir, **kwargs)
+        opt_mol = self.optimize_ts_guesses(mol=mol, save_dir=save_dir, **kwargs)
 
         if self.track_stats:
             time_end = time()
