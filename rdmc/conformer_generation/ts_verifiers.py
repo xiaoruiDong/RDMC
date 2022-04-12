@@ -335,7 +335,7 @@ class GaussianIRCVerifier(TSVerifier):
                                                         sanitize=False,
                                                         backend='openbabel').GetAdjacencyMatrix())
                         except Exception as e:
-                            print('Run into error when obtaining adjacency matrix from IRC output file. Got: {e}')
+                            print(f'Run into error when obtaining adjacency matrix from IRC output file. Got: {e}')
                             irc_check = False
                     else:
                         irc_check = False
