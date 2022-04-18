@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from egnn_pytorch import EGNN_Sparse
+from .egnn_pytorch_geometric import EGNN_Sparse
 
 
 class TS_EGNN(nn.Module):
@@ -20,7 +20,6 @@ class TS_EGNN(nn.Module):
                                                 norm_coors=True,
                                                 norm_coors_scale_init=1e-2,
                                                 dropout=0.,
-                                                coor_weights_clamp_value=None,
                                                 aggr="add",
                                                 ))
 

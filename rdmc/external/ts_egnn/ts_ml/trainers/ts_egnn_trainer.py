@@ -161,12 +161,12 @@ class LitTSModule(pl.LightningModule):
                             help="Anneal distance loss over each EGNN update")
         parser.add_argument("--prod_feat", type=str, default="dist", choices=["dist", "adj"],
                             help="Choose to include distances or simply adjacency to featurize product")
-        parser.add_argument("--shuffle_mols", action='store_true', default=True,
-                            help="Shuffle reactants and products when choosing starting species")
+        parser.add_argument("--no_shuffle_mols", action='store_true', default=False,
+                            help="Don't shuffle reactants and products when choosing starting species")
         parser.add_argument("--set_similar_mols", action='store_true', default=False,
                             help="Choose reactant or product with min RMSD compared to TS as starting species")
-        parser.add_argument("--prep_mols", action='store_true', default=True,
-                            help="Reinitialize reactant/product as if starting from SMILES")
+        parser.add_argument("--no_mol_prep", action='store_true', default=False,
+                            help="Don't reinitialize reactant/product as if starting from SMILES")
         return parent_parser
 
     @staticmethod
@@ -178,6 +178,7 @@ class LitTSModule(pl.LightningModule):
         parser.add_argument("--lr", type=float, default=1e-3)
         parser.add_argument("--num_workers", type=int, default=4)
         parser.add_argument("--seed", type=int, default=0)
+        parser.add_argument('--n_training_points', type=int, default=None)
         return parent_parser
 
     @staticmethod

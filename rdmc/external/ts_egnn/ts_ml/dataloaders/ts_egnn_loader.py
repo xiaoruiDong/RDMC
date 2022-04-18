@@ -2,7 +2,8 @@ from rdkit import Chem
 import pytorch_lightning as pl
 import torch
 import torch_geometric as tg
-from torch_geometric.data import Dataset, DataLoader
+from torch_geometric.data import Dataset
+from torch_geometric.loader import DataLoader
 
 import os
 import glob
@@ -19,12 +20,14 @@ class TSDataset(Dataset):
 
         self.split_idx = 0 if mode == 'train' else 1 if mode == 'val' else 2
         self.split = np.load(config["split_path"], allow_pickle=True)[self.split_idx]
+        if mode == 'train' and config["n_training_points"]:
+            self.split = self.split[:config["n_training_points"]]
 
         self.data_dir = config["data_dir"]
         self.mols = self.get_mols()
         self.set_similar_mols = config["set_similar_mols"]  # use species (r/p) which is more similar to TS as starting mol
-        self.shuffle_mols = config["shuffle_mols"]  # randomize which is reactant/product
-        self.prep_mols = config["prep_mols"]  # prep as if starting from SMILES
+        self.no_shuffle_mols = config["no_shuffle_mols"]  # randomize which is reactant/product
+        self.no_mol_prep = config["no_mol_prep"]  # prep as if starting from SMILES
         self.prod_feat = config["prod_feat"]  # whether product features include distance or adjacency
 
     def process_key(self, key):
@@ -34,9 +37,9 @@ class TSDataset(Dataset):
     def process_mols(self, mols, no_ts=False):
         if self.set_similar_mols:
             mols = self.find_similar_mol(mols)  # reverse reactant and product if product is more similar
-        if self.shuffle_mols:
+        if not self.no_shuffle_mols:
             mols = shuffle_mols(mols)
-        if self.prep_mols:
+        if not self.no_mol_prep:
             r_mol, ts_mol, p_mol = mols
             new_r_mol, new_p_mol = prepare_mols(RDKitMol.FromMol(r_mol), RDKitMol.FromMol(p_mol))
             mols = (new_r_mol.ToRWMol(), ts_mol, new_p_mol.ToRWMol())
