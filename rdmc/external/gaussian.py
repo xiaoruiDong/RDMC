@@ -1303,9 +1303,17 @@ def scheme_to_dict(scheme_str: str) -> dict:
         if arg.startswith('#'):
             continue
         elif 'iop' in arg:
-            key, val = arg.split('(')[1].split(')')[0].split('=')
+            # Example: iop(7/33=1,2/16=3)
             iop_scheme = schemes['iop']
-            iop_scheme[key.strip()] = val.strip()
+            content = arg.split('(')[1].split(')')[0]
+            for item in content.split(','):
+                # items may be split by ','
+                try:
+                    key, val = item.strip().split('=')
+                except:
+                    # There may be items without assigned values
+                    key, val = item.strip(), None
+                iop_scheme[key.strip()] = val.strip()
         elif '=' in arg and '(' in arg:
             scheme_name = arg.split('(')[0].replace('=', '').strip()
             scheme_dict = schemes[scheme_name]
