@@ -50,7 +50,7 @@ class FourierSeries1D(object):
         else:
             maxterms = np.floor(X.shape[0] / 3.0)
 
-        if self.num_terms < maxterms:
+        if self.num_terms > maxterms:
             raise RuntimeError('Input data are not enough for fitting.')
 
         while negative_barrier and self.num_terms <= maxterms:
