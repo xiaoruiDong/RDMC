@@ -16,7 +16,10 @@ from typing import Optional
 
 from rdmc.external.gaussian import GaussianLog, write_gaussian_ts_opt
 from rdmc.external.orca import write_orca_opt
-from rdmc.external.sella import run_sella_opt
+try:
+    from rdmc.external.sella import run_sella_opt
+except:
+    print("No Sella installation deteced. Skipping import...")
 
 
 class TSOptimizer:
