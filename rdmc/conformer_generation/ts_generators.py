@@ -24,6 +24,7 @@ class TSConformerGenerator:
 
     def __init__(self,
                  rxn_smiles: str,
+                 multiplicity: Optional[int] = None,
                  embedder: Optional['TSInitialGuesser'] = None,
                  optimizer: Optional['TSOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
@@ -35,6 +36,8 @@ class TSConformerGenerator:
 
         Args:
             rxn_smiles (str): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
+            multiplicity (int, optional): The spin multiplicity of the reaction. The spin multiplicity will be interpreted from the reaction smiles if this
+                                          is not given by the user.
             embedder (TSInitialGuesser, optional): The embedder used to generate TS initial guessers. Available options are `TSEGNNGuesser`, `TSGCNGuesser`.
                                                    `RMSDPPGuesser`, and `AutoNEBGuesser`.
             optimizer (TSOptimizer, optional): The optimizer used to optimize TS geometries. Available options are `SellaOptimizer`, `OrcaOptimizer`, and
@@ -47,19 +50,22 @@ class TSConformerGenerator:
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.rxn_smiles = rxn_smiles
-        r_smi, p_smi = rxn_smiles.split(">>")
-        r_mol = RDKitMol.FromSmiles(r_smi)
-        p_mol = RDKitMol.FromSmiles(p_smi)
-        r_mul = r_mol.GetSpinMultiplicity()
-        p_mul = p_mol.GetSpinMultiplicity()
-        if r_mul != p_mul:
-            self.logger.warning(f"Inconsistent multiplicity!!")
-            self.logger.warning(f"Reactants had multiplicty {r_mul}")
-            self.logger.warning(f"Products had multiplicty {p_mul}")
-            # use the smaller multiplicity
-            mul = r_mul if r_mul < p_mul else p_mul
-            logging.warning(f"Using multiplicity {mul} for all species...")
-        self.multiplicity = mul
+        if multiplicity:
+           self.multiplicity = multiplicity
+        else: 
+            r_smi, p_smi = rxn_smiles.split(">>")
+            r_mol = RDKitMol.FromSmiles(r_smi)
+            p_mol = RDKitMol.FromSmiles(p_smi)
+            r_mul = r_mol.GetSpinMultiplicity()
+            p_mul = p_mol.GetSpinMultiplicity()
+            if r_mul != p_mul:
+                self.logger.warning(f"Inconsistent multiplicity!!")
+                self.logger.warning(f"Reactants had multiplicty {r_mul}")
+                self.logger.warning(f"Products had multiplicty {p_mul}")
+                # use the smaller multiplicity
+                mul = r_mul if r_mul < p_mul else p_mul
+                logging.warning(f"Using multiplicity {mul} for all species...")
+            self.multiplicity = mul
         self.embedder = embedder
         self.optimizer = optimizer
         self.pruner = pruner
