@@ -53,9 +53,13 @@ class TSConformerGenerator:
         r_mul = r_mol.GetSpinMultiplicity()
         p_mul = p_mol.GetSpinMultiplicity()
         if r_mul != p_mul:
-            logging.warning(f"Inconsistent multiplicity interpretted from the reactants (r_mul) and the products (p_mul).")
-            logging.warning("Using multiplicity from reactants...")
-        self.multiplicity = r_mul
+            self.logger.warning(f"Inconsistent multiplicity!!")
+            self.logger.warning(f"Reactants had multiplicty {r_mul}")
+            self.logger.warning(f"Products had multiplicty {p_mul}")
+            # use the smaller multiplicity
+            mul = r_mul if r_mul < p_mul else p_mul
+            logging.warning(f"Using multiplicity {mul} for all species...")
+        self.multiplicity = mul
         self.embedder = embedder
         self.optimizer = optimizer
         self.pruner = pruner
