@@ -58,6 +58,7 @@ class TSConformerGenerator:
             p_mol = RDKitMol.FromSmiles(p_smi)
             r_mul = r_mol.GetSpinMultiplicity()
             p_mul = p_mol.GetSpinMultiplicity()
+            mul = r_mul
             if r_mul != p_mul:
                 self.logger.warning(f"Inconsistent multiplicity!!")
                 self.logger.warning(f"Reactants had multiplicty {r_mul}")
