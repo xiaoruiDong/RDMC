@@ -214,8 +214,9 @@ class TSConformerGenerator:
         if self.pruner:
             self.logger.info("Pruning TS guesses...")
             opt_ts_mol_dict, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, energies=True), sort_by_energy=False, return_ids=True)
-            opt_ts_mol = dict_to_mol(opt_ts_mol_dict)
             keep_ids = [i in unique_ids for i in range(opt_ts_mol.GetNumConformers())]
+            self.logger.info(f"Pruned {np.sum([x==False for x in keep_ids])} TS conformers")
+            opt_ts_mol = dict_to_mol(opt_ts_mol_dict)
 
         self.logger.info("Verifying TS guesses...")
         if not self.pruner: keep_ids = [True] * opt_ts_mol.GetNumConformers()
