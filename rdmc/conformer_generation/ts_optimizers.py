@@ -308,8 +308,8 @@ class GaussianOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy(quickCopy=True)
-        opt_mol.energies = {}
+        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
+        opt_mol.Energies = {}
         for i in range(mol.GetNumConformers()):
 
             if save_dir:
@@ -341,9 +341,16 @@ class GaussianOptimizer(TSOptimizer):
                     if g16_log.success:
                         new_mol = g16_log.get_mol(embed_conformers=False, sanitize=False)
                         opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
-                        opt_mol.energies.update({opt_mol.GetNumConformers()-1: g16_log.get_scf_energies()[-1]})
+                        opt_mol.Energies.update({i: g16_log.get_scf_energies()[-1]})
                 except Exception as e:
+                    AddNullConf(opt_mol, confId=i)
+                    opt_mol.Energies.update({i: np.nan})
+                    opt_mol.KeepIDs[i] = False
                     print(f'Got an error when reading the Gaussian output: {e}')
+            else:
+                AddNullConf(opt_mol, confId=i)
+                opt_mol.Energies.update({i: np.nan})
+                opt_mol.KeepIDs[i] = False
 
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
