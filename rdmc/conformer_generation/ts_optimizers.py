@@ -141,8 +141,8 @@ class SellaOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy()
-        opt_mol.energies = {}
+        opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
+        opt_mol.Energies = {}
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"sella_opt{i}")
@@ -153,7 +153,8 @@ class SellaOptimizer(TSOptimizer):
                                     confId=i,
                                     fmax=self.fmax,
                                     steps=self.steps,
-                                    save_dir=ts_conf_dir
+                                    save_dir=ts_conf_dir,
+                                    copy_attrs=["KeepIDs", "Energies"],
                                     )
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
