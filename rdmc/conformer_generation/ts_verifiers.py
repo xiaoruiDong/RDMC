@@ -59,7 +59,6 @@ class TSVerifier:
 
     def __call__(self,
                  ts_mol: 'RDKitMol',
-                 keep_ids: list,
                  multiplicity: int = 1,
                  save_dir: Optional[str] = None,
                  **kwargs):
@@ -68,7 +67,6 @@ class TSVerifier:
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            keep_ids (list): A list of Trues and Falses.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
 
@@ -78,7 +76,6 @@ class TSVerifier:
         time_start = time()
         self.verify_ts_guesses(
             ts_mol=ts_mol,
-            keep_ids=keep_ids,
             multiplicity=multiplicity,
             save_dir=save_dir,
             **kwargs
