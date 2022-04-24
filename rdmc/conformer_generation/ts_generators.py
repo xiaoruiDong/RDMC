@@ -221,8 +221,7 @@ class TSConformerGenerator:
             self.logger.info(f"Pruned {opt_ts_mol.GetNumConformers()-len(unique_ids)} TS conformers")
 
         self.logger.info("Verifying TS guesses...")
-        if not self.pruner: keep_ids = [True] * opt_ts_mol.GetNumConformers()
         for verifier in self.verifiers:
-            keep_ids = verifier(opt_ts_mol, keep_ids=keep_ids, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
-
+            verifier(opt_ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+        print(opt_ts_mol.KeepIDs)
         return opt_ts_mol

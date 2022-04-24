@@ -39,7 +39,6 @@ class TSVerifier:
 
     def verify_ts_guesses(self,
                           ts_mol: 'RDKitMol',
-                          keep_ids: list,
                           multiplicity: int = 1,
                           save_dir: Optional[str] = None,
                           **kwargs):
@@ -50,7 +49,6 @@ class TSVerifier:
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            keep_ids (list): A list of Trues and Falses.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
 
@@ -78,7 +76,7 @@ class TSVerifier:
             list: a list of true and false
         """
         time_start = time()
-        keep_ids = self.verify_ts_guesses(
+        self.verify_ts_guesses(
             ts_mol=ts_mol,
             keep_ids=keep_ids,
             multiplicity=multiplicity,
@@ -91,7 +89,7 @@ class TSVerifier:
             stats = {"time": time_end - time_start}
             self.stats.append(stats)
 
-        return keep_ids
+        return
 
 
 class XTBFrequencyVerifier(TSVerifier):
@@ -101,7 +99,6 @@ class XTBFrequencyVerifier(TSVerifier):
 
     def verify_ts_guesses(self,
                           ts_mol: 'RDKitMol',
-                          keep_ids: list,
                           multiplicity: int = 1,
                           save_dir: Optional[str] = None,
                           **kwargs):
@@ -110,7 +107,6 @@ class XTBFrequencyVerifier(TSVerifier):
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            keep_ids (list): A list of Trues and Falses.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
 
@@ -119,10 +115,12 @@ class XTBFrequencyVerifier(TSVerifier):
         """
         freq_checks = []
         for i in range(ts_mol.GetNumConformers()):
-            if keep_ids[i]:
+            if ts_mol.KeepIDs[i]:
                 props = run_xtb_calc(ts_mol, confId=i, job="--hess", uhf=multiplicity - 1)
                 # Check if the number of negative frequencies is equal to 1
-                freq_checks.append(sum(props["frequencies"] < 0) == 1)
+                freq_check = sum(props["frequencies"] < 0) == 1
+                freq_checks.append(freq_check)
+                ts_mol.KeepIDs[i] = freq_check
             else:
                 freq_checks.append(False)
 
@@ -130,7 +128,7 @@ class XTBFrequencyVerifier(TSVerifier):
             with open(os.path.join(save_dir, "freq_check_ids.pkl"), "wb") as f:
                 pickle.dump(freq_checks, f)
 
-        return freq_checks
+        return
 
 
 class OrcaIRCVerifier(TSVerifier):
@@ -164,7 +162,6 @@ class OrcaIRCVerifier(TSVerifier):
 
     def verify_ts_guesses(self,
                           ts_mol: 'RDKitMol',
-                          keep_ids: list,
                           multiplicity: int = 1,
                           save_dir: Optional[str] = None,
                           **kwargs):
@@ -173,13 +170,12 @@ class OrcaIRCVerifier(TSVerifier):
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            keep_ids (list): A list of Trues and Falses.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
         """
         irc_checks = []
         for i in range(ts_mol.GetNumConformers()):
-            if keep_ids[i]:
+            if ts_mol.KeepIDs[i]:
 
                 # Create and save the Orca input file
                 orca_str = write_orca_irc(ts_mol,
@@ -204,6 +200,7 @@ class OrcaIRCVerifier(TSVerifier):
                     )
                 if orca_run.returncode != 0:
                     irc_checks.append(False)
+                    ts_mol.KeepIDs[i] = False
                     continue
 
                 # Generate the adjacency matrix from the SMILES
@@ -217,6 +214,7 @@ class OrcaIRCVerifier(TSVerifier):
                     irc_b_mol = RDKitMol.FromFile(os.path.join(orca_dir, "orca_irc_IRC_B.xyz"), sanitize=False)
                 except FileNotFoundError:
                     irc_checks.append(False)
+                    ts_mol.KeepIDs[i] = False
                     continue
 
                 # Generate the adjacency matrix from the mols in the IRC analysis
@@ -230,16 +228,19 @@ class OrcaIRCVerifier(TSVerifier):
                 except AttributeError:
                     print("Error! Likely that the reaction smiles doesn't correspond to this reaction.")
 
-                irc_checks.append(rf_pb_check or rb_pf_check)
+                irc_check = rf_pb_check or rb_pf_check
+                irc_checks.append(irc_check)
+                ts_mol.KeepIDs[i] = irc_check
 
             else:
                 irc_checks.append(False)
+                ts_mol.KeepIDs[i] = False
 
         if save_dir:
             with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
                 pickle.dump(irc_checks, f)
 
-        return irc_checks
+        return
 
 
 class GaussianIRCVerifier(TSVerifier):
@@ -276,7 +277,6 @@ class GaussianIRCVerifier(TSVerifier):
 
     def verify_ts_guesses(self,
                           ts_mol: 'RDKitMol',
-                          keep_ids: list,
                           multiplicity: int = 1,
                           save_dir: Optional[str] = None,
                           **kwargs):
@@ -285,13 +285,12 @@ class GaussianIRCVerifier(TSVerifier):
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            keep_ids (list): A list of Trues and Falses.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
         """
         irc_checks = []
         for i in range(ts_mol.GetNumConformers()):
-            if keep_ids[i]:
+            if ts_mol.KeepIDs[i]:
 
                 # Create folder to save Gaussian IRC input and output files
                 gaussian_dir = os.path.join(save_dir, f"gaussian_irc{i}")
@@ -336,12 +335,15 @@ class GaussianIRCVerifier(TSVerifier):
                                                         backend='openbabel').GetAdjacencyMatrix())
                         except Exception as e:
                             print(f'Run into error when obtaining adjacency matrix from IRC output file. Got: {e}')
+                            ts_mol.KeepIDs[i] = False
                             irc_check = False
                     else:
+                        ts_mol.KeepIDs[i] = False
                         irc_check = False
 
                 # Bypass the further steps if IRC job fails
                 if not irc_check and len(adj_mat) != 2:
+                    ts_mol.KeepIDs[i] = False
                     irc_checks.append(False)
                     continue
 
@@ -356,13 +358,16 @@ class GaussianIRCVerifier(TSVerifier):
                 except AttributeError:
                     print("Error! Likely that the reaction smiles doesn't correspond to this reaction.")
 
-                irc_checks.append(rf_pb_check or rb_pf_check)
+                check = rf_pb_check or rb_pf_check
+                irc_checks.append(check)
+                ts_mol.KeepIDs[i] = check
 
             else:
+                ts_mol.KeepIDs[i] = False
                 irc_checks.append(False)
 
         if save_dir:
             with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
                 pickle.dump(irc_checks, f)
 
-        return irc_checks
+        return
