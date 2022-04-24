@@ -211,7 +211,8 @@ class OrcaOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy(quickCopy=True)
+        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
+        opt_mol.Energies = {}  # TODO: add orca energies
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"orca_opt{i}")
@@ -243,7 +244,14 @@ class OrcaOptimizer(TSOptimizer):
                     new_mol = RDKitMol.FromFile(os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False)
                     opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
                 except Exception as e:
+                    AddNullConf(opt_mol, confId=i)
+                    opt_mol.Energies.update({i: np.nan})
+                    opt_mol.KeepIDs[i] = False
                     print(f'Cannot read Orca output, got: {e}')
+            else:
+                AddNullConf(opt_mol, confId=i)
+                opt_mol.Energies.update({i: np.nan})
+                opt_mol.KeepIDs[i] = False
 
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
