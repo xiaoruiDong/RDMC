@@ -17,7 +17,7 @@ from sella import Sella
 import pandas as pd
 
 
-def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, method="GFN2-xTB"):
+def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, method="GFN2-xTB", copy_attrs=None):
     temp_dir = tempfile.mkdtemp() if not save_dir else save_dir
     trajfile = os.path.join(temp_dir, "ts.traj")
     logfile = os.path.join(temp_dir, "ts.log")
@@ -46,12 +46,10 @@ def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, meth
         )
         opt.run(fmax, steps)
 
-    opt_rdmc_mol = rdmc_mol.Copy()
+    opt_rdmc_mol = rdmc_mol.Copy(copy_attrs=copy_attrs)
     opt_rdmc_mol.SetPositions(opt.atoms.positions, id=confId)
-
     energy = float(pd.read_csv(logfile).iloc[-1].values[0].split()[3])
-    opt_rdmc_mol.energies = rdmc_mol.energies
-    opt_rdmc_mol.energies.update({confId: energy})
+    opt_rdmc_mol.Energies.update({confId: energy})
 
     if not save_dir:
         rmtree(temp_dir)
