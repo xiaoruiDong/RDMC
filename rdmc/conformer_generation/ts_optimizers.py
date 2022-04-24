@@ -7,7 +7,10 @@ Modules for optimizing transition state geometries
 
 # Import RDKit and RDMC first to avoid unexpected errors
 from rdkit import Chem
+from rdkit.Chem.rdchem import Conformer
 from rdmc import RDKitMol
+from rdmc.utils import set_rdconf_coordinates
+import numpy as np
 
 import os
 import subprocess
