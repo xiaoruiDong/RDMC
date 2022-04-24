@@ -9,6 +9,7 @@ import pathlib
 from itertools import combinations
 from itertools import product as cartesian_product
 from typing import Iterable, List, Optional, Sequence, Union
+import copy
 
 import numpy as np
 from rdkit import Chem
@@ -271,17 +272,24 @@ class RDKitMol(object):
         return combined
 
     def Copy(self,
-             quickCopy: bool = False,) -> 'RDKitMol':
+             quickCopy: bool = False,
+             copy_attrs: list = None) -> 'RDKitMol':
         """
         Make a copy of the RDKitMol.
 
         Args:
             quickCopy (bool, optional): Use the quick copy mode without copying conformers. Defaults to False.
+            copy_attrs (list, optional): copy specific attributes to the new mol
 
         Returns:
             RDKitMol: a copied molecule
         """
-        return RDKitMol(Chem.RWMol(self._mol, quickCopy))
+        new_mol = RDKitMol(Chem.RWMol(self._mol, quickCopy))
+        if copy_attrs is None:
+            copy_attrs = []
+        for attr in copy_attrs:
+            setattr(new_mol, attr, copy.deepcopy(getattr(self, attr)))
+        return new_mol
 
     def EmbedConformer(self,
                        embed_null: bool = True,
