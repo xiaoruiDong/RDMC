@@ -338,3 +338,20 @@ class GaussianOptimizer(TSOptimizer):
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
 
         return opt_mol
+
+
+def AddNullConf(mol, confId=0):
+    """
+    Embed null conformer to existing RDKit mol with positions as all zeros.
+
+    Args:
+        mol (RDKitMol): The mol to which we will add the null conformer.
+        confId (int, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
+                                 coordinates. Defaults to ``True``.
+    """
+    num_atoms = mol.GetNumAtoms()
+    conf = Conformer()
+    coords = np.zeros((num_atoms, 3))
+    set_rdconf_coordinates(conf, coords)
+    conf.SetId(confId)
+    mol._mol.AddConformer(conf)
