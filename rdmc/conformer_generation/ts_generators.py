@@ -9,6 +9,7 @@ import os
 import numpy as np
 import logging
 import random
+import pickle
 from typing import List, Optional, Union
 
 from rdmc.conformer_generation.utils import *
@@ -223,5 +224,9 @@ class TSConformerGenerator:
         self.logger.info("Verifying TS guesses...")
         for verifier in self.verifiers:
             verifier(opt_ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
-        print(opt_ts_mol.KeepIDs)
+
+        # save which ts passed full workflow
+        with open(os.path.join(self.save_dir, "workflow_check_ids.pkl"), "wb") as f:
+            pickle.dump(opt_ts_mol.KeepIDs, f)
+
         return opt_ts_mol
