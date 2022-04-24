@@ -207,6 +207,7 @@ class TSConformerGenerator:
         # It is needed for QST2, probably 
         self.logger.info("Generating initial TS guesses...")
         ts_mol = self.embedder(seed_mols, save_dir=self.save_dir)
+        ts_mol.KeepIDs = {i: True for i in range(ts_mol.GetNumConformers())}  # map ids of generated guesses thru workflow
 
         self.logger.info("Optimizing TS guesses...")
         opt_ts_mol = self.optimizer(ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
