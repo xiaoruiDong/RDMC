@@ -152,7 +152,7 @@ class SellaOptimizer(TSOptimizer):
             RDKitMol
         """
         opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
-        opt_mol.Energies = {}
+        opt_mol.energy = {}
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"sella_opt{i}")
@@ -164,7 +164,7 @@ class SellaOptimizer(TSOptimizer):
                                     fmax=self.fmax,
                                     steps=self.steps,
                                     save_dir=ts_conf_dir,
-                                    copy_attrs=["KeepIDs", "Energies"],
+                                    copy_attrs=["KeepIDs", "energy"],
                                     )
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs)
@@ -219,7 +219,7 @@ class OrcaOptimizer(TSOptimizer):
             RDKitMol
         """
         opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
-        opt_mol.Energies = {}  # TODO: add orca energies
+        opt_mol.energy = {}  # TODO: add orca energies
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"orca_opt{i}")
@@ -252,12 +252,12 @@ class OrcaOptimizer(TSOptimizer):
                     opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
                 except Exception as e:
                     opt_mol.AddNullConformer(confId=i)
-                    opt_mol.Energies.update({i: np.nan})
+                    opt_mol.energy.update({i: np.nan})
                     opt_mol.KeepIDs[i] = False
                     print(f'Cannot read Orca output, got: {e}')
             else:
                 opt_mol.AddNullConformer(confId=i)
-                opt_mol.Energies.update({i: np.nan})
+                opt_mol.energy.update({i: np.nan})
                 opt_mol.KeepIDs[i] = False
 
         if save_dir:
@@ -316,7 +316,7 @@ class GaussianOptimizer(TSOptimizer):
             RDKitMol
         """
         opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
-        opt_mol.Energies = {}
+        opt_mol.energy = {}
         for i in range(mol.GetNumConformers()):
 
             if save_dir:
@@ -348,15 +348,15 @@ class GaussianOptimizer(TSOptimizer):
                     if g16_log.success:
                         new_mol = g16_log.get_mol(embed_conformers=False, sanitize=False)
                         opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
-                        opt_mol.Energies.update({i: g16_log.get_scf_energies()[-1]})
+                        opt_mol.energy.update({i: g16_log.get_scf_energies()[-1]})
                 except Exception as e:
                     opt_mol.AddNullConformer(confId=i)
-                    opt_mol.Energies.update({i: np.nan})
+                    opt_mol.energy.update({i: np.nan})
                     opt_mol.KeepIDs[i] = False
                     print(f'Got an error when reading the Gaussian output: {e}')
             else:
                 opt_mol.AddNullConformer(confId=i)
-                opt_mol.Energies.update({i: np.nan})
+                opt_mol.energy.update({i: np.nan})
                 opt_mol.KeepIDs[i] = False
 
         if save_dir:

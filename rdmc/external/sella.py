@@ -49,7 +49,7 @@ def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, meth
     opt_rdmc_mol = rdmc_mol.Copy(copy_attrs=copy_attrs)
     opt_rdmc_mol.SetPositions(opt.atoms.positions, id=confId)
     energy = float(pd.read_csv(logfile).iloc[-1].values[0].split()[3])
-    opt_rdmc_mol.Energies.update({confId: energy})
+    opt_rdmc_mol.energy.update({confId: energy})
 
     if not save_dir:
         rmtree(temp_dir)
