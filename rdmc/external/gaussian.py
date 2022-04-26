@@ -534,7 +534,7 @@ class GaussianLog(object):
     def get_scf_energies(self,
                          converged: bool = True,
                          only_opt: bool = False,
-                         relative: bool = True):
+                         relative: bool = False):
         """
         Get SCF energies in kcal/mol.
 
@@ -544,7 +544,7 @@ class GaussianLog(object):
             only_opt (bool): For composite method like CBS-QB3, you can choose only to
                              return SCF energies only for the optimization step. Defaults
                              to ``False``.
-            relative (bool): Only return the value relative to the minimum. Defaults to ``True``.
+            relative (bool): Only return the value relative to the minimum. Defaults to ``False``.
 
         Returns:
             np.array: The SCF energies.
@@ -1079,7 +1079,8 @@ class GaussianLog(object):
     def view_freq(self,
                   mode_idx: int = 0,
                   frames: int = 10,
-                  amplitude: float = 1.0):
+                  amplitude: float = 1.0,
+                  *args, **kwargs):
         """
         Create a Py3DMol viewer for the frequency mode.
 
@@ -1095,7 +1096,7 @@ class GaussianLog(object):
             line = line.strip() + f'{"":12}'+ ''.join([f'{item:<12}' for item in self.cclib_results.vibdisps[mode_idx][i].tolist()])
             vib_xyz_list.append(line)
         vib_xyz = '\n'.join(vib_xyz_list)
-        return freq_viewer(vib_xyz, model='xyz', frames=frames, amplitude=amplitude)
+        return freq_viewer(vib_xyz, model='xyz', frames=frames, amplitude=amplitude, *args, **kwargs)
 
     def view_traj(self,
                   align_scan: bool = True,
