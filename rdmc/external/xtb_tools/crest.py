@@ -110,4 +110,4 @@ def run_cre_check(confs, ethr=0.15, rthr=0.125, bthr=0.01, ewin=10000):
     # print("Removed %d duplicate conformer%s with cregen" % (num_removed, plural))
     ### DEBUG ###
 
-    return updated_confs
+    return updated_confs, unique_ids
