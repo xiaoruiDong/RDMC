@@ -244,12 +244,12 @@ class OrcaOptimizer(TSOptimizer):
                     new_mol = RDKitMol.FromFile(os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False)
                     opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
                 except Exception as e:
-                    AddNullConf(opt_mol, confId=i)
+                    opt_mol.AddNullConformer(confId=i)
                     opt_mol.Energies.update({i: np.nan})
                     opt_mol.KeepIDs[i] = False
                     print(f'Cannot read Orca output, got: {e}')
             else:
-                AddNullConf(opt_mol, confId=i)
+                opt_mol.AddNullConformer(confId=i)
                 opt_mol.Energies.update({i: np.nan})
                 opt_mol.KeepIDs[i] = False
 
@@ -343,12 +343,12 @@ class GaussianOptimizer(TSOptimizer):
                         opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
                         opt_mol.Energies.update({i: g16_log.get_scf_energies()[-1]})
                 except Exception as e:
-                    AddNullConf(opt_mol, confId=i)
+                    opt_mol.AddNullConformer(confId=i)
                     opt_mol.Energies.update({i: np.nan})
                     opt_mol.KeepIDs[i] = False
                     print(f'Got an error when reading the Gaussian output: {e}')
             else:
-                AddNullConf(opt_mol, confId=i)
+                opt_mol.AddNullConformer(confId=i)
                 opt_mol.Energies.update({i: np.nan})
                 opt_mol.KeepIDs[i] = False
 
@@ -356,19 +356,3 @@ class GaussianOptimizer(TSOptimizer):
             self.save_opt_mols(save_dir, opt_mol.ToRWMol())
 
         return opt_mol
-
-
-def AddNullConf(mol, confId=0):
-    """
-    Embed null conformer to existing RDKit mol with positions as random coordinates.
-
-    Args:
-        mol (RDKitMol): The mol to which we will add the null conformer.
-        confId (int, optional): Which ID to set for the conformer.
-    """
-    num_atoms = mol.GetNumAtoms()
-    conf = Conformer()
-    coords = np.random.rand(num_atoms, 3)
-    set_rdconf_coordinates(conf, coords)
-    conf.SetId(confId)
-    mol._mol.AddConformer(conf)

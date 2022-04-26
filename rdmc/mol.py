@@ -88,6 +88,26 @@ class RDKitMol(object):
         # Perceive rings
         self.GetSymmSSSR()
 
+    def AddNullConformer(self,
+                         confId: int = None,
+                         random: bool = True):
+        """
+        Embed null conformer to existing RDKit mol.
+
+        Args:
+            confId (int, optional): Which ID to set for the conformer (will add as last conformer by default).
+            random (bool, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
+                                     coordinates. Defaults to ``True``.
+        """
+        num_atoms = self.GetNumAtoms()
+        conf = Conformer()
+        coords = np.random.rand(num_atoms, 3) if random else np.zeros((num_atoms, 3))
+        set_rdconf_coordinates(conf, coords)
+        if confId is None:
+            confId = self.GetNumConformers()
+        conf.SetId(confId)
+        self._mol.AddConformer(conf)
+
     def AddRedundantBonds(self, bonds: Iterable):
         """
         Add redundant bonds (not originally exist in the molecule) for
