@@ -369,7 +369,7 @@ def AddNullConf(mol, confId=0):
     """
     num_atoms = mol.GetNumAtoms()
     conf = Conformer()
-    coords = np.zeros((num_atoms, 3))
+    coords = np.random.rand(num_atoms, 3)
     set_rdconf_coordinates(conf, coords)
     conf.SetId(confId)
     mol._mol.AddConformer(conf)
