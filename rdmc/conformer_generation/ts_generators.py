@@ -241,9 +241,9 @@ class TSConformerGenerator:
             self.logger.info("Pruning TS guesses...")
             opt_ts_mol_dict, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, conf_copy_attrs=["KeepIDs", "Energies"]),
                                                       sort_by_energy=False, return_ids=True)
+            self.logger.info(f"Pruned {sum(opt_ts_mol.KeepIDs.values()) - len(unique_ids)} TS conformers")
             opt_ts_mol = dict_to_mol(opt_ts_mol_dict, conf_copy_attrs=["KeepIDs", "Energies"])
             opt_ts_mol.KeepIDs = {k: k in unique_ids and v for k, v in opt_ts_mol.KeepIDs.items()}
-            self.logger.info(f"Pruned {opt_ts_mol.GetNumConformers()-len(unique_ids)} TS conformers")
             with open(os.path.join(self.save_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_ts_mol.KeepIDs, f)
 
