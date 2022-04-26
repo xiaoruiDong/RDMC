@@ -244,6 +244,8 @@ class TSConformerGenerator:
             opt_ts_mol = dict_to_mol(opt_ts_mol_dict, conf_copy_attrs=["KeepIDs", "Energies"])
             opt_ts_mol.KeepIDs = {k: k in unique_ids and v for k, v in opt_ts_mol.KeepIDs.items()}
             self.logger.info(f"Pruned {opt_ts_mol.GetNumConformers()-len(unique_ids)} TS conformers")
+            with open(os.path.join(self.save_dir, "prune_check_ids.pkl"), "wb") as f:
+                pickle.dump(opt_ts_mol.KeepIDs, f)
 
         self.logger.info("Verifying TS guesses...")
         for verifier in self.verifiers:
