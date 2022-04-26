@@ -11,6 +11,7 @@ from rdkit.Chem.rdchem import Conformer
 from rdmc import RDKitMol
 from rdmc.utils import set_rdconf_coordinates
 import numpy as np
+import pickle
 
 import os
 import subprocess
@@ -61,6 +62,7 @@ class TSOptimizer:
     def save_opt_mols(self,
                       save_dir: str,
                       opt_mol: 'RDKitMol',
+                      keep_ids: dict,
                       ):
         """
         Save the information of the optimized TS geometries into the directory.
@@ -68,6 +70,7 @@ class TSOptimizer:
         Args:
             save_dir (str): The path to the directory to save the results.
             opt_mol (RDKitMol): The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
+            keep_ids (dict): Dictionary of which opts succeeded and which failed
         """
         # Save optimized ts mols
         ts_path = os.path.join(save_dir, "ts_optimized_confs.sdf")
@@ -79,6 +82,10 @@ class TSOptimizer:
             raise
         finally:
             ts_writer.close()
+
+        # save ids
+        with open(os.path.join(save_dir, "opt_check_ids.pkl"), "wb") as f:
+            pickle.dump(keep_ids, f)
 
     def __call__(self,
                  mol: 'RDKitMol',
@@ -160,7 +167,7 @@ class SellaOptimizer(TSOptimizer):
                                     copy_attrs=["KeepIDs", "Energies"],
                                     )
         if save_dir:
-            self.save_opt_mols(save_dir, opt_mol.ToRWMol())
+            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs)
 
         return opt_mol
 
@@ -254,7 +261,7 @@ class OrcaOptimizer(TSOptimizer):
                 opt_mol.KeepIDs[i] = False
 
         if save_dir:
-            self.save_opt_mols(save_dir, opt_mol.ToRWMol())
+            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs)
 
         return opt_mol
 
@@ -353,6 +360,6 @@ class GaussianOptimizer(TSOptimizer):
                 opt_mol.KeepIDs[i] = False
 
         if save_dir:
-            self.save_opt_mols(save_dir, opt_mol.ToRWMol())
+            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs)
 
         return opt_mol
