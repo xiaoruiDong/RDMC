@@ -360,12 +360,11 @@ class GaussianOptimizer(TSOptimizer):
 
 def AddNullConf(mol, confId=0):
     """
-    Embed null conformer to existing RDKit mol with positions as all zeros.
+    Embed null conformer to existing RDKit mol with positions as random coordinates.
 
     Args:
         mol (RDKitMol): The mol to which we will add the null conformer.
-        confId (int, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
-                                 coordinates. Defaults to ``True``.
+        confId (int, optional): Which ID to set for the conformer.
     """
     num_atoms = mol.GetNumAtoms()
     conf = Conformer()
