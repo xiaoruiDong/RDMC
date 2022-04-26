@@ -110,20 +110,16 @@ class XTBFrequencyVerifier(TSVerifier):
         Returns:
             list
         """
-        freq_checks = []
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
                 props = run_xtb_calc(ts_mol, confId=i, job="--hess", uhf=multiplicity - 1)
                 # Check if the number of negative frequencies is equal to 1
                 freq_check = sum(props["frequencies"] < 0) == 1
-                freq_checks.append(freq_check)
                 ts_mol.KeepIDs[i] = freq_check
-            else:
-                freq_checks.append(False)
 
         if save_dir:
             with open(os.path.join(save_dir, "freq_check_ids.pkl"), "wb") as f:
-                pickle.dump(freq_checks, f)
+                pickle.dump(ts_mol.KeepIDs, f)
 
         return
 
@@ -170,7 +166,6 @@ class OrcaIRCVerifier(TSVerifier):
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
         """
-        irc_checks = []
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
 
@@ -196,7 +191,6 @@ class OrcaIRCVerifier(TSVerifier):
                         cwd=os.getcwd(),
                     )
                 if orca_run.returncode != 0:
-                    irc_checks.append(False)
                     ts_mol.KeepIDs[i] = False
                     continue
 
@@ -210,7 +204,6 @@ class OrcaIRCVerifier(TSVerifier):
                     irc_f_mol = RDKitMol.FromFile(os.path.join(orca_dir, "orca_irc_IRC_F.xyz"), sanitize=False)
                     irc_b_mol = RDKitMol.FromFile(os.path.join(orca_dir, "orca_irc_IRC_B.xyz"), sanitize=False)
                 except FileNotFoundError:
-                    irc_checks.append(False)
                     ts_mol.KeepIDs[i] = False
                     continue
 
@@ -226,16 +219,14 @@ class OrcaIRCVerifier(TSVerifier):
                     print("Error! Likely that the reaction smiles doesn't correspond to this reaction.")
 
                 irc_check = rf_pb_check or rb_pf_check
-                irc_checks.append(irc_check)
                 ts_mol.KeepIDs[i] = irc_check
 
             else:
-                irc_checks.append(False)
                 ts_mol.KeepIDs[i] = False
 
         if save_dir:
             with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
-                pickle.dump(irc_checks, f)
+                pickle.dump(ts_mol.KeepIDs, f)
 
         return
 
@@ -285,7 +276,6 @@ class GaussianIRCVerifier(TSVerifier):
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
         """
-        irc_checks = []
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
 
@@ -341,7 +331,6 @@ class GaussianIRCVerifier(TSVerifier):
                 # Bypass the further steps if IRC job fails
                 if not irc_check and len(adj_mat) != 2:
                     ts_mol.KeepIDs[i] = False
-                    irc_checks.append(False)
                     continue
 
                 # Generate the adjacency matrix from the SMILES
@@ -356,15 +345,13 @@ class GaussianIRCVerifier(TSVerifier):
                     print("Error! Likely that the reaction smiles doesn't correspond to this reaction.")
 
                 check = rf_pb_check or rb_pf_check
-                irc_checks.append(check)
                 ts_mol.KeepIDs[i] = check
 
             else:
                 ts_mol.KeepIDs[i] = False
-                irc_checks.append(False)
 
         if save_dir:
             with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
-                pickle.dump(irc_checks, f)
+                pickle.dump(ts_mol.KeepIDs, f)
 
         return
