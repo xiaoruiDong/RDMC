@@ -24,7 +24,8 @@ class TSConformerGenerator:
 
     def __init__(self,
                  rxn_smiles: str,
-                 multiplicity: int = 1,
+                 multiplicity: Optional[int] = None,
+                 use_smaller_multiplicity: Optional[bool] = True,
                  embedder: Optional['TSInitialGuesser'] = None,
                  optimizer: Optional['TSOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
@@ -36,7 +37,10 @@ class TSConformerGenerator:
 
         Args:
             rxn_smiles (str): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
-            multiplicity (int): The spin multiplicity of the reaction. Defaults to 1.
+            multiplicity (int, optional): The spin multiplicity of the reaction. The spin multiplicity will be interpreted from the reaction smiles if this
+                                          is not given by the user.
+            use_smaller_multiplicity (bool, optional): Whether to use the smaller multiplicity when the interpreted multiplicity from the reaction smiles is
+                                                       inconsistent.
             embedder (TSInitialGuesser, optional): The embedder used to generate TS initial guessers. Available options are `TSEGNNGuesser`, `TSGCNGuesser`.
                                                    `RMSDPPGuesser`, and `AutoNEBGuesser`.
             optimizer (TSOptimizer, optional): The optimizer used to optimize TS geometries. Available options are `SellaOptimizer`, `OrcaOptimizer`, and
@@ -49,7 +53,27 @@ class TSConformerGenerator:
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.rxn_smiles = rxn_smiles
-        self.multiplicity = multiplicity
+        if multiplicity:
+           self.multiplicity = multiplicity
+        else: 
+            r_smi, p_smi = rxn_smiles.split(">>")
+            r_mol = RDKitMol.FromSmiles(r_smi)
+            p_mol = RDKitMol.FromSmiles(p_smi)
+            r_mul = r_mol.GetSpinMultiplicity()
+            p_mul = p_mol.GetSpinMultiplicity()
+            mul = r_mul
+            if r_mul != p_mul:
+                self.logger.warning(f"Inconsistent multiplicity!!")
+                self.logger.warning(f"Reactants had multiplicty {r_mul}")
+                self.logger.warning(f"Products had multiplicty {p_mul}")
+                if use_smaller_multiplicity:
+                    # use the smaller multiplicity
+                    mul = r_mul if r_mul < p_mul else p_mul
+                else:
+                    # use the larger multiplicity
+                    mul = r_mul if r_mul > p_mul else p_mul
+                logging.warning(f"Using multiplicity {mul} for all species...")
+            self.multiplicity = mul
         self.embedder = embedder
         self.optimizer = optimizer
         self.pruner = pruner
@@ -217,6 +241,7 @@ class TSConformerGenerator:
             keep_ids = [i in unique_ids for i in range(opt_ts_mol.GetNumConformers())]
             self.logger.info(f"Pruned {np.sum([x==False for x in keep_ids])} TS conformers")
             opt_ts_mol = dict_to_mol(opt_ts_mol_dict)
+            self.logger.info(f'Keeping {len(keep_ids)} unique IDs...')
 
         self.logger.info("Verifying TS guesses...")
         if not self.pruner: keep_ids = [True] * opt_ts_mol.GetNumConformers()
