@@ -68,14 +68,26 @@ class GaussianLog(object):
     time_regex = TERMINATION_TIME_REGEX
     opt_criteria = OPT_CRITERIA
 
-    def __init__(self, path: str):
+    def __init__(self,
+                 path: str,
+                 job_type: Optional[list] = None,
+                 ts: Optional[bool] = None):
         """
         Initiate the gaussian log parser instance.
 
         Args:
             path (str): The path to the gaussian log file.
+            job_type (list, optional): In case the scheme parser doesn't work properly, you could manually set the job type.
+                                       Available options are: `sp`, `opt`, `freq`, `irc`, `scan`. Assigning multiple job types
+                                       is allowed. Defaults to None, no manual assignment.
+            ts (bool, optional): In case the scheme parser doesn't work properly, you could manually set whether the job involves a TS.
+                                       Available options are `True` and `False`. Defaults to None, no manual assignment.
         """
         self.path = path
+        if job_type:
+            self._job_type = job_type
+        if ts is not None:
+            self._ts = ts
 
     def _get_val_and_auto_update(self,
                                  var_name: str,
@@ -243,7 +255,12 @@ class GaussianLog(object):
         Update the schemes property.
         """
         scheme_str = self.parse_schemes()
-        self._schemes = scheme_to_dict(scheme_str)
+        try:
+            self._schemes = scheme_to_dict(scheme_str)
+        except Exception as e:
+            print(f'Calculation scheme parser encounters a problem. \nGot: {e}\n'
+                  f'Feel free to raise an issue about this error at RDMC\'s Github Repo.')
+            self._schemes = {}
 
     @property
     def is_ts(self):
@@ -645,11 +662,11 @@ class GaussianLog(object):
             if not self.success:
                 # Use the starting geometry as the reference geometry if the job doesn't succeed
                 refid = -self.num_all_geoms
-                if 'irc' in self.job_type and ('forward' in self.schemes['irc'] or 'reverse' in self.schemes['irc']):
-                    try:
+                try:
+                    if 'irc' in self.job_type and ('forward' in self.schemes['irc'] or 'reverse' in self.schemes['irc']):
                         refid = self.get_converged_geom_idx[-1]
-                    except:
-                        pass
+                except:
+                    pass
 
             # successful jobs
             # Except the following cases, uses the last geometries (with refid=-1 and 0)
@@ -660,7 +677,7 @@ class GaussianLog(object):
                 # Use the starting geometry as the reference geometry for scan Jobs.
                 refid = - self.num_all_geoms
 
-            elif 'irc' in self.job_type and ('forward' not in self.schemes['irc'] and 'reverse' not in self.schemes['irc']):
+            elif 'irc' in self.job_type and ('forward' not in self.schemes.get('irc', {}) and 'reverse' not in self.schemes.get('irc', {})):
                 # Use the starting geometry as the reference geometry for bi-directional .
                 refid = -self.num_all_geoms
 
@@ -1119,7 +1136,8 @@ class GaussianLog(object):
                                          backend=backend)
             xyzs = [mol.ToXYZ(confId=i) for i in range(mol.GetNumConformers())]
         elif 'irc' in self.job_type and \
-                not (self.schemes['irc'].get('forward') or self.schemes['irc'].get('reverse')):
+                not (self.schemes.get('irc', {}).get('forward')
+                     or self.schemes.get('irc', {}).get('reverse')):
             mol = self._process_irc_mol(backend=backend)
             xyzs = [mol.ToXYZ(confId=i) for i in range(mol.GetNumConformers())]
         else:
@@ -1284,10 +1302,10 @@ def scheme_to_dict(scheme_str: str) -> dict:
         scheme_str (str): the calculation scheme used in a Gaussian job.
     """
     # Remove the header of the line
-    if scheme_str.startswith('#'):
-        scheme_str = scheme_str[1:]
-    elif scheme_str.startswith('#p') or scheme_str.startswith('#n'):
+    if scheme_str.startswith('#p') or scheme_str.startswith('#n'):
         scheme_str = scheme_str[2:]
+    elif scheme_str.startswith('#'):
+        scheme_str = scheme_str[1:]
 
     # External
     if 'external' in scheme_str:
