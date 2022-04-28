@@ -53,7 +53,7 @@ BASIS_SETS = ['sto-3g', '3-21g', '6-21g', '4-31g', '6-31g', '6-311g', 'cbsb7',
               'def2tzvpp', 'def2qzv', 'def2qzvp', 'def2qzvpp']
 DEFAULT_BASIS_SET = 'sto-3g'
 
-SCHEME_REGEX = r'(\w+=?\([^\(\)]+\)|\w+=\w+|[^\s=\(\)]+)'
+SCHEME_REGEX = r'([\w\-]+=?\([^\(\)]+\)|\w+=\w+|[^\s=\(\)]+)'
 TERMINATION_TIME_REGEX = r'[a-zA-Z]+\s+\d+\s+\d{2}\:\d{2}\:\d{2}\s+\d{4}'
 
 OPT_CRITERIA = ['Force Maximum', 'Force RMS', 'Displacement Maximum', 'Displacement RMS']
@@ -199,14 +199,29 @@ class GaussianLog(object):
         schemes = self.schemes
 
         if schemes['LOT']['LOT'] in COMPOSITE_METHODS:
-            self._job_type = ['opt', 'freq', 'sp']
+            # In Gaussian 16 you can set g4(sp) or g4(noopt)
+            # to change the job type, they are processed in the following block
+            if 'freq' in schemes and 'sp' in schemes:
+                self._job_type = ['freq', 'sp']
+            elif 'sp' in schemes:
+                self._job_type = ['sp']
+            else:
+                self._job_type = ['opt', 'freq', 'sp']
             return
 
         job_type = []
         if 'opt' in schemes:
             for key in schemes['opt'].keys():
                 if 'addred' in key or 'modred' in key:
-                    job_type.append('scan')
+                    # Here, dict.get is not used.
+                    # Using loops and `in` is because users may write the keyword differently, e.g., addredundant
+                    try:
+                        # If this is not a scan, the following function will raises a Runtime Error
+                        self.get_scannames()
+                    except RuntimeError:
+                        continue
+                    else:
+                        job_type.append('scan')
                     break
             else:
                 job_type.append('opt')
@@ -285,8 +300,8 @@ class GaussianLog(object):
             return
 
         if 'freq' in self.job_type and self.num_neg_freqs == 1:
-                self._ts = True
-                return
+            self._ts = True
+            return
 
         self._ts = False
 
