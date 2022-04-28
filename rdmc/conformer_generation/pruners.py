@@ -160,16 +160,21 @@ class CRESTPruner(ConfGenPruner):
             unique_mol_data = []
 
         all_mol_data = unique_mol_data + current_mol_data
-        updated_unique_mol_data = run_cre_check(all_mol_data,
+        updated_unique_mol_data, conf_ids = run_cre_check(all_mol_data,
                                                 ethr=self.ethr,
                                                 rthr=self.rthr,
                                                 bthr=self.bthr,
                                                 ewin=self.ewin
                                                 )
-        updated_unique_mol_data = sorted(updated_unique_mol_data, key=lambda x: x["energy"])
+
+        if sort_by_energy:
+            updated_unique_mol_data = sorted(updated_unique_mol_data, key=lambda x: x["energy"])
 
         self.n_input_confs = len(all_mol_data)
         self.n_output_confs = len(updated_unique_mol_data)
         self.n_pruned_confs = self.n_input_confs - self.n_output_confs
 
-        return updated_unique_mol_data
+        if return_ids:
+            return updated_unique_mol_data, conf_ids
+        else:
+            return updated_unique_mol_data

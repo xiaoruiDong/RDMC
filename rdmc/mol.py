@@ -9,6 +9,7 @@ import pathlib
 from itertools import combinations
 from itertools import product as cartesian_product
 from typing import Iterable, List, Optional, Sequence, Union
+import copy
 
 import numpy as np
 from rdkit import Chem
@@ -86,6 +87,26 @@ class RDKitMol(object):
 
         # Perceive rings
         self.GetSymmSSSR()
+
+    def AddNullConformer(self,
+                         confId: int = None,
+                         random: bool = True):
+        """
+        Embed null conformer to existing RDKit mol.
+
+        Args:
+            confId (int, optional): Which ID to set for the conformer (will add as last conformer by default).
+            random (bool, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
+                                     coordinates. Defaults to ``True``.
+        """
+        num_atoms = self.GetNumAtoms()
+        conf = Conformer()
+        coords = np.random.rand(num_atoms, 3) if random else np.zeros((num_atoms, 3))
+        set_rdconf_coordinates(conf, coords)
+        if confId is None:
+            confId = self.GetNumConformers()
+        conf.SetId(confId)
+        self._mol.AddConformer(conf)
 
     def AddRedundantBonds(self, bonds: Iterable):
         """
@@ -271,17 +292,24 @@ class RDKitMol(object):
         return combined
 
     def Copy(self,
-             quickCopy: bool = False,) -> 'RDKitMol':
+             quickCopy: bool = False,
+             copy_attrs: list = None) -> 'RDKitMol':
         """
         Make a copy of the RDKitMol.
 
         Args:
             quickCopy (bool, optional): Use the quick copy mode without copying conformers. Defaults to False.
+            copy_attrs (list, optional): copy specific attributes to the new mol
 
         Returns:
             RDKitMol: a copied molecule
         """
-        return RDKitMol(Chem.RWMol(self._mol, quickCopy))
+        new_mol = RDKitMol(Chem.RWMol(self._mol, quickCopy))
+        if copy_attrs is None:
+            copy_attrs = []
+        for attr in copy_attrs:
+            setattr(new_mol, attr, copy.deepcopy(getattr(self, attr)))
+        return new_mol
 
     def EmbedConformer(self,
                        embed_null: bool = True,

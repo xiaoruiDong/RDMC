@@ -9,6 +9,7 @@ import os
 import numpy as np
 import logging
 import random
+import pickle
 from typing import List, Optional, Union
 
 from rdmc.conformer_generation.utils import *
@@ -79,8 +80,6 @@ class TSConformerGenerator:
         self.pruner = pruner
         if isinstance(self.pruner, TorsionPruner):
             self.pruner.initialize_ts_torsions_list(rxn_smiles)
-        elif isinstance(self.pruner, CRESTPruner):
-            raise NotImplementedError("The CRESTPruner is not yes compatible with TS conformer generation!")
 
         self.verifiers = [] if not verifiers else verifiers
         self.save_dir = save_dir
@@ -231,21 +230,26 @@ class TSConformerGenerator:
         # It is needed for QST2, probably 
         self.logger.info("Generating initial TS guesses...")
         ts_mol = self.embedder(seed_mols, save_dir=self.save_dir)
+        ts_mol.KeepIDs = {i: True for i in range(ts_mol.GetNumConformers())}  # map ids of generated guesses thru workflow
 
         self.logger.info("Optimizing TS guesses...")
         opt_ts_mol = self.optimizer(ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
         if self.pruner:
             self.logger.info("Pruning TS guesses...")
-            opt_ts_mol_dict, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, energies=True), sort_by_energy=False, return_ids=True)
-            keep_ids = [i in unique_ids for i in range(opt_ts_mol.GetNumConformers())]
-            self.logger.info(f"Pruned {np.sum([x==False for x in keep_ids])} TS conformers")
-            opt_ts_mol = dict_to_mol(opt_ts_mol_dict)
-            self.logger.info(f'Keeping {len(keep_ids)} unique IDs...')
+            _, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, conf_copy_attrs=["KeepIDs", "energy"]),
+                                        sort_by_energy=False, return_ids=True)
+            self.logger.info(f"Pruned {sum(opt_ts_mol.KeepIDs.values()) - len(unique_ids)} TS conformers")
+            opt_ts_mol.KeepIDs = {k: k in unique_ids and v for k, v in opt_ts_mol.KeepIDs.items()}
+            with open(os.path.join(self.save_dir, "prune_check_ids.pkl"), "wb") as f:
+                pickle.dump(opt_ts_mol.KeepIDs, f)
 
         self.logger.info("Verifying TS guesses...")
-        if not self.pruner: keep_ids = [True] * opt_ts_mol.GetNumConformers()
         for verifier in self.verifiers:
-            keep_ids = verifier(opt_ts_mol, keep_ids=keep_ids, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+            verifier(opt_ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+
+        # save which ts passed full workflow
+        with open(os.path.join(self.save_dir, "workflow_check_ids.pkl"), "wb") as f:
+            pickle.dump(opt_ts_mol.KeepIDs, f)
 
         return opt_ts_mol
