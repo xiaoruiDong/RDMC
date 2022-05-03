@@ -352,6 +352,7 @@ class GaussianOptimizer(TSOptimizer):
                         new_mol = g16_log.get_mol(embed_conformers=False, sanitize=False)
                         opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
                         opt_mol.energy.update({i: g16_log.get_scf_energies(relative=False)[-1]})
+                        opt_mol.frequency.update({i: g16_log.freqs})
                 except Exception as e:
                     opt_mol.AddNullConformer(confId=i)
                     opt_mol.energy.update({i: np.nan})
