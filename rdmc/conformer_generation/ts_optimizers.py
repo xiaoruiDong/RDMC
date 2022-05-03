@@ -279,7 +279,7 @@ class OrcaOptimizer(TSOptimizer):
                 try:
                     new_mol = RDKitMol.FromFile(os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False)
                     opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
-                    opt_mol.frequency.update({i: self.extract_frequencies(save_dir, opt_mol.GetNumAtoms())})
+                    opt_mol.frequency.update({i: self.extract_frequencies(ts_conf_dir, opt_mol.GetNumAtoms())})
                 except Exception as e:
                     opt_mol.AddNullConformer(confId=i)
                     opt_mol.energy.update({i: np.nan})
