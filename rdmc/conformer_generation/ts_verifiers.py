@@ -118,8 +118,8 @@ class XTBFrequencyVerifier(TSVerifier):
                 else:
                     frequencies = ts_mol.frequency[i]
 
-                # Check if the number of negative frequencies is equal to 1
-                freq_check = sum(frequencies < 0) == 1
+                # Check if the number of large negative frequencies is equal to 1
+                freq_check = sum(frequencies < -100) == 1
                 ts_mol.KeepIDs[i] = freq_check
 
         if save_dir:
