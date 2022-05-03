@@ -165,7 +165,7 @@ class SellaOptimizer(TSOptimizer):
                                     fmax=self.fmax,
                                     steps=self.steps,
                                     save_dir=ts_conf_dir,
-                                    copy_attrs=["KeepIDs", "energy"],
+                                    copy_attrs=["KeepIDs", "energy", "frequency"],
                                     )
         if save_dir:
             self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs)
