@@ -112,9 +112,14 @@ class XTBFrequencyVerifier(TSVerifier):
         """
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
-                props = run_xtb_calc(ts_mol, confId=i, job="--hess", uhf=multiplicity - 1)
+                if ts_mol.frequency[i] is None:
+                    props = run_xtb_calc(ts_mol, confId=i, job="--hess", uhf=multiplicity - 1)
+                    frequencies = props["frequencies"]
+                else:
+                    frequencies = ts_mol.frequency[i]
+
                 # Check if the number of negative frequencies is equal to 1
-                freq_check = sum(props["frequencies"] < 0) == 1
+                freq_check = sum(frequencies < 0) == 1
                 ts_mol.KeepIDs[i] = freq_check
 
         if save_dir:
