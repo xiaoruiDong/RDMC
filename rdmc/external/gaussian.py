@@ -349,7 +349,7 @@ class GaussianLog(object):
         """
         Return the frequency as a numpy array.
         """
-        return getattr(self.cclib_results, 'vibfreqs', np.array([]))
+        return getattr(self.cclib_results, 'vibfreqs', None)
 
     @property
     def neg_freqs(self):
