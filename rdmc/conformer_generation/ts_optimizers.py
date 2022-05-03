@@ -153,6 +153,7 @@ class SellaOptimizer(TSOptimizer):
         """
         opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
         opt_mol.energy = {}
+        opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"sella_opt{i}")
@@ -220,6 +221,7 @@ class OrcaOptimizer(TSOptimizer):
         """
         opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
         opt_mol.energy = {}  # TODO: add orca energies
+        opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}  # TODO: add orca freqs
         for i in range(mol.GetNumConformers()):
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"orca_opt{i}")
@@ -317,6 +319,7 @@ class GaussianOptimizer(TSOptimizer):
         """
         opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
         opt_mol.energy = {}
+        opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
         for i in range(mol.GetNumConformers()):
 
             if save_dir:
