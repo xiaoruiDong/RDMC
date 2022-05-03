@@ -93,6 +93,21 @@ class XTBFrequencyVerifier(TSVerifier):
     """
     The class for verifying the TS by calculating and checking its frequencies using XTB.
     """
+    def __init__(self,
+                 cutoff_frequency: int = -100,
+                 track_stats: bool = False):
+        """
+        Initiate the XTB frequency verifier.
+
+        Args:
+            cutoff_frequency (int, optional): Cutoff frequency above which a frequency does not correspond to a TS
+                imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations
+                (defaults to -100 cm-1)
+            track_stats (bool, optional): Whether to track stats. Defaults to False.
+        """
+        super(XTBFrequencyVerifier, self).__init__(track_stats)
+
+        self.cutoff_frequency = cutoff_frequency
 
     def verify_ts_guesses(self,
                           ts_mol: 'RDKitMol',
@@ -119,7 +134,7 @@ class XTBFrequencyVerifier(TSVerifier):
                     frequencies = ts_mol.frequency[i]
 
                 # Check if the number of large negative frequencies is equal to 1
-                freq_check = sum(frequencies < -100) == 1
+                freq_check = sum(frequencies < self.cutoff_frequency) == 1
                 ts_mol.KeepIDs[i] = freq_check
 
         if save_dir:
