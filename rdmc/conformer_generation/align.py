@@ -374,6 +374,9 @@ def align_reactant_fragments(r_mol, p_mol):
         r_mol_naive_align: The new reactant with aligned fragments
     """
     formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_mol, p_mol)
+    if len(formed_bonds + broken_bonds) == 0:
+        print("Careful! No broken or formed bonds in this reaction! Returning input reactants")
+        return r_mol
     naive_align = NaiveAlign.from_complex(r_mol, formed_bonds, broken_bonds)
     r_mol_naive_align = r_mol.Copy(quickCopy=True)
     r_mol_naive_align.SetPositions(naive_align())
