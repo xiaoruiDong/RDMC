@@ -344,7 +344,7 @@ def reset_pmol(r_mol, p_mol):
     return obff.get_optimized_mol()
 
 
-def prepare_mols(r_mol, p_mol):
+def prepare_mols(r_mol, p_mol, align_bimolecular=True):
     """
     Prepare mols for reaction path analysis. If reactant has multiple fragments, first orient reactants in reacting
     orientation. Then, reinitialize coordinates of product using reset_pmol function
@@ -352,12 +352,15 @@ def prepare_mols(r_mol, p_mol):
     Args:
         r_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
         p_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
+        align_bimolecular (bool, optional): Whether or not to use alignment algorithm on bimolecular reactions
+                                            (defaults to True)
 
     Returns
         r_mol, new_p_mol: The new reactant and product mols
     """
     if len(r_mol.GetMolFrags()) == 2:
-        r_mol = align_reactant_fragments(r_mol, p_mol)
+        if align_bimolecular:
+            r_mol = align_reactant_fragments(r_mol, p_mol)
     p_mol_new = reset_pmol(r_mol, p_mol)  # reconfigure p_mol as if starting from SMILES
     return r_mol, p_mol_new
 
