@@ -105,6 +105,14 @@ class TSConformerGenerator:
         for smi in smiles_list:
 
             rdmc_mol = RDKitMol.FromSmiles(smi)
+
+            # use default embedder if only one atom present
+            if rdmc_mol.GetNumAtoms() == 1:
+                mol = rdmc_mol.Copy(quickCopy=True)
+                mol.EmbedConformer()
+                mols.append(mol)
+                continue
+
             if len(rdmc_mol.GetTorsionalModes(includeRings=True)) < 1:
                 pruner = CRESTPruner()
                 min_iters = 1
