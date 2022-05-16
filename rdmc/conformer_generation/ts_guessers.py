@@ -39,10 +39,11 @@ try:
 
     class EvalTSDataset(TSDataset):
         def __init__(self, config):
-            self.set_similar_mols = config[
-                "set_similar_mols"]  # use species (r/p) which is more similar to TS as starting mol
+            self.mols = []
             self.no_shuffle_mols = True  # randomize which is reactant/product
             self.no_mol_prep = False  # prep as if starting from SMILES
+            self.set_similar_mols = False  # use species (r/p) which is more similar to TS as starting mol
+            self.product_loss = False
             self.prod_feat = config["prod_feat"]  # whether product features include distance or adjacency
 
 except ImportError:
@@ -185,8 +186,6 @@ class TSEGNNGuesser(TSInitialGuesser):
         # Setup TS-EGNN configuration
         self.config = self.module.config
         self.module.model.eval()
-        self.config["no_shuffle_mols"] = True
-        self.config["no_mol_prep"] = False  # ts_generator class takes care of molecule preparation
         self.test_dataset = EvalTSDataset(self.config)
 
     def generate_ts_guesses(self,
