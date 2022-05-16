@@ -167,6 +167,10 @@ class LitTSModule(pl.LightningModule):
                             help="Choose reactant or product with min RMSD compared to TS as starting species")
         parser.add_argument("--no_mol_prep", action='store_true', default=False,
                             help="Don't reinitialize reactant/product as if starting from SMILES")
+        parser.add_argument("--product_loss", action='store_true', default=False,
+                            help="Use product instead of TS to compute loss")
+        parser.add_argument("--new_config", action='store_true', default=False,
+                            help="When fine-tuning, use new config or not")
         return parent_parser
 
     @staticmethod
@@ -187,6 +191,7 @@ class LitTSModule(pl.LightningModule):
         parser.add_argument('--log_dir', type=str)
         parser.add_argument('--data_dir', type=str)
         parser.add_argument('--split_path', type=str)
+        parser.add_argument('--pretrained_path', type=str, default=None)
         return parent_parser
 
     @classmethod
@@ -195,3 +200,4 @@ class LitTSModule(pl.LightningModule):
         parser = cls.add_argparse_args(parser)  # trainer options
         parser = cls.add_model_specific_args(parser)  # models specific args
         return parser
+

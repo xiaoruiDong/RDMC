@@ -8,7 +8,7 @@ from torch_geometric.loader import DataLoader
 import os
 import glob
 import numpy as np
-from ..dataloaders.features import MolGraph, shuffle_mols
+from ..dataloaders.features import MolGraph, shuffle_mols, find_similar_mol
 from rdmc import RDKitMol
 from rdmc.conformer_generation.align import prepare_mols
 
@@ -29,24 +29,29 @@ class TSDataset(Dataset):
         self.no_shuffle_mols = config["no_shuffle_mols"]  # randomize which is reactant/product
         self.no_mol_prep = config["no_mol_prep"]  # prep as if starting from SMILES
         self.prod_feat = config["prod_feat"]  # whether product features include distance or adjacency
+        self.product_loss = config["product_loss"]
 
     def process_key(self, key):
         mols = self.mols[key]
         return self.process_mols(mols)
 
-    def process_mols(self, mols, no_ts=False):
+    def process_mols(self, mols, no_ts=False, align_bimolecular=False):
         if self.set_similar_mols:
-            mols = self.find_similar_mol(mols)  # reverse reactant and product if product is more similar
+            mols = find_similar_mol(mols)  # reverse reactant and product if product is more similar
         if not self.no_shuffle_mols:
             mols = shuffle_mols(mols)
         if not self.no_mol_prep:
             r_mol, ts_mol, p_mol = mols
-            new_r_mol, new_p_mol = prepare_mols(RDKitMol.FromMol(r_mol), RDKitMol.FromMol(p_mol))
+            new_r_mol, new_p_mol = prepare_mols(RDKitMol.FromMol(r_mol), RDKitMol.FromMol(p_mol),
+                                                align_bimolecular=align_bimolecular)
             mols = (new_r_mol.ToRWMol(), ts_mol, new_p_mol.ToRWMol())
         molgraph = MolGraph(mols, self.prod_feat)
         mol_data = self.molgraph2data(molgraph)
         mol_data.pos_r = torch.tensor(mols[0].GetConformer().GetPositions(), dtype=torch.float)
-        mol_data.pos_ts = None if no_ts else torch.tensor(mols[1].GetConformer().GetPositions(), dtype=torch.float)
+        if self.product_loss:
+            mol_data.pos_ts = torch.tensor(mols[2].GetConformer().GetPositions(), dtype=torch.float)
+        else:
+            mol_data.pos_ts = None if no_ts else torch.tensor(mols[1].GetConformer().GetPositions(), dtype=torch.float)
         mol_data.pos_p = torch.tensor(mols[2].GetConformer().GetPositions(), dtype=torch.float)
         mol_data.z = torch.tensor([a.GetAtomicNum() for a in mols[0].GetAtoms()], dtype=torch.int)
         mol_data.mols = mols
@@ -72,8 +77,8 @@ class TSDataset(Dataset):
                 Chem.SDMolSupplier(ts_file, removeHs=False, sanitize=False),
                 Chem.SDMolSupplier(p_file, removeHs=False, sanitize=True)]
 
-        data = [(x, y, z) for (x, y, z) in zip(data[0], data[1], data[2]) if (x, y, z)]
-        return [data[i] for i in self.split]
+        data = [(x, y, z) if (x and y and z) else None for (x, y, z) in zip(data[0], data[1], data[2])]
+        return [data[i] for i in self.split if data[i]]
 
     def __len__(self):
         return len(self.mols)
