@@ -182,8 +182,12 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
                     n_opt_cycles = int(
                         [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
                 except IndexError:
-                    not save_dir and rmtree(temp_dir)
-                    raise ValueError(f"xTB calculation failed.")
+                    # logfile doesn't exist for [H]
+                    if not os.path.exists(os.path.join(temp_dir, "xtbopt.sdf")):
+                        not save_dir and rmtree(temp_dir)
+                        raise ValueError(f"xTB calculation failed.")
+                    else:
+                        n_opt_cycles = 1
             props.update({"n_opt_cycles": n_opt_cycles})
 
         if job == "--hess":
