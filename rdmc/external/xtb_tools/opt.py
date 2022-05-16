@@ -74,7 +74,8 @@ def get_homo_and_lumo_energies(data):
         in case of unpaired electrons (not supported)
     """
     if data["number of unpaired electrons"] != 0:
-        raise ValueError("Unpaired electrons are not supported.")
+        print("Unpaired electrons are not supported for HOMO/LUMO data extraction.")
+        return np.nan, np.nan
     num_occupied = (
             np.array(data["fractional occupation"]) > 1e-6
     ).sum()  # number of occupied orbitals; accounting for occassional very small values
