@@ -330,7 +330,7 @@ def reset_pmol(r_mol, p_mol):
     p_mol_new.SetPositions(r_mol.GetPositions())
 
     # setup first minimization with broken bond constraints
-    obff = OpenBabelFF()
+    obff = OpenBabelFF(force_field="uff")
     obff.setup(p_mol_new)
     broken_bonds = get_broken_bonds(r_mol, p_mol)
     r_conf = r_mol.GetConformer()
