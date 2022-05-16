@@ -94,13 +94,15 @@ class XTBOptimizer(ConfGenOptimizer):
             return mol_data
 
         new_mol = dict_to_mol(mol_data)
+        uhf = new_mol.GetSpinMultiplicity() - 1
         correct_atom_mapping = new_mol.GetAtomMapNumbers()
 
         failed_ids = set()
         all_props = []
         for c_id in range(len(mol_data)):
             try:
-                props, opt_mol = run_xtb_calc(new_mol, confId=c_id, job="--opt", return_optmol=True, method=self.method, level=self.level)
+                props, opt_mol = run_xtb_calc(new_mol, confId=c_id, job="--opt", return_optmol=True,
+                                              method=self.method, level=self.level, uhf=uhf)
                 all_props.append(props)
             except ValueError as e:
                 failed_ids.add(c_id)
