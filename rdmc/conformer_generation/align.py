@@ -341,6 +341,13 @@ def reset_pmol(r_mol, p_mol):
     # second minimization without constraints
     obff.constraints = None
     obff.optimize(max_step=2000)
+    p_mol_intermediate = obff.get_optimized_mol()
+
+    # third optimization with MMFF94s
+    obff = OpenBabelFF(force_field="mmff94s")
+    obff.setup(p_mol_intermediate)
+    obff.optimize(max_step=2000)
+
     return obff.get_optimized_mol()
 
 
