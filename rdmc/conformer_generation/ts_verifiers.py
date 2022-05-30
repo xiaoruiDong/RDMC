@@ -444,6 +444,11 @@ class TSScreener(TSVerifier):
             if ts_mol.KeepIDs[idx]:
                 freq_log_path = glob(os.path.join(log_dir, "*opt.log"))[0]
                 ts_freq_mol = convert_log_to_mol(freq_log_path)
+
+                if ts_freq_mol is None:
+                    ts_mol.KeepIDs.update({idx: False})
+                    continue
+
                 ts_freq_mol.SetProp("Name", rxn_smiles)
                 data = mol2data(ts_freq_mol, self.module.config, eval_mode=True)
 
