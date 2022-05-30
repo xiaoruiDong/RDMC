@@ -34,8 +34,8 @@ except:
 
 # Check TS-EGNN
 try:
-    from rdmc.external.ts_egnn.ts_ml.trainers.ts_egnn_trainer import LitTSModule
-    from rdmc.external.ts_egnn.ts_ml.dataloaders.ts_egnn_loader import TSDataset
+    from ts_ml.trainers.ts_egnn_trainer import LitTSModule
+    from ts_ml.dataloaders.ts_egnn_loader import TSDataset
 
     class EvalTSDataset(TSDataset):
         def __init__(self, config):
@@ -51,8 +51,8 @@ except ImportError:
 
 # Check TS_GCN
 try:
-    from rdmc.external.ts_egnn.ts_ml.trainers.ts_gcn_trainer import LitTSModule as LitTSGCNModule
-    from rdmc.external.ts_egnn.ts_ml.dataloaders.ts_gcn_loader import TSGCNDataset
+    from ts_ml.trainers.ts_gcn_trainer import LitTSModule as LitTSGCNModule
+    from ts_ml.dataloaders.ts_gcn_loader import TSGCNDataset
 
     class EvalTSGCNDataset(TSGCNDataset):
         def __init__(self, config):
