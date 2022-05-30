@@ -12,6 +12,11 @@ import os
 import pickle
 import numpy as np
 from collections import defaultdict
+from typing import Union
+
+from rdmc.utils import PERIODIC_TABLE as PT
+from rdmc.external.gaussian import GaussianLog
+
 
 def mol_to_dict(mol,
                 copy: bool = True,
@@ -125,3 +130,77 @@ def get_conf_failure_mode(rxn_dir):
     failure_dict = {i: failure_modes[m] for i, m in enumerate(modes)}
 
     return failure_dict
+
+
+def get_frames_from_freq(log,
+                         amplitude: float = 1.0,
+                         num_frames: int = 10,
+                         weights: Union[bool, np.array] = False):
+    """
+    Args:
+        log (GaussianLog): A gaussian log object with vibrational freq calculated.
+        amplitude (float): The amplitude of the motion. If a single value is provided then the guess
+                           will be unique (if available). 0.25 will be the default. Otherwise, a list
+                           can be provided, and all possible results will be returned.
+        num_frames (int): The number of frames in each direction (forward and reverse). Defaults to 10.
+        weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
+                              If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
+                              The concern is that light atoms (e.g., H) tend to have larger motions
+                              than heavier atoms.
+
+    Returns:
+        np.array: The atomic numbers as an 1D array
+        np.array: The 3D geometries at each frame as a 3D array (number of frames x 2 + 1, number of atoms, 3)
+    """
+    assert log.num_neg_freqs == 1
+
+    equ_xyz = log.converged_geometries[-1]
+    disp = log.cclib_results.vibdisps[0]
+    amp_factors = np.linspace(-amplitude, amplitude, 2 * num_frames + 1)
+
+    # Generate weights
+    if isinstance(weights, bool) and weights:
+        atom_masses = np.array([PT.GetAtomicWeight(int(num)) for num in log.cclib_results.atomnos]).reshape(-1, 1)
+        weights = np.sqrt(atom_masses)
+    elif isinstance(weights, bool) and not weights:
+        weights = np.ones((equ_xyz.shape[0], 1))
+
+    xyzs = equ_xyz - np.einsum('i,jk->ijk', amp_factors, weights * disp)
+
+    return log.cclib_results.atomnos, xyzs
+
+
+def convert_log_to_mol(log_path: str,
+                       amplitude: float = 1.0,
+                       num_frames: int = 10,
+                       weights: Union[bool, np.array] = False):
+    """
+    Args:
+        log_path (str): The path to the log file.
+        amplitude (float): The amplitude of the motion. If a single value is provided then the guess
+                           will be unique (if available). 0.25 will be the default. Otherwise, a list
+                           can be provided, and all possible results will be returned.
+        num_frames (int): The number of frames in each direction (forward and reverse). Defaults to 10.
+        weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
+                              If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
+                              The concern is that light atoms (e.g., H) tend to have larger motions
+                              than heavier atoms.
+    """
+    glog = GaussianLog(log_path)
+
+    try:
+        assert glog.success
+        assert glog.is_ts
+        assert glog.num_neg_freqs == 1
+    except AssertionError:
+        return None
+
+    # Get TS mol object and construct geometries as numpy arrays for all frames
+    mol = glog.get_mol(converged=True, embed_conformers=False, sanitize=False)
+    _, xyzs = get_frames_from_freq(glog, amplitude=amplitude, num_frames=num_frames, weights=weights)
+
+    # Embed geometries to the mol object for output
+    mol.EmbedMultipleNullConfs(xyzs.shape[0])
+    [mol.SetPositions(xyzs[i, :, :], id=i) for i in range(xyzs.shape[0])]
+
+    return mol
