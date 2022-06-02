@@ -41,6 +41,7 @@ MP_METHOD = ['mp2', 'mp3', 'mp4', 'mp4(dq)', 'mp4(sdq)', 'mp5']
 DOUBLE_HYBRID = ['b2plyp', 'mpw2plyp', 'b2plypd', 'b2plypd3', 'dsdpbep86',
                  'pbe0dh', 'pbeqidh', 'M08HX', 'MN15', 'MN15L']
 COUPLE_CLUSTER = ['ccsd', 'ccsdt', 'ccsd(t)']
+XTB = ['gfn0-xtb', 'gfn1-xtb', 'gfn2-xtb',]
 
 METHODS = HF + DFT + MP_METHOD + DOUBLE_HYBRID + COUPLE_CLUSTER
 DEFAULT_METHOD = 'hf'
@@ -1134,6 +1135,7 @@ class GaussianLog(object):
                   align_scan: bool = True,
                   align_frag_idx: int = 1,
                   backend: str = 'openbabel',
+                  converged: bool = True,
                   **kwargs):
         """
         View the trajectory as a Py3DMol animation.
@@ -1153,10 +1155,10 @@ class GaussianLog(object):
         elif 'irc' in self.job_type and \
                 not (self.schemes.get('irc', {}).get('forward')
                      or self.schemes.get('irc', {}).get('reverse')):
-            mol = self._process_irc_mol(backend=backend)
+            mol = self._process_irc_mol(backend=backend, converged=converged)
             xyzs = [mol.ToXYZ(confId=i) for i in range(mol.GetNumConformers())]
         else:
-            xyzs = self.get_xyzs(converged=True)
+            xyzs = self.get_xyzs(converged=converged)
         if len(xyzs) == 1:
             print('Warning: There is only one geomtry in the file.')
         combined_xyzs = ''.join(xyzs)
@@ -1270,7 +1272,7 @@ class GaussianLog(object):
 
         return interact(visual, idx=slider)
 
-    def interact_irc(self, sanitize: bool = False, backend: str = 'openbabel'):
+    def interact_irc(self, sanitize: bool = False, converged: bool = True, backend: str = 'openbabel'):
         """
         Create a IPython interactive widget to investigate the IRC results.
 
@@ -1278,10 +1280,10 @@ class GaussianLog(object):
             sanitize (bool): Whether to sanitize the molecule. Defaults to ``False``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
-        mol = self._process_irc_mol(sanitize=sanitize, backend=backend)
+        mol = self._process_irc_mol(sanitize=sanitize, converged=converged, backend=backend)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
-        xyzs = self.get_xyzs(converged=True)
-        y_params = self.get_scf_energies(converged=True)
+        xyzs = self.get_xyzs(converged=converged)
+        y_params = self.get_scf_energies(converged=converged)
         y_params -= y_params.max()
         midpoint = self.get_irc_midpoint()
         if midpoint:
