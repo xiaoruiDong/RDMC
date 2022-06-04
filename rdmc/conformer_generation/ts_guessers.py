@@ -57,8 +57,8 @@ try:
     class EvalTSGCNDataset(TSGCNDataset):
         def __init__(self, config):
 
-            self.shuffle_mols = config["shuffle_mols"]  # randomize which is reactant/product
-            self.prep_mols = config["prep_mols"]  # prep as if starting from SMILES
+            self.no_shuffle_mols = True  # randomize which is reactant/product
+            self.no_mol_prep = False  # prep as if starting from SMILES
 
 except ImportError:
     print("No TS-GCN installation detected. Skipping import...")
