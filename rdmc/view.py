@@ -157,11 +157,19 @@ def interactive_conformer_viewer(mol, **kwargs):
     Returns:
         py3Dmol.view: The molecule viewer with slider to view different conformers.
     """
-    viewer = lambda confId: mol_viewer(obj=mol, confId=confId, **kwargs)
-    return interact(
-        viewer,
-        confId=IntSlider(min=0, max=mol.GetNumConformers()-1, step=1)
-    )
+    if type(mol) is list or type(mol) is tuple:
+        viewer = lambda confId: mol_viewer(obj=mol[confId], confId=0, **kwargs)
+        return interact(
+            viewer,
+            confId=IntSlider(min=0, max=len(mol) - 1, step=1)
+        )
+
+    else:
+        viewer = lambda confId: mol_viewer(obj=mol, confId=confId, **kwargs)
+        return interact(
+            viewer,
+            confId=IntSlider(min=0, max=mol.GetNumConformers()-1, step=1)
+        )
 
 
 def freq_viewer(obj: str,
