@@ -270,6 +270,7 @@ class GaussianIRCVerifier(TSVerifier):
     def __init__(self,
                  method: str = "GFN2-xTB",
                  nprocs: int = 1,
+                 fc_kw: str = "calcall",
                  track_stats: bool = False):
         """
         Initiate the Gaussian IRC verifier.
@@ -278,12 +279,14 @@ class GaussianIRCVerifier(TSVerifier):
             method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
                                     We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
             nprocs (int, optional): The number of processors to use. Defaults to 1.
+            fc_kw (str, optional): Keyword specifying how often to compute force constants Defaults to "calcall".
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
         super(GaussianIRCVerifier, self).__init__(track_stats)
 
         self.method = method
         self.nprocs = nprocs
+        self.fc_kw = fc_kw
 
         for version in ['g16', 'g09', 'g03']:
             GAUSSIAN_ROOT = os.environ.get(f"{version}root")
@@ -323,12 +326,15 @@ class GaussianIRCVerifier(TSVerifier):
                     gaussian_output_file = os.path.join(gaussian_dir, f"gaussian_irc_{direction}.log")
 
                     # Generate and save input file
-                    gaussian_str = write_gaussian_irc(ts_mol,
-                                                      confId=i,
-                                                      method=self.method,
-                                                      direction=direction,
-                                                      mult=multiplicity,
-                                                      nprocs=self.nprocs)
+                    gaussian_str = write_gaussian_irc(
+                        ts_mol,
+                        confId=i,
+                        method=self.method,
+                        direction=direction,
+                        mult=multiplicity,
+                        nprocs=self.nprocs,
+                        fc_kw=self.fc_kw,
+                    )
                     with open(gaussian_input_file, "w") as f:
                         f.writelines(gaussian_str)
 
