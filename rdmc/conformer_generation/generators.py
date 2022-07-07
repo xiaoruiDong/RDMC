@@ -27,7 +27,7 @@ class StochasticConformerGenerator:
     A module for stochastic conformer generation. The workflow follows an embed -> optimize -> prune cycle with
     custom stopping criteria. Additional final modules can be added at the user's discretion.
     """
-    def __init__(self, smiles, embedder=None, optimizer=None, pruner=None,
+    def __init__(self, smiles, embedder=None, optimizer=None, estimator=None, pruner=None,
                  metric=None, min_iters=None, max_iters=None, final_modules=None,
                  config=None, track_stats=False):
         """
@@ -37,6 +37,7 @@ class StochasticConformerGenerator:
             smiles (str): SMILES input for which to generate conformers.
             embedder (class): Instance of an embedder from embedders.py.
             optimizer (class): Instance of a optimizer from optimizers.py.
+            estimator (class): Any energy estimator instance.
             pruner (class): Instance of a pruner from pruners.py.
             metric (class): Instance of a metric from metrics.py.
             min_iters (int): Minimum number of iterations for which to run the module (default=5).
@@ -49,6 +50,7 @@ class StochasticConformerGenerator:
 
         self.embedder = embedder
         self.optimizer = optimizer
+        self.estimator = estimator
         self.pruner = pruner
         self.metric = metric
         self.final_modules = [] if not final_modules else final_modules
@@ -72,7 +74,7 @@ class StochasticConformerGenerator:
         if isinstance(self.pruner, TorsionPruner):
             self.pruner.initialize_torsions_list(smiles)
 
-    def __call__(self, n_conformers_per_iter):
+    def __call__(self, n_conformers_per_iter, **kwargs):
 
         self.logger.info(f"Generating conformers for {self.smiles}")
         time_start = time()
@@ -102,6 +104,7 @@ class StochasticConformerGenerator:
 
             self.logger.info(f"Iteration {self.iter}: pruning conformers...")
             unique_mol_data = self.pruner(opt_mol_data, self.unique_mol_data) if self.pruner else opt_mol_data
+            unique_mol_data = self.estimator(unique_mol_data, **kwargs) if self.estimator else unique_mol_data
             self.metric.calculate_metric(unique_mol_data)
             self.unique_mol_data = unique_mol_data
             self.logger.info(f"Iteration {self.iter}: kept {len(unique_mol_data)} unique conformers")
