@@ -1680,3 +1680,52 @@ def generate_vdw_mat(rd_mol,
                     (vdw_radii[atom1.GetAtomicNum()] +
                         vdw_radii[atom2.GetAtomicNum()])
     return vdw_mat
+
+
+def generate_radical_resonance_structures(mol: RDKitMol):
+    """
+    Generate resonance structures for a radical molecule.  RDKit by design doesn't work
+    for radical resonance. The approach is a temporary workaround by replacing radical electrons by positive
+    charges and generating resonance structures by RDKit ResonanceMolSupplier.
+    Currently, this function only works for neutral radicals.
+
+    Args:
+        mol (RDKitMol): A radical molecule.
+    """
+    assert mol.GetFormalCharge() == 0, "The current function only works for radical species."
+    mol_copy = mol.Copy(quickCopy=True)  # Make a copy of the original molecule
+
+    # Modify the original molecule to make it a postively charged species
+    recipe = {}  # Used to record changes. Temporarily not used now.
+    Chem.rdmolops.SetConjugation(mol_copy._mol)  # Make sure conjugation is assigned
+    for atom in mol_copy.GetAtoms():
+        radical_electrons = atom.GetNumRadicalElectrons()
+        if radical_electrons > 0:  # Find a radical site
+            recipe[atom.GetIdx()] = radical_electrons
+            atom.SetFormalCharge(+radical_electrons)
+            atom.SetNumRadicalElectrons(0)
+        if (atom.GetAtomicNum() == 8 and len(atom.GetNeighbors()) > 1) or \
+            (atom.GetAtomicNum() == 7 and len(atom.GetNeighbors()) > 2):
+            # Avoid X-O-Y be part of the resonance and forms X-O.=Y
+            # Avoid X-N(-Y)-Z be part of the resonance and forms X=N.(-Y)(-Z)
+            [bond.SetIsConjugated(False) for bond in atom.GetBonds()]
+    mol_copy.UpdatePropertyCache()  # Make sure the assignment is boardcast to atoms / bonds
+
+    # Generate Resonance Structures
+    flags = Chem.KEKULE_ALL | Chem.ALLOW_INCOMPLETE_OCTETS | Chem.UNCONSTRAINED_CATIONS
+    suppl = Chem.ResonanceMolSupplier(mol_copy._mol, flags=flags)
+    res_mols = [RDKitMol(RWMol(mol)) for mol in suppl]
+
+    # Convert positively charged species back to radical species
+    for res_mol in res_mols:
+        for atom in res_mol.GetAtoms():
+            charge = atom.GetFormalCharge()
+            if charge > 0:  # Find a radical site
+                recipe[atom.GetIdx()] = radical_electrons
+                atom.SetFormalCharge(0)
+                atom.SetNumRadicalElectrons(charge)
+            elif charge < 0:  # Shouldn't appear, just for bug detection
+                raise RuntimeError('Encounter charge separation during resonance structure generation.')
+        Chem.rdmolops.SetConjugation(res_mol._mol)  # Make sure conjugation is re-assigned
+        res_mol.UpdatePropertyCache()  # Make sure the assignment is boardcast to atoms / bonds
+    return res_mols
