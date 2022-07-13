@@ -264,19 +264,25 @@ def ts_viewer(r_mol: 'RDKitMol',
         ts_bond_width (float): The width of the TS bonds. Defaults to 0.1. As a reference, normal bond width is 0.05.
     """
     # Create grid viewer
-    grid_arguments = {}
-    if only_ts:
-        grid_arguments['viewer_grid'] = (1, 1)
-        alignment = ['ts']
-    elif vertically_aligned:
-        grid_arguments['viewer_grid'] = (len(alignment), 1)
+    if kwargs.get('viewer'):
+        viewer = kwargs['viewer']
     else:
-        grid_arguments['viewer_grid'] = (1, len(alignment))
-    if kwargs.get('viewer_size'):
-        grid_arguments['viewer_size'] = (grid_arguments['viewer_grid'][0] * kwargs['viewer_size'][0],
-                                         grid_arguments['viewer_grid'][1] * kwargs['viewer_size'][1],)
-    grid_arguments['linked'] = kwargs.get('linked', False)
-    viewer = grid_viewer(**grid_arguments)
+        grid_arguments = {}
+        if only_ts:
+            grid_arguments['viewer_grid'] = (1, 1)
+        elif vertically_aligned:
+            grid_arguments['viewer_grid'] = (len(alignment), 1)
+        else:
+            grid_arguments['viewer_grid'] = (1, len(alignment))
+        if kwargs.get('viewer_size'):
+            grid_arguments['viewer_size'] = (grid_arguments['viewer_grid'][0] * kwargs['viewer_size'][0],
+                                            grid_arguments['viewer_grid'][1] * kwargs['viewer_size'][1],)
+        grid_arguments['linked'] = kwargs.get('linked', False)
+        viewer = grid_viewer(**grid_arguments)
+
+    if only_ts:
+        alignment = ['ts']
+
     if isinstance(ts_bond_color, str):
         ts_bond_color = (ts_bond_color,) * 2
 
@@ -288,11 +294,8 @@ def ts_viewer(r_mol: 'RDKitMol',
     for label in alignment:
 
         mol = mols[label]
-        viewer_loc = (i, 0) if vertically_aligned else (0, i)
-        viewer = mol_viewer(mol,
-                            viewer=viewer,
-                            viewer_loc=viewer_loc,
-                            **kwargs)
+        viewer_loc = kwargs.get('viewer_loc') or ((i, 0) if vertically_aligned else (0, i))
+        mol_viewer(mol, **{**kwargs, **{'viewer': viewer, 'viewer_loc': viewer_loc}})
         if label == 'ts':
             # Recreate broken bonds and formed bonds
             for bbs in broken_bonds:
@@ -302,7 +305,7 @@ def ts_viewer(r_mol: 'RDKitMol',
                                     "color": ts_bond_color[0],
                                     "radius": ts_bond_width,
                                     "dashed": True,
-                                    }, viewer=viewer_loc, **kwargs)
+                                    }, **{**kwargs, **{'viewer': viewer_loc}})
             for fbs in formed_bonds:
                 start, end = mol.GetPositions()[fbs, :]
                 viewer.addCylinder({"start": dict(x=start[0], y=start[1], z=start[2]),
@@ -310,7 +313,7 @@ def ts_viewer(r_mol: 'RDKitMol',
                                     "color": ts_bond_color[1],
                                     "radius": ts_bond_width,
                                     "dashed": True,
-                                    }, viewer=viewer_loc, **kwargs)
+                                    },**{**kwargs, **{'viewer': viewer_loc}})
 
         viewer.zoomTo(viewer=viewer_loc)
         i += 1
