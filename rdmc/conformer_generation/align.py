@@ -276,7 +276,7 @@ class NaiveAlign(object):
         react_atom_center = [get_centroid(coords[self.reacting_atoms[i], :]) for i in range(2)]
         for i in [0, 1]:
             if len(self.non_reacting_atoms[i]):
-                score3 += np.sum(1 / distance.cdist(coords[self.non_reacting_atoms[i],:], react_atom_center, 'sqeuclidean'))
+                score3 += np.sum(1 / distance.cdist(coords[self.non_reacting_atoms[i],:], react_atom_center[i-1].reshape(1, -1), 'sqeuclidean') ** 2)
 
         return score1 + score2 + score3
 
