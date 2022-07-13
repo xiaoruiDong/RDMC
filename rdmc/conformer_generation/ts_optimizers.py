@@ -305,6 +305,7 @@ class GaussianOptimizer(TSOptimizer):
     def __init__(self,
                  method: str = "GFN2-xTB",
                  nprocs: int = 1,
+                 memory: int = 1,
                  track_stats: bool = False):
         """
         Initiate the Gaussian berny optimizer.
@@ -313,12 +314,14 @@ class GaussianOptimizer(TSOptimizer):
             method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
                                     We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
             nprocs (int, optional): The number of processors to use. Defaults to 1.
+            memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
         super(GaussianOptimizer, self).__init__(track_stats)
 
         self.method = method
         self.nprocs = nprocs
+        self.memory = memory
 
         for version in ['g16', 'g09', 'g03']:
             GAUSSIAN_ROOT = os.environ.get(f"{version}root")
@@ -359,7 +362,8 @@ class GaussianOptimizer(TSOptimizer):
                                                  confId=i,
                                                  method=self.method,
                                                  mult=multiplicity,
-                                                 nprocs=self.nprocs)
+                                                 nprocs=self.nprocs,
+                                                 memory=self.memory)
             gaussian_input_file = os.path.join(ts_conf_dir, "gaussian_opt.gjf")
             with open(gaussian_input_file, "w") as f:
                 f.writelines(gaussian_str)

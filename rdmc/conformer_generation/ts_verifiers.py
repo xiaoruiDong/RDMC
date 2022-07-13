@@ -270,6 +270,7 @@ class GaussianIRCVerifier(TSVerifier):
     def __init__(self,
                  method: str = "GFN2-xTB",
                  nprocs: int = 1,
+                 memory: int = 1,
                  fc_kw: str = "calcall",
                  track_stats: bool = False):
         """
@@ -279,6 +280,7 @@ class GaussianIRCVerifier(TSVerifier):
             method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
                                     We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
             nprocs (int, optional): The number of processors to use. Defaults to 1.
+            memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
             fc_kw (str, optional): Keyword specifying how often to compute force constants Defaults to "calcall".
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
@@ -286,6 +288,7 @@ class GaussianIRCVerifier(TSVerifier):
 
         self.method = method
         self.nprocs = nprocs
+        self.memory = memory
         self.fc_kw = fc_kw
 
         for version in ['g16', 'g09', 'g03']:
@@ -333,6 +336,7 @@ class GaussianIRCVerifier(TSVerifier):
                         direction=direction,
                         mult=multiplicity,
                         nprocs=self.nprocs,
+                        memory=self.memory,
                         fc_kw=self.fc_kw,
                     )
                     with open(gaussian_input_file, "w") as f:
