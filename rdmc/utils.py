@@ -168,6 +168,19 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         rw_mol.AddBond(atom1_idx, atom2_idx, ORDERS[bond_order])
 
     # Rectify the molecule
+    # fix C#N-R to be [C-]#[N+]-R
+    rw_mol.UpdatePropertyCache(strict=False)
+    for bond in rw_mol.GetBonds():
+        if bond.GetBondType() == Chem.rdchem.BondType.TRIPLE:
+            atom1 = rw_mol.GetAtoms()[bond.GetBeginAtomIdx()]
+            atom2 = rw_mol.GetAtoms()[bond.GetEndAtomIdx()]
+            if atom1.GetAtomicNum() == 7 and atom2.GetAtomicNum() == 6 and atom1.GetTotalValence() == 4:
+                atom1.SetFormalCharge(+1)
+                atom2.SetFormalCharge(-1)
+            elif atom2.GetAtomicNum() == 7 and atom1.GetAtomicNum() == 6 and atom2.GetTotalValence() == 4:
+                atom2.SetFormalCharge(+1)
+                atom1.SetFormalCharge(-1)
+
     if remove_hs:
         rw_mol = Chem.RemoveHs(rw_mol, sanitize=sanitize)
     elif sanitize:
