@@ -465,6 +465,10 @@ class TSScreener(TSVerifier):
                 mol_data.append(data)
                 ids.append(idx)
 
+        # return if nothing to screen
+        if len(mol_data) == 0:
+            return
+
         # create data batch and run screener model
         batch_data = Batch.from_data_list(mol_data)
         preds = self.module.model(batch_data) > self.threshold
