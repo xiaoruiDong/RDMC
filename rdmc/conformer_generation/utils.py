@@ -87,13 +87,14 @@ def cluster_confs(mol, cutoff=1.0):
     return updated_mol
 
 
-def get_conf_failure_mode(rxn_dir):
+def get_conf_failure_mode(rxn_dir, pruner=True):
     """
     Parse a reaction directory for a TS generation run and extract failure modes (which conformer failed the
     full workflow and for what reason)
 
     Args:
         rxn_dir (str) Path to the reaction directory.
+        pruner (bool: Optional) Whether or not pruner was used during workflow
 
     Returns:
         failure_dict ('dict'): Dictionary of conformer ids mapped to the corresponding failure mode.
@@ -115,7 +116,7 @@ def get_conf_failure_mode(rxn_dir):
     workflow_check_file = os.path.join(rxn_dir, "workflow_check_ids.pkl")
 
     opt_check_ids = pickle.load(open(opt_check_file, "rb"))
-    prune_check_ids = pickle.load(open(prune_check_file, "rb"))
+    prune_check_ids = pickle.load(open(prune_check_file, "rb")) if pruner else {i: True for i in range(len(opt_check_ids))}
     freq_check_ids = pickle.load(open(freq_check_file, "rb"))
     irc_check_ids = pickle.load(open(irc_check_file, "rb"))
     workflow_check_ids = pickle.load(open(workflow_check_file, "rb"))
