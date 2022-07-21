@@ -39,7 +39,7 @@ ROTATABLE_BOND_SMARTS_WO_METHYL = Chem.MolFromSmarts('[!$(*#*)&!D1!H3]-&!@[!$(*#
 # When perceiving molecules, openbabel will always perceive carbon monoxide as [C]=O
 # Needs to correct it by [C-]#[O+]
 CO_OPENBABEL_PATTERN = ob.OBSmartsPattern()
-CO_OPENBABEL_PATTERN.Init('[C;v2]=[O]')
+CO_OPENBABEL_PATTERN.Init('[Cv2X1]=[OX1]')
 
 # Carbene, nitrene, and atomic oxygen templates. RDKit and Openbabel have difficulty
 # distinguish their multiplicity when input as SMILES or XYZ
