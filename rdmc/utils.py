@@ -420,6 +420,30 @@ def set_obmol_coords(obmol: ob.OBMol,
         atom.SetVector(ob.vector3(*coords[atom_idx].tolist()))
 
 
+def fix_CO_openbabel(obmol: 'Openbabel.OBMol',
+                     correct_CO: bool = True):
+    """
+    Fix the CO perception issue for openbabel molecule.
+
+    Args:
+        obmol (Openbabel.OBMol): The Openbabel molecule instance.
+        correct_CO (bool, optional): Whether to fix this issue. Defaults to True.
+    """
+    if not correct_CO:
+        return
+    CO_OPENBABEL_PATTERN.Match(obmol)
+    for pair in CO_OPENBABEL_PATTERN.GetUMapList():
+        obmol.GetBond(*pair).SetBondOrder(3)
+        for idx in pair:
+            atom = obmol.GetAtom(idx)
+            if atom.GetAtomicNum() == 6:
+                atom.SetSpinMultiplicity(0)
+                atom.SetFormalCharge(-1)
+            elif atom.GetAtomicNum() == 8:
+                atom.SetSpinMultiplicity(0)
+                atom.SetFormalCharge(+1)
+
+
 def parse_xyz_by_openbabel(xyz: str,
                            correct_CO: bool = True):
     """
@@ -450,25 +474,18 @@ def parse_xyz_by_openbabel(xyz: str,
         # Find the unsaturated carbons
         if obatom.GetAtomicNum() == 6 and obatom.GetTotalValence() < 4:
             obatom.SetSpinMultiplicity(5 - obatom.GetTotalValence())
+        # Find the unsaturated nitrogen
         elif obatom.GetAtomicNum() == 7 and obatom.GetTotalValence() < 3:
             obatom.SetSpinMultiplicity(4 - obatom.GetTotalValence())
+        # Find the unsaturated oxygen
         elif obatom.GetAtomicNum() == 8 and obatom.GetTotalValence() < 2:
             obatom.SetSpinMultiplicity(3 - obatom.GetTotalValence())
-        elif obatom.GetAtomicNum() == 1 and obatom.GetTotalValence() == 0:
+        # Find the unsaturated nitrogen and halogen
+        elif obatom.GetAtomicNum() in [1, 9, 17, 35, 53] and obatom.GetTotalValence() == 0:
             obatom.SetSpinMultiplicity(2)
 
-    if correct_CO and CO_OPENBABEL_PATTERN.Match(obmol):
-        index_pairs = [x for x in CO_OPENBABEL_PATTERN.GetUMapList()]
-        for pair in index_pairs:
-            obmol.GetBond(*pair).SetBondOrder(3)
-            for idx in pair:
-                atom = obmol.GetAtom(idx)
-                if atom.GetAtomicNum() == 6:
-                    atom.SetSpinMultiplicity(0)
-                    atom.SetFormalCharge(-1)
-                elif atom.GetAtomicNum() == 8:
-                    atom.SetSpinMultiplicity(0)
-                    atom.SetFormalCharge(+1)
+    # Correct [C]=O to [C-]#[O+]
+    fix_CO_openbabel(obmol, correct_CO=correct_CO)
 
     return obmol
 
