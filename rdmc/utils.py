@@ -444,6 +444,108 @@ def fix_CO_openbabel(obmol: 'Openbabel.OBMol',
                 atom.SetFormalCharge(+1)
 
 
+def find_problematic_nitrogens(obmol: 'openbabel.OBMol'):
+    """
+    A function to detect problematic nitrogen (neutral with four valences).
+
+    Args:
+        obmol (openbabel.OBMol): The openbabel molecule instance.
+
+    Returns:
+        list: a list of indexes.
+    """
+    return [atom for atom in ob.OBMolAtomIter(obmol)
+            if atom.GetAtomicNum() == 7 and atom.GetTotalValence() > 3 and atom.GetFormalCharge() < 1]
+
+
+def find_problematic_carbons(obmol: 'openbabel.OBMol'):
+    """
+    A function to detect problematic nitrogen (neutral with four valences).
+
+    Args:
+        obmol (openbabel.OBMol): The openbabel molecule instance.
+
+    Returns:
+        list: a list of indexes.
+    """
+    return [atom for atom in ob.OBMolAtomIter(obmol)
+            if atom.GetAtomicNum() == 6 and atom.GetTotalValence() > 4]
+
+
+def fix_N_terminalXrad(atom,
+                       nb_atom,):
+    """
+    Fix the case where R=N=[X] or R-N#[X]. E.g., R-[N]#[C], R=N=[N]
+    Increase the charge of N and decrease the charge and spin multiplicity of X.
+    E.g., R-[N+]#[C-], R=[N+]=[N-].
+
+    Args:
+        atom (OBAtom): The nitrogen atom
+        nb_atom (OBAtom): The neighbor atom
+    """
+    atom.SetFormalCharge(+1)
+    atom.SetSpinMultiplicity(0)
+    nb_atom.SetFormalCharge(nb_atom.GetFormalCharge() - 1)
+    if nb_atom.GetSpinMultiplicity() > 2:
+        nb_atom.SetSpinMultiplicity(nb_atom.GetSpinMultiplicity() - 1)
+    else:
+        nb_atom.SetSpinMultiplicity(0)
+
+
+def fix_N_nonterminalX(atom,
+                       nb_atom,):
+    atom.SetFormalCharge(0)
+    atom.SetSpinMultiplicity(0)
+    nb_atom.SetSpinMultiplicity(2)
+    bond = atom.GetBond(nb_atom)
+    bond.SetBondOrder(bond.GetBondOrder() - 1)
+
+
+def fix_carbon_five_valences(atom, nb_atom):
+    atom.SetFormalCharge(0)
+    atom.SetSpinMultiplicity(0)
+    if nb_atom.GetSpinMultiplicity() > 1:
+        nb_atom.SetSpinMultiplicity(nb_atom.GetSpinMultiplicity() + 1)
+    else:
+        nb_atom.SetSpinMultiplicity(2)
+    bond = atom.GetBond(nb_atom)
+    bond.SetBondOrder(bond.GetBondOrder() - 1)
+
+
+def fix_problematic_nitrogen(atom: 'openbabel.OBAtom'):
+    if atom.GetTotalValence() == 4:
+        terminal_nbs = sorted([nbatom for nbatom in ob.OBAtomAtomIter(atom)
+                               if nbatom.GetTotalDegree() == 1 \
+                                and nbatom.GetSpinMultiplicity() > 1 \
+                                and nbatom.GetFormalCharge() == 0],  # terminal and has unpaired electrons and no charge
+                              key=lambda x: x.GetBond(atom).GetBondOrder())
+        unsaturated_bonds = sorted([bond for bond in ob.OBAtomBondIter(atom)
+                                    if bond.GetBondOrder() > 1 \
+                                    and bond.GetBondOrder() != 1.5 ],  # avoid aromatic bonds
+                                   key=lambda x: x.GetBondOrder())
+        if terminal_nbs:
+            fix_N_terminalXrad(atom, terminal_nbs[-1])  # Use the one with the highest bond order
+        elif unsaturated_bonds:
+            fix_N_nonterminalX(atom, unsaturated_bonds[-1].GetNbrAtom(atom))   # Use the one with the highest bond order
+        else:
+            atom_dists = [(bond.GetNbrAtom(atom).GetAtomicNum(), bond.GetLength()) for bond in ob.OBAtomBondIter(atom)]
+            raise NotImplementedError(f'Encountered a nitrogen ({atom.GetIdx()}) with 4 valences that cannot be fixed.'
+                                      f'The neighboring atoms and their corresponding bond distances are {atom_dists}.')
+    else:
+        raise NotImplementedError(f'Encountered a nitrogen ({atom.GetIdx()}) with 5 valences that cannot be fixed')
+
+
+def fix_problematic_carbon(atom: 'openbabel.OBAtom'):
+    unsaturated_bonds = sorted([bond for bond in ob.OBAtomBondIter(atom)
+                                if bond.GetBondOrder() > 1 \
+                                and bond.GetBondOrder() != 1.5 ],  # avoid aromatic bonds
+                                key=lambda x: x.GetBondOrder())
+    if unsaturated_bonds:
+        fix_carbon_five_valences(atom, unsaturated_bonds[-1].GetNbrAtom(atom))
+    else:
+        raise NotImplementedError(f'Encountered a nitrogen ({atom.GetIdx()}) with 5 valences that cannot be fixed')
+
+
 def parse_xyz_by_openbabel(xyz: str,
                            correct_CO: bool = True):
     """
@@ -487,6 +589,26 @@ def parse_xyz_by_openbabel(xyz: str,
     # Correct [C]=O to [C-]#[O+]
     fix_CO_openbabel(obmol, correct_CO=correct_CO)
 
+    # Currently using a pre-check strategy to solve problematic cases
+    # If a significant bottleneck of speed is observed
+    # they can also be moved out and only be fixed whenever encountered an issue in the latter step
+    for _ in range(3):
+        problematic_carbons = find_problematic_carbons(obmol)
+        if not problematic_carbons:
+            break
+        for atom in problematic_carbons:
+            fix_problematic_carbon(atom)
+    else:
+        raise NotImplementedError(f'Cannot fix this molecule due to problematic carbons {problematic_carbons}')
+
+    for _ in range(3):
+        problematic_nitrogens = find_problematic_nitrogens(obmol)
+        if not problematic_nitrogens:
+            break
+        for atom in problematic_nitrogens:
+            fix_problematic_nitrogen(atom)
+    else:
+        raise NotImplementedError(f'Cannot fix this molecule due to problematic nitrogens {problematic_nitrogens}')
     return obmol
 
 
