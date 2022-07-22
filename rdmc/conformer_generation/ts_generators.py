@@ -177,19 +177,9 @@ class TSConformerGenerator:
         n_product_rings = len([tuple(x) for x in p_mol.GetSymmSSSR()])
 
         # generate stable conformers depending on type of reaction
-        # if more reactant fragments than product fragments (ex. A + B -> C), generate only product conformers
-        if n_reactants > n_products:
-            n_reactant_confs = 0
-            n_product_confs = n_conformers
-
-        # if more product fragments than reactant fragments (ex. A -> B + C), generate only reactant conformers
-        elif n_reactants < n_products:
-            n_reactant_confs = n_conformers
-            n_product_confs = 0
-
         # if a ring forming/breaking reaction occurs, we want to start from the ring structure when generating TS
         # if more reactant has more rings, generate only reactant conformers
-        elif n_reactant_rings > n_product_rings:
+        if n_reactant_rings > n_product_rings:
             n_reactant_confs = n_conformers
             n_product_confs = 0
 
@@ -197,6 +187,16 @@ class TSConformerGenerator:
         elif n_reactant_rings < n_product_rings:
             n_reactant_confs = 0
             n_product_confs = n_conformers
+
+        # if more reactant fragments than product fragments (ex. A + B -> C), generate only product conformers
+        elif n_reactants > n_products:
+            n_reactant_confs = 0
+            n_product_confs = n_conformers
+
+        # if more product fragments than reactant fragments (ex. A -> B + C), generate only reactant conformers
+        elif n_reactants < n_products:
+            n_reactant_confs = n_conformers
+            n_product_confs = 0
 
         else:
             n_reactant_confs = n_conformers // 2
