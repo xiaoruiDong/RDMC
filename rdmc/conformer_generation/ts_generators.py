@@ -31,6 +31,7 @@ class TSConformerGenerator:
                  optimizer: Optional['TSOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
                  verifiers: Optional[Union['TSVerifier',List['TSVerifier']]] = None,
+                 final_modules=None,
                  save_dir: Optional[str] = None,
                  ) -> 'TSConformerGenerator':
         """
@@ -82,6 +83,7 @@ class TSConformerGenerator:
             self.pruner.initialize_ts_torsions_list(rxn_smiles)
 
         self.verifiers = [] if not verifiers else verifiers
+        self.final_modules = [] if not final_modules else final_modules
         self.save_dir = save_dir
 
     def embed_stable_species(self,
@@ -261,6 +263,9 @@ class TSConformerGenerator:
         self.logger.info("Verifying TS guesses...")
         for verifier in self.verifiers:
             verifier(opt_ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+
+        for module in self.final_modules:
+            opt_ts_mol = module(opt_ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
         # save which ts passed full workflow
         with open(os.path.join(self.save_dir, "workflow_check_ids.pkl"), "wb") as f:
