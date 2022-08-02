@@ -16,7 +16,7 @@ import pickle
 import os
 import subprocess
 from time import time
-from typing import Optional
+from typing import List, Optional
 
 from rdmc.external.gaussian import GaussianLog, write_gaussian_ts_opt
 from rdmc.external.orca import write_orca_opt
@@ -154,10 +154,17 @@ class SellaOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
+        opt_mol = mol.Copy(copy_attrs=["KeepIDs", "FiltIDs"])
         opt_mol.energy = {}
         opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
         for i in range(mol.GetNumConformers()):
+
+            if not opt_mol.FiltIDs[i]:
+                opt_mol.AddNullConformer(confId=i)
+                opt_mol.energy.update({i: np.nan})
+                opt_mol.KeepIDs[i] = False
+                continue
+
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"sella_opt{i}")
                 os.makedirs(ts_conf_dir, exist_ok=True)
@@ -249,10 +256,17 @@ class OrcaOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
+        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs", "FiltIDs"])
         opt_mol.energy = {}  # TODO: add orca energies
         opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
         for i in range(mol.GetNumConformers()):
+
+            if not opt_mol.FiltIDs[i]:
+                opt_mol.AddNullConformer(confId=i)
+                opt_mol.energy.update({i: np.nan})
+                opt_mol.KeepIDs[i] = False
+                continue
+
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"orca_opt{i}")
                 os.makedirs(ts_conf_dir, exist_ok=True)
@@ -351,10 +365,16 @@ class GaussianOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
+        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs", "FiltIDs"])
         opt_mol.energy = {}
         opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
         for i in range(mol.GetNumConformers()):
+
+            if not opt_mol.FiltIDs[i]:
+                opt_mol.AddNullConformer(confId=i)
+                opt_mol.energy.update({i: np.nan})
+                opt_mol.KeepIDs[i] = False
+                continue
 
             if save_dir:
                 ts_conf_dir = os.path.join(save_dir, f"gaussian_opt{i}")
