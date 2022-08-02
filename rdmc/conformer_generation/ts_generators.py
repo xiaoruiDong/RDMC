@@ -31,7 +31,7 @@ class TSConformerGenerator:
                  optimizer: Optional['TSOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
                  verifiers: Optional[Union['TSVerifier',List['TSVerifier']]] = None,
-                 final_modules=None,
+                 final_modules: Optional[Union['TSOptimizer','TSVerifier',List['TSVerifier']]] = None,
                  save_dir: Optional[str] = None,
                  ) -> 'TSConformerGenerator':
         """
@@ -51,6 +51,8 @@ class TSConformerGenerator:
                                               `CRESTPruner` and `TorsionPruner`.
             verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer. Available
                                                                      options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
+            final_modules (TSOptimizer, TSVerifier or list of TSVerifiers, optional): The final modules can include optimizer in different LoT than previous
+                                                                                      one and verifier(s) used to verify the obtained TS conformer.
             save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
@@ -220,13 +222,41 @@ class TSConformerGenerator:
 
         return seed_mols
 
+    def set_filter(self,
+                   ts_mol: 'RDKitMol',
+                   n_conformers: int,
+                   ) -> list:
+        """
+        Generate indices of reactions to be passed to the following steps.
+
+        Args:
+            ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
+            n_conformers (int): The maximum number of conformers to be passed to the following steps.
+
+        Returns:
+            list
+        """
+        energy_dict = ts_mol.energy
+        KeepIDs = ts_mol.KeepIDs
+
+        sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])]  # Order by energy
+        filter_index = [k for k in sorted_index if KeepIDs[k]][:n_conformers]
+        for i in range(ts_mol.GetNumConformers()):
+            if i not in filter_index:
+                ts_mol.FiltIDs[i] = False
+        return ts_mol
+
     def __call__(self,
-                 n_conformers: int = 20):
+                 n_conformers: int = 20,
+                 n_verifies: int = 20,
+                 n_refines: int = 1):
         """
         Run the workflow of TS conformer generation.
 
         Args:
             n_conformers (int): The maximum number of conformers to be generated. Defaults to 20.
+            n_verifies (int): The maximum number of conformers to be passed to the verifiers.  Defaults to 20.
+            n_refines (int): The maximum number of conformers to be passed to the final modeuls. Defaults to 1.
         """
 
         if self.save_dir:
@@ -241,6 +271,7 @@ class TSConformerGenerator:
         self.logger.info("Generating initial TS guesses...")
         ts_mol = self.embedder(seed_mols, save_dir=self.save_dir)
         ts_mol.KeepIDs = {i: True for i in range(ts_mol.GetNumConformers())}  # map ids of generated guesses thru workflow
+        ts_mol.FiltIDs = {i: True for i in range(ts_mol.GetNumConformers())}  # track wheter the conformers are passed to the following steps
 
         self.logger.info("Optimizing TS guesses...")
         opt_ts_mol = self.optimizer(ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
@@ -255,11 +286,18 @@ class TSConformerGenerator:
                 pickle.dump(opt_ts_mol.KeepIDs, f)
 
         self.logger.info("Verifying TS guesses...")
+        opt_ts_mol = self.set_filter(opt_ts_mol, n_verifies)
         for verifier in self.verifiers:
             verifier(opt_ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
-        for module in self.final_modules:
-            opt_ts_mol = module(opt_ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+        self.logger.info("Running final modules...")
+        if self.final_modules:
+            opt_ts_mol = self.set_filter(opt_ts_mol, n_refines)
+            save_dir = os.path.join(self.save_dir, "final_modules")
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+            for module in self.final_modules:
+                opt_ts_mol = module(opt_ts_mol, multiplicity=self.multiplicity, save_dir=save_dir, rxn_smiles=self.rxn_smiles)
 
         # save which ts passed full workflow
         with open(os.path.join(self.save_dir, "workflow_check_ids.pkl"), "wb") as f:

@@ -85,19 +85,19 @@ class TSVerifier:
             list: a list of true and false
         """
         time_start = time()
-        self.verify_ts_guesses(
-            ts_mol=ts_mol,
-            multiplicity=multiplicity,
-            save_dir=save_dir,
-            **kwargs
-        )
+        ts_mol = self.verify_ts_guesses(
+                ts_mol=ts_mol,
+                multiplicity=multiplicity,
+                save_dir=save_dir,
+                **kwargs
+            )
 
         if self.track_stats:
             time_end = time()
             stats = {"time": time_end - time_start}
             self.stats.append(stats)
 
-        return
+        return ts_mol
 
 
 class XTBFrequencyVerifier(TSVerifier):
@@ -137,7 +137,7 @@ class XTBFrequencyVerifier(TSVerifier):
             list
         """
         for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i]:
+            if ts_mol.KeepIDs[i] and ts_mol.FiltIDs[i]:
                 if ts_mol.frequency[i] is None:
                     props = run_xtb_calc(ts_mol, confId=i, job="--hess", uhf=multiplicity - 1)
                     frequencies = props["frequencies"]
@@ -152,7 +152,7 @@ class XTBFrequencyVerifier(TSVerifier):
             with open(os.path.join(save_dir, "freq_check_ids.pkl"), "wb") as f:
                 pickle.dump(ts_mol.KeepIDs, f)
 
-        return
+        return ts_mol
 
 
 class OrcaIRCVerifier(TSVerifier):
@@ -198,7 +198,7 @@ class OrcaIRCVerifier(TSVerifier):
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
         """
         for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i]:
+            if ts_mol.KeepIDs[i] and ts_mol.FiltIDs[i]:
 
                 # Create and save the Orca input file
                 orca_str = write_orca_irc(ts_mol,
@@ -259,7 +259,7 @@ class OrcaIRCVerifier(TSVerifier):
             with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
                 pickle.dump(ts_mol.KeepIDs, f)
 
-        return
+        return ts_mol
 
 
 class GaussianIRCVerifier(TSVerifier):
@@ -314,7 +314,7 @@ class GaussianIRCVerifier(TSVerifier):
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
         """
         for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i]:
+            if ts_mol.KeepIDs[i] and ts_mol.FiltIDs[i]:
 
                 # Create folder to save Gaussian IRC input and output files
                 gaussian_dir = os.path.join(save_dir, f"gaussian_irc{i}")
@@ -395,7 +395,7 @@ class GaussianIRCVerifier(TSVerifier):
             with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
                 pickle.dump(ts_mol.KeepIDs, f)
 
-        return
+        return ts_mol
 
 
 class TSScreener(TSVerifier):
