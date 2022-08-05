@@ -1697,13 +1697,18 @@ def generate_radical_resonance_structures(mol: RDKitMol):
 
     # Modify the original molecule to make it a postively charged species
     recipe = {}  # Used to record changes. Temporarily not used now.
-    Chem.rdmolops.SetConjugation(mol_copy._mol)  # Make sure conjugation is assigned
     for atom in mol_copy.GetAtoms():
         radical_electrons = atom.GetNumRadicalElectrons()
         if radical_electrons > 0:  # Find a radical site
             recipe[atom.GetIdx()] = radical_electrons
             atom.SetFormalCharge(+radical_electrons)
             atom.SetNumRadicalElectrons(0)
+    # Make sure conjugation is assigned
+    # Only assign the conjugation after changing radical sites to positively charged sites
+    Chem.rdmolops.SetConjugation(mol_copy._mol)
+
+    # Avoid generating certain resonance bonds
+    for atom in mol_copy.GetAtoms():
         if (atom.GetAtomicNum() == 8 and len(atom.GetNeighbors()) > 1) or \
             (atom.GetAtomicNum() == 7 and len(atom.GetNeighbors()) > 2):
             # Avoid X-O-Y be part of the resonance and forms X-O.=Y
