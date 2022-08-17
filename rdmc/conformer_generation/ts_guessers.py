@@ -179,9 +179,11 @@ class TSEGNNGuesser(TSInitialGuesser):
         super(TSEGNNGuesser, self).__init__(track_stats)
 
         # Load the TS-EGNN model
-        self.module = LitTSModule.load_from_checkpoint(
-            checkpoint_path=os.path.join(trained_model_dir, "best_model.ckpt"),
-        )
+        checkpoint_path = os.path.join(trained_model_dir, "best_model.ckpt")
+        model_checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+        model_checkpoint["hyper_parameters"]["config"]["training"] = False  # we're not training
+        self.module = LitTSModule(model_checkpoint["hyper_parameters"]["config"])
+        self.module.load_state_dict(state_dict=model_checkpoint["state_dict"])
 
         # Setup TS-EGNN configuration
         self.config = self.module.config
