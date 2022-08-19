@@ -152,7 +152,7 @@ class TSConformerGenerator:
     def generate_seed_mols(self,
                            rxn_smiles: str,
                            n_conformers: int = 20,
-                           shuffle: Bool = False,
+                           shuffle: bool = False,
                            ) -> list:
         """
         Genereate seeds of reactant/product pairs to be passed to the following steps.
