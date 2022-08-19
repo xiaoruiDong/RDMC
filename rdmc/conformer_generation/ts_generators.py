@@ -152,6 +152,7 @@ class TSConformerGenerator:
     def generate_seed_mols(self,
                            rxn_smiles: str,
                            n_conformers: int = 20,
+                           shuffle: Bool = False,
                            ) -> list:
         """
         Genereate seeds of reactant/product pairs to be passed to the following steps.
@@ -159,6 +160,7 @@ class TSConformerGenerator:
         Args:
             rxn_smiles (str): The reaction smiles of the reaction.
             n_conformers (int, optional): The maximum number of conformers to be generated. Defaults to 20.
+            shuffle (Bool, optional): Whether or not to shuffle the embedded mols.
 
         Returns:
             list
@@ -205,14 +207,14 @@ class TSConformerGenerator:
         if n_reactant_confs > 0:
             r_embedded_mol = self.embed_stable_species(r_smi)
             r_embedded_mols = [r_embedded_mol.GetConformer(i).ToMol() for i in range(r_embedded_mol.GetNumConformers())]
-            random.shuffle(r_embedded_mols)
+            random.shuffle(r_embedded_mols) if shuffle else None
             rp_combos = [prepare_mols(r, RDKitMol.FromSmiles(p_smi)) for r in r_embedded_mols[:n_reactant_confs]]
             seed_mols.extend(rp_combos)
 
         if n_product_confs > 0:
             p_embedded_mol = self.embed_stable_species(p_smi)
             p_embedded_mols = [p_embedded_mol.GetConformer(i).ToMol() for i in range(p_embedded_mol.GetNumConformers())]
-            random.shuffle(p_embedded_mols)
+            random.shuffle(p_embedded_mols) if shuffle else None
             pr_combos = [prepare_mols(p, RDKitMol.FromSmiles(r_smi)) for p in p_embedded_mols[:n_product_confs]]
             seed_mols.extend(pr_combos)
 
