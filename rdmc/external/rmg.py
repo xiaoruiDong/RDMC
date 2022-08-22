@@ -5,14 +5,16 @@
 A module contains RMG related functions. Needs to run with rmg_env.
 """
 
+import os
 from itertools import product as set_product
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from rdkit import Chem
 
 try:
     from rmgpy import settings
     from rmgpy.data.rmg import RMGDatabase
+    from rmgpy.data.kinetics.database import KineticsDatabase
     from rmgpy.exceptions import ForbiddenStructureException
     import rmgpy.molecule.element as elements
     import rmgpy.molecule.molecule as mm
@@ -46,6 +48,22 @@ def load_rmg_database(families: list = [],
         kinetics_families=kinetics_families,
     )
     return database
+
+
+def load_rxn_family_database(families: Union[list,str] = 'all'):
+    """
+    A helper function to load RMG Kinetic database that only contains reaction family info.
+
+    Args:
+        families (list, optional): Accepts a list or str of the following:
+            - Specific kinetics family labels
+            - Names of family sets defined in recommended.py
+            - 'all'
+            - 'none'. Defaults to 'all'.
+    """
+    kdb = KineticsDatabase()
+    kdb.load_families(os.path.join(settings['database.directory'], 'kinetics', 'families'), families=families)
+    return kdb
 
 
 def from_rdkit_mol(rdkitmol,
@@ -119,7 +137,7 @@ def from_rdkit_mol(rdkitmol,
     return mol
 
 
-def find_reaction_family(database: 'RMGDatabase',
+def find_reaction_family(database: 'KineticsDatabase',
                          reactants: list,
                          products: list,
                          only_families: list = None,
@@ -131,14 +149,14 @@ def find_reaction_family(database: 'RMGDatabase',
     A helper function to find reaction families for given reactants and products.txt
 
     Args:
-        database (RMGDatabase): A RMG database instance.
+        database (KineticsDatabase): A RMG Kinetics database instance.
         reactants (list): A list of reactant molecules.
         products (list): A list of product molecules.
         only_families (list, optional): A list of family to search from. Defaults to ``None``
                                         for unlimited.
         unique (bool): Whether to only return a single results. Defaults to ``True``.
         verbose (bool, optional): Whether to print results. Defaults to print.
-        resonance (bool): Whether to generate resonance strucuture when searching for reaction 
+        resonance (bool): Whether to generate resonance strucuture when searching for reaction
                           family. Defauls to ```True``.
 
     Returns:
@@ -147,7 +165,7 @@ def find_reaction_family(database: 'RMGDatabase',
         - list: [(family_label1, is_foward_1), (family_label2, is_forward2)...] if ``unique == False``.
     """
     # Check if the RMG can find this reaction. Use ``copy``` to avoid changing reactants and products.
-    for family in database.kinetics.families.values():
+    for family in database.families.values():
         family.save_order = False
 
     if resonance:
@@ -157,7 +175,7 @@ def find_reaction_family(database: 'RMGDatabase',
         reactants = [mol.copy() for mol in reactants]
         products = [mol.copy() for mol in products]
 
-    reaction_list = database.kinetics.generate_reactions_from_families(
+    reaction_list = database.generate_reactions_from_families(
                                                         reactants=reactants,
                                                         products=products,
                                                         only_families=only_families)
@@ -178,7 +196,7 @@ def find_reaction_family(database: 'RMGDatabase',
         return None, None
 
 
-def generate_reaction_complex(database: 'RMGDatabase',
+def generate_reaction_complex(database: 'KineticsDatabase',
                               reactants: list,
                               products: list,
                               only_families: list = None,
@@ -191,7 +209,7 @@ def generate_reaction_complex(database: 'RMGDatabase',
     # TODO: provide an option if multiple channel if available.
 
     Args:
-        database (RMGDatabase): An RMG database instance.
+        database (KineticsDatabase): An RMG Kinetics database instance.
         reactants (list): A list of reactant molecules.
         products (list): A list of product molecules.
         only_families (list): A list of families that constrains the search.
@@ -219,7 +237,7 @@ def generate_reaction_complex(database: 'RMGDatabase',
             return None, None
 
     # Make the reaction family preserver atom orders
-    family = database.kinetics.families[family_label]
+    family = database.families[family_label]
     family.save_order = True
 
     # Get reaction template and species number
