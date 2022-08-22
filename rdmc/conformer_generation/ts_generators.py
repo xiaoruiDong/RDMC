@@ -209,6 +209,8 @@ class TSConformerGenerator:
             r_embedded_mols = [r_embedded_mol.GetConformer(i).ToMol() for i in range(r_embedded_mol.GetNumConformers())]
             random.shuffle(r_embedded_mols) if shuffle else None
             rp_combos = [prepare_mols(r, RDKitMol.FromSmiles(p_smi)) for r in r_embedded_mols[:n_reactant_confs]]
+            [(r.SetProp("Identity", "reactant"), p.SetProp("Identity", "product"))
+                for (r, p) in rp_combos]  # to properly save r/p to file later
             seed_mols.extend(rp_combos)
 
         if n_product_confs > 0:
@@ -216,6 +218,8 @@ class TSConformerGenerator:
             p_embedded_mols = [p_embedded_mol.GetConformer(i).ToMol() for i in range(p_embedded_mol.GetNumConformers())]
             random.shuffle(p_embedded_mols) if shuffle else None
             pr_combos = [prepare_mols(p, RDKitMol.FromSmiles(r_smi)) for p in p_embedded_mols[:n_product_confs]]
+            [(p.SetProp("Identity", "product"), r.SetProp("Identity", "reactant"))
+                for (p, r) in pr_combos]  # to properly save r/p to file later
             seed_mols.extend(pr_combos)
 
         return seed_mols

@@ -114,11 +114,20 @@ class TSInitialGuesser:
             p_writer = Chem.rdmolfiles.SDWriter(p_path)
 
             for r, p in rp_combos:
-                r, p = r.ToRWMol(), p.ToRWMol()
-                r.SetProp("_Name", f"{Chem.MolToSmiles(r)}")
-                p.SetProp("_Name", f"{Chem.MolToSmiles(p)}")
-                r_writer.write(r)
-                p_writer.write(p)
+
+                if r.GetProp("Identity") == "reactant":
+                    reactant = r
+                    product = p
+                elif r.GetProp("Identity") == "product":
+                    reactant = p
+                    product = r
+
+                reactant, product = reactant.ToRWMol(), product.ToRWMol()
+                reactant.SetProp("_Name", f"{Chem.MolToSmiles(reactant)}")
+                product.SetProp("_Name", f"{Chem.MolToSmiles(product)}")
+                r_writer.write(reactant)
+                p_writer.write(product)
+
         except Exception:
             raise
         finally:
