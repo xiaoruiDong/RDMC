@@ -354,18 +354,14 @@ class GaussianIRCVerifier(TSVerifier):
                     # Extract molecule adjacency matrix from IRC results
                     # TBD: We can stop running IRC if one side of IRC fails
                     # I personally think it is worth to continue to run the other IRC just to provide more sights
-                    if gaussian_run.returncode == 0:
-                        try:
-                            glog = GaussianLog(gaussian_output_file)
-                            adj_mat.append(glog.get_mol(refid=glog.num_all_geoms-1,  # The last geometry in the job
-                                                        converged=False,
-                                                        sanitize=False,
-                                                        backend='openbabel').GetAdjacencyMatrix())
-                        except Exception as e:
-                            print(f'Run into error when obtaining adjacency matrix from IRC output file. Got: {e}')
-                            ts_mol.KeepIDs[i] = False
-                            irc_check = False
-                    else:
+                    try:
+                        glog = GaussianLog(gaussian_output_file)
+                        adj_mat.append(glog.get_mol(refid=glog.num_all_geoms-1,  # The last geometry in the job
+                                                    converged=False,
+                                                    sanitize=False,
+                                                    backend='openbabel').GetAdjacencyMatrix())
+                    except Exception as e:
+                        print(f'Run into error when obtaining adjacency matrix from IRC output file. Got: {e}')
                         ts_mol.KeepIDs[i] = False
                         irc_check = False
 
