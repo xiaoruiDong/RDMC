@@ -16,6 +16,7 @@ from rdmc.conformer_generation.utils import *
 from rdmc.conformer_generation.generators import StochasticConformerGenerator
 from rdmc.conformer_generation.pruners import *
 from rdmc.conformer_generation.align import prepare_mols
+from rdmc.conformer_generation.ts_guessers import DEGSMGuesser
 
 
 class TSConformerGenerator:
@@ -243,7 +244,10 @@ class TSConformerGenerator:
         # TODO: Need to double check if multiplicity is generally needed for embedder
         # It is needed for QST2, probably 
         self.logger.info("Generating initial TS guesses...")
-        ts_mol = self.embedder(seed_mols, save_dir=self.save_dir)
+        if isinstance(self.embedder,DEGSMGuesser):
+            ts_mol = self.embedder(seed_mols, multiplicity=self.multiplicity, save_dir=self.save_dir)
+        else:
+            ts_mol = self.embedder(seed_mols, save_dir=self.save_dir)
         ts_mol.KeepIDs = {i: True for i in range(ts_mol.GetNumConformers())}  # map ids of generated guesses thru workflow
 
         self.logger.info("Optimizing TS guesses...")
