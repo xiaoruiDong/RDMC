@@ -150,6 +150,7 @@ class TSInitialGuesser:
 
     def __call__(self,
                  mols: list,
+                 multiplicity: Optional[int] = None,
                  save_dir: Optional[str] = None,
                  ):
         """
@@ -157,13 +158,14 @@ class TSInitialGuesser:
 
         Args:
             mols (list): A list of molecules
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (str, optional): The path to save results. Defaults to None.
 
         Returns:
             'RDKitMol'
         """
         time_start = time()
-        ts_mol_data = self.generate_ts_guesses(mols, save_dir)
+        ts_mol_data = self.generate_ts_guesses(mols, multiplicity, save_dir)
 
         if self.track_stats:
             time_end = time()
@@ -204,12 +206,14 @@ class TSEGNNGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols: list,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -267,12 +271,14 @@ class TSGCNGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols: list,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -317,12 +323,14 @@ class RMSDPPGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -379,12 +387,14 @@ class AutoNEBGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -487,14 +497,14 @@ class DEGSMGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols: list,
-                            multiplicity: int,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
-            multiplicity (int): The spin multiplicity of the reaction.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -551,29 +561,3 @@ class DEGSMGuesser(TSInitialGuesser):
             self.save_guesses(save_dir, mols, ts_mol.ToRWMol())
 
         return ts_mol
-
-    def __call__(self,
-                 mols: list,
-                 save_dir: Optional[str] = None,
-                 multiplicity: int = 1,
-                 ):
-        """
-        The workflow to generate TS initial guesses.
-
-        Args:
-            mols (list): A list of molecules
-            save_dir (str, optional): The path to save results. Defaults to None.
-            multiplicity (int): The spin multiplicity of the reaction. Defaults to 1.
-
-        Returns:
-            'RDKitMol'
-        """
-        time_start = time()
-        ts_mol_data = self.generate_ts_guesses(mols, multiplicity, save_dir)
-
-        if self.track_stats:
-            time_end = time()
-            stats = {"time": time_end - time_start}
-            self.stats.append(stats)
-
-        return ts_mol_data
