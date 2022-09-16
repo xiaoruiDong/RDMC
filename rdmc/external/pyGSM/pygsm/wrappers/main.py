@@ -43,7 +43,7 @@ def parse_arguments(verbose=True):
     parser.add_argument('-package', default="QChem", type=str,
                         help="Electronic structure theory package (default: %(default)s)",
                         choices=["QChem", "Orca", "Molpro", "PyTC", "TeraChemCloud", "OpenMM", "DFTB", "TeraChem",
-                                 "BAGEL", "xTB_lot", "ase"])
+                                 "BAGEL", "xTB_lot", "ase", "Gaussian"])
     parser.add_argument('-lot_inp_file', type=str, default=None,
                         help='external file to specify calculation e.g. qstart,gstart,etc. Highly package specific.',
                         required=False)
@@ -131,7 +131,6 @@ def parse_arguments(verbose=True):
     args = parser.parse_args()
 
     if verbose:
-        print("what the fuck2")
         print_msg()
 
     if args.nproc > 1:
@@ -362,7 +361,6 @@ def choose_optimizer(inpfileq: dict):
 
 def main():
 
-    print("WHAT THE FUCK!")
     # argument parsing and header
     inpfileq = parse_arguments(verbose=True)
 
