@@ -31,7 +31,7 @@ except:
 try:
     from xtb.ase.calculator import XTB
     from rdmc.external.xtb_tools.opt import run_xtb_calc
-    from rdmc.external.orca import write_orca_gsm
+    from rdmc.external.gaussian import write_gaussian_gsm
 except:
     print("NO XTB installation detected. Skipping import...")
 
@@ -512,7 +512,7 @@ class DEGSMGuesser(TSInitialGuesser):
         """
         save_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
         lot_inp_file = os.path.join(save_dir, "qstart.inp")
-        lot_inp_str = write_orca_gsm(self.method, self.memory, self.nprocs)
+        lot_inp_str = write_gaussian_gsm(self.method, self.memory, self.nprocs)
         with open(lot_inp_file, "w") as f:
             f.writelines(lot_inp_str)
 
@@ -533,21 +533,24 @@ class DEGSMGuesser(TSInitialGuesser):
                 f.write(r_xyz)
                 f.write(p_xyz)
 
-            command = f"{self.gsm_binary} -xyzfile {xyz_file} -nproc {self.nprocs} -multiplicity {multiplicity} -mode DE_GSM -package Orca -lot_inp_file {lot_inp_file} {self.gsm_args}"
-            with open(os.path.join(ts_conf_dir, "degsm.log"), "w") as f:
-                gsm_run = subprocess.run(
-                    [command],
-                    stdout=f,
-                    stderr=subprocess.STDOUT,
-                    cwd=ts_conf_dir,
-                    shell=True,
-                )
-            used_rp_combos.append((r_mol, p_mol))
-            tsnode_path = os.path.join(ts_conf_dir, 'TSnode_0.xyz')
-            with open(tsnode_path) as f:
-                positions = f.read().splitlines()[2:]
-                positions = np.array([line.split()[1:] for line in positions], dtype=float)
-            ts_guesses.append(positions)
+            try:
+                command = f"{self.gsm_binary} -xyzfile {xyz_file} -nproc {self.nprocs} -multiplicity {multiplicity} -mode DE_GSM -package Gaussian -lot_inp_file {lot_inp_file} {self.gsm_args}"
+                with open(os.path.join(ts_conf_dir, "degsm.log"), "w") as f:
+                    gsm_run = subprocess.run(
+                        [command],
+                        stdout=f,
+                        stderr=subprocess.STDOUT,
+                        cwd=ts_conf_dir,
+                        shell=True,
+                    )
+                used_rp_combos.append((r_mol, p_mol))
+                tsnode_path = os.path.join(ts_conf_dir, 'TSnode_0.xyz')
+                with open(tsnode_path) as f:
+                    positions = f.read().splitlines()[2:]
+                    positions = np.array([line.split()[1:] for line in positions], dtype=float)
+                ts_guesses.append(positions)
+            except:
+                pass
 
         if len(ts_guesses) == 0:
             return None
@@ -558,6 +561,6 @@ class DEGSMGuesser(TSInitialGuesser):
         [ts_mol.GetConformer(i).SetPositions(p) for i, p in enumerate(ts_guesses)]
 
         if save_dir:
-            self.save_guesses(save_dir, mols, ts_mol.ToRWMol())
+            self.save_guesses(save_dir, used_rp_combos, ts_mol.ToRWMol())
 
         return ts_mol

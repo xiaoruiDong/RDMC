@@ -1447,3 +1447,21 @@ def write_gaussian_irc(
                           f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
     )
     return gaussian_opt_input
+
+def write_gaussian_gsm(method="GFN2-xTB", memory=1, nprocs=1):
+
+    if method == "GFN2-xTB":
+        title_section = (
+            f'#N NoSymmetry scf(xqc) force\n'
+            f'external="{XTB_GAUSSIAN_PL} --gfn 2 -P"'
+        )
+    else:
+        title_section = f"#N NoSymmetry scf(xqc) force {method}"
+
+    gaussian_gsm_input = (f'%mem={memory}gb\n'
+                          f'%nprocshared={nprocs}\n'
+                          f'{title_section}\n'
+                          f'\n'
+                          f'Title Card Required'
+    )
+    return gaussian_gsm_input
