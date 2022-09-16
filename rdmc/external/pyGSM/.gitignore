@@ -1,0 +1,14 @@
+*.pyc
+.temp*
+*.pid
+*.molden
+*temp
+temp*
+ipynb_demos/pytc/scratch/*.xyz
+.*  # ignore all hidden files and folders
+!/.gitignore  # explicitly do not ignore .gitignore
+docs/html/
+html/
+dist/
+build/
+pyGSM.egg-info/
