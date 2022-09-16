@@ -549,7 +549,7 @@ class DEGSMGuesser(TSInitialGuesser):
                     positions = f.read().splitlines()[2:]
                     positions = np.array([line.split()[1:] for line in positions], dtype=float)
                 ts_guesses.append(positions)
-            except:
+            except FileNotFoundError:
                 pass
 
         if len(ts_guesses) == 0:
