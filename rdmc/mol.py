@@ -452,6 +452,7 @@ class RDKitMol(object):
     def FromSmiles(cls,
                    smiles: str,
                    removeHs: bool = False,
+                   addHs: bool = True,
                    sanitize: bool = True,
                    allowCXSMILES: bool = True,
                    keepAtomMap: bool = True,
@@ -462,6 +463,8 @@ class RDKitMol(object):
         Args:
             smiles (str): A SMILES representation of the molecule.
             removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+            addHs (bool, optional): Whether to add explicit hydrogen atoms to the molecule. ``True`` to add.
+                                    Only functioning when removeHs is False.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
             allowCXSMILES (bool, optional): Whether to recognize and parse CXSMILES. Defaults to ``True``.
             keepAtomMap (bool, optional): Whether to keep the Atom mapping contained in the SMILES. Defaults
@@ -479,7 +482,7 @@ class RDKitMol(object):
         # By default, for a normal SMILES (e.g.,[CH2]CCCO) other than H indexed SMILES
         # (e.g., [C+:1]#[C:2][C:3]1=[C:7]([H:10])[N-:6][O:5][C:4]1([H:8])[H:9]),
         # no hydrogens are automatically added. So, we need to add H atoms.
-        if not removeHs:
+        if not removeHs and addHs:
             mol = Chem.rdmolops.AddHs(mol)
 
         # Create RDKitMol
