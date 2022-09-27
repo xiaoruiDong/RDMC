@@ -63,6 +63,7 @@ class TSOptimizer:
                       save_dir: str,
                       opt_mol: 'RDKitMol',
                       keep_ids: dict,
+                      energies: dict,
                       ):
         """
         Save the information of the optimized TS geometries into the directory.
@@ -71,12 +72,14 @@ class TSOptimizer:
             save_dir (str): The path to the directory to save the results.
             opt_mol (RDKitMol): The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
             keep_ids (dict): Dictionary of which opts succeeded and which failed
+            energies (dict): Dictionary of energies for each conformer
         """
         # Save optimized ts mols
         ts_path = os.path.join(save_dir, "ts_optimized_confs.sdf")
         try:
             ts_writer = Chem.rdmolfiles.SDWriter(ts_path)
             for i in range(opt_mol.GetNumConformers()):
+                opt_mol.SetProp("Energy", str(energies[i]))
                 ts_writer.write(opt_mol, confId=i)
         except Exception:
             raise
@@ -168,7 +171,7 @@ class SellaOptimizer(TSOptimizer):
                                     copy_attrs=["KeepIDs", "energy", "frequency"],
                                     )
         if save_dir:
-            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs)
+            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs, opt_mol.energy)
 
         return opt_mol
 
@@ -291,7 +294,7 @@ class OrcaOptimizer(TSOptimizer):
                 opt_mol.KeepIDs[i] = False
 
         if save_dir:
-            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs)
+            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs, opt_mol.energy)
 
         return opt_mol
 
@@ -396,6 +399,6 @@ class GaussianOptimizer(TSOptimizer):
                 opt_mol.KeepIDs[i] = False
 
         if save_dir:
-            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs)
+            self.save_opt_mols(save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs, opt_mol.energy)
 
         return opt_mol
