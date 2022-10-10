@@ -15,8 +15,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/xiaoruiDong/RDMC",
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    install_requires=['numpy', 'py3Dmol', 'networkx', 'scipy', 'six', 'matplotlib'],  # you install rdkit and openbabel from environment.yml
+    packages=find_packages(),
+    install_requires=['numpy', 'py3Dmol'],  # you install rdkit and openbabel from environment.yml
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -25,7 +25,4 @@ setup(
     ],
     license = "MIT License",
     python_requires='>=3.6',
-    entry_points={'console_scripts': [
-        'gsm=rdmc.external.pyGSM.pygsm.wrappers.main:main',
-            ]},
 )
