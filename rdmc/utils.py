@@ -512,7 +512,7 @@ def fix_carbon_five_valences(atom, nb_atom):
     bond.SetBondOrder(bond.GetBondOrder() - 1)
 
 
-def fix_problematic_nitrogen(atom: 'openbabel.OBAtom'):
+def fix_problematic_nitrogen(atom: 'openbabel.OBAtom', obmol):
     if atom.GetTotalValence() == 4:
         terminal_nbs = sorted([nbatom for nbatom in ob.OBAtomAtomIter(atom)
                                if nbatom.GetTotalDegree() == 1 \
@@ -528,9 +528,30 @@ def fix_problematic_nitrogen(atom: 'openbabel.OBAtom'):
         elif unsaturated_bonds:
             fix_N_nonterminalX(atom, unsaturated_bonds[-1].GetNbrAtom(atom))   # Use the one with the highest bond order
         else:
+            problematic_carbons = [atom for atom in ob.OBMolAtomIter(obmol) 
+                                   if atom.GetAtomicNum() == 6 and atom.GetTotalValence() == 3]
+            print(f'identified {len(problematic_carbons)} problematic_carbons oh no: {problematic_carbons}')
+            for atom_C in problematic_carbons:
+                if not any([nbatom for nbatom in ob.OBAtomAtomIter(atom_C)
+                     if nbatom.GetAtomicNum() == 7 and nbatom.GetFormalCharge() == 0]):
+                    continue
+                atom_C.SetFormalCharge(-1)
+                atom_C.SetSpinMultiplicity(0)
+            atom.SetFormalCharge(+1)
+            atom.SetSpinMultiplicity(0)
+            
+            obconversion = ob.OBConversion()
+            obconversion.SetOutFormat('smi')
+            smi = obconversion.WriteString(obmol).strip()
+            print(smi)
+            
             atom_dists = [(bond.GetNbrAtom(atom).GetAtomicNum(), bond.GetLength()) for bond in ob.OBAtomBondIter(atom)]
-            raise NotImplementedError(f'Encountered a nitrogen ({atom.GetIdx()}) with 4 valences that cannot be fixed.'
-                                      f'The neighboring atoms and their corresponding bond distances are {atom_dists}.')
+            print(f'Encountered a nitrogen ({atom.GetIdx()}) with 4 valences that cannot be fixed.'
+                  f'The neighboring atoms and their corresponding bond distances are {atom_dists}.')
+
+            # atom_dists = [(bond.GetNbrAtom(atom).GetAtomicNum(), bond.GetLength()) for bond in ob.OBAtomBondIter(atom)]
+            # raise NotImplementedError(f'Encountered a nitrogen ({atom.GetIdx()}) with 4 valences that cannot be fixed.'
+            #                           f'The neighboring atoms and their corresponding bond distances are {atom_dists}.')
     else:
         raise NotImplementedError(f'Encountered a nitrogen ({atom.GetIdx()}) with 5 valences that cannot be fixed')
 
@@ -543,7 +564,7 @@ def fix_problematic_carbon(atom: 'openbabel.OBAtom'):
     if unsaturated_bonds:
         fix_carbon_five_valences(atom, unsaturated_bonds[-1].GetNbrAtom(atom))
     else:
-        raise NotImplementedError(f'Encountered a nitrogen ({atom.GetIdx()}) with 5 valences that cannot be fixed')
+        raise NotImplementedError(f'Encountered a carbon ({atom.GetIdx()}) with 5 valences that cannot be fixed')
 
 
 def parse_xyz_by_openbabel(xyz: str,
@@ -606,9 +627,13 @@ def parse_xyz_by_openbabel(xyz: str,
         if not problematic_nitrogens:
             break
         for atom in problematic_nitrogens:
-            fix_problematic_nitrogen(atom)
+            fix_problematic_nitrogen(atom, obmol)
     else:
         raise NotImplementedError(f'Cannot fix this molecule due to problematic nitrogens {problematic_nitrogens}')
+
+    if obmol.GetTotalCharge() != 0:
+        raise NotImplementedError(f'Cannot fix this molecule due to total charge not being 0')
+
     return obmol
 
 
