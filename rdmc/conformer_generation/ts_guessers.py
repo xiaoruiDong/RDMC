@@ -489,11 +489,11 @@ class DEGSMGuesser(TSInitialGuesser):
         self.nprocs = nprocs
         self.memory = memory
 
-        GSM_BINARY = os.environ.get("gsm")
-        if not GSM_BINARY:
-            raise RuntimeError('No GSM binary is found in the PATH.')
+        GSM_ENTRY_POINT = os.environ.get("gsm")
+        if not GSM_ENTRY_POINT:
+            raise RuntimeError('No GSM entry point is found in the PATH.')
         else:
-            self.gsm_binary = GSM_BINARY
+            self.gsm_entry_point = GSM_ENTRY_POINT
 
     def generate_ts_guesses(self,
                             mols: list,
@@ -534,7 +534,7 @@ class DEGSMGuesser(TSInitialGuesser):
                 f.write(p_xyz)
 
             try:
-                command = f"{self.gsm_binary} -xyzfile {xyz_file} -nproc {self.nprocs} -multiplicity {multiplicity} -mode DE_GSM -package Gaussian -lot_inp_file {lot_inp_file} {self.gsm_args}"
+                command = f"{self.gsm_entry_point} -xyzfile {xyz_file} -nproc {self.nprocs} -multiplicity {multiplicity} -mode DE_GSM -package Gaussian -lot_inp_file {lot_inp_file} {self.gsm_args}"
                 with open(os.path.join(ts_conf_dir, "degsm.log"), "w") as f:
                     gsm_run = subprocess.run(
                         [command],
