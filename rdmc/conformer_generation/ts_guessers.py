@@ -472,7 +472,7 @@ class DEGSMGuesser(TSInitialGuesser):
     """
 
     def __init__(self,
-                 method: str = "XTB2",
+                 method: str = "GFN2-xTB",
                  nprocs: int = 1,
                  memory: int = 1,
                  gsm_args: Optional[str] = "",
