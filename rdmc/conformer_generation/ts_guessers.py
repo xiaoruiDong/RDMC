@@ -9,6 +9,8 @@ Modules for providing transition state initial guess geometries
 from rdkit import Chem
 
 import os
+import tempfile
+import subprocess
 from time import time
 from typing import Optional
 
@@ -29,6 +31,7 @@ except:
 try:
     from xtb.ase.calculator import XTB
     from rdmc.external.xtb_tools.opt import run_xtb_calc
+    from rdmc.external.gaussian import write_gaussian_gsm
 except:
     print("NO XTB installation detected. Skipping import...")
 
@@ -147,6 +150,7 @@ class TSInitialGuesser:
 
     def __call__(self,
                  mols: list,
+                 multiplicity: Optional[int] = None,
                  save_dir: Optional[str] = None,
                  ):
         """
@@ -154,13 +158,14 @@ class TSInitialGuesser:
 
         Args:
             mols (list): A list of molecules
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (str, optional): The path to save results. Defaults to None.
 
         Returns:
             'RDKitMol'
         """
         time_start = time()
-        ts_mol_data = self.generate_ts_guesses(mols, save_dir)
+        ts_mol_data = self.generate_ts_guesses(mols, multiplicity, save_dir)
 
         if self.track_stats:
             time_end = time()
@@ -201,12 +206,14 @@ class TSEGNNGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols: list,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -264,12 +271,14 @@ class TSGCNGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols: list,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -314,12 +323,14 @@ class RMSDPPGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -376,12 +387,14 @@ class AutoNEBGuesser(TSInitialGuesser):
 
     def generate_ts_guesses(self,
                             mols,
+                            multiplicity: Optional[int] = None,
                             save_dir: Optional[str] = None):
         """
         Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
@@ -439,6 +452,105 @@ class AutoNEBGuesser(TSInitialGuesser):
 
             except (CalculationFailed, AssertionError) as e:
                 os.chdir(cwd)
+
+        if len(ts_guesses) == 0:
+            return None
+
+        # copy data to mol
+        ts_mol = mols[0][0].Copy(quickCopy=True)
+        ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
+        [ts_mol.GetConformer(i).SetPositions(p) for i, p in enumerate(ts_guesses)]
+
+        if save_dir:
+            self.save_guesses(save_dir, used_rp_combos, ts_mol.ToRWMol())
+
+        return ts_mol
+
+class DEGSMGuesser(TSInitialGuesser):
+    """
+    The class for generatign TS guesses using the DE-GSM method.
+    """
+
+    def __init__(self,
+                 method: str = "GFN2-xTB",
+                 nprocs: int = 1,
+                 memory: int = 1,
+                 gsm_args: Optional[str] = "",
+                 track_stats: Optional[bool] = False):
+        """
+        Initialize the DE-GSM TS initial guesser.
+
+        Args:
+            track_stats (bool, optional): Whether to track the status. Defaults to False.
+        """
+        super(DEGSMGuesser, self).__init__(track_stats)
+        self.gsm_args = gsm_args
+        self.method = method
+        self.nprocs = nprocs
+        self.memory = memory
+
+        GSM_ENTRY_POINT = os.environ.get("gsm")
+        if not GSM_ENTRY_POINT:
+            raise RuntimeError('No GSM entry point is found in the PATH.')
+        else:
+            self.gsm_entry_point = GSM_ENTRY_POINT
+
+    def generate_ts_guesses(self,
+                            mols: list,
+                            multiplicity: Optional[int] = None,
+                            save_dir: Optional[str] = None):
+        """
+        Generate TS guesser.
+
+        Args:
+            mols (list): A list of reactant and product pairs.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+
+        Returns:
+            RDKitMol
+        """
+        save_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
+        lot_inp_file = os.path.join(save_dir, "qstart.inp")
+        lot_inp_str = write_gaussian_gsm(self.method, self.memory, self.nprocs)
+        with open(lot_inp_file, "w") as f:
+            f.writelines(lot_inp_str)
+
+        ts_guesses, used_rp_combos = [], []
+        for i, (r_mol, p_mol) in enumerate(mols):
+
+            # TODO: Need to clean the logic here, `ts_conf_dir` is used no matter `save_dir` being true
+            if save_dir:
+                ts_conf_dir = os.path.join(save_dir, f"degsm_conf{i}")
+                if not os.path.exists(ts_conf_dir):
+                    os.makedirs(ts_conf_dir)
+
+            r_xyz = r_mol.ToXYZ()
+            p_xyz = p_mol.ToXYZ()
+
+            xyz_file = os.path.join(ts_conf_dir, f"degsm_conf{i}.xyz")
+            with open(xyz_file, "w") as f:
+                f.write(r_xyz)
+                f.write(p_xyz)
+
+            try:
+                command = f"{self.gsm_entry_point} -xyzfile {xyz_file} -nproc {self.nprocs} -multiplicity {multiplicity} -mode DE_GSM -package Gaussian -lot_inp_file {lot_inp_file} {self.gsm_args}"
+                with open(os.path.join(ts_conf_dir, "degsm.log"), "w") as f:
+                    gsm_run = subprocess.run(
+                        [command],
+                        stdout=f,
+                        stderr=subprocess.STDOUT,
+                        cwd=ts_conf_dir,
+                        shell=True,
+                    )
+                used_rp_combos.append((r_mol, p_mol))
+                tsnode_path = os.path.join(ts_conf_dir, 'TSnode_0.xyz')
+                with open(tsnode_path) as f:
+                    positions = f.read().splitlines()[2:]
+                    positions = np.array([line.split()[1:] for line in positions], dtype=float)
+                ts_guesses.append(positions)
+            except FileNotFoundError:
+                pass
 
         if len(ts_guesses) == 0:
             return None

@@ -12,6 +12,7 @@ Hopefully, this repository can make life easier and let people know how to make 
 * openbabel
 * rdkit
 * py3dmol
+* pygsm-gaussian
 
 ## Demos
 Feel free to check demos in the `ipython/` to learn some basic use of RDMC repository
