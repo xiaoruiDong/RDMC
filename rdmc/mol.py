@@ -824,6 +824,27 @@ class RDKitMol(object):
     def GetDistanceMatrix(self, id: int = 0) -> np.ndarray:
         return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
 
+    def GetMethylBonds(self) -> List:
+        """
+        Generate a list of length-2 sets indicating the bonding atoms to methyl groups
+        in the molecule.
+        """
+        methyl_atoms = []
+        for atom in self._mol.GetAtoms():
+            neighbors_atoms = ''
+            for na in atom.GetNeighbors():
+                neighbors_atoms += na.GetSymbol()
+            if neighbors_atoms.count('C') == 1 and neighbors_atoms.count('H') == 3 and len(neighbors_atoms) == 4:
+                methyl_atoms.append(atom.GetIdx())
+
+        methyl_bonds = []
+        for atom in self._mol.GetAtoms():
+            if atom.GetIdx() in methyl_atoms:
+                for na in atom.GetNeighbors():
+                    if na.GetSymbol() != 'H':
+                        methyl_bonds.append((atom.GetIdx(), na.GetIdx()))
+        return methyl_bonds
+
     def GetPositions(self, id: int = 0) -> np.ndarray:
         """
         Get atom positions of the embeded conformer.
