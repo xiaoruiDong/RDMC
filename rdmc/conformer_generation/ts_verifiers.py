@@ -243,6 +243,7 @@ class OrcaIRCVerifier(TSVerifier):
                 b_adj = irc_b_mol.GetAdjacencyMatrix()
 
                 # Comparing the adjacency matrix
+                rf_pb_check, rb_pf_check = False, False
                 try:
                     rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
                     rb_pf_check = ((r_adj == b_adj).all() and (p_adj == f_adj).all())
@@ -375,6 +376,8 @@ class GaussianIRCVerifier(TSVerifier):
                 r_adj = RDKitMol.FromSmiles(r_smi).GetAdjacencyMatrix()
                 p_adj = RDKitMol.FromSmiles(p_smi).GetAdjacencyMatrix()
                 f_adj, b_adj = adj_mat
+
+                rf_pb_check, rb_pf_check = False, False
                 try:
                     rf_pb_check = ((r_adj == f_adj).all() and (p_adj == b_adj).all())
                     rb_pf_check = ((r_adj == b_adj).all() and (p_adj == f_adj).all())
