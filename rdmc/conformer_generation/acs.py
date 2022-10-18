@@ -27,8 +27,11 @@ from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED
 from xtb.utils import get_method, _methods
 from xtb.interface import Calculator
 
-import scine_sparrow
-import scine_utilities as su
+try:
+    import scine_sparrow
+    import scine_utilities as su
+except:
+    print("No scine_sparrow installation deteced. Skipping import...")
 
 
 class ACS:
