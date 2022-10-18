@@ -311,7 +311,7 @@ class TorisonalSampler:
             energy = opt_minimum_mols.energy[idx]
             if energy >= mol.energy[id]:
                 self.logger.info("Sampler doesn't find conformer with lower energy!! Using original result...")
-                return
+                return mol
 
             opt_minimum_mols.KeepIDs = {i: False for i in range(opt_minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
             opt_minimum_mols.KeepIDs[idx] = True
@@ -331,8 +331,7 @@ class TorisonalSampler:
                 mol.GetConformer(id).SetPositions(opt_minimum_mols.GetConformer(idx).GetPositions())
                 mol.energy[id] = energy
                 mol.frequency[id] = opt_minimum_mols.frequency[idx]
-                mol.ACSIDs[id] = True
-                return
+                return mol
 
         self.logger.info("Sampler doesn't find conformer with lower energy!! Using original result...")
 

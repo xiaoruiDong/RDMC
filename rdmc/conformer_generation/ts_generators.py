@@ -309,12 +309,16 @@ class TSConformerGenerator:
             KeepIDs = opt_ts_mol.KeepIDs
             sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])] # Order by energy
             filter_index = [k for k in sorted_index if KeepIDs[k]][:n_sampling]
-            opt_ts_mol.ACSIDs = {i: False for i in range(opt_ts_mol.GetNumConformers())}
+            found_lower_energy_index = {i: False for i in range(opt_ts_mol.GetNumConformers())}
             for id in filter_index:
-                self.sampler(opt_ts_mol, id, self.rxn_smiles, self.optimizer, self.pruner, self.verifiers, self.save_dir)
+                original_energy = opt_ts_mol.energy[id]
+                opt_ts_mol = self.sampler(opt_ts_mol, id, self.rxn_smiles, self.optimizer, self.pruner, self.verifiers, self.save_dir)
+                new_energy = opt_ts_mol.energy[id]
+                if new_energy < original_energy:
+                    found_lower_energy_index[id] = True
             # save which ts found conformer with lower energy via torsional sampling
             with open(os.path.join(self.save_dir, "sampler_check_ids.pkl"), "wb") as f:
-                pickle.dump(opt_ts_mol.ACSIDs, f)
+                pickle.dump(found_lower_energy_index, f)
 
         self.logger.info("Running final modules...")
         if self.final_modules:
