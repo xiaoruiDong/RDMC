@@ -147,7 +147,7 @@ class TorisonalSampler:
         self,
         mol: RDKitMol,
         id: int,
-        rxn_smiles: str,
+        rxn_smiles: Optional[str] = None,
         optimizer: Optional["TSOptimizer"] = None,
         pruner: Optional["ConfGenPruner"] = None,
         verifiers: Optional[Union["TSVerifier", List["TSVerifier"]]] = None,
@@ -160,7 +160,7 @@ class TorisonalSampler:
         Args:
             mol (RDKitMol): An RDKitMol object.
             id (int): The ID of the conformer to be obtained.
-            rxn_smiles (str): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
+            rxn_smiles (str, optional): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
             optimizer (TSOptimizer, optional): The optimizer used to optimize TS geometries. Available options are `SellaOptimizer`, `OrcaOptimizer`, and
                                                `GaussianOptimizer`.
             pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
@@ -172,11 +172,14 @@ class TorisonalSampler:
         """
         # Get bonds which will not be rotated during conformer searching
         sampler_mol = mol.Copy()
-        r_smi, p_smi = rxn_smiles.split(">>")
-        r_mol = RDKitMol.FromSmiles(r_smi)
-        p_mol = RDKitMol.FromSmiles(p_smi)
-        formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_mol, p_mol)
-        bonds = formed_bonds + broken_bonds
+        if rxn_smiles:
+            r_smi, p_smi = rxn_smiles.split(">>")
+            r_mol = RDKitMol.FromSmiles(r_smi)
+            p_mol = RDKitMol.FromSmiles(p_smi)
+            formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_mol, p_mol)
+            bonds = formed_bonds + broken_bonds
+        else:
+            bonds = []
 
         # Use double bond to avoid to be counted as a torsional mode
         # If you want to include it, please use BondType.SINGLE
@@ -283,15 +286,21 @@ class TorisonalSampler:
 
         # Run opt and verify guesses
         multiplicity = minimum_mols.GetSpinMultiplicity()
-        self.logger.info("Optimizing TS guesses...")
+        self.logger.info("Optimizing guesses...")
         minimum_mols.KeepIDs = {i: True for i in range(minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
         minimum_mols.FiltIDs = {i: True for i in range(minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
-        opt_minimum_mols = optimizer(
-            minimum_mols,
-            multiplicity=multiplicity,
-            save_dir=ts_conf_dir,
-            rxn_smiles=rxn_smiles,
-        )
+
+        if rxn_smiles:
+            opt_minimum_mols = optimizer(
+                minimum_mols,
+                multiplicity=multiplicity,
+                save_dir=ts_conf_dir,
+                rxn_smiles=rxn_smiles,
+            )
+        else:
+            mols_data = mol_to_dict(opt_minimum_mols)
+            opt_minimum_mols_data = optimizer(mols_data)
+            opt_minimum_mols = dict_to_mol(opt_minimum_mols_data)
 
         if pruner:
             self.logger.info("Pruning TS guesses...")
@@ -307,7 +316,7 @@ class TorisonalSampler:
 
         # Verify from lowest energy conformer to highest energy conformer
         # Stopped whenever one conformer pass all the verifiers
-        self.logger.info("Verifying TS guesses...")
+        self.logger.info("Verifying guesses...")
         energy_dict = opt_minimum_mols.energy
         sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
         for idx in sorted_index:
@@ -319,12 +328,16 @@ class TorisonalSampler:
             opt_minimum_mols.KeepIDs = {i: False for i in range(opt_minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
             opt_minimum_mols.KeepIDs[idx] = True
             for verifier in verifiers:
-                verifier(
-                    opt_minimum_mols,
-                    multiplicity=multiplicity,
-                    save_dir=ts_conf_dir,
-                    rxn_smiles=rxn_smiles,
-                )
+                if rxn_smiles:
+                    verifier(
+                        opt_minimum_mols,
+                        multiplicity=multiplicity,
+                        save_dir=ts_conf_dir,
+                        rxn_smiles=rxn_smiles,
+                    )
+                else:
+                    raise NotImplementedError(f'{verifier} not supported for non-TS conformers.')
+
             if opt_minimum_mols.KeepIDs[idx]:
                 self.logger.info(f"Sampler finds conformer with lower energy. The energy decreases {mol.energy[id] - energy} kcal/mol.")
                 mol.GetConformer(id).SetPositions(opt_minimum_mols.GetConformer(idx).GetPositions())
