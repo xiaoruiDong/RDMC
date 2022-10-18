@@ -137,14 +137,10 @@ class TorisonalSampler:
             mols = mol.Copy()
             mols.SetProp("torsion_pair", str(torsion_pair))
             mols.EmbedMultipleNullConfs(len(bookkeep))
-            [
-                (
-                    mols.GetConformer(i).SetPositions(bookkeep[i]["coords"]),
-                    mols.GetConformer(i).SetProp("angles", str(bookkeep[i]["angles"])),
-                    mols.GetConformer(i).SetProp("colliding_atoms", str(bookkeep[i]["colliding_atoms"])),
-                )
-                for i in range(len(bookkeep))
-            ]
+            for i in range(len(bookkeep)):
+                mols.GetConformer(i).SetPositions(bookkeep[i]["coords"])
+                mols.GetConformer(i).SetProp("angles", str(bookkeep[i]["angles"]))
+                mols.GetConformer(i).SetProp("colliding_atoms", str(bookkeep[i]["colliding_atoms"]))
             conformers_by_change_torsions.append(mols)
 
         return conformers_by_change_torsions
