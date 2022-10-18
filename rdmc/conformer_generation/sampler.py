@@ -225,25 +225,17 @@ class TorisonalSampler:
                 confs.GetConformer(i).SetProp("Energy", str(energy))
                 energies.append(energy)
 
-            # Find local minima on the scanned potential energy surface by greedy algorithm
+            # Reshape the energies from a 1-D list to corresponding np.ndarray
             energies = np.array(energies)
-            max_energy = np.nanmax(energies)
-            min_energy = np.nanmin(energies)
-
-            num = confs.GetNumConformers()
             if self.n_dimension == 1:
                 energies = energies.reshape(-1)
             elif self.n_dimension == 2:
+                num = confs.GetNumConformers()
                 nsteps = int(num**0.5)
                 energies = energies.reshape(nsteps, nsteps)
 
-            mask = np.isnan(energies)
-            replaced_energy = 0.99 * max_energy if max_energy < 0 else 1.01 * max_energy
-            padded_energies = np.nan_to_num(energies, nan=replaced_energy)
-
-            # Rescale the energy based on the lowest energy
-            # This will not change the result of search but make detailed view more clear
-            rescaled_energies = padded_energies - min_energy
+            # Find local minima on the scanned potential energy surface by greedy algorithm
+            rescaled_energies, mask = preprocess_energies(energies)
             minimum_points = search_minimum(rescaled_energies, fsize=2)
 
             # Save the conformers located in local minima on PES to minimum_mols
@@ -439,6 +431,27 @@ def get_energy(mol: RDKitMol, confId: int = 0, method: str = "GFN2-xTB") -> floa
 
     return energy
 
+def preprocess_energies(energies: np.ndarray):
+    """
+    Rescale the energy based on the lowest energy.
+
+    Args:
+        energies (np.ndarray): A np.ndarray containing the energies for each sampled point.
+
+    Returns:
+        The rescaled energies and the mask pointing out positions having values
+    """
+    max_energy = np.nanmax(energies)
+    min_energy = np.nanmin(energies)
+
+    mask = np.isnan(energies)
+    replaced_energy = 0.99 * max_energy if max_energy < 0 else 1.01 * max_energy
+    padded_energies = np.nan_to_num(energies, nan=replaced_energy)
+
+    # Rescale the energy based on the lowest energy
+    # This will not change the result of search but make detailed view more clear
+    rescaled_energies = padded_energies - min_energy
+    return rescaled_energies, mask
 
 def get_step_to_adjacent_points(
     fsize: int, dim: int = 2, cutoff: float = np.inf
