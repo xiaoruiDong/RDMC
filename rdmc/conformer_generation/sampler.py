@@ -64,8 +64,6 @@ class TorisonalSampler:
         self.n_dimension = n_dimension
         if self.n_dimension not in [1, 2]:
             raise NotImplementedError(f"The torsional sampling method doesn't supported sampling for {n_dimension} dimensions.")
-        os.environ["OMP_NUM_THREADS"] = str(nprocs)
-        os.environ["OMP_STACKSIZE"] = f"{memory}G"
 
     def get_conformers_by_change_torsions(
         self,
@@ -206,6 +204,12 @@ class TorisonalSampler:
             ts_conf_dir = os.path.join(save_dir, f"torsion_sampling_{id}")
             os.makedirs(ts_conf_dir, exist_ok=True)
 
+        # Setting the environmental parameters before running energy calculations
+        original_OMP_NUM_THREADS = os.environ["OMP_NUM_THREADS"]
+        original_OMP_STACKSIZE = os.environ["OMP_STACKSIZE"]
+        os.environ["OMP_NUM_THREADS"] = str(self.nprocs)
+        os.environ["OMP_STACKSIZE"] = f"{self.memory}G"
+
         # Search the minimum points on all the scanned potential energy surfaces
         minimum_mols = mol.Copy(quickCopy=True)
         for confs in conformers_by_change_torsions:
@@ -272,6 +276,10 @@ class TorisonalSampler:
                     title=title,
                 )
         self.logger.info(f"{minimum_mols.GetNumConformers()} local minima on PES were found...")
+
+        # Recovering the environmental parameters
+        os.environ["OMP_NUM_THREADS"] = original_OMP_NUM_THREADS
+        os.environ["OMP_STACKSIZE"] = original_OMP_STACKSIZE
 
         # Run opt and verify guesses
         multiplicity = minimum_mols.GetSpinMultiplicity()
