@@ -47,23 +47,37 @@ class TorisonalSampler:
         memory: int = 1,
         n_point_each_torsion: int = 45,
         n_dimension: int = 2,
+        optimizer: Optional["TSOptimizer"] = None,
+        pruner: Optional["ConfGenPruner"] = None,
+        verifiers: Optional[Union["TSVerifier", List["TSVerifier"]]] = None,
     ):
         """
         Initiate the TorisonalSampler class object.
         Args:
-            method (str, optional): The method to be used for automated conformer search. Only the methods available in
-                                    Spharrow and xtb-python can be used. Defaults to GFN2-xTB.
+            method (str, optional): The method to be used for automated conformer search. Only the methods available in Spharrow and xtb-python can be used.
+                                    Defaults to GFN2-xTB.
             nprocs (int, optional): The number of processors to use. Defaults to 1.
             memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
             n_point_each_torsion (int): Number of points to be sampled along each rotational mode. Defaults to 45.
             n_dimension (int): Number of dimensions. Defaults to 2.
+            optimizer (TSOptimizer, optional): The optimizer used to optimize TS geometries. Available options are `SellaOptimizer`, `OrcaOptimizer`, and
+                                               `GaussianOptimizer`.
+            pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
+                                              `CRESTPruner` and `TorsionPruner`.
+            verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer. Available
+                                                                     options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.method = method
+        self.nprocs = nprocs
+        self.memory = memory
         self.n_point_each_torsion = n_point_each_torsion
         self.n_dimension = n_dimension
         if self.n_dimension not in [1, 2]:
             raise NotImplementedError(f"The torsional sampling method doesn't supported sampling for {n_dimension} dimensions.")
+        self.optimizer = optimizer
+        self.pruner = pruner
+        self.verifiers = [] if not verifiers else verifiers
 
     def get_conformers_by_change_torsions(
         self,
@@ -148,9 +162,6 @@ class TorisonalSampler:
         mol: RDKitMol,
         id: int,
         rxn_smiles: Optional[str] = None,
-        optimizer: Optional["TSOptimizer"] = None,
-        pruner: Optional["ConfGenPruner"] = None,
-        verifiers: Optional[Union["TSVerifier", List["TSVerifier"]]] = None,
         save_dir: Optional[str] = None,
         save_plot: bool = True,
     ):
@@ -161,12 +172,6 @@ class TorisonalSampler:
             mol (RDKitMol): An RDKitMol object.
             id (int): The ID of the conformer to be obtained.
             rxn_smiles (str, optional): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
-            optimizer (TSOptimizer, optional): The optimizer used to optimize TS geometries. Available options are `SellaOptimizer`, `OrcaOptimizer`, and
-                                               `GaussianOptimizer`.
-            pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
-                                              `CRESTPruner` and `TorsionPruner`.
-            verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer. Available
-                                                                     options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
             save_dir (str or Pathlike object, optional): The path to save the outputs generated during the generation.
             save_plot (bool): Whether to save the heat plot for the PES of each torsinal mode. Defaults to True.
         """
@@ -274,7 +279,7 @@ class TorisonalSampler:
         minimum_mols.FiltIDs = {i: True for i in range(minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
 
         if rxn_smiles:
-            opt_minimum_mols = optimizer(
+            opt_minimum_mols = self.optimizer(
                 minimum_mols,
                 multiplicity=multiplicity,
                 save_dir=ts_conf_dir,
@@ -282,7 +287,7 @@ class TorisonalSampler:
             )
         else:
             mols_data = mol_to_dict(opt_minimum_mols)
-            opt_minimum_mols_data = optimizer(mols_data)
+            opt_minimum_mols_data = self.optimizer(mols_data)
             opt_minimum_mols = dict_to_mol(opt_minimum_mols_data)
 
         if pruner:
@@ -310,7 +315,7 @@ class TorisonalSampler:
 
             opt_minimum_mols.KeepIDs = {i: False for i in range(opt_minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
             opt_minimum_mols.KeepIDs[idx] = True
-            for verifier in verifiers:
+            for verifier in self.verifiers:
                 if rxn_smiles:
                     verifier(
                         opt_minimum_mols,
