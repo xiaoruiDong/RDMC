@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Modules for automated conformer search (ACS)
+Modules for torsional sampling
 """
 
 import os
@@ -34,7 +34,7 @@ except:
     print("No scine_sparrow installation deteced. Skipping import...")
 
 
-class ACS:
+class TorisonalSampler:
     """
     A class to find possible conformers by samling the PES for each torsional pair.
     You have to have the Spharrow and xtb-python packages installed to run this workflow.
@@ -49,7 +49,7 @@ class ACS:
         n_dimension: int = 2,
     ):
         """
-        Initiate the ACS class object.
+        Initiate the TorisonalSampler class object.
         Args:
             method (str, optional): The method to be used for automated conformer search. Only the methods available in
                                     Spharrow and xtb-python can be used. Defaults to GFN2-xTB.
@@ -63,7 +63,7 @@ class ACS:
         self.n_point_each_torsion = n_point_each_torsion
         self.n_dimension = n_dimension
         if self.n_dimension not in [1, 2]:
-            raise NotImplementedError(f"The ACS method doesn't supported samling for {n_dimension} dimensions.")
+            raise NotImplementedError(f"The torsional sampling method doesn't supported samling for {n_dimension} dimensions.")
         os.environ["OMP_NUM_THREADS"] = str(nprocs)
         os.environ["OMP_STACKSIZE"] = f"{memory}G"
 
@@ -177,7 +177,7 @@ class ACS:
             save_plot (bool): Whether to save the heat plot for the PES of each torsinal mode. Defaults to True.
         """
         # Get bonds which will not be rotated during conformer searching
-        acs_mol = mol.Copy()
+        sampler_mol = mol.Copy()
         r_smi, p_smi = rxn_smiles.split(">>")
         r_mol = RDKitMol.FromSmiles(r_smi)
         p_mol = RDKitMol.FromSmiles(p_smi)
@@ -186,8 +186,8 @@ class ACS:
 
         # Use double bond to avoid to be counted as a torsional mode
         # If you want to include it, please use BondType.SINGLE
-        rw_mol = acs_mol.ToRWMol()
-        acs_mol.UpdatePropertyCache()
+        rw_mol = sampler_mol.ToRWMol()
+        sampler_mol.UpdatePropertyCache()
         for bond in bonds:
             bond_exist = False
             for b in rw_mol.GetBonds():
@@ -201,13 +201,13 @@ class ACS:
                 rw_mol.AddBond(*bond, Chem.BondType.DOUBLE)
 
         # Get all the sampled conformers for each torsinal pair
-        acs_mol = acs_mol.FromMol(rw_mol)
+        sampler_mol = sampler_mol.FromMol(rw_mol)
         conformers_by_change_torsions = self.get_conformers_by_change_torsions(
-            acs_mol, id, on_the_fly_check=True
+            sampler_mol, id, on_the_fly_check=True
         )
 
         if save_dir:
-            ts_conf_dir = os.path.join(save_dir, f"acs_{id}")
+            ts_conf_dir = os.path.join(save_dir, f"torsion_sampling_{id}")
             os.makedirs(ts_conf_dir, exist_ok=True)
 
         # Search the minimum points on all the scanned potential energy surfaces
@@ -309,7 +309,7 @@ class ACS:
         for idx in sorted_index:
             energy = opt_minimum_mols.energy[idx]
             if energy >= mol.energy[id]:
-                self.logger.info("ACS doesn't find conformer with lower energy!! Using original result...")
+                self.logger.info("Sampler doesn't find conformer with lower energy!! Using original result...")
                 return
 
             opt_minimum_mols.KeepIDs = {i: False for i in range(opt_minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
@@ -322,14 +322,14 @@ class ACS:
                     rxn_smiles=rxn_smiles,
                 )
             if opt_minimum_mols.KeepIDs[idx]:
-                self.logger.info(f"ACS finds conformer with lower energy. The energy decreases {mol.energy[id] - energy} kcal/mol.")
+                self.logger.info(f"Sampler finds conformer with lower energy. The energy decreases {mol.energy[id] - energy} kcal/mol.")
                 mol.GetConformer(id).SetPositions(opt_minimum_mols.GetConformer(idx).GetPositions())
                 mol.energy[id] = energy
                 mol.frequency[id] = opt_minimum_mols.frequency[idx]
                 mol.ACSIDs[id] = True
                 return
 
-        self.logger.info("ACS doesn't find conformer with lower energy!! Using original result...")
+        self.logger.info("Sampler doesn't find conformer with lower energy!! Using original result...")
 
 
 def get_separable_angle_list(
