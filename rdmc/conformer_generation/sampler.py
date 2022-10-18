@@ -186,15 +186,10 @@ class TorisonalSampler:
         rw_mol = sampler_mol.ToRWMol()
         sampler_mol.UpdatePropertyCache()
         for bond in bonds:
-            bond_exist = False
-            for b in rw_mol.GetBonds():
-                atom1_idx = b.GetBeginAtomIdx()
-                atom2_idx = b.GetEndAtomIdx()
-                if (atom1_idx, atom2_idx) == bond or (atom2_idx, atom1_idx) == bond:
-                    bond_exist = True
-                    b.SetBondType(Chem.BondType.DOUBLE)
-                    break
-            if not bond_exist:
+            bond = rw_mol.GetBondBetweenAtoms(bond[0], bond[1])
+            if bond:
+                bond.SetBondType(Chem.BondType.DOUBLE)
+            elif:
                 rw_mol.AddBond(*bond, Chem.BondType.DOUBLE)
 
         # Get all the sampled conformers for each torsinal pair
