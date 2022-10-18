@@ -254,12 +254,8 @@ class TorisonalSampler:
                 else:
                     row, column = minimum_point
                     ids.append(nsteps * row + column)
-            for i in ids:
-                confId = minimum_mols.GetNumConformers()
-                minimum_mols.AddNullConformer(confId)
-                minimum_mols.GetConformer(confId).SetPositions(
-                    confs.GetConformer(i).GetPositions()
-                )
+
+            [minimum_mols.AddConformer(confs.GetConformer(i).ToConformer(), assignId=True) for i in ids]
 
             if save_dir and save_plot:
                 torsion_pair = confs.GetProp("torsion_pair")
