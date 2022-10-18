@@ -69,6 +69,7 @@ class ACS:
         mol: RDKitMol,
         id: int = 0,
         torsions: List = None,
+        exclude_methyl: bool = True,
         on_the_fly_check: bool = True,
     ) -> List[RDKitMol]:
         """
@@ -79,6 +80,7 @@ class ACS:
             mol (RDKitMol): A RDKitMol molecule object.
             id (int): The ID of the conformer to be obtained. Defaults to 0.
             torsions (list): A list of four-atom-index lists indicating the torsional modes.
+            exclude_methyl (bool): Whether exclude the torsions with methyl groups. Defaults to False.
             on_the_fly_filter (bool): Whether to check colliding atoms on the fly. Defaults to True.
 
         Returns:
@@ -87,7 +89,7 @@ class ACS:
         conf = mol.Copy().GetConformer(id=id)
         origin_coords = mol.GetPositions(id=id)
         if not torsions:
-            torsions = mol.GetTorsionalModes()
+            torsions = mol.GetTorsionalModes(excludeMethyl=exclude_methyl)
         self.logger.info(f"Number of torsions: {len(torsions)}")
         conf.SetTorsionalModes(torsions)
         original_angles = conf.GetAllTorsionsDeg()
@@ -177,8 +179,7 @@ class ACS:
         r_mol = RDKitMol.FromSmiles(r_smi)
         p_mol = RDKitMol.FromSmiles(p_smi)
         formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_mol, p_mol)
-        methyl_bonds = acs_mol.GetMethylBonds()
-        bonds = formed_bonds + broken_bonds + methyl_bonds
+        bonds = formed_bonds + broken_bonds
 
         # Use double bond to avoid to be counted as a torsional mode
         # If you want to include it, please use BondType.SINGLE
