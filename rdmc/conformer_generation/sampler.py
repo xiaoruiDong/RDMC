@@ -36,7 +36,7 @@ except:
 
 class TorisonalSampler:
     """
-    A class to find possible conformers by samling the PES for each torsional pair.
+    A class to find possible conformers by sampling the PES for each torsional pair.
     You have to have the Spharrow and xtb-python packages installed to run this workflow.
     """
 
@@ -63,7 +63,7 @@ class TorisonalSampler:
         self.n_point_each_torsion = n_point_each_torsion
         self.n_dimension = n_dimension
         if self.n_dimension not in [1, 2]:
-            raise NotImplementedError(f"The torsional sampling method doesn't supported samling for {n_dimension} dimensions.")
+            raise NotImplementedError(f"The torsional sampling method doesn't supported sampling for {n_dimension} dimensions.")
         os.environ["OMP_NUM_THREADS"] = str(nprocs)
         os.environ["OMP_STACKSIZE"] = f"{memory}G"
 
@@ -301,7 +301,7 @@ class TorisonalSampler:
             with open(os.path.join(ts_conf_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_minimum_mols.KeepIDs, f)
 
-        # Verify from loewest energy conformer to highest energy conformer
+        # Verify from lowest energy conformer to highest energy conformer
         # Stopped whenever one conformer pass all the verifiers
         self.logger.info("Verifying TS guesses...")
         energy_dict = opt_minimum_mols.energy
