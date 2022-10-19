@@ -22,7 +22,8 @@ from matplotlib.patches import Rectangle
 
 from rdmc.mol import RDKitMol
 from rdmc.ts import get_formed_and_broken_bonds
-from rdmc.conformer_generation.greedymin import *
+from rdmc.conformer_generation.greedymin import search_minimum
+from rdmc.conformer_generation.utils import mol_to_dict, dict_to_mol
 
 from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED
 from xtb.utils import get_method, _methods
@@ -128,7 +129,9 @@ class TorisonalSampler:
             bookkeep = {}
             all_torsions = conf.GetTorsionalModes()
             try:
-                changing_torsions_index = [all_torsions.index(tor) for tor in torsions]
+                changing_torsions_index = []
+                for tor in torsions:
+                    changing_torsions_index.append(all_torsions.index(tor))
             except ValueError:
                 raise ValueError(f"The torsion of {tor} is not in all_torsions.")
 
@@ -191,12 +194,12 @@ class TorisonalSampler:
         # If you want to include it, please use BondType.SINGLE
         rw_mol = sampler_mol.ToRWMol()
         sampler_mol.UpdatePropertyCache()
-        for bond in bonds:
-            bond = rw_mol.GetBondBetweenAtoms(bond[0], bond[1])
+        for bond_inds in bonds:
+            bond = rw_mol.GetBondBetweenAtoms(bond_inds[0], bond_inds[1])
             if bond:
                 bond.SetBondType(Chem.BondType.DOUBLE)
-            elif:
-                rw_mol.AddBond(*bond, Chem.BondType.DOUBLE)
+            else:
+                rw_mol.AddBond(*bond_inds, Chem.BondType.DOUBLE)
 
         # Get all the sampled conformers for each torsinal pair
         sampler_mol = sampler_mol.FromMol(rw_mol)
@@ -209,8 +212,13 @@ class TorisonalSampler:
             os.makedirs(ts_conf_dir, exist_ok=True)
 
         # Setting the environmental parameters before running energy calculations
-        original_OMP_NUM_THREADS = os.environ["OMP_NUM_THREADS"]
-        original_OMP_STACKSIZE = os.environ["OMP_STACKSIZE"]
+        try:
+            original_OMP_NUM_THREADS = os.environ["OMP_NUM_THREADS"]
+            original_OMP_STACKSIZE = os.environ["OMP_STACKSIZE"]
+        except KeyError:
+            original_OMP_NUM_THREADS = None
+            original_OMP_STACKSIZE = None
+
         os.environ["OMP_NUM_THREADS"] = str(self.nprocs)
         os.environ["OMP_STACKSIZE"] = f"{self.memory}G"
 
@@ -270,8 +278,12 @@ class TorisonalSampler:
         self.logger.info(f"{minimum_mols.GetNumConformers()} local minima on PES were found...")
 
         # Recovering the environmental parameters
-        os.environ["OMP_NUM_THREADS"] = original_OMP_NUM_THREADS
-        os.environ["OMP_STACKSIZE"] = original_OMP_STACKSIZE
+        if original_OMP_NUM_THREADS and original_OMP_STACKSIZE:
+            os.environ["OMP_NUM_THREADS"] = original_OMP_NUM_THREADS
+            os.environ["OMP_STACKSIZE"] = original_OMP_STACKSIZE
+        else:
+            del os.environ["OMP_NUM_THREADS"]
+            del os.environ["OMP_STACKSIZE"]
 
         # Run opt and verify guesses
         multiplicity = minimum_mols.GetSpinMultiplicity()
@@ -291,14 +303,14 @@ class TorisonalSampler:
             opt_minimum_mols_data = self.optimizer(mols_data)
             opt_minimum_mols = dict_to_mol(opt_minimum_mols_data)
 
-        if pruner:
+        if self.pruner:
             self.logger.info("Pruning TS guesses...")
             _, unique_ids = self.pruner(
                 mol_to_dict(opt_minimum_mols, conf_copy_attrs=["KeepIDs", "energy"]),
                 sort_by_energy=False,
                 return_ids=True,
             )
-            self.logger.info(f"Pruned {pruner.n_pruned_confs} TS conformers")
+            self.logger.info(f"Pruned {self.pruner.n_pruned_confs} TS conformers")
             opt_minimum_mols.KeepIDs = {k: k in unique_ids and v for k, v in opt_minimum_mols.KeepIDs.items()}
             with open(os.path.join(ts_conf_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_minimum_mols.KeepIDs, f)
@@ -435,6 +447,7 @@ def get_energy(mol: RDKitMol, confId: int = 0, method: str = "GFN2-xTB") -> floa
         raise NotImplementedError(f"The {method} method is not supported.")
 
     return energy
+
 
 def preprocess_energies(energies: np.ndarray):
     """
