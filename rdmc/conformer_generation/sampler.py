@@ -75,8 +75,6 @@ class TorisonalSampler:
         self.memory = memory
         self.n_point_each_torsion = n_point_each_torsion
         self.n_dimension = n_dimension
-        if self.n_dimension not in [1, 2]:
-            raise NotImplementedError(f"The torsional sampling method doesn't supported sampling for {n_dimension} dimensions.")
         self.optimizer = optimizer
         self.pruner = pruner
         self.verifiers = [] if not verifiers else verifiers
@@ -243,10 +241,10 @@ class TorisonalSampler:
             energies = np.array(energies)
             if self.n_dimension == 1:
                 energies = energies.reshape(-1)
-            elif self.n_dimension == 2:
+            else:
                 num = confs.GetNumConformers()
-                nsteps = int(num**0.5)
-                energies = energies.reshape(nsteps, nsteps)
+                nsteps = int(round(len(energies) ** (1. / self.n_dimension)))
+                energies = energies.reshape((nsteps,) * self.n_dimension)
 
             # Find local minima on the scanned potential energy surface by greedy algorithm
             rescaled_energies, mask = preprocess_energies(energies)
@@ -263,7 +261,7 @@ class TorisonalSampler:
 
             [minimum_mols.AddConformer(confs.GetConformer(i).ToConformer(), assignId=True) for i in ids]
 
-            if save_dir and save_plot:
+            if save_dir and save_plot and len(rescaled_energies.shape) in [1, 2]:
                 torsion_pair = confs.GetProp("torsion_pair")
                 title = f"torsion_pair: {torsion_pair}"
                 plot_save_path = os.path.join(ts_conf_dir, f"{torsion_pair}.png")
