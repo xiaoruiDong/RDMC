@@ -49,7 +49,7 @@ class TorisonalSampler:
         memory: int = 1,
         n_point_each_torsion: int = 45,
         n_dimension: int = 2,
-        optimizer: Optional["TSOptimizer"] = None,
+        optimizer: Optional[Union["XTBOptimizer", "TSOptimizer"]] = None,
         pruner: Optional["ConfGenPruner"] = None,
         verifiers: Optional[Union["TSVerifier", List["TSVerifier"]]] = None,
     ):
@@ -62,8 +62,8 @@ class TorisonalSampler:
             memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
             n_point_each_torsion (int): Number of points to be sampled along each rotational mode. Defaults to 45.
             n_dimension (int): Number of dimensions. Defaults to 2.
-            optimizer (TSOptimizer, optional): The optimizer used to optimize TS geometries. Available options are `SellaOptimizer`, `OrcaOptimizer`, and
-                                               `GaussianOptimizer`.
+            optimizer (XTBOptimizer or TSOptimizer, optional): The optimizer used to optimize TS or stable specials geometries. Available options for `TSOptimizer`
+                                                                are `SellaOptimizer`, `OrcaOptimizer`, and `GaussianOptimizer`.
             pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
                                               `CRESTPruner` and `TorsionPruner`.
             verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer. Available
@@ -297,6 +297,8 @@ class TorisonalSampler:
                 rxn_smiles=rxn_smiles,
             )
         else:
+            # TODO: The input for different optimizers should be consistent (list vs mol)
+            # TODO: GaussianOptimizer and verifiers should be supported for stable species
             mols_data = mol_to_dict(opt_minimum_mols)
             opt_minimum_mols_data = self.optimizer(mols_data)
             opt_minimum_mols = dict_to_mol(opt_minimum_mols_data)
