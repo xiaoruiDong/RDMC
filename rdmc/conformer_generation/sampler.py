@@ -36,7 +36,7 @@ except:
     print("No scine_sparrow installation deteced. Skipping import...")
 
 
-class TorisonalSampler:
+class TorsionalSampler:
     """
     A class to find possible conformers by sampling the PES for each torsional pair.
     You have to have the Spharrow and xtb-python packages installed to run this workflow.
@@ -54,7 +54,7 @@ class TorisonalSampler:
         verifiers: Optional[Union["TSVerifier", List["TSVerifier"]]] = None,
     ):
         """
-        Initiate the TorisonalSampler class object.
+        Initiate the TorsionalSampler class object.
         Args:
             method (str, optional): The method to be used for automated conformer search. Only the methods available in Spharrow and xtb-python can be used.
                                     Defaults to GFN2-xTB.
