@@ -528,15 +528,38 @@ def fix_problematic_nitrogen(atom: 'openbabel.OBAtom', obmol):
         elif unsaturated_bonds:
             fix_N_nonterminalX(atom, unsaturated_bonds[-1].GetNbrAtom(atom))   # Use the one with the highest bond order
         else:
+            # identify carbons that only have 3 bonds and should have a negative charge
             problematic_carbons = [atom for atom in ob.OBMolAtomIter(obmol) 
                                    if atom.GetAtomicNum() == 6 and atom.GetTotalValence() == 3]
-            print(f'identified {len(problematic_carbons)} problematic_carbons oh no: {problematic_carbons}')
+            print(f'part 1... identified {len(problematic_carbons)} problematic_carbons oh no: {problematic_carbons}')
             for atom_C in problematic_carbons:
                 if not any([nbatom for nbatom in ob.OBAtomAtomIter(atom_C)
                      if nbatom.GetAtomicNum() == 7 and nbatom.GetFormalCharge() == 0]):
                     continue
                 atom_C.SetFormalCharge(-1)
                 atom_C.SetSpinMultiplicity(0)
+            
+            obconversion = ob.OBConversion()
+            obconversion.SetOutFormat('smi')
+            smi = obconversion.WriteString(obmol).strip()
+            print(smi)
+
+            # identify carbons that only have 4 bonds and are bonded to an O (C=O) and should have a negative charge
+            problematic_carbons = []
+            for a in ob.OBMolAtomIter(obmol):
+                if a.GetAtomicNum() == 6 and a.GetTotalValence() == 4 and a.GetFormalCharge() == 0: # and any(([nbatom for nbatom in ob.OBAtomAtomIter(atom) if nbatom.GetAtomicNum() == 8 and nbatom.GetFormalCharge() == 0])):
+                    problematic_carbons.append(a)
+                    break
+            print(f'part 2... identified {len(problematic_carbons)} problematic_carbons oh no: {problematic_carbons}')
+            for atom_C in problematic_carbons:
+                atom_C.SetFormalCharge(-1)
+                atom_C.SetSpinMultiplicity(0)
+                
+                for nbatom in ob.OBAtomAtomIter(atom_C):
+                    if nbatom.GetAtomicNum() == 8 and nbatom.GetFormalCharge() == 0:
+                        bond = atom_C.GetBond(nbatom)
+                        bond.SetBondOrder(bond.GetBondOrder() - 1)
+
             atom.SetFormalCharge(+1)
             atom.SetSpinMultiplicity(0)
             
@@ -613,19 +636,21 @@ def parse_xyz_by_openbabel(xyz: str,
     # Currently using a pre-check strategy to solve problematic cases
     # If a significant bottleneck of speed is observed
     # they can also be moved out and only be fixed whenever encountered an issue in the latter step
-    for _ in range(3):
+    for _ in range(2):
         problematic_carbons = find_problematic_carbons(obmol)
         if not problematic_carbons:
             break
+        print(f'identified {problematic_carbons} problematic carbons!')
         for atom in problematic_carbons:
             fix_problematic_carbon(atom)
     else:
         raise NotImplementedError(f'Cannot fix this molecule due to problematic carbons {problematic_carbons}')
 
-    for _ in range(3):
+    for _ in range(2):
         problematic_nitrogens = find_problematic_nitrogens(obmol)
         if not problematic_nitrogens:
             break
+        print(f'identified {problematic_nitrogens} problematic nitrogens!')
         for atom in problematic_nitrogens:
             fix_problematic_nitrogen(atom, obmol)
     else:
