@@ -205,6 +205,10 @@ class TorsionalSampler:
             sampler_mol, id, on_the_fly_check=True
         )
 
+        if conformers_by_change_torsions == []:
+            self.logger.info("Doesn't find any torsional pairs! Using original result...")
+            return mol
+
         if save_dir:
             ts_conf_dir = os.path.join(save_dir, f"torsion_sampling_{id}")
             os.makedirs(ts_conf_dir, exist_ok=True)
