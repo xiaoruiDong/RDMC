@@ -13,6 +13,7 @@ Hopefully, this repository can make life easier and let people know how to make 
 * rdkit
 * py3dmol
 * pygsm-gaussian
+* scine-sparrow
 
 ## Demos
 Feel free to check demos in the `ipython/` to learn some basic use of RDMC repository

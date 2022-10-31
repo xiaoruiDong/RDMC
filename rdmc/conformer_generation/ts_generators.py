@@ -31,6 +31,7 @@ class TSConformerGenerator:
                  optimizer: Optional['TSOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
                  verifiers: Optional[Union['TSVerifier',List['TSVerifier']]] = None,
+                 sampler: Optional['TorisonalSampler'] = None,
                  final_modules: Optional[Union['TSOptimizer','TSVerifier',List['TSVerifier']]] = None,
                  save_dir: Optional[str] = None,
                  ) -> 'TSConformerGenerator':
@@ -51,6 +52,7 @@ class TSConformerGenerator:
                                               `CRESTPruner` and `TorsionPruner`.
             verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer. Available
                                                                      options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
+            sampler (TorisonalSampler, optional): The sampler used to do automated conformer search for the obtained TS conformer.
             final_modules (TSOptimizer, TSVerifier or list of TSVerifiers, optional): The final modules can include optimizer in different LoT than previous
                                                                                       one and verifier(s) used to verify the obtained TS conformer.
             save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
@@ -85,6 +87,7 @@ class TSConformerGenerator:
             self.pruner.initialize_ts_torsions_list(rxn_smiles)
 
         self.verifiers = [] if not verifiers else verifiers
+        self.sampler = sampler
         self.final_modules = [] if not final_modules else final_modules
         self.save_dir = save_dir
 
@@ -255,6 +258,7 @@ class TSConformerGenerator:
     def __call__(self,
                  n_conformers: int = 20,
                  n_verifies: int = 20,
+                 n_sampling: int = 1,
                  n_refines: int = 1):
         """
         Run the workflow of TS conformer generation.
@@ -262,6 +266,7 @@ class TSConformerGenerator:
         Args:
             n_conformers (int): The maximum number of conformers to be generated. Defaults to 20.
             n_verifies (int): The maximum number of conformers to be passed to the verifiers.  Defaults to 20.
+            n_sampling (int): The maximum number of conformers to be passed to the torsional sampling. Defaults to 1.
             n_refines (int): The maximum number of conformers to be passed to the final modeuls. Defaults to 1.
         """
 
@@ -284,10 +289,11 @@ class TSConformerGenerator:
 
         if self.pruner:
             self.logger.info("Pruning TS guesses...")
-            _, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, conf_copy_attrs=["KeepIDs", "energy"]),
+            _, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, conf_copy_attrs=["KeepIDs", "FiltIDs", "energy"]),
                                         sort_by_energy=False, return_ids=True)
             self.logger.info(f"Pruned {self.pruner.n_pruned_confs} TS conformers")
             opt_ts_mol.KeepIDs = {k: k in unique_ids and v for k, v in opt_ts_mol.KeepIDs.items()}
+            opt_ts_mol.FiltIDs = {k: k in unique_ids and v for k, v in opt_ts_mol.FiltIDs.items()}
             with open(os.path.join(self.save_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_ts_mol.KeepIDs, f)
 
@@ -295,6 +301,24 @@ class TSConformerGenerator:
         opt_ts_mol = self.set_filter(opt_ts_mol, n_verifies)
         for verifier in self.verifiers:
             verifier(opt_ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
+
+        # run torsional sampling
+        if self.sampler:
+            self.logger.info("Running torsional sampling...")
+            energy_dict = opt_ts_mol.energy
+            KeepIDs = opt_ts_mol.KeepIDs
+            sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])] # Order by energy
+            filter_index = [k for k in sorted_index if KeepIDs[k]][:n_sampling]
+            found_lower_energy_index = {i: False for i in range(opt_ts_mol.GetNumConformers())}
+            for id in filter_index:
+                original_energy = opt_ts_mol.energy[id]
+                opt_ts_mol = self.sampler(opt_ts_mol, id, self.rxn_smiles, self.save_dir)
+                new_energy = opt_ts_mol.energy[id]
+                if new_energy < original_energy:
+                    found_lower_energy_index[id] = True
+            # save which ts found conformer with lower energy via torsional sampling
+            with open(os.path.join(self.save_dir, "sampler_check_ids.pkl"), "wb") as f:
+                pickle.dump(found_lower_energy_index, f)
 
         self.logger.info("Running final modules...")
         if self.final_modules:
