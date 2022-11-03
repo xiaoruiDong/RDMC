@@ -137,7 +137,7 @@ class XTBFrequencyVerifier(TSVerifier):
             list
         """
         for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i] and ts_mol.FiltIDs[i]:
+            if ts_mol.KeepIDs[i]:
                 if ts_mol.frequency[i] is None:
                     props = run_xtb_calc(ts_mol, confId=i, job="--hess", uhf=multiplicity - 1)
                     frequencies = props["frequencies"]
@@ -198,7 +198,7 @@ class OrcaIRCVerifier(TSVerifier):
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
         """
         for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i] and ts_mol.FiltIDs[i]:
+            if ts_mol.KeepIDs[i]:
 
                 # Create and save the Orca input file
                 orca_str = write_orca_irc(ts_mol,
@@ -315,7 +315,7 @@ class GaussianIRCVerifier(TSVerifier):
             save_dir (_type_, optional): The directory path to save the results. Defaults to None.
         """
         for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i] and ts_mol.FiltIDs[i]:
+            if ts_mol.KeepIDs[i]:
 
                 # Create folder to save Gaussian IRC input and output files
                 gaussian_dir = os.path.join(save_dir, f"gaussian_irc{i}")

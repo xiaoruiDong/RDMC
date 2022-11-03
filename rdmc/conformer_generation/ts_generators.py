@@ -236,14 +236,14 @@ class TSConformerGenerator:
                    n_conformers: int,
                    ) -> list:
         """
-        Generate indices of reactions to be passed to the following steps.
+        Assign the indices of reactions to track wheter the conformers are passed to the following steps.
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
             n_conformers (int): The maximum number of conformers to be passed to the following steps.
 
         Returns:
-            list
+            An RDKitMol with KeepIDs having `True` values to be passed to the following steps.
         """
         energy_dict = ts_mol.energy
         KeepIDs = ts_mol.KeepIDs
@@ -252,7 +252,7 @@ class TSConformerGenerator:
         filter_index = [k for k in sorted_index if KeepIDs[k]][:n_conformers]
         for i in range(ts_mol.GetNumConformers()):
             if i not in filter_index:
-                ts_mol.FiltIDs[i] = False
+                ts_mol.KeepIDs[i] = False
         return ts_mol
 
     def __call__(self,
@@ -282,18 +282,16 @@ class TSConformerGenerator:
         self.logger.info("Generating initial TS guesses...")
         ts_mol = self.embedder(seed_mols, multiplicity=self.multiplicity, save_dir=self.save_dir)
         ts_mol.KeepIDs = {i: True for i in range(ts_mol.GetNumConformers())}  # map ids of generated guesses thru workflow
-        ts_mol.FiltIDs = {i: True for i in range(ts_mol.GetNumConformers())}  # track wheter the conformers are passed to the following steps
 
         self.logger.info("Optimizing TS guesses...")
         opt_ts_mol = self.optimizer(ts_mol, multiplicity=self.multiplicity, save_dir=self.save_dir, rxn_smiles=self.rxn_smiles)
 
         if self.pruner:
             self.logger.info("Pruning TS guesses...")
-            _, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, conf_copy_attrs=["KeepIDs", "FiltIDs", "energy"]),
+            _, unique_ids = self.pruner(mol_to_dict(opt_ts_mol, conf_copy_attrs=["KeepIDs", "energy"]),
                                         sort_by_energy=False, return_ids=True)
             self.logger.info(f"Pruned {self.pruner.n_pruned_confs} TS conformers")
             opt_ts_mol.KeepIDs = {k: k in unique_ids and v for k, v in opt_ts_mol.KeepIDs.items()}
-            opt_ts_mol.FiltIDs = {k: k in unique_ids and v for k, v in opt_ts_mol.FiltIDs.items()}
             with open(os.path.join(self.save_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_ts_mol.KeepIDs, f)
 
