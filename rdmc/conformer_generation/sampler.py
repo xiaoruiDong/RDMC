@@ -291,7 +291,6 @@ class TorsionalSampler:
         multiplicity = minimum_mols.GetSpinMultiplicity()
         self.logger.info("Optimizing guesses...")
         minimum_mols.KeepIDs = {i: True for i in range(minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
-        minimum_mols.FiltIDs = {i: True for i in range(minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
 
         if rxn_smiles:
             opt_minimum_mols = self.optimizer(

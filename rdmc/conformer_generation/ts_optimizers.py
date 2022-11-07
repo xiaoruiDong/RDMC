@@ -154,15 +154,14 @@ class SellaOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy(copy_attrs=["KeepIDs", "FiltIDs"])
+        opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
         opt_mol.energy = {}
         opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
         for i in range(mol.GetNumConformers()):
 
-            if not opt_mol.FiltIDs[i]:
+            if not opt_mol.KeepIDs[i]:
                 opt_mol.AddNullConformer(confId=i)
                 opt_mol.energy.update({i: np.nan})
-                opt_mol.KeepIDs[i] = False
                 continue
 
             if save_dir:
@@ -256,15 +255,14 @@ class OrcaOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs", "FiltIDs"])
+        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
         opt_mol.energy = {}  # TODO: add orca energies
         opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
         for i in range(mol.GetNumConformers()):
 
-            if not opt_mol.FiltIDs[i]:
+            if not opt_mol.KeepIDs[i]:
                 opt_mol.AddNullConformer(confId=i)
                 opt_mol.energy.update({i: np.nan})
-                opt_mol.KeepIDs[i] = False
                 continue
 
             if save_dir:
@@ -365,15 +363,14 @@ class GaussianOptimizer(TSOptimizer):
         Returns:
             RDKitMol
         """
-        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs", "FiltIDs"])
+        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
         opt_mol.energy = {}
         opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
         for i in range(mol.GetNumConformers()):
 
-            if not opt_mol.FiltIDs[i]:
+            if not opt_mol.KeepIDs[i]:
                 opt_mol.AddNullConformer(confId=i)
                 opt_mol.energy.update({i: np.nan})
-                opt_mol.KeepIDs[i] = False
                 continue
 
             if save_dir:
