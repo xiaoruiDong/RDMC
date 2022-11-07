@@ -63,22 +63,32 @@ class TorsionPruner(ConfGenPruner):
         self.max_chk_threshold = max_chk_threshold
         self.torsions_list = None
 
-    def initialize_torsions_list(self, smiles):
+    def initialize_torsions_list(self, smiles=None, torsions=None, excludeMethyl=False):
 
-        mol = RDKitMol.FromSmiles(smiles)
-        mol.EmbedNullConformer()
-        self.torsions_list = mol.GetConformer().GetTorsionalModes(includeRings=True)
+        if torsions:
+            self.torsions_list = torsions
+        elif smiles:
+            mol = RDKitMol.FromSmiles(smiles)
+            mol.EmbedNullConformer()
+            self.torsions_list = mol.GetConformer().GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True)
+        else:
+            raise ValueError("Either a SMILES or a list of torsional modes should be provided.")
 
-    def initialize_ts_torsions_list(self, rxn_smiles):
+    def initialize_ts_torsions_list(self, rxn_smiles=None, torsions=None, excludeMethyl=False):
 
-        r_smi, p_smi = rxn_smiles.split(">>")
-        r_mol = RDKitMol.FromSmiles(r_smi)
-        p_mol = RDKitMol.FromSmiles(p_smi)
-        r_mol.EmbedNullConformer()
-        p_mol.EmbedNullConformer()
-        torsions_list = r_mol.GetConformer().GetTorsionalModes(includeRings=True) + \
-                        p_mol.GetConformer().GetTorsionalModes(includeRings=True)
-        self.torsions_list = [list(x) for x in set(tuple(x) for x in torsions_list)]
+        if torsions:
+            self.torsions_list = torsions
+        elif rxn_smiles:
+            r_smi, p_smi = rxn_smiles.split(">>")
+            r_mol = RDKitMol.FromSmiles(r_smi)
+            p_mol = RDKitMol.FromSmiles(p_smi)
+            r_mol.EmbedNullConformer()
+            p_mol.EmbedNullConformer()
+            torsions_list = r_mol.GetConformer().GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True) + \
+                            p_mol.GetConformer().GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True)
+            self.torsions_list = [list(x) for x in set(tuple(x) for x in torsions_list)]
+        else:
+            raise ValueError("Either a SMILES or a list of torsional modes should be provided.")
 
     def calculate_torsions(self, mol_data):
 
