@@ -172,7 +172,6 @@ class TorsionalSampler:
         mol: RDKitMol,
         id: int,
         rxn_smiles: Optional[str] = None,
-        is_ts: bool = True,
         torsions: Optional[List] = None,
         no_sample_dangling_bonds: bool = True,
         no_greedy: bool = False,
@@ -186,7 +185,6 @@ class TorsionalSampler:
             mol (RDKitMol): An RDKitMol object.
             id (int): The ID of the conformer to be obtained.
             rxn_smiles (str, optional): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
-            is_ts (bool): Whether this conformer is ts or not. Defaults to True.
             torsions (list, optional): A list of four-atom-index lists indicating the torsional modes.
             no_sample_dangling_bonds (bool): Whether to sample dangling bonds. Defaults to False.
             no_greedy (bool): Whether to use greedy algorithm to find local minima. If `True`, all the sampled conformers
@@ -233,8 +231,8 @@ class TorsionalSampler:
             return mol
 
         if save_dir:
-            ts_conf_dir = os.path.join(save_dir, f"torsion_sampling_{id}")
-            os.makedirs(ts_conf_dir, exist_ok=True)
+            conf_dir = os.path.join(save_dir, f"torsion_sampling_{id}")
+            os.makedirs(conf_dir, exist_ok=True)
 
         minimum_mols = mol.Copy(quickCopy=True)
         if no_greedy:
@@ -305,7 +303,7 @@ class TorsionalSampler:
                 if save_dir and save_plot and len(rescaled_energies.shape) in [1, 2]:
                     torsion_pair = confs.GetProp("torsion_pair")
                     title = f"torsion_pair: {torsion_pair}"
-                    plot_save_path = os.path.join(ts_conf_dir, f"{torsion_pair}.png")
+                    plot_save_path = os.path.join(conf_dir, f"{torsion_pair}.png")
                     plot_heat_map(
                         rescaled_energies,
                         minimum_points,
@@ -331,7 +329,7 @@ class TorsionalSampler:
 
         try:
             mols = minimum_mols.ToRWMol()
-            path = os.path.join(ts_conf_dir, "sampling_confs.sdf")
+            path = os.path.join(conf_dir, "sampling_confs.sdf")
             writer = Chem.rdmolfiles.SDWriter(path)
             for i in range(mols.GetNumConformers()):
                 if rxn_smiles:
@@ -343,18 +341,11 @@ class TorsionalSampler:
             writer.close()
 
         if self.optimizer:
-            if is_ts:
-                opt_minimum_mols = self.optimizer(
-                    minimum_mols,
-                    multiplicity=multiplicity,
-                    save_dir=ts_conf_dir,
-                )
-            else:
-                # TODO: The input for different optimizers should be consistent (list vs mol)
-                # TODO: GaussianOptimizer and verifiers should be supported for stable species
-                mols_data = mol_to_dict(opt_minimum_mols)
-                opt_minimum_mols_data = self.optimizer(mols_data)
-                opt_minimum_mols = dict_to_mol(opt_minimum_mols_data)
+            opt_minimum_mols = self.optimizer(
+                minimum_mols,
+                multiplicity=multiplicity,
+                save_dir=conf_dir,
+            )
         else:
             return
 
@@ -367,7 +358,7 @@ class TorsionalSampler:
             )
             self.logger.info(f"Pruned {self.pruner.n_pruned_confs} TS conformers")
             opt_minimum_mols.KeepIDs = {k: k in unique_ids and v for k, v in opt_minimum_mols.KeepIDs.items()}
-            with open(os.path.join(ts_conf_dir, "prune_check_ids.pkl"), "wb") as f:
+            with open(os.path.join(conf_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_minimum_mols.KeepIDs, f)
 
         # Verify from lowest energy conformer to highest energy conformer
@@ -388,7 +379,7 @@ class TorsionalSampler:
                     verifier(
                         opt_minimum_mols,
                         multiplicity=multiplicity,
-                        save_dir=ts_conf_dir,
+                        save_dir=conf_dir,
                         rxn_smiles=rxn_smiles,
                     )
                 else:
