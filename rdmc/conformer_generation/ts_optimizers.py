@@ -93,7 +93,7 @@ class TSOptimizer:
 
     def __call__(self,
                  mol: 'RDKitMol',
-                 save_dir: str,
+                 save_dir: Optional[str] = None,
                  **kwargs):
         """
         Run the workflow to generate optimize TS guesses.
@@ -106,6 +106,10 @@ class TSOptimizer:
             'RDKitMol': The optimized molecule as RDKitMol with 3D geometries embedded.
         """
         time_start = time()
+
+        if not save_dir:
+            save_dir = os.getcwd()
+
         opt_mol = self.optimize_ts_guesses(mol=mol, save_dir=save_dir, **kwargs)
 
         if self.track_stats:
@@ -241,9 +245,9 @@ class OrcaOptimizer(TSOptimizer):
             return None
 
     def optimize_ts_guesses(self,
-                            mol,
-                            multiplicity=1,
-                            save_dir=None,
+                            mol: 'RDKitMol',
+                            multiplicity: int = 1,
+                            save_dir: Optional[str] = None,
                             **kwargs):
         """
         Optimize the TS guesses.
