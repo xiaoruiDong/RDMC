@@ -69,8 +69,7 @@ class TorsionPruner(ConfGenPruner):
             self.torsions_list = torsions
         elif smiles:
             mol = RDKitMol.FromSmiles(smiles)
-            mol.EmbedNullConformer()
-            self.torsions_list = mol.GetConformer().GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True)
+            self.torsions_list = mol.GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True)
         else:
             raise ValueError("Either a SMILES or a list of torsional modes should be provided.")
 
@@ -82,10 +81,8 @@ class TorsionPruner(ConfGenPruner):
             r_smi, p_smi = rxn_smiles.split(">>")
             r_mol = RDKitMol.FromSmiles(r_smi)
             p_mol = RDKitMol.FromSmiles(p_smi)
-            r_mol.EmbedNullConformer()
-            p_mol.EmbedNullConformer()
-            torsions_list = r_mol.GetConformer().GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True) + \
-                            p_mol.GetConformer().GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True)
+            torsions_list = r_mol.GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True) + \
+                            p_mol.GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True)
             self.torsions_list = [list(x) for x in set(tuple(x) for x in torsions_list)]
         else:
             raise ValueError("Either a SMILES or a list of torsional modes should be provided.")
