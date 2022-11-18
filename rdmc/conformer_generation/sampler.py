@@ -61,7 +61,7 @@ class TorsionalSampler:
             nprocs (int, optional): The number of processors to use. Defaults to 1.
             memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
             n_point_each_torsion (int): Number of points to be sampled along each rotational mode. Defaults to 45.
-            n_dimension (int): Number of dimensions. Defaults to 2.
+            n_dimension (int): Number of dimensions. Defaults to 2. If `-1` is assigned, the n_dimension would be the number of rotatable bonds.
             optimizer (XTBOptimizer or TSOptimizer, optional): The optimizer used to optimize TS or stable specials geometries. Available options for `TSOptimizer`
                                                                 are `SellaOptimizer`, `OrcaOptimizer`, and `GaussianOptimizer`.
             pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
@@ -96,6 +96,7 @@ class TorsionalSampler:
             id (int): The ID of the conformer to be obtained. Defaults to 0.
             torsions (list): A list of four-atom-index lists indicating the torsional modes.
             exclude_methyl (bool): Whether exclude the torsions with methyl groups. Defaults to False.
+                                   If `torsions` is provided, this function won't work. 
             on_the_fly_filter (bool): Whether to check colliding atoms on the fly. Defaults to True.
 
         Returns:
@@ -109,8 +110,15 @@ class TorsionalSampler:
         conf.SetTorsionalModes(torsions)
         original_angles = conf.GetAllTorsionsDeg()
 
+        # If `-1` is assigned for n_dimension, it would be the number of rotatable bonds.
+        if self.n_dimension == -1:
+            n_dimension = len(torsions)
+            self.logger.info(f"Sampling {self.n_point_each_torsion} to the power of {n_dimension} conformers...")
+        else:
+            n_dimension = self.n_dimension
+
         conformers_by_change_torsions = []
-        for torsion_pair in combinations(torsions, self.n_dimension):
+        for torsion_pair in combinations(torsions, n_dimension):
             # Reset the geometry
             conf.SetPositions(origin_coords)
 
@@ -164,6 +172,9 @@ class TorsionalSampler:
         mol: RDKitMol,
         id: int,
         rxn_smiles: Optional[str] = None,
+        torsions: Optional[List] = None,
+        no_sample_dangling_bonds: bool = True,
+        no_greedy: bool = False,
         save_dir: Optional[str] = None,
         save_plot: bool = True,
     ):
@@ -174,6 +185,10 @@ class TorsionalSampler:
             mol (RDKitMol): An RDKitMol object.
             id (int): The ID of the conformer to be obtained.
             rxn_smiles (str, optional): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
+            torsions (list, optional): A list of four-atom-index lists indicating the torsional modes.
+            no_sample_dangling_bonds (bool): Whether to sample dangling bonds. Defaults to False.
+            no_greedy (bool): Whether to use greedy algorithm to find local minima. If `True`, all the sampled conformers
+                              would be passed to the optimization and verification steps. Defaults to False.
             save_dir (str or Pathlike object, optional): The path to save the outputs generated during the generation.
             save_plot (bool): Whether to save the heat plot for the PES of each torsinal mode. Defaults to True.
         """
@@ -192,17 +207,23 @@ class TorsionalSampler:
         # If you want to include it, please use BondType.SINGLE
         rw_mol = sampler_mol.ToRWMol()
         sampler_mol.UpdatePropertyCache()
+
+        if no_sample_dangling_bonds:
+            set_BondType = Chem.BondType.DOUBLE
+        else:
+            set_BondType = Chem.BondType.SINGLE
+
         for bond_inds in bonds:
             bond = rw_mol.GetBondBetweenAtoms(bond_inds[0], bond_inds[1])
             if bond:
-                bond.SetBondType(Chem.BondType.DOUBLE)
+                bond.SetBondType(set_BondType)
             else:
-                rw_mol.AddBond(*bond_inds, Chem.BondType.DOUBLE)
+                rw_mol.AddBond(*bond_inds, set_BondType)
 
         # Get all the sampled conformers for each torsinal pair
         sampler_mol = sampler_mol.FromMol(rw_mol)
         conformers_by_change_torsions = self.get_conformers_by_change_torsions(
-            sampler_mol, id, on_the_fly_check=True
+            sampler_mol, id, torsions=torsions, on_the_fly_check=True
         )
 
         if conformers_by_change_torsions == []:
@@ -210,101 +231,123 @@ class TorsionalSampler:
             return mol
 
         if save_dir:
-            ts_conf_dir = os.path.join(save_dir, f"torsion_sampling_{id}")
-            os.makedirs(ts_conf_dir, exist_ok=True)
+            conf_dir = os.path.join(save_dir, f"torsion_sampling_{id}")
+            os.makedirs(conf_dir, exist_ok=True)
 
-        # Setting the environmental parameters before running energy calculations
-        try:
-            original_OMP_NUM_THREADS = os.environ["OMP_NUM_THREADS"]
-            original_OMP_STACKSIZE = os.environ["OMP_STACKSIZE"]
-        except KeyError:
-            original_OMP_NUM_THREADS = None
-            original_OMP_STACKSIZE = None
-
-        os.environ["OMP_NUM_THREADS"] = str(self.nprocs)
-        os.environ["OMP_STACKSIZE"] = f"{self.memory}G"
-
-        # Search the minimum points on all the scanned potential energy surfaces
         minimum_mols = mol.Copy(quickCopy=True)
-        for confs in conformers_by_change_torsions:
-            # Calculate energy for each conformer
-            energies = []
-            num = confs.GetNumConformers()
-            for i in range(num):
-                colliding_atoms = json.loads(
-                    confs.GetConformer(i).GetProp("colliding_atoms").lower()
-                )
-                if colliding_atoms:
-                    energy = np.nan
-                else:
-                    energy = get_energy(confs, confId=i, method=self.method)
-                confs.GetConformer(i).SetProp("Energy", str(energy))
-                energies.append(energy)
-
-            # Reshape the energies from a 1-D list to corresponding np.ndarray
-            energies = np.array(energies)
-            if self.n_dimension == 1:
-                energies = energies.reshape(-1)
-            else:
+        if no_greedy:
+            for confs in conformers_by_change_torsions:
                 num = confs.GetNumConformers()
-                nsteps = int(round(len(energies) ** (1. / self.n_dimension)))
-                energies = energies.reshape((nsteps,) * self.n_dimension)
+                for i in range(num):
+                    colliding_atoms = json.loads(
+                        confs.GetConformer(i).GetProp("colliding_atoms").lower()
+                    )
+                    if not colliding_atoms:
+                        [minimum_mols.AddConformer(confs.GetConformer(i).ToConformer(), assignId=True)]
 
-            # Find local minima on the scanned potential energy surface by greedy algorithm
-            rescaled_energies, mask = preprocess_energies(energies)
-            minimum_points = search_minimum(rescaled_energies, fsize=2)
-
-            # Save the conformers located in local minima on PES to minimum_mols
-            ids = []
-            for minimum_point in minimum_points:
-                if len(minimum_point) == 1:
-                    ids.append(minimum_point[0])
-                else:
-                    row, column = minimum_point
-                    ids.append(nsteps * row + column)
-
-            [minimum_mols.AddConformer(confs.GetConformer(i).ToConformer(), assignId=True) for i in ids]
-
-            if save_dir and save_plot and len(rescaled_energies.shape) in [1, 2]:
-                torsion_pair = confs.GetProp("torsion_pair")
-                title = f"torsion_pair: {torsion_pair}"
-                plot_save_path = os.path.join(ts_conf_dir, f"{torsion_pair}.png")
-                plot_heat_map(
-                    rescaled_energies,
-                    minimum_points,
-                    plot_save_path,
-                    mask=mask,
-                    detailed_view=False,
-                    title=title,
-                )
-        self.logger.info(f"{minimum_mols.GetNumConformers()} local minima on PES were found...")
-
-        # Recovering the environmental parameters
-        if original_OMP_NUM_THREADS and original_OMP_STACKSIZE:
-            os.environ["OMP_NUM_THREADS"] = original_OMP_NUM_THREADS
-            os.environ["OMP_STACKSIZE"] = original_OMP_STACKSIZE
+            if self.n_dimension == -1:
+                n_conformers = minimum_mols.GetNumConformers()
+                self.logger.info(f"After on the fly check of potentially colliding atoms, {n_conformers} conformers will be passed to the following optimization and verification steps.")
         else:
-            del os.environ["OMP_NUM_THREADS"]
-            del os.environ["OMP_STACKSIZE"]
+            # Setting the environmental parameters before running energy calculations
+            try:
+                original_OMP_NUM_THREADS = os.environ["OMP_NUM_THREADS"]
+                original_OMP_STACKSIZE = os.environ["OMP_STACKSIZE"]
+            except KeyError:
+                original_OMP_NUM_THREADS = None
+                original_OMP_STACKSIZE = None
+
+            os.environ["OMP_NUM_THREADS"] = str(self.nprocs)
+            os.environ["OMP_STACKSIZE"] = f"{self.memory}G"
+
+            # Search the minimum points on all the scanned potential energy surfaces
+            for confs in conformers_by_change_torsions:
+                # Calculate energy for each conformer
+                energies = []
+                num = confs.GetNumConformers()
+                for i in range(num):
+                    colliding_atoms = json.loads(
+                        confs.GetConformer(i).GetProp("colliding_atoms").lower()
+                    )
+                    if colliding_atoms:
+                        energy = np.nan
+                    else:
+                        energy = get_energy(confs, confId=i, method=self.method)
+                    confs.GetConformer(i).SetProp("Energy", str(energy))
+                    energies.append(energy)
+
+                # Reshape the energies from a 1-D list to corresponding np.ndarray
+                energies = np.array(energies)
+                if self.n_dimension == 1:
+                    energies = energies.reshape(-1)
+                else:
+                    num = confs.GetNumConformers()
+                    nsteps = int(round(len(energies) ** (1. / self.n_dimension)))
+                    energies = energies.reshape((nsteps,) * self.n_dimension)
+
+                # Find local minima on the scanned potential energy surface by greedy algorithm
+                rescaled_energies, mask = preprocess_energies(energies)
+                minimum_points = search_minimum(rescaled_energies, fsize=2)
+
+                # Save the conformers located in local minima on PES to minimum_mols
+                ids = []
+                for minimum_point in minimum_points:
+                    if len(minimum_point) == 1:
+                        ids.append(minimum_point[0])
+                    else:
+                        row, column = minimum_point
+                        ids.append(nsteps * row + column)
+
+                [minimum_mols.AddConformer(confs.GetConformer(i).ToConformer(), assignId=True) for i in ids]
+
+                if save_dir and save_plot and len(rescaled_energies.shape) in [1, 2]:
+                    torsion_pair = confs.GetProp("torsion_pair")
+                    title = f"torsion_pair: {torsion_pair}"
+                    plot_save_path = os.path.join(conf_dir, f"{torsion_pair}.png")
+                    plot_heat_map(
+                        rescaled_energies,
+                        minimum_points,
+                        plot_save_path,
+                        mask=mask,
+                        detailed_view=False,
+                        title=title,
+                    )
+            self.logger.info(f"{minimum_mols.GetNumConformers()} local minima on PES were found...")
+
+            # Recovering the environmental parameters
+            if original_OMP_NUM_THREADS and original_OMP_STACKSIZE:
+                os.environ["OMP_NUM_THREADS"] = original_OMP_NUM_THREADS
+                os.environ["OMP_STACKSIZE"] = original_OMP_STACKSIZE
+            else:
+                del os.environ["OMP_NUM_THREADS"]
+                del os.environ["OMP_STACKSIZE"]
 
         # Run opt and verify guesses
         multiplicity = minimum_mols.GetSpinMultiplicity()
         self.logger.info("Optimizing guesses...")
         minimum_mols.KeepIDs = {i: True for i in range(minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
 
-        if rxn_smiles:
+        try:
+            mols = minimum_mols.ToRWMol()
+            path = os.path.join(conf_dir, "sampling_confs.sdf")
+            writer = Chem.rdmolfiles.SDWriter(path)
+            for i in range(mols.GetNumConformers()):
+                if rxn_smiles:
+                    mols.SetProp("rxn_smiles", rxn_smiles)
+                writer.write(mols, confId=i)
+        except Exception:
+            raise
+        finally:
+            writer.close()
+
+        if self.optimizer:
             opt_minimum_mols = self.optimizer(
                 minimum_mols,
                 multiplicity=multiplicity,
-                save_dir=ts_conf_dir,
-                rxn_smiles=rxn_smiles,
+                save_dir=conf_dir,
             )
         else:
-            # TODO: The input for different optimizers should be consistent (list vs mol)
-            # TODO: GaussianOptimizer and verifiers should be supported for stable species
-            mols_data = mol_to_dict(opt_minimum_mols)
-            opt_minimum_mols_data = self.optimizer(mols_data)
-            opt_minimum_mols = dict_to_mol(opt_minimum_mols_data)
+            return
 
         if self.pruner:
             self.logger.info("Pruning TS guesses...")
@@ -315,7 +358,7 @@ class TorsionalSampler:
             )
             self.logger.info(f"Pruned {self.pruner.n_pruned_confs} TS conformers")
             opt_minimum_mols.KeepIDs = {k: k in unique_ids and v for k, v in opt_minimum_mols.KeepIDs.items()}
-            with open(os.path.join(ts_conf_dir, "prune_check_ids.pkl"), "wb") as f:
+            with open(os.path.join(conf_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_minimum_mols.KeepIDs, f)
 
         # Verify from lowest energy conformer to highest energy conformer
@@ -336,7 +379,7 @@ class TorsionalSampler:
                     verifier(
                         opt_minimum_mols,
                         multiplicity=multiplicity,
-                        save_dir=ts_conf_dir,
+                        save_dir=conf_dir,
                         rxn_smiles=rxn_smiles,
                     )
                 else:
