@@ -935,7 +935,7 @@ class RDKitMol(object):
 
         Args:
             excludeMethyl (bool): Whether exclude the torsions with methyl groups. Defaults to ``False``.
-            includeRings (bool): Whether or not to exclude ring torsions. Defaults to ``False``.
+            includeRings (bool): Whether or not to include ring torsions. Defaults to ``False``.
 
         Returns:
             list: A list of four-atom-indice to indicating the torsional modes.

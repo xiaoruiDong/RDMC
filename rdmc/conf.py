@@ -176,7 +176,9 @@ class RDKitConf(object):
 
     def GetTorsionalModes(self,
                           indexed1: bool = False,
-                          includeRings: bool = False):
+                          excludeMethyl: bool = False,
+                          includeRings: bool = False,
+                          ) -> list:
         """
         Get all of the torsional modes (rotors) of the Conformer. This information
         is obtained from its owning molecule.
@@ -184,6 +186,7 @@ class RDKitConf(object):
         Args:
             indexed1: The atom index in RDKit starts from 0. If you want to have
                        indexed 1 atom indexes, please set this argument to ``True``.
+            excludeMethyl (bool): Whether exclude the torsions with methyl groups. Defaults to ``False``.
             includeRings (bool): Whether or not to include ring torsions. Defaults to ``False``.
 
         Returns:
@@ -193,7 +196,7 @@ class RDKitConf(object):
             return self._torsions if not indexed1 \
                 else [[ind + 1 for ind in tor] for tor in self._torsions]
         except AttributeError:
-            self._torsions = find_internal_torsions(self._owning_mol)
+            self._torsions = find_internal_torsions(self._owning_mol, exclude_methyl=excludeMethyl)
             if includeRings:
                 self._torsions += find_ring_torsions(self._owning_mol)
             return self._torsions
