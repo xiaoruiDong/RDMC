@@ -22,7 +22,7 @@ from matplotlib.patches import Rectangle
 
 from rdmc.mol import RDKitMol
 from rdmc.ts import get_formed_and_broken_bonds
-from rdmc.conformer_generation.greedymin import search_minimum
+from rdmc.mathlib.greedymin import search_minimum
 from rdmc.conformer_generation.utils import mol_to_dict, dict_to_mol
 
 from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED
