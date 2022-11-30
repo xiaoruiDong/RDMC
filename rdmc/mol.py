@@ -1145,17 +1145,27 @@ class RDKitMol(object):
         """
         return self._mol
 
-    def ToSDFFile(self, path: str, confId: int = -1):
+    def ToSDFFile(self, path: str,
+                  confId: Union[int,list] = -1):
         """
         Write molecule information to .sdf file.
 
         Args:
             path (str): The path to save the .sdf file.
+            confId (int or list): The conformer id(s) to be output. Defaults to -1. 
         """
-        writer = Chem.rdmolfiles.SDWriter(path)
-        # Not sure what may cause exceptions and errors here
-        # If any issues found, add try...except...finally
-        writer.write(self._mol, confId=confId)
+        if isinstance(confId, int):
+            confId = [confId]
+        writer = Chem.rdmolfiles.SDWriter(path) # If a invalid path is given, an OSError is raised
+
+        for conf_id in confId:
+            try:
+                writer.write(self._mol, confId=conf_id)
+            except Exception:
+                # Xiaorui:
+                # I think there is no harm to include as many data as possible
+                # so `continue` is used.
+                continue
         writer.close()
 
     def ToSmiles(self,
