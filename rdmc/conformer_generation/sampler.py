@@ -367,7 +367,7 @@ class TorsionalSampler:
         # Stopped whenever one conformer pass all the verifiers
         self.logger.info("Verifying guesses...")
         energy_dict = opt_minimum_mols.energy
-        sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
+        sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1]) if opt_minimum_mols.KeepIDs[k]]  # Order by energy
         for idx in sorted_index:
             energy = opt_minimum_mols.energy[idx]
             if energy >= mol.energy[id]:
@@ -573,3 +573,4 @@ def plot_heat_map(
         plt.title(title)
 
     plt.savefig(save_path, dpi=500)
+    plt.close()
