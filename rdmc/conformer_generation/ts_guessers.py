@@ -30,10 +30,11 @@ except:
 # Use XTB for RMSD-PP method
 try:
     from xtb.ase.calculator import XTB
-    from rdmc.external.xtb_tools.opt import run_xtb_calc
-    from rdmc.external.gaussian import write_gaussian_gsm
 except:
-    print("NO XTB installation detected. Skipping import...")
+    XTB = ""
+    print("XTB ASE interface not available. Skipping import...")
+from rdmc.external.xtb_tools.opt import run_xtb_calc
+from rdmc.external.gaussian import write_gaussian_gsm
 
 # Check TS-EGNN
 try:
@@ -372,6 +373,8 @@ class AutoNEBGuesser(TSInitialGuesser):
         Args:
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
+        if optimizer == "":
+            raise RuntimeError(f"Assigned ASE Optimizer ('{optimizer}') not available.")
         super(AutoNEBGuesser, self).__init__(track_stats)
         self.optimizer = optimizer
 
