@@ -310,13 +310,17 @@ class TSConformerGenerator:
             found_lower_energy_index = {i: False for i in range(opt_ts_mol.GetNumConformers())}
             for id in filter_index:
                 original_energy = opt_ts_mol.energy[id]
-                opt_ts_mol = self.sampler(opt_ts_mol, id, self.rxn_smiles, self.save_dir)
-                new_energy = opt_ts_mol.energy[id]
+                new_mol = self.sampler(opt_ts_mol, id, rxn_smiles=self.rxn_smiles, save_dir=self.save_dir)
+                new_energy = new_mol.energy[id]
                 if new_energy < original_energy:
                     found_lower_energy_index[id] = True
             # save which ts found conformer with lower energy via torsional sampling
             with open(os.path.join(self.save_dir, "sampler_check_ids.pkl"), "wb") as f:
                 pickle.dump(found_lower_energy_index, f)
+
+            # Doesn't find any lower energy conformer! Using original result...
+            if not all(value is False for value in found_lower_energy_index.values()):
+                opt_ts_mol = new_mol
 
         self.logger.info("Running final modules...")
         if self.final_modules:

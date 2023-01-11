@@ -156,3 +156,191 @@ class StochasticConformerGenerator:
             ] if not final_modules else final_modules
             self.min_iters = 5 if not min_iters else min_iters
             self.max_iters = 100 if not max_iters else max_iters
+
+class ConformerGenerator():
+    def __init__(self,
+                 smiles: str,
+                 multiplicity: Optional[int] = None,
+                 optimizer: Optional['Optimizer'] = None,
+                 pruner: Optional['ConfGenPruner'] = None,
+                 verifiers: Optional[Union['Verifier',List['Verifier']]] = None,
+                 sampler: Optional['TorisonalSampler'] = None,
+                 final_modules: Optional[Union['Optimizer','Verifier']] = None,
+                 save_dir: Optional[str] = None,
+                 ) -> 'ConformerGenerator':
+        """
+        Initiate the conformer generator object. The best practice is set all information here
+        Args:
+            smiles (str): The SMILES of the species.
+            multiplicity (int, optional): The spin multiplicity of the species. The spin multiplicity will be interpreted from the smiles if this
+                                          is not given by the user.
+            optimizer (GaussianOptimizer, optional): The optimizer used to optimize geometries.
+            pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
+                                              `CRESTPruner` and `TorsionPruner`.
+            verifiers (XTBFrequencyVerifier, optional): The verifier used to verify the obtained conformer.
+            sampler (TorisonalSampler, optional): The sampler used to do automated conformer search for the obtained conformer.
+            final_modules (Optimizer, Verifier, optional): The final modules can include optimizer in different LoT than previous
+                                                           one and verifier used to verify the obtained conformer.
+            save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
+        """
+        self.logger = logging.getLogger(f"{self.__class__.__name__}")
+        self.smiles = smiles
+        if multiplicity:
+           self.multiplicity = multiplicity
+        else: 
+            mol = RDKitMol.FromSmiles(smiles)
+            mul = mol.GetSpinMultiplicity()
+            self.multiplicity = mul
+        self.optimizer = optimizer
+        self.pruner = pruner
+        if isinstance(self.pruner, TorsionPruner):
+            self.pruner.initialize_torsions_list(smiles)
+
+        self.verifiers = [] if not verifiers else verifiers
+        self.sampler = sampler
+        self.final_modules = [] if not final_modules else final_modules
+        self.save_dir = save_dir
+
+    def embed_stable_species(self,
+                             smiles: str,
+                             n_conformers: int = 20,
+                             ) -> 'rdmc.RDKitMol':
+        """
+        Embed the well conformer according to the SMILES provided.
+        Args:
+            smiles (str): The well conformer SMILES.
+            n_conformers (int, optional): The maximum number of conformers to be generated. Defaults to 20.
+        Returns:
+            An RDKitMol of the well conformer with 3D geometry embedded.
+        """
+        rdmc_mol = RDKitMol.FromSmiles(smiles)
+
+        # use default embedder if only one atom present
+        if rdmc_mol.GetNumAtoms() == 1:
+            mol = rdmc_mol.Copy(quickCopy=True)
+            mol.EmbedConformer()
+            return mol
+
+        if len(rdmc_mol.GetTorsionalModes(includeRings=True)) < 1:
+            pruner = CRESTPruner()
+            min_iters = 1
+        else:
+            pruner = TorsionPruner()
+            min_iters = 5
+
+        n_conformers_per_iter = 20
+        scg = StochasticConformerGenerator(
+            smiles=smiles,
+            config="loose",
+            pruner=pruner,
+            min_iters=min_iters,
+            max_iters=10,
+        )
+
+        confs = scg(n_conformers_per_iter)
+        energies = [data['energy'] for data in confs]
+        sort_index = np.argsort(energies)
+        mol = dict_to_mol([confs[i] for i in sort_index[:n_conformers]])
+        return mol
+
+    def set_filter(self,
+                   mol: 'RDKitMol',
+                   n_conformers: int,
+                   ) -> list:
+        """
+        Assign the indices of reactions to track wheter the conformers are passed to the following steps.
+
+        Args:
+            mol ('RDKitMol'): The stable species in RDKitMol object with 3D geometries embedded.
+            n_conformers (int): The maximum number of conformers to be passed to the following steps.
+
+        Returns:
+            An RDKitMol with KeepIDs having `True` values to be passed to the following steps.
+        """
+        energy_dict = mol.energy
+        KeepIDs = mol.KeepIDs
+
+        sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])]  # Order by energy
+        filter_index = [k for k in sorted_index if KeepIDs[k]][:n_conformers]
+        for i in range(mol.GetNumConformers()):
+            if i not in filter_index:
+                mol.KeepIDs[i] = False
+        return mol
+
+    def __call__(self,
+                 n_conformers: int = 20,
+                 n_verifies: int = 20,
+                 n_sampling: int = 1,
+                 n_refines: int = 1):
+        """
+        Run the workflow of well conformer generation.
+
+        Args:
+            n_conformers (int): The maximum number of conformers to be generated. Defaults to 20.
+            n_verifies (int): The maximum number of conformers to be passed to the verifiers.  Defaults to 20.
+            n_sampling (int): The maximum number of conformers to be passed to the torsional sampling. Defaults to 1.
+            n_refines (int): The maximum number of conformers to be passed to the final modeuls. Defaults to 1.
+        """
+
+        if self.save_dir:
+            if not os.path.exists(self.save_dir):
+                os.makedirs(self.save_dir)
+
+        self.logger.info("Embedding stable species conformers...")
+        mol = self.embed_stable_species(self.smiles, n_conformers)
+
+        mol.KeepIDs = {i: True for i in range(mol.GetNumConformers())}  # map ids of generated guesses thru workflow
+
+        self.logger.info("Optimizing stable species guesses...")
+        opt_mol = self.optimizer(mol, multiplicity=self.multiplicity, save_dir=self.save_dir)
+
+        if self.pruner:
+            self.logger.info("Pruning stable species guesses...")
+            _, unique_ids = self.pruner(mol_to_dict(opt_mol, conf_copy_attrs=["KeepIDs", "energy"]),
+                                        sort_by_energy=False, return_ids=True)
+            self.logger.info(f"Pruned {self.pruner.n_pruned_confs} well conformers")
+            opt_mol.KeepIDs = {k: k in unique_ids and v for k, v in opt_mol.KeepIDs.items()}
+            with open(os.path.join(self.save_dir, "prune_check_ids.pkl"), "wb") as f:
+                pickle.dump(opt_mol.KeepIDs, f)
+
+        self.logger.info("Verifying stable species guesses...")
+        opt_mol = self.set_filter(opt_mol, n_verifies)
+        for verifier in self.verifiers:
+            verifier(opt_mol, multiplicity=self.multiplicity, save_dir=self.save_dir)
+
+        # run torsional sampling
+        if self.sampler:
+            self.logger.info("Running torsional sampling...")
+            energy_dict = opt_mol.energy
+            KeepIDs = opt_mol.KeepIDs
+            sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])] # Order by energy
+            filter_index = [k for k in sorted_index if KeepIDs[k]][:n_sampling]
+            found_lower_energy_index = {i: False for i in range(opt_mol.GetNumConformers())}
+            for id in filter_index:
+                original_energy = opt_mol.energy[id]
+                new_mol = self.sampler(opt_mol, id, save_dir=self.save_dir)
+                new_energy = new_mol.energy[id]
+                if new_energy < original_energy:
+                    found_lower_energy_index[id] = True
+            # save which stable species found conformer with lower energy via torsional sampling
+            with open(os.path.join(self.save_dir, "sampler_check_ids.pkl"), "wb") as f:
+                pickle.dump(found_lower_energy_index, f)
+
+            # Doesn't find any lower energy conformer! Using original result...
+            if not all(value is False for value in found_lower_energy_index.values()):
+                opt_mol = new_mol
+
+        self.logger.info("Running final modules...")
+        if self.final_modules:
+            opt_mol = self.set_filter(opt_mol, n_refines)
+            save_dir = os.path.join(self.save_dir, "final_modules")
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+            for module in self.final_modules:
+                opt_mol = module(opt_mol, multiplicity=self.multiplicity, save_dir=save_dir, smiles=self.smiles)
+
+        # save which stable species passed full workflow
+        with open(os.path.join(self.save_dir, "workflow_check_ids.pkl"), "wb") as f:
+            pickle.dump(opt_mol.KeepIDs, f)
+
+        return opt_mol

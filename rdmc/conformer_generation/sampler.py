@@ -49,9 +49,9 @@ class TorsionalSampler:
         memory: int = 1,
         n_point_each_torsion: int = 45,
         n_dimension: int = 2,
-        optimizer: Optional[Union["XTBOptimizer", "TSOptimizer"]] = None,
+        optimizer: Optional[Union["XTBOptimizer", "TSOptimizer", "Optimizer"]] = None,
         pruner: Optional["ConfGenPruner"] = None,
-        verifiers: Optional[Union["TSVerifier", List["TSVerifier"]]] = None,
+        verifiers: Optional[Union["TSVerifier", "Verifier", List["TSVerifier"], List["Verifier"]]] = None,
     ):
         """
         Initiate the TorsionalSampler class object.
@@ -62,12 +62,12 @@ class TorsionalSampler:
             memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
             n_point_each_torsion (int): Number of points to be sampled along each rotational mode. Defaults to 45.
             n_dimension (int): Number of dimensions. Defaults to 2. If `-1` is assigned, the n_dimension would be the number of rotatable bonds.
-            optimizer (XTBOptimizer or TSOptimizer, optional): The optimizer used to optimize TS or stable specials geometries. Available options for `TSOptimizer`
-                                                                are `SellaOptimizer`, `OrcaOptimizer`, and `GaussianOptimizer`.
+            optimizer (XTBOptimizer, TSOptimizer or Optimizer, optional): The optimizer used to optimize TS or stable specials geometries. Available options for `TSOptimizer`
+                                                                          are `SellaOptimizer`, `OrcaOptimizer`, and `GaussianOptimizer`.
             pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
                                               `CRESTPruner` and `TorsionPruner`.
-            verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer. Available
-                                                                     options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
+            verifiers (TSVerifier, Verifier, list of TSVerifiers or list of Verifiers, optional): The verifier or a list of verifiers used to verify the obtained conformer. Available
+                                                                                                  options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.method = method
@@ -179,7 +179,7 @@ class TorsionalSampler:
         save_plot: bool = True,
     ):
         """
-        Run the workflow of TS conformer generation.
+        Run the workflow of conformer generation.
 
         Args:
             mol (RDKitMol): An RDKitMol object.
@@ -295,8 +295,10 @@ class TorsionalSampler:
                     if len(minimum_point) == 1:
                         ids.append(minimum_point[0])
                     else:
-                        row, column = minimum_point
-                        ids.append(nsteps * row + column)
+                        ind = 0
+                        for dimension, value in enumerate(minimum_point[::-1]):
+                            ind += nsteps**dimension * value
+                        ids.append(ind)
 
                 [minimum_mols.AddConformer(confs.GetConformer(i).ToConformer(), assignId=True) for i in ids]
 
@@ -347,16 +349,16 @@ class TorsionalSampler:
                 save_dir=conf_dir,
             )
         else:
-            return
+            return mol
 
         if self.pruner:
-            self.logger.info("Pruning TS guesses...")
+            self.logger.info("Pruning species guesses...")
             _, unique_ids = self.pruner(
                 mol_to_dict(opt_minimum_mols, conf_copy_attrs=["KeepIDs", "energy"]),
                 sort_by_energy=False,
                 return_ids=True,
             )
-            self.logger.info(f"Pruned {self.pruner.n_pruned_confs} TS conformers")
+            self.logger.info(f"Pruned {self.pruner.n_pruned_confs} conformers")
             opt_minimum_mols.KeepIDs = {k: k in unique_ids and v for k, v in opt_minimum_mols.KeepIDs.items()}
             with open(os.path.join(conf_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_minimum_mols.KeepIDs, f)
@@ -365,7 +367,7 @@ class TorsionalSampler:
         # Stopped whenever one conformer pass all the verifiers
         self.logger.info("Verifying guesses...")
         energy_dict = opt_minimum_mols.energy
-        sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
+        sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1]) if opt_minimum_mols.KeepIDs[k]]  # Order by energy
         for idx in sorted_index:
             energy = opt_minimum_mols.energy[idx]
             if energy >= mol.energy[id]:
@@ -375,15 +377,12 @@ class TorsionalSampler:
             opt_minimum_mols.KeepIDs = {i: False for i in range(opt_minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
             opt_minimum_mols.KeepIDs[idx] = True
             for verifier in self.verifiers:
-                if rxn_smiles:
-                    verifier(
-                        opt_minimum_mols,
-                        multiplicity=multiplicity,
-                        save_dir=conf_dir,
-                        rxn_smiles=rxn_smiles,
-                    )
-                else:
-                    raise NotImplementedError(f'{verifier} not supported for non-TS conformers.')
+                verifier(
+                    opt_minimum_mols,
+                    multiplicity=multiplicity,
+                    save_dir=conf_dir,
+                    rxn_smiles=rxn_smiles,
+                )
 
             if opt_minimum_mols.KeepIDs[idx]:
                 self.logger.info(f"Sampler finds conformer with lower energy. The energy decreases {mol.energy[id] - energy} kcal/mol.")
@@ -393,6 +392,7 @@ class TorsionalSampler:
                 return mol
 
         self.logger.info("Sampler doesn't find conformer with lower energy!! Using original result...")
+        return mol
 
 
 def get_separable_angle_list(
@@ -573,3 +573,4 @@ def plot_heat_map(
         plt.title(title)
 
     plt.savefig(save_path, dpi=500)
+    plt.close()
