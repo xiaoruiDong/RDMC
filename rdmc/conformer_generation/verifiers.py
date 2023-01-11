@@ -128,19 +128,17 @@ class XTBFrequencyVerifier(Verifier):
         Returns:
             RDKitMol
         """
-        for i in range(mol.GetNumConformers()):
-            if mol.KeepIDs[i]:
-                if mol.GetNumAtoms() == 1:
-                    freq_check = True
-                elif mol.frequency[i] is None:
-                    props = run_xtb_calc(mol, confId=i, job="--hess", uhf=multiplicity - 1)
-                    frequencies = props["frequencies"]
-                    freq_check = sum(frequencies < self.cutoff_frequency) == 0
-                else:
-                    frequencies = mol.frequency[i]
-                    freq_check = sum(frequencies < self.cutoff_frequency) == 0
+        if mol.GetNumAtoms() != 1:
+            for i in range(mol.GetNumConformers()):
+                if mol.KeepIDs[i]:
+                    if mol.frequency[i] is None:
+                        props = run_xtb_calc(mol, confId=i, job="--hess", uhf=multiplicity - 1)
+                        frequencies = props["frequencies"]
+                    else:
+                        frequencies = mol.frequency[i]
 
-                mol.KeepIDs[i] = freq_check
+                    freq_check = sum(frequencies < self.cutoff_frequency) == 0
+                    mol.KeepIDs[i] = freq_check
 
         if save_dir:
             with open(os.path.join(save_dir, "freq_check_ids.pkl"), "wb") as f:
