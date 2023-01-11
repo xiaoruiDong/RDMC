@@ -9,34 +9,17 @@ Modules for providing transition state initial guess geometries
 from rdkit import Chem
 
 import os
-import tempfile
 import subprocess
+import tempfile
 from time import time
 from typing import Optional
 
+# Use PyTorch and PyTorch-Geometric for ML methods
 import numpy as np
 import torch
 from torch_geometric.data import Batch
 
-# Use ASE for AutoNEB method
-try:
-    from ase import Atoms
-    from ase.optimize import QuasiNewton
-    from ase.autoneb import AutoNEB
-    from ase.calculators.calculator import CalculationFailed
-except:
-    print("No ASE installation deteced. Skipping import...")
-
-# Use XTB for RMSD-PP method
-try:
-    from xtb.ase.calculator import XTB
-except:
-    XTB = ""
-    print("XTB ASE interface not available. Skipping import...")
-from rdmc.external.xtb_tools.opt import run_xtb_calc
-from rdmc.external.gaussian import write_gaussian_gsm
-
-# Check TS-EGNN
+# Import TS-EGNN
 try:
     from ts_ml.trainers.ts_egnn_trainer import LitTSModule
     from ts_ml.dataloaders.ts_egnn_loader import TSDataset
@@ -49,23 +32,41 @@ try:
             self.set_similar_mols = False  # use species (r/p) which is more similar to TS as starting mol
             self.product_loss = False
             self.prod_feat = config["prod_feat"]  # whether product features include distance or adjacency
-
 except ImportError:
     print("No TS-EGNN installation detected. Skipping import...")
 
-# Check TS_GCN
+# Import TS_GCN
 try:
     from ts_ml.trainers.ts_gcn_trainer import LitTSModule as LitTSGCNModule
     from ts_ml.dataloaders.ts_gcn_loader import TSGCNDataset
 
     class EvalTSGCNDataset(TSGCNDataset):
         def __init__(self, config):
-
             self.no_shuffle_mols = True  # randomize which is reactant/product
             self.no_mol_prep = False  # prep as if starting from SMILES
-
 except ImportError:
     print("No TS-GCN installation detected. Skipping import...")
+
+# Use ASE for the AutoNEB method
+try:
+    from ase import Atoms
+    from ase.autoneb import AutoNEB
+    from ase.calculators.calculator import CalculationFailed, Calculator
+    from ase.optimize import QuasiNewton
+except:
+    print("No ASE installation detected. Skipping import...")
+# Use xtb ase calculator defined in the xtb-python module
+try:
+    from xtb.ase.calculator import XTB
+except:
+    XTB = ""
+    print("XTB cannot be used for AutoNEBGuesser as its ASE interface imported incorrectly. Skipping import...")
+
+# Use GSM-Gaussian module for DE-GSM calculation
+from rdmc.external.gaussian import write_gaussian_gsm
+
+# Uses XTB binary for the RMSD-PP method
+from rdmc.external.xtb_tools.opt import run_xtb_calc
 
 
 class TSInitialGuesser:
@@ -365,16 +366,15 @@ class AutoNEBGuesser(TSInitialGuesser):
     """
 
     def __init__(self,
-                 optimizer: 'ASE Optimizer' = XTB,
+                 optimizer: Calculator = XTB,
                  track_stats: Optional[bool] = False):
         """
         Initialize the AutoNEB TS initial guesser.
 
         Args:
+            optimizer (ase.calculator.calculator.Calculator): ASE calculator. Defaults to the XTB implementation `xtb.ase.calculator.XTB`.
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
-        if optimizer == "":
-            raise RuntimeError(f"Assigned ASE Optimizer ('{optimizer}') not available.")
         super(AutoNEBGuesser, self).__init__(track_stats)
         self.optimizer = optimizer
 
@@ -387,6 +387,18 @@ class AutoNEBGuesser(TSInitialGuesser):
             for i in range(len(images)):
                 images[i].set_calculator(self.optimizer())
         return fun
+
+    @property
+    def optimizer(self):
+        """
+        Optimizer used by the AutoNEB method.
+        """
+        return self._optimizer
+
+    @optimizer.setter
+    def optimizer(self, optimizer: Calculator):
+        assert isinstance(optimizer, Calculator), f"Invalid optimizer used ('{optimizer}'). Please use ASE calculators."
+        self._optimizer = optimizer
 
     def generate_ts_guesses(self,
                             mols,
