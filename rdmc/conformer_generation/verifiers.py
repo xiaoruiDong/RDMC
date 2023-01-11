@@ -130,14 +130,16 @@ class XTBFrequencyVerifier(Verifier):
         """
         for i in range(mol.GetNumConformers()):
             if mol.KeepIDs[i]:
-                if mol.frequency[i] is None:
+                if mol.GetNumAtoms() == 1:
+                    freq_check = True
+                elif mol.frequency[i] is None:
                     props = run_xtb_calc(mol, confId=i, job="--hess", uhf=multiplicity - 1)
                     frequencies = props["frequencies"]
+                    freq_check = sum(frequencies < self.cutoff_frequency) == 0
                 else:
                     frequencies = mol.frequency[i]
+                    freq_check = sum(frequencies < self.cutoff_frequency) == 0
 
-                # Check if the number of large negative frequencies is equal to 1
-                freq_check = sum(frequencies < self.cutoff_frequency) == 0
                 mol.KeepIDs[i] = freq_check
 
         if save_dir:
