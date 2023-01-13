@@ -16,10 +16,11 @@ from typing import Optional
 
 # Use PyTorch and PyTorch-Geometric for ML methods
 import numpy as np
-import torch
-from torch_geometric.data import Batch
+# import torch
+# from torch_geometric.data import Batch
 
 # Import TS-EGNN
+_ts_egnn_avail = True
 try:
     from ts_ml.trainers.ts_egnn_trainer import LitTSModule
     from ts_ml.dataloaders.ts_egnn_loader import TSDataset
@@ -33,9 +34,11 @@ try:
             self.product_loss = False
             self.prod_feat = config["prod_feat"]  # whether product features include distance or adjacency
 except ImportError:
+    _ts_egnn_avail = False
     print("No TS-EGNN installation detected. Skipping import...")
 
 # Import TS_GCN
+_ts_gcn_avail = True
 try:
     from ts_ml.trainers.ts_gcn_trainer import LitTSModule as LitTSGCNModule
     from ts_ml.dataloaders.ts_gcn_loader import TSGCNDataset
@@ -45,24 +48,27 @@ try:
             self.no_shuffle_mols = True  # randomize which is reactant/product
             self.no_mol_prep = False  # prep as if starting from SMILES
 except ImportError:
+    _ts_gcn_avail = False
     print("No TS-GCN installation detected. Skipping import...")
 
 # Use ASE for the AutoNEB method
+_ase_avail = True
 try:
     from ase import Atoms
     from ase.autoneb import AutoNEB
     from ase.calculators.calculator import CalculationFailed, Calculator
     from ase.optimize import QuasiNewton
 except:
+    _ase_avail = False
     print("No ASE installation detected. Skipping import...")
 # Use xtb ase calculator defined in the xtb-python module
 try:
     from xtb.ase.calculator import XTB
 except:
-    XTB = ""
+    XTB = "xtb-python not installed"  # Defined to provide informative error message.
     print("XTB cannot be used for AutoNEBGuesser as its ASE interface imported incorrectly. Skipping import...")
 
-# Use GSM-Gaussian module for DE-GSM calculation
+# Use [pygsm-gaussian](https://pypi.org/project/pygsm-gaussian/) for DE-GSM calculation
 from rdmc.external.gaussian import write_gaussian_gsm
 
 # Uses XTB binary for the RMSD-PP method
@@ -73,6 +79,8 @@ class TSInitialGuesser:
     """
     The abstract class for TS initial Guesser.
     """
+    _avail_ = True
+
     def __init__(self,
                  track_stats: Optional[bool] = False,
                  ):
@@ -82,6 +90,7 @@ class TSInitialGuesser:
         Args:
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
+        assert self._avail, f"The dependency requirement needs to be fulfilled to use {self.__class__.__name__}. Please install the relevant dependencies and try again.."
         self.track_stats = track_stats
         self.n_success = None
         self.percent_success = None
@@ -181,6 +190,7 @@ class TSEGNNGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the TS-EGNN model.
     """
+    _avail = _ts_egnn_avail
 
     def __init__(self,
                  trained_model_dir: str,
@@ -246,6 +256,8 @@ class TSGCNGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the TS-GCN model.
     """
+    _avail = _ts_gcn_avail
+
     def __init__(self,
                  trained_model_dir: str,
                  track_stats: Optional[bool] = False):
@@ -312,6 +324,7 @@ class RMSDPPGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the RMSD-PP method.
     """
+    _avail = True
 
     def __init__(self,
                  track_stats: Optional[bool] = False):
@@ -362,11 +375,12 @@ class RMSDPPGuesser(TSInitialGuesser):
 
 class AutoNEBGuesser(TSInitialGuesser):
     """
-    The class for generatign TS guesses using the AutoNEB method.
+    The class for generating TS guesses using the AutoNEB method.
     """
+    _avail = _ase_avail
 
     def __init__(self,
-                 optimizer: Calculator = XTB,
+                 optimizer: 'Calculator' = XTB,
                  track_stats: Optional[bool] = False):
         """
         Initialize the AutoNEB TS initial guesser.
@@ -396,7 +410,7 @@ class AutoNEBGuesser(TSInitialGuesser):
         return self._optimizer
 
     @optimizer.setter
-    def optimizer(self, optimizer: Calculator):
+    def optimizer(self, optimizer: 'Calculator'):
         assert isinstance(optimizer, Calculator), f"Invalid optimizer used ('{optimizer}'). Please use ASE calculators."
         self._optimizer = optimizer
 
@@ -481,10 +495,12 @@ class AutoNEBGuesser(TSInitialGuesser):
 
         return ts_mol
 
+
 class DEGSMGuesser(TSInitialGuesser):
     """
     The class for generatign TS guesses using the DE-GSM method.
     """
+    _avail = True
 
     def __init__(self,
                  method: str = "GFN2-xTB",
