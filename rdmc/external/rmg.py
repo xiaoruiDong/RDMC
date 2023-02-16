@@ -140,7 +140,7 @@ def from_rdkit_mol(rdkitmol,
 def find_reaction_family(database: 'KineticsDatabase',
                          reactants: list,
                          products: list,
-                         only_families: list = None,
+                         only_families: Optional[list] = None,
                          unique: bool = True,
                          verbose: bool = True,
                          resonance: bool = True,
@@ -199,40 +199,49 @@ def find_reaction_family(database: 'KineticsDatabase',
 def generate_reaction_complex(database: 'KineticsDatabase',
                               reactants: list,
                               products: list,
-                              only_families: list = None,
-                              forward: bool = None,
+                              only_families: Optional[list] = None,
+                              forward: Optional[bool] = None,
                               verbose: bool = True,
                               resonance: bool = True,
                               ) -> List['Molecule']:
     """
-    Generate a product complex according to RMG reaction family. Please note,
-    that this will only return one template.
+    Generate a pair of reactant and product complex according to RMG reaction family.
+
+    It will first match the given reactant and product pairs to a family (by calling ``find_reaction_family``).
+    Then, it will form a reactant complexes based on the `reactants` list. Finally, it will apply the template
+    corresponding to the family to the reactants complex and yield a product complex with the correct atom map.
+    One can bypasses the searching step by providing ``only_families`` with a single-element list and assigning
+    the forward variable. All allowed families names can be found at https://rmg.mit.edu/database/kinetics/families/. 
+    Please note that this function currently only returns the first template it finds. This is non-idea if a nominal
+    reaction has multiple channels.
     # TODO: provide an option if multiple channel if available.
 
     Args:
         database (KineticsDatabase): An RMG Kinetics database instance.
         reactants (list): A list of reactant molecules.
         products (list): A list of product molecules.
-        only_families (list): A list of families that constrains the search.
-                              If `only_families` contains only one family and `forward` is specified, 
+        only_families (list): A list of families that constrains the search. Defaults to ``None`` for no constraint.
+                              If ``only_families`` contains only one family and `forward` is specified,
                               the function assumes the user is only interested in the specific reaction family and
-                              will skip `find_reaction_family` step.
-        forward (bool): Whether the reaction is forward or not.
-        resonance (bool): generate resonance structures when identifying template matching.
+                              will skip the ``find_reaction_family`` step.
+        forward (bool): Whether the reaction is forward or not. Only used if a user wants to skip the ``find_reaction_family``
+                        step and assigns an one-element list to ``only_families``. Defaults to ``None``, for not skipping the
+                        ``find_reaction_family`` step.
+        resonance (bool): Generate resonance structures when identifying template matching.
                           Can be potentially expensive for some complicated structures.
                           Defaults to ``True``.
         verbose (bool, optional): Whether to print results. Defaults to ``True`` as to print.
 
     Returns:
-        Molecule: a product complex with consistent atom indexing as in the reactant.
+        Tuple: a reactant complex and a product complex with consistent atom indexing as in the reactant.
     """
-    search_family = True
-    if only_families is not None:
-        if len(only_families) == 1 and forward is not None:
-            search_family = False
-            family_label = only_families[0]
+    family_label = None
 
-    if search_family:
+    # Check if skipping `find_reaction_family`
+    if isinstance(only_families, (list, tuple)) and len(only_families) == 1 and forward is not None:
+        family_label = only_families[0]
+
+    if not family_label:
         # Find the reaction in the RMG database
         try:
             family_label, forward = find_reaction_family(database,
@@ -241,8 +250,8 @@ def generate_reaction_complex(database: 'KineticsDatabase',
                                                         only_families=only_families,
                                                         verbose=verbose,
                                                         resonance=resonance)
+        # Cannot find any matches
         except TypeError:
-            # Cannot find any matches
             return None, None
         else:
             if family_label == None:
