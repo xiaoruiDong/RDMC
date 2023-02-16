@@ -200,6 +200,7 @@ def generate_reaction_complex(database: 'KineticsDatabase',
                               reactants: list,
                               products: list,
                               only_families: list = None,
+                              forward: bool = None,
                               verbose: bool = True,
                               resonance: bool = True,
                               ) -> List['Molecule']:
@@ -213,6 +214,10 @@ def generate_reaction_complex(database: 'KineticsDatabase',
         reactants (list): A list of reactant molecules.
         products (list): A list of product molecules.
         only_families (list): A list of families that constrains the search.
+                              If `only_families` contains only one family and `forward` is specified, 
+                              the function assumes the user is only interested in the specific reaction family and
+                              will skip `find_reaction_family` step.
+        forward (bool): Whether the reaction is forward or not.
         resonance (bool): generate resonance structures when identifying template matching.
                           Can be potentially expensive for some complicated structures.
                           Defaults to ``True``.
@@ -221,20 +226,27 @@ def generate_reaction_complex(database: 'KineticsDatabase',
     Returns:
         Molecule: a product complex with consistent atom indexing as in the reactant.
     """
-    # Find the reaction in the RMG database
-    try:
-        family_label, forward = find_reaction_family(database,
-                                                     reactants,
-                                                     products,
-                                                     only_families=only_families,
-                                                     verbose=verbose,
-                                                     resonance=resonance)
-    except TypeError:
-        # Cannot find any matches
-        return None, None
-    else:
-        if family_label == None:
+    search_family = True
+    if only_families is not None:
+        if len(only_families) == 1 and forward is not None:
+            search_family = False
+            family_label = only_families[0]
+
+    if search_family:
+        # Find the reaction in the RMG database
+        try:
+            family_label, forward = find_reaction_family(database,
+                                                        reactants,
+                                                        products,
+                                                        only_families=only_families,
+                                                        verbose=verbose,
+                                                        resonance=resonance)
+        except TypeError:
+            # Cannot find any matches
             return None, None
+        else:
+            if family_label == None:
+                return None, None
 
     # Make the reaction family preserver atom orders
     family = database.families[family_label]
