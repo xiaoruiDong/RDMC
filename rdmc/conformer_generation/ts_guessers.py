@@ -352,8 +352,9 @@ class RMSDPPGuesser(TSInitialGuesser):
             RDKitMol
         """
         ts_guesses, used_rp_combos = [], []
+        multiplicity = multiplicity or 1
         for r_mol, p_mol in mols:
-            _, ts_guess = run_xtb_calc((r_mol, p_mol), return_optmol=True, job="--path")
+            _, ts_guess = run_xtb_calc((r_mol, p_mol), return_optmol=True, job="--path", uhf=multiplicity-1)
             if ts_guess:
                 ts_guesses.append(ts_guess)
                 used_rp_combos.append((r_mol, p_mol))
