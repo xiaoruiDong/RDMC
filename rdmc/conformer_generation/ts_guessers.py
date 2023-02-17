@@ -411,7 +411,10 @@ class AutoNEBGuesser(TSInitialGuesser):
 
     @optimizer.setter
     def optimizer(self, optimizer: 'Calculator'):
-        assert isinstance(optimizer, Calculator), f"Invalid optimizer used ('{optimizer}'). Please use ASE calculators."
+        try:
+            assert isinstance(optimizer, Calculator), f"Invalid optimizer used ('{optimizer}'). Please use ASE calculators."
+        except NameError:
+            print("ASE.Calculator was not correctly imported, thus AutoNEBGuesser can not be used.")
         self._optimizer = optimizer
 
     def generate_ts_guesses(self,
