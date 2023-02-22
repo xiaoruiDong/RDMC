@@ -524,11 +524,10 @@ class DEGSMGuesser(TSInitialGuesser):
         self.nprocs = nprocs
         self.memory = memory
 
-        GSM_ENTRY_POINT = os.environ.get("gsm")
-        if not GSM_ENTRY_POINT:
+        try:
+            self.gsm_entry_point = os.environ["gsm"]
+        except KeyError:
             raise RuntimeError('No GSM entry point is found in the PATH.')
-        else:
-            self.gsm_entry_point = GSM_ENTRY_POINT
 
     def generate_ts_guesses(self,
                             mols: list,
@@ -545,8 +544,12 @@ class DEGSMGuesser(TSInitialGuesser):
         Returns:
             RDKitMol
         """
-        save_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
-        lot_inp_file = os.path.join(save_dir, "qstart.inp")
+        # #TODO: May add a support for scratch directory
+        # currently use the save directory as the working directory
+        # This may not be ideal for some QM software, and whether to add a support
+        # for scratch directory is left for future decision
+        work_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
+        lot_inp_file = os.path.join(work_dir, "qstart.inp")
         lot_inp_str = write_gaussian_gsm(self.method, self.memory, self.nprocs)
         with open(lot_inp_file, "w") as f:
             f.writelines(lot_inp_str)
@@ -555,10 +558,9 @@ class DEGSMGuesser(TSInitialGuesser):
         for i, (r_mol, p_mol) in enumerate(mols):
 
             # TODO: Need to clean the logic here, `ts_conf_dir` is used no matter `save_dir` being true
-            if save_dir:
-                ts_conf_dir = os.path.join(save_dir, f"degsm_conf{i}")
-                if not os.path.exists(ts_conf_dir):
-                    os.makedirs(ts_conf_dir)
+            ts_conf_dir = os.path.join(work_dir, f"degsm_conf{i}")
+            if not os.path.exists(ts_conf_dir):
+                os.makedirs(ts_conf_dir)
 
             r_xyz = r_mol.ToXYZ()
             p_xyz = p_mol.ToXYZ()
