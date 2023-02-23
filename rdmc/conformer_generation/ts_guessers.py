@@ -9,33 +9,18 @@ Modules for providing transition state initial guess geometries
 from rdkit import Chem
 
 import os
-import tempfile
 import subprocess
+import tempfile
 from time import time
 from typing import Optional
 
+# Use PyTorch and PyTorch-Geometric for ML methods
 import numpy as np
-import torch
-from torch_geometric.data import Batch
+# import torch
+# from torch_geometric.data import Batch
 
-# Use ASE for AutoNEB method
-try:
-    from ase import Atoms
-    from ase.optimize import QuasiNewton
-    from ase.autoneb import AutoNEB
-    from ase.calculators.calculator import CalculationFailed
-except:
-    print("No ASE installation deteced. Skipping import...")
-
-# Use XTB for RMSD-PP method
-try:
-    from xtb.ase.calculator import XTB
-    from rdmc.external.xtb_tools.opt import run_xtb_calc
-    from rdmc.external.gaussian import write_gaussian_gsm
-except:
-    print("NO XTB installation detected. Skipping import...")
-
-# Check TS-EGNN
+# Import TS-EGNN
+_ts_egnn_avail = True
 try:
     from ts_ml.trainers.ts_egnn_trainer import LitTSModule
     from ts_ml.dataloaders.ts_egnn_loader import TSDataset
@@ -48,29 +33,54 @@ try:
             self.set_similar_mols = False  # use species (r/p) which is more similar to TS as starting mol
             self.product_loss = False
             self.prod_feat = config["prod_feat"]  # whether product features include distance or adjacency
-
 except ImportError:
+    _ts_egnn_avail = False
     print("No TS-EGNN installation detected. Skipping import...")
 
-# Check TS_GCN
+# Import TS_GCN
+_ts_gcn_avail = True
 try:
     from ts_ml.trainers.ts_gcn_trainer import LitTSModule as LitTSGCNModule
     from ts_ml.dataloaders.ts_gcn_loader import TSGCNDataset
 
     class EvalTSGCNDataset(TSGCNDataset):
         def __init__(self, config):
-
             self.no_shuffle_mols = True  # randomize which is reactant/product
             self.no_mol_prep = False  # prep as if starting from SMILES
-
 except ImportError:
+    _ts_gcn_avail = False
     print("No TS-GCN installation detected. Skipping import...")
+
+# Use ASE for the AutoNEB method
+_ase_avail = True
+try:
+    from ase import Atoms
+    from ase.autoneb import AutoNEB
+    from ase.calculators.calculator import CalculationFailed, Calculator
+    from ase.optimize import QuasiNewton
+except:
+    _ase_avail = False
+    print("No ASE installation detected. Skipping import...")
+# Use xtb ase calculator defined in the xtb-python module
+try:
+    from xtb.ase.calculator import XTB
+except:
+    XTB = "xtb-python not installed"  # Defined to provide informative error message.
+    print("XTB cannot be used for AutoNEBGuesser as its ASE interface imported incorrectly. Skipping import...")
+
+# Use [pygsm-gaussian](https://pypi.org/project/pygsm-gaussian/) for DE-GSM calculation
+from rdmc.external.gaussian import write_gaussian_gsm
+
+# Uses XTB binary for the RMSD-PP method
+from rdmc.external.xtb_tools.opt import run_xtb_calc
 
 
 class TSInitialGuesser:
     """
     The abstract class for TS initial Guesser.
     """
+    _avail_ = True
+
     def __init__(self,
                  track_stats: Optional[bool] = False,
                  ):
@@ -80,6 +90,7 @@ class TSInitialGuesser:
         Args:
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
+        assert self._avail, f"The dependency requirement needs to be fulfilled to use {self.__class__.__name__}. Please install the relevant dependencies and try again.."
         self.track_stats = track_stats
         self.n_success = None
         self.percent_success = None
@@ -179,6 +190,7 @@ class TSEGNNGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the TS-EGNN model.
     """
+    _avail = _ts_egnn_avail
 
     def __init__(self,
                  trained_model_dir: str,
@@ -244,6 +256,8 @@ class TSGCNGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the TS-GCN model.
     """
+    _avail = _ts_gcn_avail
+
     def __init__(self,
                  trained_model_dir: str,
                  track_stats: Optional[bool] = False):
@@ -310,6 +324,7 @@ class RMSDPPGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the RMSD-PP method.
     """
+    _avail = True
 
     def __init__(self,
                  track_stats: Optional[bool] = False):
@@ -337,8 +352,9 @@ class RMSDPPGuesser(TSInitialGuesser):
             RDKitMol
         """
         ts_guesses, used_rp_combos = [], []
+        multiplicity = multiplicity or 1
         for r_mol, p_mol in mols:
-            _, ts_guess = run_xtb_calc((r_mol, p_mol), return_optmol=True, job="--path")
+            _, ts_guess = run_xtb_calc((r_mol, p_mol), return_optmol=True, job="--path", uhf=multiplicity-1)
             if ts_guess:
                 ts_guesses.append(ts_guess)
                 used_rp_combos.append((r_mol, p_mol))
@@ -360,16 +376,18 @@ class RMSDPPGuesser(TSInitialGuesser):
 
 class AutoNEBGuesser(TSInitialGuesser):
     """
-    The class for generatign TS guesses using the AutoNEB method.
+    The class for generating TS guesses using the AutoNEB method.
     """
+    _avail = _ase_avail
 
     def __init__(self,
-                 optimizer: 'ASE Optimizer' = XTB,
+                 optimizer: 'Calculator' = XTB,
                  track_stats: Optional[bool] = False):
         """
         Initialize the AutoNEB TS initial guesser.
 
         Args:
+            optimizer (ase.calculator.calculator.Calculator): ASE calculator. Defaults to the XTB implementation `xtb.ase.calculator.XTB`.
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
         super(AutoNEBGuesser, self).__init__(track_stats)
@@ -384,6 +402,21 @@ class AutoNEBGuesser(TSInitialGuesser):
             for i in range(len(images)):
                 images[i].set_calculator(self.optimizer())
         return fun
+
+    @property
+    def optimizer(self):
+        """
+        Optimizer used by the AutoNEB method.
+        """
+        return self._optimizer
+
+    @optimizer.setter
+    def optimizer(self, optimizer: 'Calculator'):
+        try:
+            assert isinstance(optimizer, Calculator), f"Invalid optimizer used ('{optimizer}'). Please use ASE calculators."
+        except NameError:
+            print("ASE.Calculator was not correctly imported, thus AutoNEBGuesser can not be used.")
+        self._optimizer = optimizer
 
     def generate_ts_guesses(self,
                             mols,
@@ -466,10 +499,12 @@ class AutoNEBGuesser(TSInitialGuesser):
 
         return ts_mol
 
+
 class DEGSMGuesser(TSInitialGuesser):
     """
     The class for generatign TS guesses using the DE-GSM method.
     """
+    _avail = True
 
     def __init__(self,
                  method: str = "GFN2-xTB",
@@ -489,11 +524,10 @@ class DEGSMGuesser(TSInitialGuesser):
         self.nprocs = nprocs
         self.memory = memory
 
-        GSM_ENTRY_POINT = os.environ.get("gsm")
-        if not GSM_ENTRY_POINT:
+        try:
+            self.gsm_entry_point = os.environ["gsm"]
+        except KeyError:
             raise RuntimeError('No GSM entry point is found in the PATH.')
-        else:
-            self.gsm_entry_point = GSM_ENTRY_POINT
 
     def generate_ts_guesses(self,
                             mols: list,
@@ -510,8 +544,12 @@ class DEGSMGuesser(TSInitialGuesser):
         Returns:
             RDKitMol
         """
-        save_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
-        lot_inp_file = os.path.join(save_dir, "qstart.inp")
+        # #TODO: May add a support for scratch directory
+        # currently use the save directory as the working directory
+        # This may not be ideal for some QM software, and whether to add a support
+        # for scratch directory is left for future decision
+        work_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
+        lot_inp_file = os.path.join(work_dir, "qstart.inp")
         lot_inp_str = write_gaussian_gsm(self.method, self.memory, self.nprocs)
         with open(lot_inp_file, "w") as f:
             f.writelines(lot_inp_str)
@@ -520,10 +558,9 @@ class DEGSMGuesser(TSInitialGuesser):
         for i, (r_mol, p_mol) in enumerate(mols):
 
             # TODO: Need to clean the logic here, `ts_conf_dir` is used no matter `save_dir` being true
-            if save_dir:
-                ts_conf_dir = os.path.join(save_dir, f"degsm_conf{i}")
-                if not os.path.exists(ts_conf_dir):
-                    os.makedirs(ts_conf_dir)
+            ts_conf_dir = os.path.join(work_dir, f"degsm_conf{i}")
+            if not os.path.exists(ts_conf_dir):
+                os.makedirs(ts_conf_dir)
 
             r_xyz = r_mol.ToXYZ()
             p_xyz = p_mol.ToXYZ()
