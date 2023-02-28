@@ -174,7 +174,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         Chem.SanitizeMol(rw_mol)
 
     # If OBMol has 3D information, it can be embed to the RDKit Mol
-    if embed and obmol.HasNonZeroCoords():
+    if embed and (obmol.HasNonZeroCoords() or obmol.NumAtoms() == 1):
         coords = get_obmol_coords(obmol)
         conf = Chem.rdchem.Conformer(coords.shape[0])  # Create a conformer that has number of atoms specified
         set_rdconf_coordinates(conf, coords)
