@@ -1,11 +1,14 @@
 name: rdmc_env
 channels:
   - defaults
-  - rdkit
-  - rmg
   - conda-forge
 dependencies:
+  - python>=3.7
   - numpy
+  - scipy
   - rdkit>=2021.03.1
   - openbabel>=3
   - py3dmol
+  - networkx
+  - matplotlib
+  - cclib
