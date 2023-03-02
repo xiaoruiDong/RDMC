@@ -5,11 +5,11 @@
 This module provides class and methods for dealing with RDKit RWMol, Mol.
 """
 
-import pathlib
+import copy
 from itertools import combinations
 from itertools import product as cartesian_product
 from typing import Iterable, List, Optional, Sequence, Union
-import copy
+import pathlib
 
 import numpy as np
 from rdkit import Chem
@@ -19,7 +19,6 @@ from rdkit.Geometry.rdGeometry import Point3D
 
 from rdmc.conf import RDKitConf
 from rdmc.utils import *
-from rdmc.external.xyz2mol import parse_xyz_by_jensen
 
 
 # Additional notes:

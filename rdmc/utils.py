@@ -8,10 +8,19 @@ This module provides methods that can directly apply to RDKit Mol/RWMol.
 from typing import Iterable, Union
 
 import numpy as np
+
 from rdkit import Chem
+from rdkit import RDLogger
 from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import BondType, Mol, RWMol
-from rdkit import RDLogger
+# Since 2022.09.1, RDKit added built-in XYZ parser using xyz2mol approach
+try:
+    from rdkit.Chem import rdDetermineBonds
+except ImportError:
+    rdDetermineBonds = None
+    from rdmc.external.xyz2mol import parse_xyz_by_jensen as parse_xyz_by_jensen_rdmc
+    # TODO: Could raise an warning says RDKit built-in xyz2mol not supported due to lower version
+    # uses a rdmc-implemented version of xyz2mol
 from rdkit.Chem.TorsionFingerprints import CalculateTorsionLists
 
 # Mute RDKit's error logs
@@ -551,6 +560,7 @@ def get_internal_coords(obmol,
         torsions = non_red_torsions
     return bonds, angles, torsions
 
+
 def reverse_map(map: Iterable,
                 as_list: bool = True):
     """
@@ -573,3 +583,65 @@ def reverse_map(map: Iterable,
         return np.argsort(map).tolist()
     else:
         return np.argsort(map)
+
+
+def parse_xyz_by_jensen(xyz: str,
+                        charge: int = 0,
+                        allow_charged_fragments: bool = False,
+                        use_huckel: bool = False,
+                        embed_chiral: bool = True,
+                        correct_CO: bool = True,
+                        use_atom_maps: bool = False,
+                        force_rdmc: bool = False,
+                        ) -> 'Mol':
+    """
+    Perceive a xyz str using `xyz2mol` by Jensen et al. and generate the corresponding RDKit Mol.
+    The implementation refers the following blog: https://greglandrum.github.io/rdkit-blog/posts/2022-12-18-introducing-rdDetermineBonds.html
+
+    Args:
+        charge: The charge of the species. Defaults to ``0``.
+        allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to False.
+        use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
+        embed_chiral: ``True`` to embed chiral information. Defaults to True.
+        correctCO (bool, optional): Defaults to ``True``.
+                                    In order to get correct RDKit molecule for carbon monoxide
+                                    ([C-]#[O+]), allow_charged_fragments should be forced to ``True``.
+                                    This function contains a patch to correct that.
+        use_atom_maps(bool, optional): ``True`` to set atom map numbers to the molecule. Defaults to ``False``.
+        force_rdmc (bool, optional): Defaults to ``False``. In rare case, we may hope to use a tailored
+                                     version of the Jensen XYZ parser, other than the one available in RDKit.
+                                     Set this argument to ``True`` to force use RDMC's implementation,
+                                     which user's may have some flexibility to modify.
+
+    Returns:
+        Mol: A RDKit Mol corresponding to the xyz.
+    """
+    # Version < 2022.09.1
+    if rdDetermineBonds is None or force_rdmc:
+        return parse_xyz_by_jensen_rdmc(xyz=xyz,
+                                        charge=charge,
+                                        allow_charged_fragments=allow_charged_fragments,
+                                        use_graph=True,
+                                        use_huckel=use_huckel,
+                                        embed_chiral=embed_chiral,
+                                        use_atom_maps=use_atom_maps,
+                                        correct_CO=correct_CO,
+                                        )
+
+    # Version >= 2022.09.1
+    mol = Chem.MolFromXYZBlock(xyz)
+    rdDetermineBonds.DetermineConnectivity(mol,
+                                           useHueckel=use_huckel,
+                                           charge=charge,)
+    # A force correction for CO
+    if correct_CO \
+            and mol.GetNumAtoms() == 2 \
+            and {atom.GetAtomicNum() for atom in mol.GetAtoms()} == {6, 8}:
+        allow_charged_fragments = True
+    rdDetermineBonds.DetermineBondOrders(mol,
+                                         charge=charge,
+                                         allowChargedFragments=allow_charged_fragments,
+                                         embedChiral=embed_chiral,
+                                         useAtomMap=use_atom_maps,
+                                         )
+    return mol
