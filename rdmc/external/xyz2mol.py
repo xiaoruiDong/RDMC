@@ -41,12 +41,7 @@ import itertools
 import sys
 
 import numpy as np
-try:
-    import networkx as nx
-except ModuleNotFoundError:
-    NETWORKX_SUPPORT = True
-else:
-    NETWORKX_SUPPORT = False
+import networkx as nx
 
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdchem, rdEHTTools
@@ -739,7 +734,7 @@ def xyz2mol(atoms, coordinates,
     # mol object
     new_mols = AC2mol(mol, AC, atoms, charge,
                       allow_charged_fragments=allow_charged_fragments,
-                      use_graph=(use_graph and NETWORKX_SUPPORT))
+                      use_graph=use_graph)
 
     # Check for stereocenters and chiral centers
     if embed_chiral:
@@ -864,7 +859,7 @@ if __name__ == "__main__":
     # Get the molobjs
     mols = xyz2mol(atoms, xyz_coordinates,
         charge=charge,
-        use_graph=(quick and NETWORKX_SUPPORT),
+        use_graph=quick,
         allow_charged_fragments=charged_fragments,
         embed_chiral=embed_chiral,
         use_huckel=use_huckel)
