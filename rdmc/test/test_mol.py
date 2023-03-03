@@ -230,14 +230,79 @@ class TestRDKitMol(unittest.TestCase):
         self.assertEqual(mol2.GetNumConformers(), 1)
         self.assertEqual(mol2.GetPositions().shape, (11, 3))
 
-    def test_generate_from_rmg_mol(self):
+    def test_generate_mol_from_rmg_mol(self):
         """
-        Test generate from rmg molecule(self):
+        Test generate mol from rmg molecule(self):
         """
         # Currently, it requires install RMG as a backend
         # But it is not a default package
         # So currently not included in the unittest
         pass
+
+    def test_generate_mol_from_inchi(self):
+        """
+        Test generate the RDKitMol from InChI strings.
+        """
+        # InChI of a stable species
+        inchi1 = 'InChI=1S/H2O/h1H2'
+        mol1 = RDKitMol.FromInchi(inchi1)
+        self.assertEqual(mol1.GetNumAtoms(), 3)
+        self.assertSequenceEqual(mol1.GetAtomicNumbers(), [8, 1, 1])
+        self.assertEqual(set(mol1.GetBondsAsTuples()),
+                         {(0, 1), (0, 2)})
+
+        # The case of addHs == False
+        mol2 = RDKitMol.FromInchi(inchi1, addHs=False)
+        self.assertEqual(mol2.GetNumAtoms(), 1)
+        self.assertSequenceEqual(mol2.GetAtomicNumbers(), [8])
+        self.assertEqual(mol2.GetAtomWithIdx(0).GetNumExplicitHs(), 2)
+
+        # InChI of a radical
+        inchi2 = 'InChI=1S/CH3/h1H3'
+        mol3 = RDKitMol.FromInchi(inchi2)
+        self.assertEqual(mol3.GetNumAtoms(), 4)
+        self.assertSequenceEqual(mol3.GetAtomicNumbers(), [6, 1, 1, 1])
+        self.assertEqual(mol3.GetAtomWithIdx(0).GetNumRadicalElectrons(), 1)
+        self.assertEqual(set(mol3.GetBondsAsTuples()),
+                         {(0, 1), (0, 2), (0, 3)})
+
+        # InChI of an anion
+        inchi3 = 'InChI=1S/H2O/h1H2/p-1'
+        mol4 = RDKitMol.FromInchi(inchi3)
+        self.assertEqual(mol4.GetNumAtoms(), 2)
+        self.assertEqual(mol4.GetAtomicNumbers(), [8, 1])
+        self.assertEqual(mol4.GetAtomWithIdx(0).GetFormalCharge(), -1)
+        self.assertEqual(set(mol4.GetBondsAsTuples()),
+                         {(0, 1)})
+
+        # InChI of an cation
+        inchi4 = 'InChI=1S/H3N/h1H3/p+1'
+        mol5 = RDKitMol.FromInchi(inchi4)
+        self.assertEqual(mol5.GetNumAtoms(), 5)
+        self.assertSequenceEqual(mol5.GetAtomicNumbers(), [7, 1, 1, 1, 1])
+        self.assertEqual(mol5.GetAtomWithIdx(0).GetFormalCharge(), 1)
+        self.assertEqual(set(mol5.GetBondsAsTuples()),
+                         {(0, 1), (0, 2), (0, 3), (0, 4)})
+
+        # InChI of benzene (aromatic ring)
+        inchi5 = 'InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H'
+        mol6 = RDKitMol.FromInchi(inchi5)
+        self.assertEqual(len(mol6.GetAromaticAtoms()), 6)
+
+        # Todo: check stereochemistry
+
+    def test_mol_to_inchi(self):
+        """
+        Test converting RDKitMol to InChI strings.
+        """
+        for inchi in ['InChI=1S/H2O/h1H2',
+                      'InChI=1S/CH3/h1H3',
+                      'InChI=1S/H2O/h1H2/p-1',
+                      'InChI=1S/H3N/h1H3/p+1',
+                      'InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H',
+                      ]:
+            self.assertEqual(inchi,
+                             RDKitMol.FromInchi(inchi).ToInchi())
 
     def test_add_redundant_bonds(self):
         """

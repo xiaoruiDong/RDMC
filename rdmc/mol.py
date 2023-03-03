@@ -517,6 +517,34 @@ class RDKitMol(object):
         return cls(mol)
 
     @classmethod
+    def FromInchi(cls,
+                  inchi: str,
+                  removeHs: bool = False,
+                  addHs: bool = True,
+                  sanitize: bool = True,
+                  ):
+        """
+        Construct a molecule from a InChI string
+
+        Args:
+            inchi (str): a InChI string. https://en.wikipedia.org/wiki/International_Chemical_Identifier
+            removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, Due to RDKit implementation,
+                                       only effective when sanitize is ``True`` as well. ``True`` to remove.
+            addHs (bool, optional): Whether to add explicit hydrogen atoms to the molecule. ``True`` to add.
+                                    Only functioning when removeHs is False.
+            sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
+
+        Returns:
+            RDKitMol: An RDKit molecule object corresponding to the InChI.
+        """
+        mol = Chem.inchi.MolFromInchi(inchi,
+                                      sanitize=sanitize,
+                                      removeHs=removeHs)
+        if not removeHs and addHs:
+            mol = Chem.rdmolops.AddHs(mol)
+        return cls(mol)
+
+    @classmethod
     def FromRMGMol(cls,
                    rmgMol: 'rmgpy.molecule.Molecule',
                    removeHs: bool = False,
@@ -1189,6 +1217,20 @@ class RDKitMol(object):
                                            isomericSmiles=stereo,
                                            kekuleSmiles=kekule,
                                            canonical=canonical)
+
+    def ToInchi(self,
+                options="",
+                ):
+        """
+        Convert the RDKitMol to a InChI string using RDKit builtin converter.
+
+        Args:
+            options (str, optional): The InChI generation options. Options should be
+                                     prefixed with either a - or a / Available options are explained in the
+                                     InChI technical FAQ: https://www.inchi-trust.org/technical-faq/#15.14 and
+                                     https://www.inchi-trust.org/?s=user+guide. Defaults to "".
+        """
+        return Chem.rdinchi.MolToInchi(self._mol, options=options)[0]
 
     def ToXYZ(self,
               confId: int = -1,
