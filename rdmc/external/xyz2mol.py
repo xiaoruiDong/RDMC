@@ -12,6 +12,8 @@ Implementation by Jan H. Jensen based on the following paper and compiled by Xia
     Bull. Korean Chem. Soc. 2015, Vol. 36, 1769-1777
     DOI: 10.1002/bkcs.10334
 
+Last update: 2023/03/02 at commit: f512673
+
 MIT License
 
 Copyright (c) 2018 Jensen Group
@@ -41,12 +43,7 @@ import itertools
 import sys
 
 import numpy as np
-try:
-    import networkx as nx
-except ModuleNotFoundError:
-    NETWORKX_SUPPORT = True
-else:
-    NETWORKX_SUPPORT = False
+import networkx as nx
 
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdchem, rdEHTTools
@@ -279,7 +276,7 @@ def clean_charges(mol):
 
 
 def BO2mol(mol, BO_matrix, atoms, atomic_valence_electrons,
-           mol_charge, allow_charged_fragments=True):
+           mol_charge, allow_charged_fragments=True, use_atom_maps=False):
     """
     based on code written by Paolo Toscani
 
@@ -333,20 +330,24 @@ def BO2mol(mol, BO_matrix, atoms, atomic_valence_electrons,
             atomic_valence_electrons,
             BO_valences,
             BO_matrix,
-            mol_charge)
+            mol_charge,
+            use_atom_maps)
     else:
-        mol = set_atomic_radicals(mol, atoms, atomic_valence_electrons, BO_valences)
+        mol = set_atomic_radicals(mol, atoms, atomic_valence_electrons, BO_valences, use_atom_maps)
 
     return mol
 
 
 def set_atomic_charges(mol, atoms, atomic_valence_electrons,
-                       BO_valences, BO_matrix, mol_charge):
+                       BO_valences, BO_matrix, mol_charge,
+                       use_atom_maps):
     """
     """
     q = 0
     for i, atom in enumerate(atoms):
         a = mol.GetAtomWithIdx(i)
+        if use_atom_maps:
+            a.SetAtomMaps(i+1)
         charge = get_atomic_charge(atom, atomic_valence_electrons[atom], BO_valences[i])
         q += charge
         if atom == 6:
@@ -495,7 +496,8 @@ def AC2BO(AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
     return best_BO, atomic_valence_electrons
 
 
-def AC2mol(mol, AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
+def AC2mol(mol, AC, atoms, charge, allow_charged_fragments=True,
+           use_graph=True, use_atom_maps=False):
     """
     """
 
@@ -514,7 +516,8 @@ def AC2mol(mol, AC, atoms, charge, allow_charged_fragments=True, use_graph=True)
         atoms,
         atomic_valence_electrons,
         charge,
-        allow_charged_fragments=allow_charged_fragments)
+        allow_charged_fragments=allow_charged_fragments,
+        use_atom_maps=use_atom_maps)
 
     # If charge is not correct don't return mol
     if Chem.GetFormalCharge(mol) != charge:
@@ -650,7 +653,7 @@ def get_AC(mol, covalent_factor=1.3):
     return AC
 
 
-def xyz2AC_huckel(atomicNumList,xyz,charge):
+def xyz2AC_huckel(atomicNumList, xyz, charge):
     """
 
     args
@@ -706,12 +709,14 @@ def chiral_stereo_check(mol):
     return
 
 
-def xyz2mol(atoms, coordinates,
-    charge=0,
-    allow_charged_fragments=True,
-    use_graph=True,
-    use_huckel=False,
-    embed_chiral=True):
+def xyz2mol(atoms,
+            coordinates,
+            charge=0,
+            allow_charged_fragments=True,
+            use_graph=True,
+            use_huckel=False,
+            embed_chiral=True,
+            use_atom_maps=False):
     """
     Generate a rdkit molobj from atoms, coordinates and a total_charge.
 
@@ -739,7 +744,8 @@ def xyz2mol(atoms, coordinates,
     # mol object
     new_mols = AC2mol(mol, AC, atoms, charge,
                       allow_charged_fragments=allow_charged_fragments,
-                      use_graph=(use_graph and NETWORKX_SUPPORT))
+                      use_graph=use_graph,
+                      use_atom_maps=use_atom_maps)
 
     # Check for stereocenters and chiral centers
     if embed_chiral:
@@ -755,6 +761,7 @@ def parse_xyz_by_jensen(xyz: str,
                         use_graph: bool = True,
                         use_huckel: bool = False,
                         embed_chiral: bool = True,
+                        use_atom_maps: bool = False,
                         correct_CO: bool = True,
                         ) -> 'Mol':
     """
@@ -766,6 +773,7 @@ def parse_xyz_by_jensen(xyz: str,
         use_graph: ``True`` to use networkx module for accelerate. Defaults to True.
         use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
         embed_chiral: ``True`` to embed chiral information. Defaults to True.
+        use_atom_maps: ``True`` to set atom map numbers for the molecule. Defaults to False.
         correctCO (bool, optional): Defaults to ``True``.
                                     In order to get correct RDKit molecule for carbon monoxide
                                     ([C-]#[O+]), allow_charged_fragments should be forced to ``True``.
@@ -785,7 +793,8 @@ def parse_xyz_by_jensen(xyz: str,
         mol = xyz2mol(atoms, coords, charge=charge,
                       allow_charged_fragments=allow_charged_fragments,
                       use_graph=use_graph, use_huckel=use_huckel,
-                      embed_chiral=embed_chiral)[0]
+                      embed_chiral=embed_chiral,
+                      use_atom_maps=use_atom_maps)[0]
     except IndexError:
         raise ValueError(f'Cannot perceive the xyz by Jensen et al. method')
     else:
@@ -864,7 +873,7 @@ if __name__ == "__main__":
     # Get the molobjs
     mols = xyz2mol(atoms, xyz_coordinates,
         charge=charge,
-        use_graph=(quick and NETWORKX_SUPPORT),
+        use_graph=quick,
         allow_charged_fragments=charged_fragments,
         embed_chiral=embed_chiral,
         use_huckel=use_huckel)
