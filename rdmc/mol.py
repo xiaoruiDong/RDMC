@@ -1777,4 +1777,40 @@ def generate_radical_resonance_structures(mol: RDKitMol):
                 raise RuntimeError('Encounter charge separation during resonance structure generation.')
         Chem.rdmolops.SetConjugation(res_mol._mol)  # Make sure conjugation is re-assigned
         res_mol.UpdatePropertyCache()  # Make sure the assignment is boardcast to atoms / bonds
-    return res_mols
+
+    # To remove duplicate benzene resonance structures
+    # TODO: remove highlight flag
+    # As a side effect, the naive molecule display in the jupyter notebook
+    # will be highlighted if there is duplicates... Not sure how to avoid this
+    unique_mols = get_unique_mols(res_mols)
+    return unique_mols
+
+
+def get_unique_mols(mols: List[RDKitMol]):
+    """
+    Find the unique molecules from a list of molecules.
+
+    Args:
+        mols (list): The molecules to be processed.
+
+    Returns:
+        list: A list of unique molecules
+    """
+    # Dictionary:
+    # Keys: chemical formula;
+    # Values: list of mols with same formula
+    # Use chemical formula to reduce the call of the more expensive graph substructure check
+    unique_formula_mol = {}
+    for mol in mols:
+        form = Chem.rdMolDescriptors.CalcMolFormula(mol._mol)
+
+        if unique_formula_mol.get(form):
+            for umol in unique_formula_mol[form]:
+                if mol.GetSubstructMatch(umol):
+                    break
+            else:
+                unique_formula_mol[form].append(mol)
+        else:
+            unique_formula_mol[form] = [mol]
+
+    return sum(unique_formula_mol.values(), [])
