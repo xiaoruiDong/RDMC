@@ -1817,30 +1817,40 @@ def has_matched_mol(mol: RDKitMol,
     return False
 
 
-def get_unique_mols(mols: List[RDKitMol]):
+def get_unique_mols(mols: List[RDKitMol],
+                    consider_atommap: bool = False,
+                    same_formula: bool = False,
+                    ):
     """
     Find the unique molecules from a list of molecules.
 
     Args:
         mols (list): The molecules to be processed.
+        consider_atommap (bool, optional): If treat chemically equivalent molecules with
+                                           different atommap numbers as different molecules.
+                                           Defaults to False.
+        same_formula (bool, opional): If the mols has the same formula you may set it to True
+                                      to save computational time. Defaults to False.
 
     Returns:
-        list: A list of unique molecules
+        list: A list of unique molecules.
     """
     # Dictionary:
     # Keys: chemical formula;
     # Values: list of mols with same formula
     # Use chemical formula to reduce the call of the more expensive graph substructure check
     unique_formula_mol = {}
-    for mol in mols:
-        form = Chem.rdMolDescriptors.CalcMolFormula(mol._mol)
 
-        if unique_formula_mol.get(form):
-            for umol in unique_formula_mol[form]:
-                if mol.GetSubstructMatch(umol):
-                    break
-            else:
-                unique_formula_mol[form].append(mol)
+    for mol in mols:
+
+        # Get the molecules with the same formula as the query molecule
+        form = 'same' if same_formula else Chem.rdMolDescriptors.CalcMolFormula(mol._mol)
+        unique_mol_list = unique_formula_mol.get(form)
+
+        if unique_mol_list and has_matched_mol(mol, unique_mol_list, consider_atommap=consider_atommap):
+            continue
+        elif unique_mol_list:
+            unique_formula_mol[form].append(mol)
         else:
             unique_formula_mol[form] = [mol]
 
