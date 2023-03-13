@@ -1790,6 +1790,32 @@ def generate_radical_resonance_structures(mol: RDKitMol):
     unique_mols = get_unique_mols(res_mols)
     return unique_mols
 
+def has_matched_mol(mol: RDKitMol,
+                    mols: List[RDKitMol],
+                    consider_atommap: bool = False,
+                    ):
+    """
+    Check if a molecule has a structure match in a list of molecules.
+
+    Args:
+        mol (RDKitMol): The target molecule.
+        mols (List[RDKitMol]): The list of molecules to be processed.
+        consider_atommap (bool, optional): If treat chemically equivalent molecules with
+                                           different atommap numbers as different molecules.
+                                           Defaults to False.
+
+    Returns:
+        bool: if a matched molecules if found.
+    """
+    for mol_in_list in mols:
+        mapping = mol_in_list.GetSubstructMatch(mol)  # A tuple of atom indexes if matched
+        if mapping and not consider_atommap:
+            return True
+        elif mapping and mapping == tuple(range(len(mapping))):
+            # if identical, the mapping is always as 1,2,...,N
+            return True
+    return False
+
 
 def get_unique_mols(mols: List[RDKitMol]):
     """
