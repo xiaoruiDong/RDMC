@@ -1731,7 +1731,9 @@ def generate_vdw_mat(rd_mol,
     return vdw_mat
 
 
-def generate_radical_resonance_structures(mol: RDKitMol):
+def generate_radical_resonance_structures(mol: RDKitMol,
+                                          uniquify: bool = True,
+                                          consider_atommap: bool = True):
     """
     Generate resonance structures for a radical molecule.  RDKit by design doesn't work
     for radical resonance. The approach is a temporary workaround by replacing radical electrons by positive
@@ -1740,6 +1742,12 @@ def generate_radical_resonance_structures(mol: RDKitMol):
 
     Args:
         mol (RDKitMol): A radical molecule.
+        uniquify (bool, optional): Uniquify the resonance structure from the list. Defaults to True.
+        consider_atommap (bool, atommap): If consider atom map numbers in filtration duplicates.
+                                          Only effective when uniquify=True. Defaults to False.
+
+    Returns:
+        list: a list of molecules with resonance structures.
     """
     assert mol.GetFormalCharge() == 0, "The current function only works for radical species."
     mol_copy = mol.Copy(quickCopy=True)  # Make a copy of the original molecule
@@ -1780,15 +1788,23 @@ def generate_radical_resonance_structures(mol: RDKitMol):
                 atom.SetNumRadicalElectrons(charge)
             elif charge < 0:  # Shouldn't appear, just for bug detection
                 raise RuntimeError('Encounter charge separation during resonance structure generation.')
-        Chem.rdmolops.SetConjugation(res_mol._mol)  # Make sure conjugation is re-assigned
-        res_mol.UpdatePropertyCache()  # Make sure the assignment is boardcast to atoms / bonds
+
+        # Reassign aromaticity, conjugation, and ring symmetry
+        res_mol.Sanitize(Chem.rdmolops.SANITIZE_SETAROMATICITY ^
+                         Chem.rdmolops.SANITIZE_SETCONJUGATION ^
+                         Chem.rdmolops.SANITIZE_SYMMRINGS)
+        # Make sure the assignment is boardcast to atoms / bonds
+        res_mol.UpdatePropertyCache()
 
     # To remove duplicate benzene resonance structures
     # TODO: remove highlight flag
     # As a side effect, the naive molecule display in the jupyter notebook
     # will be highlighted if there is duplicates... Not sure how to avoid this
-    unique_mols = get_unique_mols(res_mols)
-    return unique_mols
+    if uniquify:
+        res_mols = get_unique_mols(res_mols,
+                                   consider_atommap=consider_atommap)
+    return res_mols
+
 
 def has_matched_mol(mol: RDKitMol,
                     mols: List[RDKitMol],
