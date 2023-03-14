@@ -1072,12 +1072,12 @@ class RDKitMol(object):
             [rwmol.GetAtomWithIdx(i).SetAtomMapNum(i + 1) for i in range(rwmol.GetNumAtoms())]
         return RDKitMol(rwmol)
 
-    def Sanitize(self, sanitizeOps: Optional[Union[int,'SanitizeFlags']] = 0):
+    def Sanitize(self, sanitizeOps: Optional[Union[int,'SanitizeFlags']] = Chem.rdmolops.SANITIZE_ALL):
         """
         Sanitize the molecule.
 
         Args:
-            sanitizeOps (int or str, optional): Sanitize operations to be carried out. Defaults to 0, equivalent to
+            sanitizeOps (int or str, optional): Sanitize operations to be carried out. Defaults to
                                                 SanitizeFlags.SANITIZE_ALL. More details can be found at
                                                 https://www.rdkit.org/docs/source/rdkit.Chem.rdmolops.html?highlight=sanitize#rdkit.Chem.rdmolops.SanitizeFlags.
         """
