@@ -622,7 +622,7 @@ class TestRDKitMol(unittest.TestCase):
         """
         Test the function for generating radical resonance structures.
         """
-        # Currently couldn't handel charged molecules
+        # Currently couldn't handle charged molecules
         charged_smis = ['[CH3+]', '[OH-]', '[CH2+]C=C', '[CH2-]C=C']
         for smi in charged_smis:
             with self.assertRaises(AssertionError):
@@ -647,7 +647,7 @@ class TestRDKitMol(unittest.TestCase):
                                 )
                              ),
                          3)
-        # With filtration and considering atom map, RDKit returns 3 structures
+        # With filtration and considering atom map, RDKit returns 4 structures
         self.assertEqual(len(generate_radical_resonance_structures(
                                 RDKitMol.FromSmiles(smi),
                                 uniquify=True,
