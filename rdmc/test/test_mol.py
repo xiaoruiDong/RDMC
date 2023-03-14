@@ -655,6 +655,24 @@ class TestRDKitMol(unittest.TestCase):
                                 )
                              ),
                          4)
+        # Test case 2: Phenyl radical
+        smi = '[c:1]1[c:2]([H:7])[c:3]([H:8])[c:4]([H:9])[c:5]([H:10])[c:6]1[H:11]'
+        # Without filtration, RDKit returns 3 resonance structures
+        self.assertEqual(len(generate_radical_resonance_structures(
+                                RDKitMol.FromSmiles(smi),
+                                unique=False,)
+                             ),
+                         3)
+        # With filtration and not considering atom map, RDKit returns 2 structures
+        res_mols = generate_radical_resonance_structures(
+                                    RDKitMol.FromSmiles(smi),
+                                    unique=True,
+                                    consider_atommap=False,
+                                )
+        self.assertEqual(len(res_mols), 2)
+        # The first one (itself) should be aromatic and the second should not
+        for i, value in zip([0, 1], [True, False]):
+            self.assertEqual(res_mols[i].GetAtomWithIdx(0).GetIsAromatic(), value)
 
 
 if __name__ == '__main__':
