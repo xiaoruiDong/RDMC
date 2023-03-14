@@ -1778,9 +1778,11 @@ def generate_radical_resonance_structures(mol: RDKitMol,
     suppl = Chem.ResonanceMolSupplier(mol_copy._mol, flags=flags)
     res_mols = [RDKitMol(RWMol(mol)) for mol in suppl]
 
-    # Convert positively charged species back to radical species
+    # Post-processing resonance structures
+    cleaned_mols = []
     for res_mol in res_mols:
         for atom in res_mol.GetAtoms():
+            # Convert positively charged species back to radical species
             charge = atom.GetFormalCharge()
             if charge > 0:  # Find a radical site
                 recipe[atom.GetIdx()] = radical_electrons
@@ -1789,21 +1791,27 @@ def generate_radical_resonance_structures(mol: RDKitMol,
             elif charge < 0:  # Shouldn't appear, just for bug detection
                 raise RuntimeError('Encounter charge separation during resonance structure generation.')
 
-        # Reassign aromaticity, conjugation, and ring symmetry
-        res_mol.Sanitize(Chem.rdmolops.SANITIZE_SETAROMATICITY ^
-                         Chem.rdmolops.SANITIZE_SETCONJUGATION ^
-                         Chem.rdmolops.SANITIZE_SYMMRINGS)
-        # Make sure the assignment is boardcast to atoms / bonds
-        res_mol.UpdatePropertyCache()
+            # For aromatic molecules:
+            # Aromaticity flag is incorrectly inherit from the parent molecule
+            # and can cause issues in kekulizing children's structure. Reset all atomic
+            # aromaticity flag does the trick to initiate aromaticity perception in sanitization
+            # Tried other ways but none of them works (e.g., mol.ClearComputedProps())
+            atom.SetIsAromatic(False)
 
-    # To remove duplicate benzene resonance structures
-    # TODO: remove highlight flag
-    # As a side effect, the naive molecule display in the jupyter notebook
-    # will be highlighted if there is duplicates... Not sure how to avoid this
+        # If a structure cannot be sanitized, removed it
+        try:
+            res_mol.Sanitize()
+        except:
+            # todo: make error type more specific and add a warning message
+            continue
+        cleaned_mols.append(res_mol)
+
+    # To remove duplicate resonance structures
     if uniquify:
-        res_mols = get_unique_mols(res_mols,
-                                   consider_atommap=consider_atommap)
-    return res_mols
+        cleaned_mols = get_unique_mols(cleaned_mols,
+                                       consider_atommap=consider_atommap)
+
+    return cleaned_mols
 
 
 def has_matched_mol(mol: RDKitMol,
