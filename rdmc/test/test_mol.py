@@ -15,7 +15,10 @@ try:
 except ImportError:
     import pybel
 
-from rdmc import RDKitMol
+from rdmc import (generate_radical_resonance_structures,
+                  get_unique_mols,
+                  has_matched_mol,
+                  RDKitMol)
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -537,6 +540,139 @@ class TestRDKitMol(unittest.TestCase):
         self.assertEqual(mol.GetAtomicNumbers(),
                          mol_copy.GetAtomicNumbers())
         self.assertEqual(mol_copy.GetNumConformers(), 0)
+
+    def test_has_matched_mol(self):
+        """
+        Test the function that indicates if there is a matched molecule to the query molecule from a list.
+        """
+        query = '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]'
+
+        list1 = ['C', 'O']
+        list2 = ['C', 'O', '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]']
+        list3 = ['C', 'O', '[C:1]([O:6][H:2])([H:3])([H:4])[H:5]']
+
+        self.assertFalse(has_matched_mol(
+                            RDKitMol.FromSmiles(query),
+                            [RDKitMol.FromSmiles(smi) for smi in list1],
+                            )
+                        )
+        self.assertTrue(has_matched_mol(
+                            RDKitMol.FromSmiles(query),
+                            [RDKitMol.FromSmiles(smi) for smi in list2],
+                            )
+                        )
+        self.assertTrue(has_matched_mol(
+                            RDKitMol.FromSmiles(query),
+                            [RDKitMol.FromSmiles(smi) for smi in list2],
+                            consider_atommap=True
+                            )
+                        )
+        self.assertTrue(has_matched_mol(
+                            RDKitMol.FromSmiles(query),
+                            [RDKitMol.FromSmiles(smi) for smi in list3],
+                            )
+                        )
+        self.assertFalse(has_matched_mol(
+                            RDKitMol.FromSmiles(query),
+                            [RDKitMol.FromSmiles(smi) for smi in list3],
+                            consider_atommap=True
+                            )
+                        )
+
+    def test_get_unique_mols(self):
+        """
+        Test the function that extract unique molecules from a list of molecules.
+        """
+        list1 = ['C', 'O']
+        list2 = ['C', 'O',
+                 '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]',
+                 '[C:1]([H:3])([H:4])([H:5])[O:6][H:2]',]
+
+        self.assertEqual(len(get_unique_mols(
+                            [RDKitMol.FromSmiles(smi) for smi in list1],
+                            )),
+                         2,)
+        self.assertEqual(set([mol.ToSmiles() for mol in get_unique_mols(
+                                [RDKitMol.FromSmiles(smi) for smi in list1])
+                              ]),
+                         {'C', 'O'})
+        self.assertEqual(len(get_unique_mols(
+                            [RDKitMol.FromSmiles(smi) for smi in list2],
+                            consider_atommap=True,
+                            )),
+                         4,)
+        self.assertEqual(set([mol.ToSmiles(removeHs=False, removeAtomMap=False)
+                              for mol in get_unique_mols(
+                                    [RDKitMol.FromSmiles(smi) for smi in list2],
+                                    consider_atommap=True,
+                                )
+                              ]),
+                         {'[O:1]([H:2])[H:3]',
+                          '[C:1]([H:2])([H:3])([H:4])[H:5]',
+                          '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]',
+                          '[C:1]([H:3])([H:4])([H:5])[O:6][H:2]',
+                          })
+        self.assertEqual(len(get_unique_mols(
+                            [RDKitMol.FromSmiles(smi) for smi in list2],
+                            consider_atommap=False,
+                            )),
+                         3,)
+
+    def test_generate_radical_resonance_structures(self):
+        """
+        Test the function for generating radical resonance structures.
+        """
+        # Currently couldn't handle charged molecules
+        charged_smis = ['[CH3+]', '[OH-]', '[CH2+]C=C', '[CH2-]C=C']
+        for smi in charged_smis:
+            with self.assertRaises(AssertionError):
+                generate_radical_resonance_structures(
+                    RDKitMol.FromSmiles(smi)
+                )
+
+        # Test case 1: 1-Phenylethyl radical
+        smi = 'c1ccccc1[CH]C'
+        # Without filtration, RDKit returns 5 resonance structures
+        # 3 with radical site on the ring and 2 with differently kekulized benzene
+        self.assertEqual(len(generate_radical_resonance_structures(
+                                RDKitMol.FromSmiles(smi),
+                                unique=False,)
+                             ),
+                         5)
+        # With filtration and not considering atom map, RDKit returns 3 structures
+        self.assertEqual(len(generate_radical_resonance_structures(
+                                RDKitMol.FromSmiles(smi),
+                                unique=True,
+                                consider_atommap=False,
+                                )
+                             ),
+                         3)
+        # With filtration and considering atom map, RDKit returns 4 structures
+        self.assertEqual(len(generate_radical_resonance_structures(
+                                RDKitMol.FromSmiles(smi),
+                                unique=True,
+                                consider_atommap=True,
+                                )
+                             ),
+                         4)
+        # Test case 2: Phenyl radical
+        smi = '[c:1]1[c:2]([H:7])[c:3]([H:8])[c:4]([H:9])[c:5]([H:10])[c:6]1[H:11]'
+        # Without filtration, RDKit returns 3 resonance structures
+        self.assertEqual(len(generate_radical_resonance_structures(
+                                RDKitMol.FromSmiles(smi),
+                                unique=False,)
+                             ),
+                         3)
+        # With filtration and not considering atom map, RDKit returns 2 structures
+        res_mols = generate_radical_resonance_structures(
+                                    RDKitMol.FromSmiles(smi),
+                                    unique=True,
+                                    consider_atommap=False,
+                                )
+        self.assertEqual(len(res_mols), 2)
+        # The first one (itself) should be aromatic and the second should not
+        for i, value in zip([0, 1], [True, False]):
+            self.assertEqual(res_mols[i].GetAtomWithIdx(0).GetIsAromatic(), value)
 
 
 if __name__ == '__main__':

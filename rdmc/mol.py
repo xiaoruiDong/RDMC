@@ -1072,11 +1072,16 @@ class RDKitMol(object):
             [rwmol.GetAtomWithIdx(i).SetAtomMapNum(i + 1) for i in range(rwmol.GetNumAtoms())]
         return RDKitMol(rwmol)
 
-    def Sanitize(self):
+    def Sanitize(self, sanitizeOps: Optional[Union[int,'SanitizeFlags']] = Chem.rdmolops.SANITIZE_ALL):
         """
         Sanitize the molecule.
+
+        Args:
+            sanitizeOps (int or str, optional): Sanitize operations to be carried out. Defaults to
+                                                SanitizeFlags.SANITIZE_ALL. More details can be found at
+                                                https://www.rdkit.org/docs/source/rdkit.Chem.rdmolops.html?highlight=sanitize#rdkit.Chem.rdmolops.SanitizeFlags.
         """
-        Chem.rdmolops.SanitizeMol(self._mol)
+        Chem.rdmolops.SanitizeMol(self._mol, sanitizeOps)
 
     def SetAtomMapNumbers(self,
                           atomMap: Optional[Sequence[int]] = None,):
@@ -1726,7 +1731,9 @@ def generate_vdw_mat(rd_mol,
     return vdw_mat
 
 
-def generate_radical_resonance_structures(mol: RDKitMol):
+def generate_radical_resonance_structures(mol: RDKitMol,
+                                          unique: bool = True,
+                                          consider_atommap: bool = True):
     """
     Generate resonance structures for a radical molecule.  RDKit by design doesn't work
     for radical resonance. The approach is a temporary workaround by replacing radical electrons by positive
@@ -1735,6 +1742,12 @@ def generate_radical_resonance_structures(mol: RDKitMol):
 
     Args:
         mol (RDKitMol): A radical molecule.
+        unique (bool, optional): Filter out duplicate resonance structures from the list. Defaults to True.
+        consider_atommap (bool, atommap): If consider atom map numbers in filtration duplicates.
+                                          Only effective when uniquify=True. Defaults to False.
+
+    Returns:
+        list: a list of molecules with resonance structures.
     """
     assert mol.GetFormalCharge() == 0, "The current function only works for radical species."
     mol_copy = mol.Copy(quickCopy=True)  # Make a copy of the original molecule
@@ -1765,9 +1778,11 @@ def generate_radical_resonance_structures(mol: RDKitMol):
     suppl = Chem.ResonanceMolSupplier(mol_copy._mol, flags=flags)
     res_mols = [RDKitMol(RWMol(mol)) for mol in suppl]
 
-    # Convert positively charged species back to radical species
+    # Post-processing resonance structures
+    cleaned_mols = []
     for res_mol in res_mols:
         for atom in res_mol.GetAtoms():
+            # Convert positively charged species back to radical species
             charge = atom.GetFormalCharge()
             if charge > 0:  # Find a radical site
                 recipe[atom.GetIdx()] = radical_electrons
@@ -1775,6 +1790,98 @@ def generate_radical_resonance_structures(mol: RDKitMol):
                 atom.SetNumRadicalElectrons(charge)
             elif charge < 0:  # Shouldn't appear, just for bug detection
                 raise RuntimeError('Encounter charge separation during resonance structure generation.')
-        Chem.rdmolops.SetConjugation(res_mol._mol)  # Make sure conjugation is re-assigned
-        res_mol.UpdatePropertyCache()  # Make sure the assignment is boardcast to atoms / bonds
-    return res_mols
+
+            # For aromatic molecules:
+            # Aromaticity flag is incorrectly inherit from the parent molecule
+            # and can cause issues in kekulizing children's structure. Reset all atomic
+            # aromaticity flag does the trick to initiate aromaticity perception in sanitization
+            # Tried other ways but none of them works (e.g., mol.ClearComputedProps())
+            atom.SetIsAromatic(False)
+
+        # If a structure cannot be sanitized, removed it
+        try:
+            res_mol.Sanitize()
+        except:
+            # todo: make error type more specific and add a warning message
+            continue
+        cleaned_mols.append(res_mol)
+
+    # To remove duplicate resonance structures
+    if unique:
+        cleaned_mols = get_unique_mols(cleaned_mols,
+                                       consider_atommap=consider_atommap)
+        # Temporary fix to remove highlight flag
+        # TODO: replace with a better method after knowing the mechanism of highlighting substructures
+        cleaned_mols = [RDKitMol.FromSmiles(
+                            mol.ToSmiles(removeAtomMap=False,
+                                         removeHs=False)
+                            )
+                        for mol in cleaned_mols]
+    return cleaned_mols
+
+
+def has_matched_mol(mol: RDKitMol,
+                    mols: List[RDKitMol],
+                    consider_atommap: bool = False,
+                    ):
+    """
+    Check if a molecule has a structure match in a list of molecules.
+
+    Args:
+        mol (RDKitMol): The target molecule.
+        mols (List[RDKitMol]): The list of molecules to be processed.
+        consider_atommap (bool, optional): If treat chemically equivalent molecules with
+                                           different atommap numbers as different molecules.
+                                           Defaults to False.
+
+    Returns:
+        bool: if a matched molecules if found.
+    """
+    for mol_in_list in mols:
+        mapping = mol_in_list.GetSubstructMatch(mol)  # A tuple of atom indexes if matched
+        if mapping and not consider_atommap:
+            return True
+        elif mapping and mapping == tuple(range(len(mapping))):
+            # if identical, the mapping is always as 1,2,...,N
+            return True
+    return False
+
+
+def get_unique_mols(mols: List[RDKitMol],
+                    consider_atommap: bool = False,
+                    same_formula: bool = False,
+                    ):
+    """
+    Find the unique molecules from a list of molecules.
+
+    Args:
+        mols (list): The molecules to be processed.
+        consider_atommap (bool, optional): If treat chemically equivalent molecules with
+                                           different atommap numbers as different molecules.
+                                           Defaults to False.
+        same_formula (bool, opional): If the mols has the same formula you may set it to True
+                                      to save computational time. Defaults to False.
+
+    Returns:
+        list: A list of unique molecules.
+    """
+    # Dictionary:
+    # Keys: chemical formula;
+    # Values: list of mols with same formula
+    # Use chemical formula to reduce the call of the more expensive graph substructure check
+    unique_formula_mol = {}
+
+    for mol in mols:
+
+        # Get the molecules with the same formula as the query molecule
+        form = 'same' if same_formula else Chem.rdMolDescriptors.CalcMolFormula(mol._mol)
+        unique_mol_list = unique_formula_mol.get(form)
+
+        if unique_mol_list and has_matched_mol(mol, unique_mol_list, consider_atommap=consider_atommap):
+            continue
+        elif unique_mol_list:
+            unique_formula_mol[form].append(mol)
+        else:
+            unique_formula_mol[form] = [mol]
+
+    return sum(unique_formula_mol.values(), [])
