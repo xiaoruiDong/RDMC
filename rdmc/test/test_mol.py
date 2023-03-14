@@ -636,13 +636,13 @@ class TestRDKitMol(unittest.TestCase):
         # 3 with radical site on the ring and 2 with differently kekulized benzene
         self.assertEqual(len(generate_radical_resonance_structures(
                                 RDKitMol.FromSmiles(smi),
-                                uniquify=False,)
+                                unique=False,)
                              ),
                          5)
         # With filtration and not considering atom map, RDKit returns 3 structures
         self.assertEqual(len(generate_radical_resonance_structures(
                                 RDKitMol.FromSmiles(smi),
-                                uniquify=True,
+                                unique=True,
                                 consider_atommap=False,
                                 )
                              ),
@@ -650,7 +650,7 @@ class TestRDKitMol(unittest.TestCase):
         # With filtration and considering atom map, RDKit returns 4 structures
         self.assertEqual(len(generate_radical_resonance_structures(
                                 RDKitMol.FromSmiles(smi),
-                                uniquify=True,
+                                unique=True,
                                 consider_atommap=True,
                                 )
                              ),

@@ -1732,7 +1732,7 @@ def generate_vdw_mat(rd_mol,
 
 
 def generate_radical_resonance_structures(mol: RDKitMol,
-                                          uniquify: bool = True,
+                                          unique: bool = True,
                                           consider_atommap: bool = True):
     """
     Generate resonance structures for a radical molecule.  RDKit by design doesn't work
@@ -1742,7 +1742,7 @@ def generate_radical_resonance_structures(mol: RDKitMol,
 
     Args:
         mol (RDKitMol): A radical molecule.
-        uniquify (bool, optional): Uniquify the resonance structure from the list. Defaults to True.
+        unique (bool, optional): Filter out duplicate resonance structures from the list. Defaults to True.
         consider_atommap (bool, atommap): If consider atom map numbers in filtration duplicates.
                                           Only effective when uniquify=True. Defaults to False.
 
@@ -1807,7 +1807,7 @@ def generate_radical_resonance_structures(mol: RDKitMol,
         cleaned_mols.append(res_mol)
 
     # To remove duplicate resonance structures
-    if uniquify:
+    if unique:
         cleaned_mols = get_unique_mols(cleaned_mols,
                                        consider_atommap=consider_atommap)
         # Temporary fix to remove highlight flag
