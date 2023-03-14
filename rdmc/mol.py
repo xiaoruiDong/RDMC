@@ -1810,7 +1810,13 @@ def generate_radical_resonance_structures(mol: RDKitMol,
     if uniquify:
         cleaned_mols = get_unique_mols(cleaned_mols,
                                        consider_atommap=consider_atommap)
-
+        # Temporary fix to remove highlight flag
+        # TODO: replace with a better method after knowing the mechanism of highlighting substructures
+        cleaned_mols = [RDKitMol.FromSmiles(
+                            mol.ToSmiles(removeAtomMap=False,
+                                         removeHs=False)
+                            )
+                        for mol in cleaned_mols]
     return cleaned_mols
 
 
