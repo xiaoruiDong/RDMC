@@ -17,7 +17,6 @@ class Task(object):
                  save_dir: Optional[str] = None,
                  work_dir: Optional[str] = None,
                  iter: int = 0,
-                 *args,
                  **kwargs,
                  ):
         """
@@ -37,7 +36,7 @@ class Task(object):
         if self.request_external_software:
             self.check_external_software()
 
-        self.task_prep(*args, **kwargs)
+        self.task_prep(**kwargs)
 
     # check if the external software is available
     def check_external_software(self):
@@ -46,7 +45,7 @@ class Task(object):
         """
         return True
 
-    def task_prep(self, *args, **kwargs):
+    def task_prep(self, **kwargs):
         """
         Prepare the task.
         """
@@ -154,9 +153,8 @@ class Task(object):
 
     @timer
     def run(self,
-             test: bool = False,
-             *args,
-             **kwargs):
+            test: bool = False,
+            **kwargs):
         """
         The main task. This function should be implemented by the developer.
         Please note that the `run_timer_and_counter` decorator is added to this
@@ -168,7 +166,6 @@ class Task(object):
         raise NotImplementedError
 
     def pre_run(self,
-                *args,
                 **kwargs):
         """
         The function to be executed before the task is run.
@@ -176,20 +173,19 @@ class Task(object):
         pass
 
     def post_run(self,
-                 *args,
                  **kwargs):
         """
         The function to be executed after the task is run.
         """
         pass
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, **kwargs):
         """
         Run the task.
         """
-        self.pre_run(*args, **kwargs)
-        self.last_result = self.run(*args, **kwargs)
-        self.post_run(*args, **kwargs)
+        self.pre_run(**kwargs)
+        self.last_result = self.run(**kwargs)
+        self.post_run(**kwargs)
 
         if self.save_dir:
             self.save_data()
