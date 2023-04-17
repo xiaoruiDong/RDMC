@@ -8,7 +8,7 @@ from rdmc.mol import RDKitMol
 
 class MolDecoder(Task):
 
-    def post_run(self, *args, **kwargs):
+    def post_run(self, **kwargs):
         """
         Set the SMILES as the name of the RDKitMol object.
         """
@@ -18,66 +18,78 @@ class MolDecoder(Task):
                                  removeAtomMap=False,)
                     )
 
+    def run(self,
+            *,
+            reps: str,
+            **kwargs):
+        """
+        Decode representation (reps) to RDKitMol object.
+
+        Args:
+            reps (str): representation string
+        """
+        raise NotImplementedError
+
 
 class SmilesDecoder(MolDecoder):
     """ Decode SMILES to RDKitMol object """
     @timer
     def run(self,
-            smiles: str,
-            *args,
+            *,
+            reps: str,
             **kwargs):
         """
         Decode SMILES to RDKitMol object.
 
         Args:
-            smiles (str): SMILES string
+            reps (str): SMILES string
         """
-        return RDKitMol.FromSmiles(smiles, *args, **kwargs)
+        return RDKitMol.FromSmiles(reps, **kwargs)
 
 
 class InchiDecoder(MolDecoder):
     """ Decode InChI to RDKitMol object """
     @timer
     def run(self,
-            inchi: str,
-            *args,
+            *,
+            reps: str,
             **kwargs):
         """
         Decode InChI to RDKitMol object.
 
         Args:
-            inchi (str): InChI string
+            reps (str): InChI string
         """
-        return RDKitMol.FromInchi(inchi, *args, **kwargs)
+        return RDKitMol.FromInchi(reps, **kwargs)
 
 
 class SmartsDecoder(MolDecoder):
     """ Decode SMARTS to RDKitMol object """
     @timer
     def run(self,
-            smarts: str,
-            *args,
+            *,
+            reps: str,
             **kwargs):
         """
         Decode SMARTS to RDKitMol object.
 
         Args:
-            smarts (str): SMARTS string
+            reps (str): SMARTS string
         """
-        return RDKitMol.FromSmarts(smarts, *args, **kwargs)
+        return RDKitMol.FromSmarts(reps, **kwargs)
 
 
 class RxnSmilesDecoder(Task):
     """ Decode reaction SMILES to RDKitMol object """
     @timer
     def run(self,
-            smiles: str,
-            *args,
+            *,
+            reps: str,
             **kwargs,):
         """
         Decode reaction SMILES to RDKitMol object.
 
         Args:
-            smiles (str): reaction SMILES string
+            reps (str): reaction SMILES string
         """
-        return [RDKitMol.FromSmiles(smi, *args, **kwargs) for smi in smiles.split(".")]
+        return [RDKitMol.FromSmiles(smi, **kwargs) for smi in reps.split(".")]
