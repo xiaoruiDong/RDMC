@@ -2,15 +2,30 @@
 # -*- coding: utf-8 -*-
 
 from rdmc.conformer_generation.task import Task
+from rdmc.conformer_generation.utils import timer
 from rdmc.mol import RDKitMol
 
 
-class SmilesDecoder(Task):
+class MolDecoder(Task):
+
+    def post_run(self, *args, **kwargs):
+        """
+        Set the SMILES as the name of the RDKitMol object.
+        """
+        mol = self.last_result
+        mol.SetProp("Name",
+                    mol.ToSmiles(removeHs=False,
+                                 removeAtomMap=False,)
+                    )
+
+
+class SmilesDecoder(MolDecoder):
     """ Decode SMILES to RDKitMol object """
-    def task(self,
-             smiles: str,
-             *args,
-             **kwargs):
+    @timer
+    def run(self,
+            smiles: str,
+            *args,
+            **kwargs):
         """
         Decode SMILES to RDKitMol object.
 
@@ -20,12 +35,13 @@ class SmilesDecoder(Task):
         return RDKitMol.FromSmiles(smiles, *args, **kwargs)
 
 
-class InchiDecoder(Task):
+class InchiDecoder(MolDecoder):
     """ Decode InChI to RDKitMol object """
-    def task(self,
-             inchi: str,
-             *args,
-             **kwargs):
+    @timer
+    def run(self,
+            inchi: str,
+            *args,
+            **kwargs):
         """
         Decode InChI to RDKitMol object.
 
@@ -35,13 +51,13 @@ class InchiDecoder(Task):
         return RDKitMol.FromInchi(inchi, *args, **kwargs)
 
 
-class SmartsDecoder(Task):
+class SmartsDecoder(MolDecoder):
     """ Decode SMARTS to RDKitMol object """
-
-    def task(self,
-             smarts: str,
-             *args,
-             **kwargs):
+    @timer
+    def run(self,
+            smarts: str,
+            *args,
+            **kwargs):
         """
         Decode SMARTS to RDKitMol object.
 
@@ -53,10 +69,11 @@ class SmartsDecoder(Task):
 
 class RxnSmilesDecoder(Task):
     """ Decode reaction SMILES to RDKitMol object """
-    def task(self,
-             smiles: str,
-             *args,
-             **kwargs,):
+    @timer
+    def run(self,
+            smiles: str,
+            *args,
+            **kwargs,):
         """
         Decode reaction SMILES to RDKitMol object.
 
