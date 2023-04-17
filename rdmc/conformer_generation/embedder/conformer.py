@@ -18,8 +18,8 @@ class ConformerEmbedder(Task):
     """
 
     def pre_run(self,
+                *,
                 n_conformers: int,
-                *args,
                 **kwargs,
                 ):
         """
@@ -28,13 +28,13 @@ class ConformerEmbedder(Task):
         self.n_subtasks = n_conformers
 
     def post_run(self,
-                 *args,
                  **kwargs,
                  ):
         """
         Set the number of conformers generated to n_success.
         """
-        self.n_success = self.last_result.GetNumConformers()
+        mol = self.last_result
+        self.n_success = mol.GetNumConformers()
 
     def save_data(self):
         """
