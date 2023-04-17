@@ -152,8 +152,8 @@ class Task(object):
         """
         raise NotImplementedError
 
-    @run_timer_and_counter
-    def task(self,
+    @timer
+    def run(self,
              test: bool = False,
              *args,
              **kwargs):
@@ -172,7 +172,7 @@ class Task(object):
         Run the task.
         """
 
-        result = self.task(*args, **kwargs)
+        self.last_result = self.run(*args, **kwargs)
 
         if self.save_dir:
             self.save_data()
@@ -180,4 +180,4 @@ class Task(object):
         if self.track_stats:
             self.update_stats()
 
-        return result
+        return self.last_result
