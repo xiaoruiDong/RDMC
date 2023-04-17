@@ -99,8 +99,8 @@ class Task(object):
         """
         try:
             return self._n_success
-        except:
-            RuntimeError()
+        except AttributeError:
+            return 0
 
 
     @n_success.setter
@@ -112,12 +112,6 @@ class Task(object):
             n (int): The number of successful subtasks.
         """
         self._n_success = n
-
-    def count_success(self):
-        """
-        Count the number of successful subtasks.
-        """
-        raise NotImplementedError
 
     @property
     def percent_success(self):
@@ -138,8 +132,6 @@ class Task(object):
         Returns:
             dict: The common statistics of the task.
         """
-        self.count_success()
-
         stats = {"iter": self.iter,
                  "time": self.last_run_time,
                  "n_success": self.n_success,
