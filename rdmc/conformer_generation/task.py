@@ -3,8 +3,9 @@
 
 """This is the module for abstracting the conformer generation task"""
 
-import time
+from typing import Optional
 
+from rdmc.conformer_generation.utils import timer
 
 class Task(object):
 
@@ -12,9 +13,10 @@ class Task(object):
     request_external_software = []
 
     def __init__(self,
-                 track_stats=False,
-                 save_dir=None,
-                 work_dir=None,
+                 track_stats: bool = False,
+                 save_dir: Optional[str] = None,
+                 work_dir: Optional[str] = None,
+                 iter: int = 0,
                  *args,
                  **kwargs,
                  ):
@@ -30,6 +32,7 @@ class Task(object):
         self.track_stats = track_stats
         self.save_dir = save_dir
         self.work_dir = work_dir
+        self.iter = iter
 
         if self.request_external_software:
             self.check_external_software()
@@ -58,19 +61,6 @@ class Task(object):
             return self._last_run_time
         except AttributeError:
             raise RuntimeError("The task has not been run yet.")
-
-    def run_timer_and_counter(func):
-        """
-        Timer decorator for recording the time of a function.
-        """
-        def wrapper(self, *args, **kwargs):
-            time_start = time.time()
-            result = func(self, *args, **kwargs)
-            time_end = time.time()
-            self._last_run_time = time_end - time_start
-            self.iter += 1
-            return result
-        return wrapper
 
     @property
     def n_subtasks(self):

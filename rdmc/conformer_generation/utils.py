@@ -8,14 +8,32 @@ Utilities for conformer generation modules
 from rdkit.Chem import AllChem
 from rdkit.ML.Cluster import Butina
 
+from collections import defaultdict
 import os
 import pickle
-import numpy as np
-from collections import defaultdict
+import time
 from typing import Union
+
+import numpy as np
 
 from rdmc.utils import PERIODIC_TABLE as PT
 from rdmc.external.logparser import GaussianLog
+
+
+SOFTWARE_AVAIL = {}
+
+
+def timer(func):
+    """
+    Timer decorator for recording the time of a function.
+    """
+    def wrapper(self, *args, **kwargs):
+        time_start = time.time()
+        result = func(self, *args, **kwargs)
+        time_end = time.time()
+        self._last_run_time = time_end - time_start
+        return result
+    return wrapper
 
 
 def mol_to_dict(mol,
