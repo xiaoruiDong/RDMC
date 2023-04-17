@@ -167,12 +167,29 @@ class Task(object):
             return True
         raise NotImplementedError
 
+    def pre_run(self,
+                *args,
+                **kwargs):
+        """
+        The function to be executed before the task is run.
+        """
+        pass
+
+    def post_run(self,
+                 *args,
+                 **kwargs):
+        """
+        The function to be executed after the task is run.
+        """
+        pass
+
     def __call__(self, *args, **kwargs):
         """
         Run the task.
         """
-
+        self.pre_run(*args, **kwargs)
         self.last_result = self.run(*args, **kwargs)
+        self.post_run(*args, **kwargs)
 
         if self.save_dir:
             self.save_data()
