@@ -57,7 +57,7 @@ def mol_to_sdf(mol: 'RDKitMol',
             conf_ids = list(range(mol.GetNumConformers()))
         for c_id in conf_ids:
             for key, value in attrs.items():
-                mol.SetProp(key, value[c_id])
+                mol.SetProp(key, str(value[c_id]))
             writer.write(mol._mol, confId=c_id)
     except Exception:
         raise
