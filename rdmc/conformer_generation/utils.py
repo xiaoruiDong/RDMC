@@ -12,7 +12,7 @@ from collections import defaultdict
 import os
 import pickle
 import time
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 
@@ -34,6 +34,35 @@ def timer(func):
         self._last_run_time = time_end - time_start
         return result
     return wrapper
+
+
+def mol_to_sdf(mol: 'RDKitMol',
+               path: str,
+               conf_ids: Optional[list] = None,
+               attrs: dict = {},
+               ):
+    """
+    Write a molecule and its conformers to an SDF file.
+
+    Args:
+        mol ('RDKitMol'): An RDKitMol object.
+        path (str): Path to the output SDF file.
+        conf_ids (list, optional): Conformer IDs to write. Defaults to None.
+        attrs (list, optional): Attributes to write to the SDF file. Defaults to {}.
+                                E.g., {'Energy': ['0.0', '1.0']}.
+    """
+    writer = AllChem.SDWriter(path)
+    try:
+        if conf_ids is None:
+            conf_ids = list(range(mol.GetNumConformers()))
+        for c_id in conf_ids:
+            for key, value in attrs.items():
+                mol.SetProp(key, value[c_id])
+            writer.write(mol._mol, confId=c_id)
+    except Exception:
+        raise
+    finally:
+        writer.close()
 
 
 def mol_to_dict(mol,
