@@ -89,7 +89,12 @@ class Task(object):
         try:
             return self._n_success
         except AttributeError:
-            return 0
+            try:
+                # Some task are expected to have a status attribute
+                # which is a list of bools indicating the success of each subtask
+                return sum(self.status)
+            except AttributeError:
+                return 0
 
 
     @n_success.setter
