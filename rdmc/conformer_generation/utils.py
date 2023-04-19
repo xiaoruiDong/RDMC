@@ -39,7 +39,8 @@ def timer(func):
 def mol_to_sdf(mol: 'RDKitMol',
                path: str,
                conf_ids: Optional[list] = None,
-               attrs: dict = {},
+               save_conf_attrs: bool = True,
+               extra_attrs: dict = {},
                ):
     """
     Write a molecule and its conformers to an SDF file.
@@ -51,13 +52,16 @@ def mol_to_sdf(mol: 'RDKitMol',
         attrs (list, optional): Attributes to write to the SDF file. Defaults to {}.
                                 E.g., {'Energy': ['0.0', '1.0']}.
     """
+    conf_ids = conf_ids or list(range(mol.GetNumConformers()))
     writer = AllChem.SDWriter(path)
     try:
-        if conf_ids is None:
-            conf_ids = list(range(mol.GetNumConformers()))
         for c_id in conf_ids:
-            for key, value in attrs.items():
+            for key, value in extra_attrs.items():
                 mol.SetProp(key, str(value[c_id]))
+            if save_conf_attrs:
+                for prop in mol.GetConformer(c_id).GetPropNames():
+                    mol.SetProp(prop,
+                                str(mol.GetConformer(c_id).GetProp(prop)))
             writer.write(mol._mol, confId=c_id)
     except Exception:
         raise
