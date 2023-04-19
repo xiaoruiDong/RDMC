@@ -12,6 +12,7 @@ class MolDecoder(Task):
         """
         Set the SMILES as the name of the RDKitMol object.
         """
+        self.n_success = 1  # no error raise during run
         mol = self.last_result
         mol.SetProp("Name",
                     mol.ToSmiles(removeHs=False,
@@ -24,6 +25,8 @@ class MolDecoder(Task):
             **kwargs):
         """
         Decode representation (reps) to RDKitMol object.
+        All child classes should implement this method and has at least `repr`
+        as the argument.
 
         Args:
             reps (str): representation string
