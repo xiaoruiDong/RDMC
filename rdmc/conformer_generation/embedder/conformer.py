@@ -8,9 +8,8 @@ Modules for providing initial guess geometries
 import json
 import os.path as osp
 
-from rdkit import Chem
 from rdmc.conformer_generation.task import Task
-
+from rdmc.conformer_generation.utils import mol_to_sdf
 
 class ConformerEmbedder(Task):
     """
@@ -34,21 +33,14 @@ class ConformerEmbedder(Task):
         Set the number of conformers generated to n_success.
         """
         mol = self.last_result
-        self.n_success = mol.GetNumConformers()
+        for conf, stat in zip(mol.GetAllConformers(),
+                              self.status,):
+            conf.SetBoolProp("KeepID", stat)
 
     def save_data(self):
         """
         Save the optimized conformers.
         """
-        mol = self.last_result
-
-        # Save optimized ts mols
         path = osp.join(self.save_dir, "conformers.sdf")
-        try:
-            writer = Chem.rdmolfiles.SDWriter(path)
-            for i in range(self.n_subtasks):
-                writer.write(mol._mol, confId=i)
-        except Exception:
-            raise
-        finally:
-            writer.close()
+        mol_to_sdf(mol=self.last_result,
+                   path=path)
