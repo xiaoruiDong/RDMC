@@ -28,39 +28,9 @@ XTB_ENV = {
 
 # Constants
 
-EV_TO_HARTREE = (
-    1 / 27.211386245988
-)  # https://physics.nist.gov/cgi-bin/cuu/Value?hrev (04.06.21)
-
+EV_TO_HARTREE = 1 / 27.211386245988  # https://physics.nist.gov/cgi-bin/cuu/Value?hrev (04.06.21)
 AU_TO_DEBYE = 1 / 0.3934303  # https://en.wikipedia.org/wiki/Debye (04.06.21)
-
 WBO_CUTOFF = 0.05
-
-ELEM_TO_ATOMNUM = {
-    "H": 1,
-    "C": 6,
-    "N": 7,
-    "O": 8,
-    "F": 9,
-    "P": 15,
-    "S": 16,
-    "Cl": 17,
-    "Br": 35,
-    "I": 53,
-}
-
-ATOMNUM_TO_ELEM = {
-    1: "H",
-    6: "C",
-    7: "N",
-    8: "O",
-    9: "F",
-    15: "P",
-    16: "S",
-    17: "Cl",
-    35: "Br",
-    53: "I",
-}
 
 ATOM_ENERGIES_XTB = {
     "H": -0.393482763936,
@@ -75,6 +45,7 @@ ATOM_ENERGIES_XTB = {
     "I": -3.779630263390,
 }
 
+# Column order for xTB properties
 
 COLUMN_ORDER = {
     "E_form": 0,
@@ -84,22 +55,3 @@ COLUMN_ORDER = {
     "dipole": 4,
     "charges": 5,
 }
-
-
-def preds_to_lists(preds):
-    preds_list = {}
-    for key, val in preds.items():
-        if isinstance(val, list):
-            preds_list[key] = [elem.tolist() for elem in val]
-        elif isinstance(val, np.ndarray):
-            preds_list[key] = val.tolist()
-    return preds_list
-
-
-def get_bond_aidxs(mol):
-    atom_idxs = []
-    for i in range(mol.OBMol.NumBonds()):
-        begin_idx = mol.OBMol.GetBondById(i).GetBeginAtomIdx() - 1
-        end_idx = mol.OBMol.GetBondById(i).GetEndAtomIdx() - 1
-        atom_idxs.append((min(begin_idx, end_idx), max(begin_idx, end_idx)))
-    return atom_idxs
