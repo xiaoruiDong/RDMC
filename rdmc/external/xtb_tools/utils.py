@@ -14,7 +14,6 @@ import numpy as np
 
 ROOT_PATH = os.path.dirname(__file__)
 TS_PATH_INP = os.path.join(ROOT_PATH, "ts_path.inp")
-UTILS_PATH = os.path.join(ROOT_PATH, "utils")
 XTB_BINARY = os.path.join(os.environ.get("CONDA_PREFIX"), "bin", "xtb")
 CREST_BINARY = os.path.join(os.environ.get("CONDA_PREFIX"), "bin", "crest")
 XTB_GAUSSIAN_PL = os.path.join(ROOT_PATH, "xtb_gaussian.pl")
@@ -45,7 +44,7 @@ ATOM_ENERGIES_XTB = {
     "I": -3.779630263390,
 }
 
-# Column order for xTB properties
+# Job creation and parsing
 
 COLUMN_ORDER = {
     "E_form": 0,
@@ -54,4 +53,24 @@ COLUMN_ORDER = {
     "E_gap": 3,
     "dipole": 4,
     "charges": 5,
+}
+
+METHOD_DICT = {
+    'gfn0': '--gfn 0',
+    'gfn1': '--gfn 1',
+    'gfn2': '--gfn 2',
+    'gfnff': '--gfnff',
+}
+
+FILE_NAME_DICT = {
+    'log': 'xtb.log',
+    'out': 'xtbout.json',
+    'wbo': 'wbo',
+    'g98': 'g98.out',
+    'ts': 'xtbpath_ts.xyz',
+    'coord': 'mol.sdf',
+    'coord_xyz': 'mol.xyz',
+    'end_coord': 'end.sdf',
+    'opt': 'xtbopt.sdf',
+    'restart': 'xtbrestart',
 }
