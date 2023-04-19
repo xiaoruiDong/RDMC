@@ -10,7 +10,7 @@ import yaml
 
 import numpy as np
 
-from rdmc.conformer_generation.task import Task
+from rdmc.conformer_generation.embedder.conformer import ConformerEmbedder
 from rdmc.conformer_generation.utils import SOFTWARE_AVAIL, timer
 
 try:
@@ -48,7 +48,7 @@ else:
     SOFTWARE_AVAIL["geomol"] = True
 
 
-class GeoMolEmbedder(Task):
+class GeoMolEmbedder(ConformerEmbedder):
 
     request_external_software = ['pytorch', 'torch_geometric', 'geomol']
 
@@ -118,6 +118,9 @@ class GeoMolEmbedder(Task):
             mol (RDKitMol): RDKit molecule object. Note, this function will overwrite the conformers of the molecule.
             n_conformers (int): Number of conformers to generate.
         """
+        mol.EmbedMultipleNullConfs(n=n_conformers, random=False)
+        self.status = [False] * n_conformers
+
         # featurize data and run GeoMol
         if self.tg_data is None:
             self.tg_data = featurize_mol(
@@ -134,10 +137,12 @@ class GeoMolEmbedder(Task):
         split_model_coords = np.split(model_coords, n_conformers, axis=1)
 
         # package in mol and return
-        mol.EmbedMultipleNullConfs(n=n_conformers, random=False)
         for i, x in enumerate(split_model_coords):
-            mol.SetPositions(x.squeeze(axis=1), i)
-
-        self.n_success = n_conformers
+            try:
+                mol.SetPositions(x.squeeze(axis=1), i)
+            except Exception:
+                pass
+            else:
+                self.status[i] = True
 
         return mol
