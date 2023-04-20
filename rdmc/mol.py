@@ -20,6 +20,7 @@ from rdkit.Geometry.rdGeometry import Point3D
 from rdmc.conf import RDKitConf
 from rdmc.utils import *
 
+from ase import Atoms
 
 # Additional notes:
 # Although current .py does not contain openbabel, but actually
@@ -1280,6 +1281,17 @@ class RDKitMol(object):
             str: The mol block of the molecule.
         """
         return Chem.MolToMolBlock(self._mol, confId=confId)
+
+    def ToAtoms(self,
+                confId: int = 0,):
+        """
+        Convert RDKitMol to the ase.Atoms object.
+
+        Args:
+            confId (int): The conformer ID to be exported.
+        """
+        return Atoms(positions=self.GetPositions(id=confId),
+                     numbers=self.GetAtomicNumbers())
 
     def GetFormalCharge(self):
         """
