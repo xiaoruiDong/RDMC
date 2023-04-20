@@ -31,7 +31,7 @@ def _get_mult_and_chrg(mol: 'RDKitMol',
         The multiplicity and charge of the molecule.
     """
     if multiplicity is None:
-        multiplicity = mol.GetTotalSpinMultiplicity()
+        multiplicity = mol.GetSpinMultiplicity()
     if charge is None:
         charge = mol.GetFormalCharge()
     return multiplicity, charge
@@ -76,46 +76,44 @@ def write_orca_opt(mol,
     """
     mult, charge = _get_mult_and_chrg(mol, mult, charge)
 
+    opt = "opt" if not ts else "optts"
+
     # Determine if analytical hessian is available
     hess_str = ""
     if not anhess_dict.get(method.lower(), True):
-        hess_str += "    numhess\n"
+        hess_str += "    numhess true\n"
     if hess is None:  # use default
-        hess_str += "    calc_hess true\n    recalc_hess 5\n"
+        hess_str += "    calc_hess true\n    recalc_hess 5"
     else:
         hess_str += hess
-    if ts:
-        hess_str += "    ts_search ef\n"
 
     if modify_internal is not None:
         raise NotImplementedError("modify_internal is not implemented yet.")
 
-    freq = ''
     if follow_freq and anhess_dict.get(method.lower(), True):
-        freq += '! anfreq'
+        opt += ' anfreq'
     elif follow_freq:
-        freq += '! numfreq'
+        opt += ' numfreq'
 
     # GeomString
-    orca_opt_input = f"""! {method}
-    %maxcore {memory * 1024}
-    %pal
-    nprocs {nprocs}
-    end
-    %scf
-        convergence {scf_level}
-    end
-    %geom
-        maxiter {max_iter}
-        coordsys {coord_type}
-        convergence {opt_level}
-    {hess_str}
-    end
-    {freq}
-    *xyz {charge} {mult}
-    {mol.ToXYZ(header=False, confId=conf_id)}
-    *
-    """
+    orca_opt_input = f"""! {method} {opt}
+%maxcore {memory * 1024}
+%pal
+nprocs {nprocs}
+end
+%scf
+    convergence {scf_level}
+end
+%geom
+    maxiter {max_iter}
+    coordsys {coord_type}
+    convergence {opt_level}
+{hess_str}
+end
+*xyz {charge} {mult}
+{mol.ToXYZ(header=False, confId=conf_id)}
+*
+"""
     return orca_opt_input
 
 
@@ -126,10 +124,21 @@ def write_orca_freq(mol,
                     memory: int = 1,
                     nprocs: int = 1,
                     method: str = "xtb2",
-                    direction: str = "both",
-                    max_iter: int = 100,
                     ):
     """
+    Write the input file for ORCA frequency calculation.
+
+    Args:
+        mol (RDKitMol): The molecule to be run.
+        conf_id (int, optional): The conformer ID to be run. Defaults to 0.
+        charge (int, optional): The charge of the molecule. Defaults to None, to use the charge of mol.
+        mult (int, optional): The multiplicity of the molecule. Defaults to None, to use the multiplicity of mol.
+        memory (int, optional): The memory to be used in GB. Defaults to 1.
+        nprocs (int, optional): The number of processors to be used. Defaults to 1.
+        method (str, optional): The method to be used. Defaults to "xtb2".
+
+    Returns:
+        str: The input file for ORCA frequency calculation.
     """
     mult, charge = _get_mult_and_chrg(mol, mult, charge)
     # Determine if analytical hessian is available
@@ -138,17 +147,20 @@ def write_orca_freq(mol,
     else:
         freq = "numfreq"
 
-    orca_freq_input = f"""! {method} {freq}
-    %maxcore {memory * 1024}
-    %pal
-    nprocs {nprocs}
-    end
-    %scf
-        convergence tight
-    end
-    {mol.ToXYZ(header=False, confId=conf_id)}
-    *
-    """
+    orca_freq_input = \
+        f"""
+! {method} {freq}
+%maxcore {memory * 1024}
+%pal
+nprocs {nprocs}
+end
+%scf
+    convergence tight
+end
+*xyz {charge } {mult}
+{mol.ToXYZ(header=False, confId=conf_id)}
+*
+"""
     return orca_freq_input
 
 
@@ -175,6 +187,9 @@ def write_orca_irc(mol,
         method (str, optional): The method to be used. Defaults to "xtb2".
         direction (str, optional): The direction of the IRC. Defaults to "both". other options: "forward", "backward".
         max_iter (int, optional): The maximum number of IRC steps. Defaults to 100.
+
+    Returns:
+        str: The input file for ORCA IRC calculation
     """
     mult, charge = _get_mult_and_chrg(mol, mult, charge)
 
@@ -185,21 +200,21 @@ def write_orca_irc(mol,
         hess = "calc_numfreq"
 
     orca_irc_input = f"""! {method}
-    %maxcore {memory * 1024}
-    %pal
-    nprocs {nprocs}
-    end
-    %scf
-        convergence tight
-    end
-    %irc
-        direction {direction}
-        {hess}
-        maxiter {max_iter}
-    *xyz {charge } {mult}
-    {mol.ToXYZ(header=False, confId=conf_id)}
-    *
-    """
+%maxcore {memory * 1024}
+%pal
+nprocs {nprocs}
+end
+%scf
+    convergence tight
+end
+%irc
+    direction {direction}
+    {hess}
+    maxiter {max_iter}
+*xyz {charge } {mult}
+{mol.ToXYZ(header=False, confId=conf_id)}
+*
+"""
     return orca_irc_input
 
 
@@ -209,12 +224,12 @@ def write_orca_gsm(method="XTB2", memory=1, nprocs=1):
         nprocs = 1
 
     orca_gsm_input= f"""! {method} Engrad TightSCF
-    %maxcore {memory*1024}
-    %pal
-    nprocs {nprocs}
-    end
-    %scf
-    maxiter 350
-    end
-    """
+%maxcore {memory*1024}
+%pal
+nprocs {nprocs}
+end
+%scf
+maxiter 350
+end
+"""
     return orca_gsm_input
