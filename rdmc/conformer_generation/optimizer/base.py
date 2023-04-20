@@ -9,6 +9,18 @@ from rdmc.conformer_generation.utils import mol_to_sdf
 
 class BaseOptimizer(Task):
 
+    def pre_run(self, mol, **kwargs):
+        """
+        Set the number of conformers to be optimized to n_subtasks.
+        """
+        try:
+            self.status = [bool(conf.GetProp('KeepID'))
+                           for conf in mol.GetAllConformers()]
+            self.n_subtasks = sum(self.status)
+        except KeyError:
+            # No keepID property, assume all conformers are to be optimized
+            self.n_subtasks = mol.GetNumConformers()
+
     def post_run(self, **kwargs):
         """
         Set the energy and status to conformers.
