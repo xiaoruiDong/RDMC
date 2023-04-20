@@ -11,46 +11,25 @@ import yaml
 import numpy as np
 
 from rdmc.conformer_generation.embedder.conformer import ConformerEmbedder
-from rdmc.conformer_generation.utils import SOFTWARE_AVAIL, timer
+from rdmc.conformer_generation.utils import (timer, register_software)
 
-try:
+with register_software('pytorch'):
     import torch
-except ImportError:
-    SOFTWARE_AVAIL["pytorch"] = False
-    print("No torch installation detected. Skipping import...")
-else:
-    SOFTWARE_AVAIL["pytorch"] = True
 
-try:
-    from torch_geometric.data import Batch
-except:
-    SOFTWARE_AVAIL["torch_geometric"] = False
-    print("No torch_geometric installation detected. Skipping import...")
-else:
-    SOFTWARE_AVAIL["torch_geometric"] = True
-
-try:
-    from geomol.model import GeoMol
-    from geomol.featurization import featurize_mol, from_data_list
-    from geomol.inference import construct_conformers
-except ImportError:
-    print("No external GeoMol installation detected. Importing from RDMC.external.GeoMol...")
+with register_software('geomol'):
     try:
+        from geomol.model import GeoMol
+        from geomol.featurization import featurize_mol, from_data_list
+        from geomol.inference import construct_conformers
+    except ImportError:
         from rdmc.external.GeoMol.geomol.model import GeoMol
         from rdmc.external.GeoMol.geomol.featurization import featurize_mol, from_data_list
         from rdmc.external.GeoMol.geomol.inference import construct_conformers
-    except ImportError:
-        SOFTWARE_AVAIL["geomol"] = False
-        print("No GeoMol installation detected. Skipping import...")
-    else:
-        SOFTWARE_AVAIL["geomol"] = True
-else:
-    SOFTWARE_AVAIL["geomol"] = True
 
 
 class GeoMolEmbedder(ConformerEmbedder):
 
-    request_external_software = ['pytorch', 'torch_geometric', 'geomol']
+    request_external_software = ['pytorch', 'geomol']
 
     def __init__(self,
                  model_dir: str,
@@ -78,13 +57,10 @@ class GeoMolEmbedder(ConformerEmbedder):
         # TODO: add option of pre-pruning geometries using alpha values
         # TODO: investigate option of changing "temperature" each iteration to sample diverse geometries
 
-    def check_external_software(self):
-        return all([SOFTWARE_AVAIL[software] for software in self.request_external_software])
-
     def task_prep(self,
-                  model_dir,
-                  dataset="drugs",
-                  temp_schedule="linear",
+                  model_dir: str,
+                  dataset: str = "drugs",
+                  temp_schedule: str = "linear",
                   **kwargs,):
         """
         Prepare the GeoMol task by loading models and setting parameters.
