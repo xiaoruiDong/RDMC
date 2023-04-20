@@ -20,21 +20,13 @@ class XTBOptimizer(BaseOptimizer):
 
     """
     Optimize conformers using the xTB software.
+
+    Args:
+    method (str): xTB method. Options: gfn0, gfn1, gfn2, gfnff. Defaults to gfn2,
+                    which is equivalent to "--gfn 2" method when using xtb binary.
+    level (str): optimization threshold. Options: crude, sloppy, loose, lax,
+                    normal, tight, vtight, extreme. Defaults to normal.
     """
-    def __init__(self,
-                 method: str = "gfn2",
-                 level: str = "normal",
-                 **kwargs):
-        """
-        Args:
-            method (str): xTB method. Options: gfn0, gfn1, gfn2, gfnff. Defaults to gfn2,
-                          which is equivalent to "--gfn 2" method when using xtb binary.
-            level (str): optimization threshold. Options: crude, sloppy, loose, lax,
-                         normal, tight, vtight, extreme. Defaults to normal.
-        """
-        super().__init__(method=method,
-                         level=level,
-                         **kwargs)
 
     def task_prep(self,
                   method: str = "gfn2",
@@ -55,8 +47,7 @@ class XTBOptimizer(BaseOptimizer):
         """
         Optimize conformers using the xTB software.
         """
-        multiplicity, charge = self._get_mult_and_chrg(mol, multiplicity, charge)
-        uhf = multiplicity - 1
+        mult, charge = self._get_mult_and_chrg(mol, multiplicity, charge)
 
         run_ids = getattr(mol, 'keep_ids', [True] * mol.GetNumConformers())
 
@@ -72,7 +63,7 @@ class XTBOptimizer(BaseOptimizer):
                                               job="--opt",
                                               method=self.method,
                                               level=self.level,
-                                              uhf=uhf,
+                                              uhf=mult - 1,
                                               charge=charge,
                                               )
             except Exception as exc:

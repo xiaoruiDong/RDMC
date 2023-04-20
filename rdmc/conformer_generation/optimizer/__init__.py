@@ -2,3 +2,4 @@
 # -*- coding: utf-8 -*-
 
 from .forcefield import MMFFOptimizer
+from .xtb import XTBOptimizer

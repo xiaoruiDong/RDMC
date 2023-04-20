@@ -9,19 +9,11 @@ from rdmc.forcefield import RDKitFF
 class MMFFOptimizer(BaseOptimizer):
     """
     Optimize conformers using the MMFF force field.
+
+    Args:
+        software (str): software to use for optimization. Options: rdkit, openbabel.
+        variant (str): MMFF variant. Options: MMFF94, MMFF94s.
     """
-    def __init__(self,
-                 software: str = "rdkit",
-                 variant: str = "MMFF94s",
-                 **kwargs):
-        """
-        Args:
-            software (str): software to use for optimization. Options: rdkit, openbabel.
-            variant (str): MMFF variant. Options: MMFF94, MMFF94s.
-        """
-        super().__init__(software=software,
-                         variant=variant,
-                         **kwargs)
 
     def task_prep(self,
                   software: str = "rdkit",

@@ -28,34 +28,20 @@ with register_software('geomol'):
 
 
 class GeoMolEmbedder(ConformerEmbedder):
+    """
+    Generate conformers using GeoMol.
+
+    Args:
+        model_dir (str): Path to directory containing trained model. Within the path, there should be a
+                        "best_model.pt" file and a "model_parameters.yml" file.
+        dataset (str): Dataset used to train the model with two options: "drugs" or "qm9".
+                        It influences how molecules are featurized. "qm9" only supports CHNOF molecules,
+                        while "drugs" have more elements supported. Defaults to "drugs".
+        temp_schedule (str): Temperature schedule for sampling conformers. Two options:
+                            "linear" or "none".
+    """
 
     request_external_software = ['pytorch', 'geomol']
-
-    def __init__(self,
-                 model_dir: str,
-                 dataset: str = "drugs",
-                 temp_schedule: str = "linear",
-                 **kwargs,
-                 ):
-        """
-        Generate conformers using GeoMol.
-
-        Args:
-            model_dir (str): Path to directory containing trained model. Within the path, there should be a
-                            "best_model.pt" file and a "model_parameters.yml" file.
-            dataset (str): Dataset used to train the model with two options: "drugs" or "qm9".
-                           It influences how molecules are featurized. "qm9" only supports CHNOF molecules,
-                           while "drugs" have more elements supported. Defaults to "drugs".
-            temp_schedule (str): Temperature schedule for sampling conformers. Two options:
-                                "linear" or "none".
-        """
-        super().__init__(model_dir=model_dir,
-                         dataset=dataset,
-                         temp_schedule=temp_schedule,
-                         **kwargs)
-
-        # TODO: add option of pre-pruning geometries using alpha values
-        # TODO: investigate option of changing "temperature" each iteration to sample diverse geometries
 
     def task_prep(self,
                   model_dir: str,
