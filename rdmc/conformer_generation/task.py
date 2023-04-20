@@ -5,7 +5,7 @@
 
 from typing import Optional
 
-from rdmc.conformer_generation.utils import timer
+from rdmc.conformer_generation.utils import timer, _software_available
 
 class Task(object):
 
@@ -43,7 +43,11 @@ class Task(object):
         """
         Check if the external software is available.
         """
-        return True
+        if not all(_software_available[s] for s in self.request_external_software):
+            raise RuntimeError(
+                    f"The software requirement "
+                    f"({', '.join(self.request_external_software)}) "
+                    f"is not met. Please install the software and try again.")
 
     def task_prep(self, **kwargs):
         """
