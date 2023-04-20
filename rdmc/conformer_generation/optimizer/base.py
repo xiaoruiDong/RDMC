@@ -14,23 +14,23 @@ class BaseOptimizer(Task):
         Set the number of conformers to be optimized to n_subtasks.
         """
         try:
-            self.status = [bool(conf.GetProp('KeepID'))
-                           for conf in mol.GetAllConformers()]
-            self.n_subtasks = sum(self.status)
+            self.keep_ids = [bool(conf.GetProp('KeepID'))
+                             for conf in mol.GetAllConformers()]
+            self.n_subtasks = sum(self.keep_ids)
         except KeyError:
             # No keepID property, assume all conformers are to be optimized
             self.n_subtasks = mol.GetNumConformers()
 
     def post_run(self, **kwargs):
         """
-        Set the energy and status to conformers.
+        Set the energy and keepid to conformers.
         """
         mol = self.last_result
-        for conf, stat, e in zip(mol.GetAllConformers(),
-                                 self.status,
-                                 self.energies):
+        for conf, keep_id, e in zip(mol.GetAllConformers(),
+                                    self.keep_ids,
+                                    self.energies):
             conf.SetDoubleProp("Energy", e)
-            conf.SetBoolProp("KeepID", stat)
+            conf.SetBoolProp("KeepID", keep_id)
 
     def save_data(self, **kwargs):
         """
@@ -46,7 +46,7 @@ class BaseOptimizer(Task):
         """
         Run the optimization task.
         You need to implement this method in the child class.
-        self.status (if succeed) and self.energies should be set in this method.
+        self.keep_ids (if succeed) and self.energies should be set in this method.
         a molecule need to be returned as the result.
         """
         raise NotImplementedError

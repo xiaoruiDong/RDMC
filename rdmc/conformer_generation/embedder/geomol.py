@@ -95,7 +95,7 @@ class GeoMolEmbedder(ConformerEmbedder):
             n_conformers (int): Number of conformers to generate.
         """
         mol.EmbedMultipleNullConfs(n=n_conformers, random=False)
-        self.status = [False] * n_conformers
+        self.keep_ids = [False] * n_conformers
 
         # featurize data and run GeoMol
         if self.tg_data is None:
@@ -119,6 +119,6 @@ class GeoMolEmbedder(ConformerEmbedder):
             except Exception:
                 pass
             else:
-                self.status[i] = True
+                self.keep_ids[i] = True
 
         return mol

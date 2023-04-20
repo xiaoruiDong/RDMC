@@ -63,7 +63,7 @@ class XTBOptimizer(BaseOptimizer):
         if charge is None:
             charge = mol.GetFormalCharge()
 
-        keep_ids = getattr(self, 'status', [True] * mol.GetNumConformers())
+        keep_ids = getattr(self, 'keep_ids', [True] * mol.GetNumConformers())
 
         new_mol = mol.Copy(quickCopy=True)
         self.energies = []
@@ -94,6 +94,6 @@ class XTBOptimizer(BaseOptimizer):
             energy = float(opt_mol.GetProp('total energy / Eh'))
             self.energies.append(energy)
 
-        self.status = keep_ids
+        self.keep_ids = keep_ids
 
         return new_mol

@@ -33,9 +33,9 @@ class ConformerEmbedder(Task):
         Set the number of conformers generated to n_success.
         """
         mol = self.last_result
-        for conf, stat in zip(mol.GetAllConformers(),
-                              self.status,):
-            conf.SetBoolProp("KeepID", stat)
+        for conf, keep_id in zip(mol.GetAllConformers(),
+                                 self.keep_ids,):
+            conf.SetBoolProp("KeepID", keep_id)
 
     def save_data(self):
         """

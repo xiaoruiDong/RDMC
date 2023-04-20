@@ -48,9 +48,8 @@ class MMFFOptimizer(BaseOptimizer):
         """
         self.ff.setup(mol)
         results = self.ff.optimize_confs(**kwargs)
-        self.status, self.energies = zip(*results)  # kcal/mol
-        self.status = [s == 0 for s in self.status]
+        self.keep_ids, self.energies = zip(*results)  # kcal/mol
+        self.keep_ids = [s == 0 for s in self.keep_ids]
         opt_mol = self.ff.get_optimized_mol()
-        self.n_success = sum(self.status)
 
         return opt_mol
