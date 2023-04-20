@@ -9,8 +9,10 @@ from rdkit.Chem import AllChem
 from rdkit.ML.Cluster import Butina
 
 from collections import defaultdict
+from contextlib import contextmanager
 import os
 import pickle
+import shutil
 import time
 from typing import Optional, Union
 
@@ -20,7 +22,22 @@ from rdmc.utils import PERIODIC_TABLE as PT
 from rdmc.external.logparser import GaussianLog
 
 
-SOFTWARE_AVAIL = {}
+_software_available = {}
+
+
+@contextmanager
+def register_software(software):
+    """
+    Register the availability of external software.
+    """
+    if _software_available.get(software) is False:
+        return
+    try:
+        yield
+    except ImportError:
+        _software_available[software] = False
+    else:
+        _software_available[software] = True
 
 
 def timer(func):
@@ -67,6 +84,21 @@ def mol_to_sdf(mol: 'RDKitMol',
         raise
     finally:
         writer.close()
+
+
+def get_binary(software: str) -> str:
+    """
+    Get the path to the binary of a software.
+
+    Args:
+        software (str): Name of the software.
+
+    Returns:
+        str: Path to the binary if available, otherwise an empty string.
+    """
+    path = shutil.which(software) or ''
+    _software_available[software] = (path == '')
+    return path
 
 
 def mol_to_dict(mol,
