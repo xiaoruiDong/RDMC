@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os.path as osp
 from typing import Optional
 
 from rdmc.conformer_generation.optimizer.base import BaseOptimizer
-from rdmc.conformer_generation.utils import timer
+from rdmc.conformer_generation.utils import timer, _software_available
 from rdmc.external.xtb_tools.run_xtb import run_xtb_calc
+from rdmc.external.xtb_tools.utils import XTB_BINARY
+
+_software_available['xtb'] = osp.isfile(XTB_BINARY)
 
 
 class XTBOptimizer(BaseOptimizer):
+
+    request_external_software = ['xtb']
+
     """
     Optimize conformers using the xTB software.
     """
