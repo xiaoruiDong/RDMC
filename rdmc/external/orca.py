@@ -52,6 +52,7 @@ def write_orca_opt(mol,
                    opt_level: str = "normal",
                    hess: Optional[str] = None,
                    follow_freq = False,
+                   **kwargs,
                    ) -> str:
     """
     Write the input file for ORCA optimization calculation.
@@ -124,6 +125,7 @@ def write_orca_freq(mol,
                     memory: int = 1,
                     nprocs: int = 1,
                     method: str = "xtb2",
+                    **kwargs,
                     ):
     """
     Write the input file for ORCA frequency calculation.
@@ -173,6 +175,7 @@ def write_orca_irc(mol,
                    method: str = "xtb2",
                    direction: str = "both",
                    max_iter: int = 100,
+                   **kwargs,
                    ):
     """
     Write the input file for ORCA IRC calculation
