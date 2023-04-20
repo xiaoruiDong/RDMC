@@ -34,7 +34,7 @@ class ConformerEmbedder(Task):
         """
         mol = self.last_result
         for conf, keep_id in zip(mol.GetAllConformers(),
-                                 self.keep_ids,):
+                                 mol.keep_ids,):
             conf.SetBoolProp("KeepID", keep_id)
 
     def save_data(self):

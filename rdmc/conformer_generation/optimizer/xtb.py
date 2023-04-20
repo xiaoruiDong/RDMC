@@ -4,6 +4,8 @@
 import os.path as osp
 from typing import Optional
 
+import numpy as np
+
 from rdmc.conformer_generation.optimizer.base import BaseOptimizer
 from rdmc.conformer_generation.utils import timer, _software_available
 from rdmc.external.xtb_tools.run_xtb import run_xtb_calc
@@ -53,22 +55,16 @@ class XTBOptimizer(BaseOptimizer):
         """
         Optimize conformers using the xTB software.
         """
-        # Correct multiplicity by user input
-        # There are chances that the multiplicity in mol is not correct
-        # multiplicity argument adds extra flexibility in calculation
-        if multiplicity is None:
-            uhf = mol.GetSpinMultiplicity() - 1
-        else:
-            uhf = multiplicity - 1
-        if charge is None:
-            charge = mol.GetFormalCharge()
+        multiplicity, charge = self._get_mult_and_chrg(mol, multiplicity, charge)
+        uhf = multiplicity - 1
 
-        keep_ids = getattr(self, 'keep_ids', [True] * mol.GetNumConformers())
+        run_ids = getattr(mol, 'keep_ids', [True] * mol.GetNumConformers())
 
-        new_mol = mol.Copy(quickCopy=True)
-        self.energies = []
-        for cid in range(self.n_subtasks):
-            if not keep_ids[cid]:
+        new_mol = mol.Copy(copy_attrs=['keep_ids'])
+        new_mol.energies = []
+        for cid, keep_id in enumerate(run_ids):
+            if not keep_id:
+                new_mol.energies.append(np.nan)
                 continue
             try:
                 opt_mol, props = run_xtb_calc(mol,
@@ -80,20 +76,15 @@ class XTBOptimizer(BaseOptimizer):
                                               charge=charge,
                                               )
             except Exception as exc:
-                keep_ids[cid] = False
+                new_mol.energies.append(np.nan)
                 print(exc)
-                raise
-                # continue
+                continue
 
             # Renumber the molecule based on the atom mapping just set
-            conformer = opt_mol.GetConformer(id=0)
-            conformer.SetIntProp('n_opt_cycles', props['n_opt_cycles'])
-            new_mol.AddConformer(conformer._conf,
-                                 assignId=True)
+            new_mol.SetPositions(opt_mol.GetPositions(), id=cid)
+            new_mol.GetConformer(cid).SetIntProp('n_opt_cycles', props['n_opt_cycles'])
 
             energy = float(opt_mol.GetProp('total energy / Eh'))
-            self.energies.append(energy)
-
-        self.keep_ids = keep_ids
+            new_mol.energies.append(energy)
 
         return new_mol

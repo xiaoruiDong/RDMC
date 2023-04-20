@@ -16,11 +16,10 @@ class ETKDGEmbedder(ConformerEmbedder):
             **kwargs,):
         try:
             mol.EmbedMultipleConfs(n_conformers)
-        except Exception as exc:
-            self.keep_ids = [False] * n_conformers
+            mol.keep_ids = [True] * n_conformers
+        except Exception:
+            mol.keep_ids = [False] * n_conformers
             # Todo: log the error
-        else:
-            self.keep_ids = [True] * n_conformers
         return mol
 
 
@@ -35,5 +34,5 @@ class RandomEmbedder(ConformerEmbedder):
             **kwargs,):
         mol.EmbedMultipleNullConfs(n_conformers,
                                    random=True)
-        self.keep_ids = [True] * n_conformers  # This method shouldn't fail
+        mol.keep_ids = [True] * n_conformers  # This method shouldn't fail
         return mol

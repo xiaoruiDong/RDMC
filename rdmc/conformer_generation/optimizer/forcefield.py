@@ -46,10 +46,11 @@ class MMFFOptimizer(BaseOptimizer):
         Args:
             mol (RDKitMol): RDKitMol object.
         """
-        self.ff.setup(mol)
+        opt_mol = mol.Copy()
+        self.ff.setup(opt_mol)
         results = self.ff.optimize_confs(**kwargs)
-        self.keep_ids, self.energies = zip(*results)  # kcal/mol
-        self.keep_ids = [s == 0 for s in self.keep_ids]
         opt_mol = self.ff.get_optimized_mol()
+        keep_ids, opt_mol.energies = zip(*results)  # kcal/mol
+        opt_mol.keep_ids = [s == 0 for s in keep_ids]
 
         return opt_mol
