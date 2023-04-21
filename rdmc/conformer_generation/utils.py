@@ -13,7 +13,6 @@ from contextlib import contextmanager
 import os
 import pickle
 import shutil
-import time
 from typing import Optional, Union
 
 import numpy as np
@@ -38,19 +37,6 @@ def register_software(software):
         _software_available[software] = False
     else:
         _software_available[software] = True
-
-
-def timer(func):
-    """
-    Timer decorator for recording the time of a function.
-    """
-    def wrapper(self, *args, **kwargs):
-        time_start = time.time()
-        result = func(self, *args, **kwargs)
-        time_end = time.time()
-        self._last_run_time = time_end - time_start
-        return result
-    return wrapper
 
 
 def mol_to_sdf(mol: 'RDKitMol',

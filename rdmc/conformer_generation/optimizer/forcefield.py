@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from rdmc.conformer_generation.optimizer.base import BaseOptimizer
-from rdmc.conformer_generation.utils import timer
 from rdmc.forcefield import RDKitFF
 
 
@@ -28,7 +27,7 @@ class MMFFOptimizer(BaseOptimizer):
         elif software == 'openbabel':
             raise NotImplementedError
 
-    @timer
+    @BaseOptimizer.timer
     def run(self,
             mol: 'RDKitMol',
             **kwargs):

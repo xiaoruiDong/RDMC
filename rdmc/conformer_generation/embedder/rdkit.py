@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from rdmc.conformer_generation.embedder.conformer import ConformerEmbedder
-from rdmc.conformer_generation.utils import timer
 
 
 class ETKDGEmbedder(ConformerEmbedder):
     """
     Embed conformers using the ETKDG method.
     """
-    @timer
+    @ConformerEmbedder.timer
     def run(self,
             mol: 'RDKitMol',
             n_conformers: int,
@@ -27,7 +26,7 @@ class RandomEmbedder(ConformerEmbedder):
     """
     Embed conformers using the random coordinates.
     """
-    @timer
+    @ConformerEmbedder.timer
     def run(self,
             mol: 'RDKitMol',
             n_conformers: int,

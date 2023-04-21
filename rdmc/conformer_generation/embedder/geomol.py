@@ -11,7 +11,7 @@ import yaml
 import numpy as np
 
 from rdmc.conformer_generation.embedder.conformer import ConformerEmbedder
-from rdmc.conformer_generation.utils import (timer, register_software)
+from rdmc.conformer_generation.utils import register_software
 
 with register_software('pytorch'):
     import torch
@@ -68,7 +68,7 @@ class GeoMolEmbedder(ConformerEmbedder):
         self.dataset = dataset
         self.tg_data = None
 
-    @timer
+    @ConformerEmbedder.timer
     def run(self,
             mol: 'RDKitMol',
             n_conformers: int,

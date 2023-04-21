@@ -7,7 +7,7 @@ from typing import Optional
 import numpy as np
 
 from rdmc.conformer_generation.optimizer.base import BaseOptimizer
-from rdmc.conformer_generation.utils import timer, _software_available
+from rdmc.conformer_generation.utils import _software_available
 from rdmc.external.xtb_tools.run_xtb import run_xtb_calc
 from rdmc.external.xtb_tools.utils import XTB_BINARY
 
@@ -38,7 +38,7 @@ class XTBOptimizer(BaseOptimizer):
         self.method = method
         self.level = level
 
-    @timer
+    @BaseOptimizer.timer
     def run(self,
             mol: 'RDKitMol',
             multiplicity: Optional[int] = None,

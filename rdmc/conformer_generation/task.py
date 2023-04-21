@@ -3,9 +3,10 @@
 
 """This is the module for abstracting the conformer generation task"""
 
+import time
 from typing import Optional
 
-from rdmc.conformer_generation.utils import timer, _software_available
+from rdmc.conformer_generation.utils import _software_available
 
 class Task(object):
 
@@ -54,6 +55,24 @@ class Task(object):
         Prepare the task.
         """
         return True
+
+    def timer(func):
+        """
+        Timer decorator for recording the time of a function.
+
+        Args:
+            func (function): The function to be decorated.
+
+        Returns:
+            function: The decorated function.
+        """
+        def wrapper(self, *args, **kwargs):
+            time_start = time.time()
+            result = func(self, *args, **kwargs)
+            time_end = time.time()
+            self._last_run_time = time_end - time_start
+            return result
+        return wrapper
 
     @property
     def last_run_time(self):

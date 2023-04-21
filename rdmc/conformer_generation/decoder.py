@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from rdmc.conformer_generation.task import Task
-from rdmc.conformer_generation.utils import timer
 from rdmc.mol import RDKitMol
 
 
@@ -36,7 +35,7 @@ class MolDecoder(Task):
 
 class SmilesDecoder(MolDecoder):
     """ Decode SMILES to RDKitMol object """
-    @timer
+    @MolDecoder.timer
     def run(self,
             *,
             reps: str,
@@ -52,7 +51,7 @@ class SmilesDecoder(MolDecoder):
 
 class InchiDecoder(MolDecoder):
     """ Decode InChI to RDKitMol object """
-    @timer
+    @MolDecoder.timer
     def run(self,
             *,
             reps: str,
@@ -68,7 +67,7 @@ class InchiDecoder(MolDecoder):
 
 class SmartsDecoder(MolDecoder):
     """ Decode SMARTS to RDKitMol object """
-    @timer
+    @MolDecoder.timer
     def run(self,
             *,
             reps: str,
@@ -84,7 +83,7 @@ class SmartsDecoder(MolDecoder):
 
 class RxnSmilesDecoder(Task):
     """ Decode reaction SMILES to RDKitMol object """
-    @timer
+    @MolDecoder.timer
     def run(self,
             *,
             reps: str,
