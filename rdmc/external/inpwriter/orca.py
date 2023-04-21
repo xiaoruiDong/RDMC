@@ -21,6 +21,9 @@ anhess_dict = {
     "gfn1-xtb": False,
 }
 
+# To use Orca with xtb
+# The user needs to create a `otool_xtb` file in the ORCA directory
+# E.g., cd ORCA_DIR; ln -s $(which xtb) otool_xtb
 
 def write_orca_opt(mol,
                    conf_id: int = 0,
