@@ -5,7 +5,7 @@
 A module contains functions to interface with Orca.
 """
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 anhess_dict = {
     "am1": False,
@@ -14,6 +14,9 @@ anhess_dict = {
     "xtb1": False,
 }
 
+# To use Orca with xtb
+# The user needs to create a `otool_xtb` file in the ORCA directory
+# E.g., cd ORCA_DIR; ln -s $(which xtb) otool_xtb
 
 def _get_mult_and_chrg(mol: 'RDKitMol',
                        multiplicity: Optional[int] = None,
@@ -48,10 +51,10 @@ def write_orca_opt(mol,
                    max_iter: int = 100,
                    coord_type: str = "redundant",
                    modify_internal: Optional[dict] = None,
-                   scf_level: str = "normal",
+                   scf_level: str = "tight",
                    opt_level: str = "normal",
                    hess: Optional[str] = None,
-                   follow_freq = False,
+                   follow_freq: bool = False,
                    **kwargs,
                    ) -> str:
     """
@@ -81,12 +84,13 @@ def write_orca_opt(mol,
 
     # Determine if analytical hessian is available
     hess_str = ""
-    if not anhess_dict.get(method.lower(), True):
-        hess_str += "    numhess true\n"
     if hess is None:  # use default
         hess_str += "    calc_hess true\n    recalc_hess 5"
     else:
         hess_str += hess
+    if (ts or 'true' in hess_str) \
+            and (not anhess_dict.get(method.lower(), True)):
+        hess_str += "    numhess true\n"
 
     if modify_internal is not None:
         raise NotImplementedError("modify_internal is not implemented yet.")
