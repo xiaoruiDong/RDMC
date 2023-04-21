@@ -68,6 +68,7 @@ class XTBOptimizer(BaseOptimizer):
                                               )
             except Exception as exc:
                 new_mol.energies.append(np.nan)
+                new_mol.keep_ids[cid] = False
                 print(exc)
                 continue
 
