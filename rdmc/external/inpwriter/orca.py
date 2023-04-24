@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
-A module contains functions to interface with Orca.
+A module contains functions to write ORCA input files.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
+from rdmc.external.utils import _get_mult_and_chrg
+
+# To use Orca with xtb
+# The user needs to create a `otool_xtb` file in the ORCA directory
+# E.g., cd ORCA_DIR; ln -s $(which xtb) otool_xtb
 
 anhess_dict = {
     "am1": False,
@@ -15,31 +20,6 @@ anhess_dict = {
     "gfn2-xtb": False,
     "gfn1-xtb": False,
 }
-
-# To use Orca with xtb
-# The user needs to create a `otool_xtb` file in the ORCA directory
-# E.g., cd ORCA_DIR; ln -s $(which xtb) otool_xtb
-
-def _get_mult_and_chrg(mol: 'RDKitMol',
-                       multiplicity: Optional[int] = None,
-                       charge: Optional[int] = None,
-                       )-> Tuple[int, int]:
-    """
-    Get the multiplicity and charge of a molecule.
-
-    Args:
-        mol: The molecule.
-        multiplicity: The multiplicity.
-        charge: The charge.
-
-    Returns:
-        The multiplicity and charge of the molecule.
-    """
-    if multiplicity is None:
-        multiplicity = mol.GetSpinMultiplicity()
-    if charge is None:
-        charge = mol.GetFormalCharge()
-    return multiplicity, charge
 
 
 def write_orca_opt(mol,
