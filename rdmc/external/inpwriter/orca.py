@@ -6,7 +6,7 @@ A module contains functions to write ORCA input files.
 """
 
 from typing import Optional
-from rdmc.external.utils import _get_mult_and_chrg
+from rdmc.external.inpwriter.utils import _get_mult_and_chrg
 
 # To use Orca with xtb
 # The user needs to create a `otool_xtb` file in the ORCA directory
