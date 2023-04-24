@@ -4,8 +4,8 @@
 from datetime import datetime
 import re
 
-from rdmc.external.gaussian import scheme_to_dict, COMPOSITE_METHODS
 from rdmc.external.logparser.base import CclibLog
+from rdmc.external.logparser.utils import scheme_to_dict, COMPOSITE_METHODS
 
 
 class GaussianLog(CclibLog):

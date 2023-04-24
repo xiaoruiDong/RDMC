@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 A module contains functions to read Gaussian output file.
@@ -7,8 +7,6 @@ A module contains functions to read Gaussian output file.
 
 from collections import defaultdict
 import re
-
-from rdmc.external.xtb_tools.utils import XTB_GAUSSIAN_PL
 
 
 # TODO: All information below need to be expanded
@@ -139,88 +137,3 @@ def scheme_to_dict(scheme_str: str) -> dict:
         schemes['LOT']['freq'] = schemes['LOT']['LOT']
 
     return schemes
-
-
-def write_gaussian_opt(mol, confId=0, memory=1, nprocs=1, method="GFN2-xTB", mult=1):
-
-    if method == "GFN2-xTB":
-        title_section = (
-            f'#opt=(calcall,maxcycle=128,noeig,nomicro)\n'
-            f'external="{XTB_GAUSSIAN_PL} --gfn 2 -P"'
-        )
-    else:
-        title_section = f"#opt=(calcall,maxcycle=128,noeig) {method}"
-
-    gaussian_opt_input = (f'%mem={memory}gb\n'
-                          f'%nprocshared={nprocs}\n'
-                          f'{title_section}\n'
-                          f'\n'
-                          f'Title Card Required\n'
-                          f'\n'
-                          f'{mol.GetFormalCharge()} {mult}\n'
-                          f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
-    )
-    return gaussian_opt_input
-
-
-def write_gaussian_ts_opt(mol, confId=0, memory=1, nprocs=1, method="GFN2-xTB", mult=1):
-
-    if method == "GFN2-xTB":
-        title_section = (
-            f'#opt=(ts,calcall,maxcycle=128,noeig,nomicro)\n'
-            f'external="{XTB_GAUSSIAN_PL} --gfn 2 -P"'
-        )
-    else:
-        title_section = f"#opt=(ts,calcall,maxcycle=128,noeig) {method}"
-
-    gaussian_opt_input = (f'%mem={memory}gb\n'
-                          f'%nprocshared={nprocs}\n'
-                          f'{title_section}\n'
-                          f'\n'
-                          f'Title Card Required\n'
-                          f'\n'
-                          f'{mol.GetFormalCharge()} {mult}\n'
-                          f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
-    )
-    return gaussian_opt_input
-
-
-def write_gaussian_irc(
-        mol, confId=0, memory=1, nprocs=1,method="GFN2-xTB", direction="forward", mult=1, fc_kw="calcall"):
-
-    if method == "GFN2-xTB":
-        title_section = (
-            f'#irc=({fc_kw},{direction},maxpoints=100,stepsize=7,nomicro)\n'
-            f'external="{XTB_GAUSSIAN_PL} --gfn 2 -P"'
-        )
-    else:
-        title_section = f"#irc=({fc_kw},{direction},maxpoints=100,stepsize=7) {method}"
-
-    gaussian_opt_input = (f'%mem={memory}gb\n'
-                          f'%nprocshared={nprocs}\n'
-                          f'{title_section}\n'
-                          f'\n'
-                          f'Title Card Required\n'
-                          f'\n'
-                          f'{mol.GetFormalCharge()} {mult}\n'
-                          f'{mol.ToXYZ(header=False, confId=confId)}\n\n'
-    )
-    return gaussian_opt_input
-
-def write_gaussian_gsm(method="GFN2-xTB", memory=1, nprocs=1):
-
-    if method == "GFN2-xTB":
-        title_section = (
-            f'#N NoSymmetry scf(xqc) force\n'
-            f'external="{XTB_GAUSSIAN_PL} --gfn 2 -P"'
-        )
-    else:
-        title_section = f"#N NoSymmetry scf(xqc) force {method}"
-
-    gaussian_gsm_input = (f'%mem={memory}gb\n'
-                          f'%nprocshared={nprocs}\n'
-                          f'{title_section}\n'
-                          f'\n'
-                          f'Title Card Required'
-    )
-    return gaussian_gsm_input
