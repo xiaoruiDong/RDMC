@@ -127,7 +127,7 @@ class ORCAOptimizer(BaseOptimizer):
                     # will be still correctly set, respectively.
                     new_mol.energies[cid] = \
                                 orca_log.get_scf_energies(converged=True,
-                                                          relative=False)
+                                                          relative=False)[-1].item()
                     new_mol.frequencies[cid] = \
                                 orca_log.freqs
                 else:
