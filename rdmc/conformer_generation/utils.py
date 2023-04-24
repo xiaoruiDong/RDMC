@@ -83,7 +83,7 @@ def get_binary(software: str) -> str:
         str: Path to the binary if available, otherwise an empty string.
     """
     path = shutil.which(software) or ''
-    _software_available[software] = (path == '')
+    _software_available[software] = (path != '')
     return path
 
 
