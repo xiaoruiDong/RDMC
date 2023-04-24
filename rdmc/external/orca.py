@@ -12,6 +12,8 @@ anhess_dict = {
     "pm3": False,
     "xtb2": False,
     "xtb1": False,
+    "gfn2-xtb": False,
+    "gfn1-xtb": False,
 }
 
 # To use Orca with xtb
