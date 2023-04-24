@@ -15,9 +15,6 @@ _software_available['xtb'] = osp.isfile(XTB_BINARY)
 
 
 class XTBOptimizer(BaseOptimizer):
-
-    request_external_software = ['xtb']
-
     """
     Optimize conformers using the xTB software.
 
@@ -27,6 +24,8 @@ class XTBOptimizer(BaseOptimizer):
     level (str): optimization threshold. Options: crude, sloppy, loose, lax,
                     normal, tight, vtight, extreme. Defaults to normal.
     """
+
+    request_external_software = ['xtb']
 
     def task_prep(self,
                   method: str = "gfn2",
