@@ -94,7 +94,7 @@ def write_gaussian_opt(mol,
     scheme_str += ' nosymm' if nosymm else ''
     scheme_str += ' freq' if follow_freq else ''
 
-    if method in ['gfn2-xtb', 'gfn1-xtb']:
+    if method.lower() in ['gfn2-xtb', 'gfn1-xtb']:
         scheme_str += f'\nexternal="{XTB_GAUSSIAN_PL} --gfn {method[3]} -P"'
 
     # todo: modify internal coordinates
@@ -105,6 +105,7 @@ def write_gaussian_opt(mol,
                                mult,
                                mol.ToXYZ(header=False,
                                          confId=conf_id))
+
 
 def write_gaussian_freq(mol,
                         conf_id: int = 0,
@@ -141,7 +142,7 @@ def write_gaussian_freq(mol,
     scheme_str += f' scf=({scf_level})'
     scheme_str += ' nosymm' if nosymm else ''
 
-    if method in ['gfn2-xtb', 'gfn1-xtb']:
+    if method.lower() in ['gfn2-xtb', 'gfn1-xtb']:
         scheme_str += f'\nexternal="{XTB_GAUSSIAN_PL} --gfn {method[3]} -P"'
 
     # todo: modify internal coordinates
@@ -164,8 +165,9 @@ def write_gaussian_irc(mol,
                        direction: str = 'forward',
                        max_iter: int = 20,
                        max_points: int = 100,
-                       step_size: float = 0.1,
+                       step_size: float = 7,
                        algorithm: str = 'hpc',
+                       coord_type: str = "massweighted",
                        hess: str = 'calcall',
                        scf_level: str = "tight",
                        nosymm: bool = False,
@@ -183,7 +185,14 @@ def write_gaussian_irc(mol,
         nprocs (int, optional): The number of processors to be used. Defaults to 1.
         method (str, optional): The method to be used. Defaults to "gfn2-xtb".
         direction (str, optional): The direction of the IRC. Defaults to "both". other options: "forward", "backward".
-        max_iter (int, optional): The maximum number of IRC steps. Defaults to 100.
+        max_iter (int, optional): The maximum number of IRC steps. Defaults to 20, same as Gaussian's default.
+        max_points (int, optional): The maximum number of IRC points. Defaults to 100.
+        step_size (float, optional): The step size of IRC. Defaults to 7.
+        algorithm (str, optional): The IRC algorithm. Defaults to "hpc".
+        coord_type (str, optional): The coordinate type. Defaults to "massweighted".
+        hess (str, optional): The Hessian calculation method. Defaults to "calcall".
+        scf_level (str, optional): The SCF level. Defaults to "tight".
+        nosymm (bool, optional): Whether to use nosymm. Defaults to False.
 
     Returns:
         str: The input file for ORCA IRC calculation
@@ -200,6 +209,7 @@ def write_gaussian_irc(mol,
     irc_scheme.append(f'maxcycle={max_iter}')
     irc_scheme.append(f'maxpoints={max_points}')
     irc_scheme.append(f'stepsize={step_size}')
+    irc_scheme.append(coord_type)
 
     scheme_str = '#P'
     scheme_str += f' irc=({",".join(irc_scheme)}) {method}'
