@@ -128,10 +128,9 @@ class ORCAOptimizer(BaseOptimizer):
                     new_mol.energies[cid] = \
                                 orca_log.get_scf_energies(converged=True,
                                                           relative=False)[-1].item()
-                    new_mol.frequencies[cid] = \
-                                orca_log.freqs
+                    new_mol.frequencies[cid] = orca_log.freqs
                 else:
-                    print(f'ORCA optimization succeeded but log parsing failed.')
+                    print('ORCA optimization succeeded but log parsing failed.')
             except Exception as exc:
                 print(f'ORCA optimization succeeded but log parsing failed:\n{exc}')
 
