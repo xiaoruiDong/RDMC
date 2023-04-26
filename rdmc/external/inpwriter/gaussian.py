@@ -16,6 +16,9 @@ def _write_gaussian_inp(memory: int,
                         charge: int,
                         mult: int,
                         coord: str,) -> str:
+    """
+    Write the base structure of Gaussian input file.
+    """
     return f"""%mem={memory}gb
 %nprocshared={nprocs}
 {scheme}
@@ -69,7 +72,7 @@ def write_gaussian_opt(mol,
         nosymm (bool, optional): Whether to use nosymm. Defaults to False.
 
     Returns:
-        str: The input file for ORCA optimization calculation.
+        str: The input file for Gaussian optimization calculation.
     """
     mult, charge = _get_mult_and_chrg(mol, mult, charge)
 
@@ -133,7 +136,7 @@ def write_gaussian_freq(mol,
         nosymm (bool, optional): Whether to use nosymm. Defaults to False.
 
     Returns:
-        str: The input file for ORCA frequency calculation.
+        str: The input file for Gaussian frequency calculation.
     """
     mult, charge = _get_mult_and_chrg(mol, mult, charge)
 
@@ -187,7 +190,7 @@ def write_gaussian_irc(mol,
         direction (str, optional): The direction of the IRC. Defaults to "both". other options: "forward", "backward".
         max_iter (int, optional): The maximum number of IRC steps. Defaults to 20, same as Gaussian's default.
         max_points (int, optional): The maximum number of IRC points. Defaults to 100.
-        step_size (float, optional): The step size of IRC. Defaults to 7.
+        step_size (float, optional): The step size of IRC. Defaults to 7. Unit 0.01 bohr.
         algorithm (str, optional): The IRC algorithm. Defaults to "hpc".
         coord_type (str, optional): The coordinate type. Defaults to "massweighted".
         hess (str, optional): The Hessian calculation method. Defaults to "calcall".
@@ -195,7 +198,7 @@ def write_gaussian_irc(mol,
         nosymm (bool, optional): Whether to use nosymm. Defaults to False.
 
     Returns:
-        str: The input file for ORCA IRC calculation
+        str: The input file for Gaussian IRC calculation
     """
     mult, charge = _get_mult_and_chrg(mol, mult, charge)
 
