@@ -32,6 +32,7 @@ class BaseOptimizer(Task):
                                     mol.energies):
             conf.SetDoubleProp("Energy", e)
             conf.SetBoolProp("KeepID", keep_id)
+            conf.SetBoolProp("OptSuccess", keep_id)
         self.n_success = sum(mol.keep_ids)
 
     def save_data(self, **kwargs):

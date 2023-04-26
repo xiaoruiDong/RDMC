@@ -74,7 +74,7 @@ class GaussianOptimizer(BaseOptimizer):
             charge: Optional[int] = None,
             **kwargs):
         """
-        Optimize the TS guesses.
+        Optimize the geometries or TS guesses.
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
