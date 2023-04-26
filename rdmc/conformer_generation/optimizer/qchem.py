@@ -3,6 +3,7 @@
 
 import os
 import os.path as osp
+import shutil
 import subprocess
 import tempfile
 from typing import Optional
@@ -22,6 +23,7 @@ class QChemOptimizer(BaseOptimizer):
     """
     The class to optimize geometries using the algorithm built in QChem.
     You have to have the QChem package installed and run `source qcenv.sh` to run this optimizer.
+    # todo: make a general optimizer for Gaussian, QChem, and ORCA
 
     Args:
         method (str, optional): The method available in ORCA to be used for TS optimization.
@@ -129,5 +131,9 @@ class QChemOptimizer(BaseOptimizer):
                     print('QChem optimization succeeded but log parsing failed.')
             except Exception as exc:
                 print(f'QChem optimization succeeded but log parsing failed:\n{exc}')
+
+        # Clean up
+        if not self.save_dir:
+            shutil.rmtree(work_dir)
 
         return new_mol

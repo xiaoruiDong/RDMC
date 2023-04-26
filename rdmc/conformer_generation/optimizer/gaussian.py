@@ -3,6 +3,7 @@
 
 import os
 import os.path as osp
+import shutil
 import subprocess
 import tempfile
 from typing import Optional
@@ -21,8 +22,9 @@ gaussian_binaries = {binname: get_binary(binname) for binname in ['g16', 'g09', 
 
 class GaussianOptimizer(BaseOptimizer):
     """
-    The class to optimize TS geometries using the Berny algorithm built in Gaussian.
-    You have to have the Gaussian package installed to run this optimizer
+    The class to optimize geometries using the algorithm built in Gaussian.
+    You have to have the Gaussian package installed to run this optimizer.
+    # todo: make a general optimizer for Gaussian, QChem, and ORCA
 
     Args:
         method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
@@ -153,5 +155,9 @@ class GaussianOptimizer(BaseOptimizer):
                     print('Gaussian optimization succeeded but log parsing failed.')
             except Exception as exc:
                 print(f'Gaussian optimization succeeded but log parsing failed:\n{exc}')
+
+        # Clean up
+        if not self.save_dir:
+            shutil.rmtree(work_dir)
 
         return new_mol
