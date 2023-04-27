@@ -19,7 +19,9 @@ class Task(object):
     # A list of external software required by the task
     request_external_software = []
     # keep the following files after the task is done
-    keep_files = []
+    # To save everything in the working directory,
+    # set keep_files = ['*']
+    keep_files = ['*']
     # Define the common directory title for the subtasks
     subtask_dir_name = 'subtask
 
@@ -213,13 +215,14 @@ class Task(object):
             shutil.rmtree(self.work_dir)
             return
 
-        # Otherwise, first delete all files in work_dir except those in keep_files
-        # Delete files in work_dir that are not in keep_files
-        for root, _, filenames in os.walk(self.work_dir):
-            for filename in filenames:
-                file_path = os.path.join(root, filename)
-                if file_path not in self.keep_files:
-                    os.remove(file_path)
+        if '*' not in self.keep_files:
+            # Otherwise, first delete all files in work_dir except those in keep_files
+            # Delete files in work_dir that are not in keep_files
+            for root, _, filenames in os.walk(self.work_dir):
+                for filename in filenames:
+                    file_path = os.path.join(root, filename)
+                    if file_path not in self.keep_files:
+                        os.remove(file_path)
 
         # Then move all files in work_dir to save_dir
         shutil.move(self.work_dir, self.save_dir)
