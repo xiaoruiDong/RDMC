@@ -36,6 +36,8 @@ class GaussianBaseTask(MolIOTask):
     files = {'input_file': 'input.gjf',
              'log_file': 'input.log',
              'output_file': 'input.out'}
+    # only save the input file and the log files
+    keep_files = ['input.gjf', 'input.log']
     subtask_dir_name = 'gaussian'
     calc_type = ''
     logparser = GaussianLog
