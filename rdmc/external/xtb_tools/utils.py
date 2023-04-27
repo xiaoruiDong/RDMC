@@ -57,8 +57,14 @@ COLUMN_ORDER = {
 
 METHOD_DICT = {
     'gfn0': '--gfn 0',
+    'gfn0-xtb': '--gfn 0',
+    'xtb0': '--gfn 0',
     'gfn1': '--gfn 1',
+    'gfn1-xtb': '--gfn 1',
+    'xtb1': '--gfn 1',
     'gfn2': '--gfn 2',
+    'gfn2-xtb': '--gfn 2',
+    'xtb2': '--gfn 2',
     'gfnff': '--gfnff',
 }
 

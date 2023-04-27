@@ -151,7 +151,7 @@ def run_xtb_calc(mol: 'RDKitMol',
     # xTB allows key word like --gfn 2 and --gfn2
     # but the latter seems to be deprecated soon.
     # And a way to correct it.
-    method = method if not method else METHOD_DICT[method]
+    method = method if not method else METHOD_DICT[method.lower()]
 
     # Paths
     work_dir = osp.abspath(save_dir) if save_dir else tempfile.mkdtemp()
