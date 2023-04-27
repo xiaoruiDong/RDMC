@@ -18,7 +18,6 @@ class ORCABaseTask(MolIOTask):
     """
     The class to optimize geometries using the algorithm built in ORCA.
     You have to have the Orca package installed to run this optimizer.
-    # todo: make a general optimizer for Gaussian, QChem, and ORCA
 
     Args:
         method (str, optional): The method available in ORCA to be used for TS optimization.
@@ -53,7 +52,7 @@ class ORCABaseTask(MolIOTask):
                      conf_id: int,
                      **kwargs):
         """
-        Use the Gaussian writer to write the input file.
+        Use the ORCA writer to write the input file.
         """
         return writer[self.calc_type](mol=mol,
                                       conf_id=conf_id,
@@ -62,15 +61,9 @@ class ORCABaseTask(MolIOTask):
                                       memory=self.memory,
                                       **kwargs)
 
-    def write_input_file(self, **kwargs):
-        """
-        Use the default write_input_file function
-        """
-        return super().write_input_file(**kwargs)
-
     def get_execute_command(self, subtask_id: int) -> list:
         """
-        The command of executing the Gaussian binary.
-        E.g., ['g16', 'input.gjf']
+        The command of executing the ORCA binary.
+        E.g., ['orca', 'input.inp']
         """
         return [orca_binary, self.paths['input_file'][subtask_id]]

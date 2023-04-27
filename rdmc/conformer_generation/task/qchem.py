@@ -60,12 +60,6 @@ class QChemBaseTask(MolIOTask):
                                       nprocs=self.nprocs,
                                       **kwargs)
 
-    def write_input_file(self, **kwargs):
-        """
-        Use the default write_input_file function
-        """
-        return super().write_input_file(**kwargs)
-
     def get_execute_command(self, subtask_id: int) -> list:
         """
         The command of executing the QChem binary.
