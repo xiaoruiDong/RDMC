@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os.path as osp
+import shutil
 from typing import Optional
 
-from rdmc.conformer_generation.task import Task
+from rdmc.conformer_generation.task import Task, MolIOTask
 from rdmc.conformer_generation.utils import mol_to_sdf
 
 
@@ -32,7 +33,7 @@ class BaseOptimizer(Task):
                                     mol.energies):
             conf.SetDoubleProp("Energy", e)
             conf.SetBoolProp("KeepID", keep_id)
-            conf.SetBoolProp("OptSuccess", keep_id)
+            conf.SetBoolProp(f"{self.label}Success", keep_id)
         self.n_success = sum(mol.keep_ids)
 
     def save_data(self, **kwargs):
@@ -66,3 +67,27 @@ class BaseOptimizer(Task):
         if charge is None:
             charge = mol.GetFormalCharge()
         return multiplicity, charge
+
+
+class IOOptimizer(MolIOTask):
+
+    def post_run(self, **kwargs):
+        """
+        Besides setting the success information, also set the energy to the
+        conformers. Remove temporary directory if necessary.
+        """
+        super().post_run(**kwargs)
+        mol = self.last_result
+        for conf, energy in zip(mol.GetAllConformers(),
+                                mol.energies):
+            conf.SetDoubleProp("Energy", energy)
+
+    def save_data(self, **kwargs):
+        """
+        Set the SMILES as the name of the RDKitMol object.
+        """
+        mol = self.last_result
+        path = osp.join(self.save_dir, "optimized_confs.sdf")
+
+        mol_to_sdf(mol=mol,
+                   path=path,)
