@@ -16,6 +16,8 @@ class ConformerEmbedder(Task):
     Base class for conformer embedding tasks.
     """
 
+    label = 'ConformerEmbedder'
+
     def pre_run(self,
                 *,
                 n_conformers: int,
@@ -36,6 +38,7 @@ class ConformerEmbedder(Task):
         for conf, keep_id in zip(mol.GetAllConformers(),
                                  mol.keep_ids,):
             conf.SetBoolProp("KeepID", keep_id)
+            conf.SetBoolProp(f"{self.label}Success", keep_id)
 
     def save_data(self):
         """

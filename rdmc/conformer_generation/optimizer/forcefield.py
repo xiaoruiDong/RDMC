@@ -14,6 +14,8 @@ class MMFFOptimizer(BaseOptimizer):
         variant (str): MMFF variant. Options: MMFF94, MMFF94s.
     """
 
+    label = 'MMFFOptimizer'
+
     def task_prep(self,
                   software: str = "rdkit",
                   variant: str = "MMFF94s",

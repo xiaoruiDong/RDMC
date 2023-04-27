@@ -41,6 +41,7 @@ class GeoMolEmbedder(ConformerEmbedder):
                             "linear" or "none".
     """
 
+    label = 'GeoMolEmbedder'
     request_external_software = ['pytorch', 'geomol']
 
     def task_prep(self,
