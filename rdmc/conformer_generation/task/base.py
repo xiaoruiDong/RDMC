@@ -121,7 +121,6 @@ class Task(object):
         except AttributeError:
             return 0
 
-
     @n_success.setter
     def n_success(self, n: int):
         """
@@ -200,14 +199,12 @@ class Task(object):
         """
         The function to be executed before the task is run.
         """
-        pass
 
     def post_run(self,
                  **kwargs):
         """
         The function to be executed after the task is run.
         """
-        pass
 
     def __call__(self, **kwargs):
         """
