@@ -3,6 +3,10 @@
 
 """This is the module for abstracting the conformer generation task"""
 
+import os
+import os.path as osp
+import shutil
+import tempfile
 import time
 from typing import Optional
 
@@ -11,8 +15,13 @@ from rdmc.conformer_generation.utils import _software_available
 
 class Task(object):
 
+    label = 'Task'
     # A list of external software required by the task
     request_external_software = []
+    # keep the following files after the task is done
+    keep_files = []
+    # Define the common directory title for the subtasks
+    subtask_dir_name = 'subtask
 
     def __init__(self,
                  track_stats: bool = False,
@@ -31,15 +40,13 @@ class Task(object):
             work_dir (str, optional): The directory to store the intermediate data.
         """
         self.track_stats = track_stats
-        self.save_dir = save_dir
-        self.work_dir = work_dir
+        self.save_dir = osp.abspath(save_dir) if save_dir is not None else None
+        self.work_dir = osp.abspath(work_dir) if work_dir is not None else None
         self.iter = iter
 
         # if both save_dir and work_dir are None, the task will be run in a tempdir
         if self.save_dir is None and self.work_dir is None:
-            self.run_in_tempdir = True
-        else:
-            self.run_in_tempdir = False
+            self.work_dir = tempfile.mkdtemp()
 
         if self.request_external_software:
             self.check_external_software()
@@ -56,6 +63,23 @@ class Task(object):
                     f"The software requirement "
                     f"({', '.join(self.request_external_software)}) "
                     f"is not met. Please install the software and try again.")
+
+    def update_work_dir(self) -> str:
+        """
+        Update the working directory. If the working directory is not specified,
+        and saving directory is not specified, a temporary directory will be created.
+        If the working directory is not specified, but saving directory is specified,
+        it will be set to the saving directory.
+
+        Returns:
+            str: The working directory.
+        """
+        if self.work_dir is None:
+            if self.save_dir is None:
+                self.work_dir = tempfile.mkdtemp()
+            else:
+                self.work_dir = self.save_dir
+        return self.work_dir
 
     def task_prep(self, **kwargs):
         """
@@ -180,6 +204,26 @@ class Task(object):
         """
         raise NotImplementedError
 
+    def clean_work_dir(self):
+        """
+        Clean the working directory.
+        """
+        # If not saving any files, delete the work_dir completely
+        if self.save_dir is None:
+            shutil.rmtree(self.work_dir)
+            return
+
+        # Otherwise, first delete all files in work_dir except those in keep_files
+        # Delete files in work_dir that are not in keep_files
+        for root, _, filenames in os.walk(self.work_dir):
+            for filename in filenames:
+                file_path = os.path.join(root, filename)
+                if file_path not in self.keep_files:
+                    os.remove(file_path)
+
+        # Then move all files in work_dir to save_dir
+        shutil.move(self.work_dir, self.save_dir)
+
     @timer
     def run(self,
             test: bool = False,
@@ -203,8 +247,10 @@ class Task(object):
     def post_run(self,
                  **kwargs):
         """
-        The function to be executed after the task is run.
+        The function to be executed after the task is run. By default,
+        it involves the cleaning of the working directory.
         """
+        self.clean_work_dir()
 
     def __call__(self, **kwargs):
         """
