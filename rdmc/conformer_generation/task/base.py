@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """This is the module for abstracting the conformer generation task"""
 
@@ -7,6 +7,7 @@ import time
 from typing import Optional
 
 from rdmc.conformer_generation.utils import _software_available
+
 
 class Task(object):
 
@@ -33,6 +34,12 @@ class Task(object):
         self.save_dir = save_dir
         self.work_dir = work_dir
         self.iter = iter
+
+        # if both save_dir and work_dir are None, the task will be run in a tempdir
+        if self.save_dir is None and self.work_dir is None:
+            self.run_in_tempdir = True
+        else:
+            self.run_in_tempdir = False
 
         if self.request_external_software:
             self.check_external_software()
