@@ -3,7 +3,7 @@
 
 import os.path as osp
 
-from rdmc.conformer_generation.task import MolIOTask
+from rdmc.conformer_generation.task.molio import MolIOTask
 from rdmc.conformer_generation.utils import _software_available
 from rdmc.external.xtb_tools.run_xtb import run_xtb_calc
 from rdmc.external.xtb_tools.utils import XTB_BINARY
