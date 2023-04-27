@@ -2,3 +2,4 @@
 # -*- coding: utf-8 -*-
 
 from .base import Task
+from .molio import MolIOTask
