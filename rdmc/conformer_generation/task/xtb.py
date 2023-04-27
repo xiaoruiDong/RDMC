@@ -28,11 +28,17 @@ class XTBBaseTask(MolIOTask):
 
     def task_prep(self,
                   method: str = "gfn2",
+                  level: str = "tight",
                   **kwargs,):
         """
         Prepare the task.
+
+        Args:
+            method (str, optional): The method to be used for xTB calculation. Defaults to GFN2-xTB.
+            level (str, optional): The criteria used for opt. Defaults to tight.
         """
         self.method = method
+        self.level = level
 
     def write_input_file(self, **kwargs):
         """
@@ -53,5 +59,6 @@ class XTBBaseTask(MolIOTask):
                             uhf=mult - 1,
                             job=self.calc_type,
                             method=self.method,
-                            save_dir=self.paths['subtask_dir'][subtask_id],
+                            level=self.level,
+                            save_dir=self.work_dir,
                             **kwargs)
