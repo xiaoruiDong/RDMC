@@ -78,7 +78,12 @@ class GaussianBaseTask(MolIOTask):
         """
         Use the Gaussian writer to write the input file.
         """
-        return writer[self.calc_type](mo=mol, conf_id=conf_id, **kwargs)
+        return writer[self.calc_type](mo=mol,
+                                      conf_id=conf_id,
+                                      method=self.method,
+                                      nprocs=self.nprocs,
+                                      memory=self.memory,
+                                      **kwargs)
 
     def write_input_file(self, **kwargs):
         """
