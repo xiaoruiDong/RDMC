@@ -225,7 +225,9 @@ class Task(object):
                         os.remove(file_path)
 
         # Then move all files in work_dir to save_dir
-        shutil.move(self.work_dir, self.save_dir)
+        if self.save_dir != self.work_dir:
+            shutil.copytree(self.work_dir, self.save_dir, dirs_exist_ok=True)
+            shutil.rmtree(self.work_dir)
 
     @timer
     def run(self,
