@@ -23,7 +23,7 @@ class Task(object):
     # set keep_files = ['*']
     keep_files = ['*']
     # Define the common directory title for the subtasks
-    subtask_dir_name = 'subtask
+    subtask_dir_name = 'subtask'
 
     def __init__(self,
                  track_stats: bool = False,
