@@ -169,7 +169,7 @@ class MolIOTask(Task):
                subtask_id: int,
                **kwargs):
         """
-        The subprocess runner of the task. This function should be implemented in the child class.
+        The subprocess runner of the task. This function might be re-implemented in the child class.
 
         By default, the runner will utilize subprocess module to exectute the command returned by
         get_execute_command.
@@ -186,6 +186,7 @@ class MolIOTask(Task):
                                mol: 'RDKitMol',
                                subtask_id: int,
                                subtask_result: Any,
+                               **kwargs,
                                ):
         """
         Analyze the result of the subtask. This function should be implemented in the child class.
@@ -197,6 +198,7 @@ class MolIOTask(Task):
         Pre-run involves the following steps:
         1. Set the number of conformers to be optimized to n_subtasks.
         2. Create the directories and paths for the subtasks.
+        3. Write the input files for the subtasks.
         """
         # 1. Assign the number of subtasks
         self.update_n_subtasks(mol=mol)
