@@ -3,16 +3,13 @@
 
 from contextlib import redirect_stdout
 import io
-import os.path as osp
-import shutil
-import tempfile
+import traceback
 
 from ase.calculators.orca import ORCA
 import numpy as np
-import pandas as pd
 
 from rdmc import RDKitMol
-from rdmc.conformer_generation.optimizer.base import BaseOptimizer
+from rdmc.conformer_generation.optimizer.base import IOOptimizer
 from rdmc.conformer_generation.utils import register_software
 
 with register_software('sella'):
@@ -23,7 +20,7 @@ with register_software('xtb-python'):
     from xtb.utils import get_method
 
 
-class SellaOptimizer(BaseOptimizer):
+class SellaOptimizer(IOOptimizer):
     """
     The class to optimize TS geometries using the Sella algorithm.
     It uses XTB as the backend calculator, ASE as the interface, and Sella module from the Sella repo.
@@ -34,7 +31,15 @@ class SellaOptimizer(BaseOptimizer):
         steps (int, optional): Max number of steps allowed in the optimization. Defaults to 1000.
     """
 
+    label = 'SellaOptimizer'
     request_external_software = ['sella', 'xtb-python']
+    subtask_dir_name = 'sella_opt'
+    files = {'traj_file': 'sella_opt.traj',
+             'log_file': 'sella_opt.log',
+             'common_name': 'sella_opt'}
+    keep_files = ['sella_opt.traj', 'sella_opt.log']
+    create_mol_flag = True
+    init_attrs = {'energies': np.nan, 'frequencies': None}
 
     def task_prep(self,
                   method: str = "GFN2-xTB",
@@ -43,80 +48,72 @@ class SellaOptimizer(BaseOptimizer):
         """
         Set up the Sella optimizer.
         """
-        self.method = method
+        self.is_xtb_calc = True if get_method(method) is not None else False
+        self.method = get_method(method) or method
         self.fmax = fmax
         self.steps = steps
 
-    @BaseOptimizer.timer
-    def run(self,
-            mol: 'RDKitMol',
-            **kwargs):
+    def write_input_file(self, **kwargs):
         """
-        Optimize the TS guesses. You need to correctly set the unpaired electrons and formal charges
-        for each atom in the mol.
-
-        Args:
-            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-
-        Returns:
-            RDKitMol
+        No input file is needed.
         """
-        run_ids = getattr(mol, 'keep_ids', [True] * mol.GetNumConformers())
-        work_dir = osp.abspath(self.save_dir) if self.save_dir else tempfile.mkdtemp()
-        subtask_dirs = [osp.join(work_dir, f"sella_opt{cid}") for cid in range(len(run_ids))]
-        traj_paths = [osp.join(subtask_dirs[cid], "sella_opt.traj") for cid in range(len(run_ids))]
-        log_paths = [osp.join(subtask_dirs[cid], "sella_opt.log") for cid in range(len(run_ids))]
-        orca_names = [osp.join(subtask_dirs[cid], "sella_opt") for cid in range(len(run_ids))]  # Xiaorui doesn't know the usage
+        return
 
-        new_mol = mol.Copy(copy_attrs=[])
-        new_mol.keep_ids = [False] * len(run_ids)
-        new_mol.energies = [np.nan] * len(run_ids)
-        new_mol.frequencies = [None] * len(run_ids)
+    def mol_to_atoms(self,
+                     mol: 'RDKitMol',
+                     subtask_id: int,):
+        """
+        Convert an RDKitMol object to an ASE atoms object, and
+        set up the calculator.
+        """
+        atoms = mol.ToAtoms(confId=subtask_id)
+        atoms.set_initial_magnetic_moments(
+                    [atom.GetNumRadicalElectrons() + 1
+                     for atom in mol.GetAtoms()])
+        atoms.set_initial_charges(
+                    [atom.GetFormalCharge()
+                     for atom in mol.GetAtoms()])
+        if self.is_xtb_calc:
+            atoms.calc = XTB(method=self.method)
+        else:
+            atoms.calc = ORCA(label=self.paths['common_name'][subtask_id],
+                              orcasimpleinput=self.method)
+        return atoms
 
-        xtb_method = get_method(self.method)
+    def runner(self,
+               mol: 'RDKitMol',
+               subtask_id: int,
+               **kwargs):
+        """
+        Run the Sella optimization.
+        """
+        # 1. Convert the mol to atoms
+        atoms = self.mol_to_atoms(mol=mol, subtask_id=subtask_id)
+        # 2. Run the Sella optimization
+        with io.StringIO() as buf, redirect_stdout(buf):
+            opt = Sella(atoms,
+                        logfile=self.paths['log_file'][subtask_id],
+                        trajectory=self.paths['traj_file'][subtask_id],
+                        )
+            opt.run(self.fmax, self.steps)
+        return opt
 
-        # Todo: parallelize this
-        for cid, keep_id in enumerate(run_ids):
-            if not keep_id:
-                continue
+    def analyze_subtask_result(self,
+                               mol: 'RDKitMol',
+                               subtask_id: int,
+                               subtask_result: tuple,
+                               **kwargs):
+        """
+        Analyze the subtask result. This method will parse the number of optimization
+        cycles and the energy from the Sella output file and set them to the molecule.
 
-            atoms = mol.ToAtoms(confId=cid)
-            atoms.set_initial_magnetic_moments(
-                        [atom.GetNumRadicalElectrons() + 1
-                         for atom in mol.GetAtoms()])
-            atoms.set_initial_charges(
-                        [atom.GetFormalCharge()
-                         for atom in mol.GetAtoms()])
-
-            if xtb_method:
-                atoms.calc = XTB(method=xtb_method)
-            else:
-                atoms.calc = ORCA(label=orca_names[cid],
-                                  orcasimpleinput=self.method)
-
-            try:
-                # Run the optimization using subprocess
-                with io.StringIO() as buf, redirect_stdout(buf):
-                    opt_atoms = Sella(atoms,
-                                      logfile=log_paths[cid],
-                                      trajectory=traj_paths[cid],
-                                      )
-                    opt_atoms.run(self.fmax, self.steps)
-            except Exception as exc:
-                print(f'Sella optimization failed:\n{exc}')
-                continue
-
-            # Read the optimized geometry and results
-            try:
-                new_mol.SetPositions(opt_atoms.atoms.positions, id=cid)
-                new_mol.keep_ids[cid] = True
-                energy = float(pd.read_csv(log_paths[cid]).iloc[-1].values[0].split()[3])  # Need an example
-                new_mol.energies[cid] = energy
-            except Exception as exc:
-                print(f'Sella optimization finished but log parsing failed:\n{exc}')
-
-        # Clean up
-        if not self.save_dir:
-            shutil.rmtree(work_dir)
-
-        return new_mol
+        Note, n_opt_cycles and energy parsing hasn't been tested yet.
+        """
+        opt = subtask_result  # better readability
+        mol.SetPositions(opt.atoms.positions, id=subtask_id)
+        try:
+            mol.GetConformer(subtask_id).SetIntProp('n_opt_cycles', opt.nsteps)
+            mol.energies[subtask_id] = opt.atoms.get_potential_energy()
+        except Exception as exc:
+                print(f'Sella optimization finished but result parsing failed:\n{exc}')
+                traceback.print_exc()
