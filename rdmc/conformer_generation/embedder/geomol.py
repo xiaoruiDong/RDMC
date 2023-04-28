@@ -89,7 +89,10 @@ class GeoMolEmbedder(ConformerEmbedder):
                                 mol=mol._mol,
                                 dataset=self.dataset)
         # need to run this bc of dumb internal GeoMol processing
-        data = from_data_list([self.tg_data])
+        try:
+            data = from_data_list([self.tg_data])
+        except TypeError:
+            raise ValueError("GeoMol requires a molecule with at least one rotor.")
         self.model(data,
                    inference=True,
                    n_model_confs=n_conformers)
