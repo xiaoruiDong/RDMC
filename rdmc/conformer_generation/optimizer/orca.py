@@ -50,13 +50,15 @@ class ORCAOptimizer(ORCABaseTask, IOOptimizer):
                                **kwargs):
         """
         Analyze the subtask result. This method will parse the number of optimization
-        cycles and the energy from the xTB output file and set them to the molecule.
+        cycles and the energy from the ORCA output file and set them to the molecule.
         """
         log = self.logparser(self.paths['log_file'][subtask_id])
         # 1. Parse coordinates
         if log.success:
             mol.SetPositions(log.all_geometries[-1],
                              id=subtask_id)
+            mol.GetConformer(subtask_id).SetIntProp('n_opt_cycles',
+                                                    log.optstatus.shape[0] - 1)
             # Not using more preferred
             # mol.SetPositions(log.converged_geometries[-1], id=subtask_id)
             # ORCA treats the following as converged job as well while not fulfilling
@@ -84,6 +86,8 @@ class ORCAOptimizer(ORCABaseTask, IOOptimizer):
             #
             # todo: 1. wait until updates in cclib. or
             # todo: 2. in ORCALog force the last geometry to be converged if the following is detected.
+            # todo: 3. evaluate whether to put analyze subtask result in the iooptimizer, so that
+            # todo:    no individual definition is needed in gaussian/orca/qchem optimizer.
             #   ***********************HURRAY********************
             #   ***        THE OPTIMIZATION HAS CONVERGED     ***
             #   *************************************************

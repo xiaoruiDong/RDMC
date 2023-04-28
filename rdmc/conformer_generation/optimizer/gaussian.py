@@ -50,12 +50,14 @@ class GaussianOptimizer(GaussianBaseTask, IOOptimizer):
                                **kwargs):
         """
         Analyze the subtask result. This method will parse the number of optimization
-        cycles and the energy from the xTB output file and set them to the molecule.
+        cycles and the energy from the Gaussian log file and set them to the molecule.
         """
         log = self.logparser(self.paths['log_file'][subtask_id])
         # 1. Parse coordinates
         if log.success:
             mol.SetPositions(log.converged_geometries[-1], id=subtask_id)
+            mol.GetConformer(subtask_id).SetIntProp('n_opt_cycles',
+                                                    log.optstatus.shape[0] - 1)
         else:
             mol.keep_ids[subtask_id] = False
         # 2. Parse energy

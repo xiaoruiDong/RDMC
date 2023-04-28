@@ -50,16 +50,17 @@ class QChemOptimizer(QChemBaseTask, IOOptimizer):
                                **kwargs):
         """
         Analyze the subtask result. This method will parse the number of optimization
-        cycles and the energy from the xTB output file and set them to the molecule.
+        cycles and the energy from the QChem log file and set them to the molecule.
         """
         log = self.logparser(self.paths['log_file'][subtask_id])
         # 1. Parse coordinates
         if log.success:
             mol.SetPositions(log.converged_geometries[-1],
                              id=subtask_id)
+            mol.GetConformer(subtask_id).SetIntProp('n_opt_cycles',
+                                                    log.optstatus.shape[0] - 1)
         else:
             mol.keep_ids[subtask_id] = False
-
         # 2. Parse energies
         try:
             mol.energies[subtask_id] = log.get_scf_energies(relative=False)[-1].item()
@@ -67,5 +68,5 @@ class QChemOptimizer(QChemBaseTask, IOOptimizer):
             # newer version may not able to parse scf energies
             # As a temporarily fix, set the energy to np.nan
             mol.energies[subtask_id] = np.nan
-            print(f'Failed to parse the energy from the log file:\n{exc}')
+            print(f'Error in parsing energy of subtask {subtask_id} of {self.label}: {exc}')
         mol.frequencies[subtask_id] = log.freqs
