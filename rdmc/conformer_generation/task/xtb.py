@@ -47,7 +47,7 @@ class XTBBaseTask(MolIOTask):
     def runner(self,
                mol: 'RDKitMol',
                subtask_id: int,
-               mult: int,
+               mult: int,  # need to apply since run_xtb_calc use uhf
                **kwargs):
         """
         Run the xTB calculation.
@@ -55,8 +55,14 @@ class XTBBaseTask(MolIOTask):
         return run_xtb_calc(mol,
                             conf_id=subtask_id,
                             uhf=mult - 1,
-                            job=self.calc_type,
+                            job=calc_type_dict[self.calc_type],
                             method=self.method,
                             level=self.level,
                             save_dir=self.work_dir,
                             **kwargs)
+
+
+calc_type_dict = {
+    'opt': '--opt',
+    'freq': '--hess',
+}

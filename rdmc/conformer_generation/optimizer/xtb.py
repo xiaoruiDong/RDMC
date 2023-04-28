@@ -22,7 +22,7 @@ class XTBOptimizer(XTBBaseTask, IOOptimizer):
     create_mol_flag = True
     init_attrs = {'energies': np.nan,}
     keep_files = ['xtbout.json', 'xtbout.log', 'xtbopt.log', 'g98.out']
-    calc_type = '--opt'
+    calc_type = 'opt'
 
     def save_data(self, **kwargs):
         """
