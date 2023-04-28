@@ -1,20 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os.path as osp
-from typing import Optional
-
 import numpy as np
 
-from rdmc.conformer_generation.optimizer.base import BaseOptimizer
-from rdmc.conformer_generation.utils import _software_available
-from rdmc.external.xtb_tools.run_xtb import run_xtb_calc
-from rdmc.external.xtb_tools.utils import XTB_BINARY
-
-_software_available['xtb'] = osp.isfile(XTB_BINARY)
+from rdmc.conformer_generation.optimizer.base import IOOptimizer
+from rdmc.conformer_generation.task import XTBBaseTask
 
 
-class XTBOptimizer(BaseOptimizer):
+class XTBOptimizer(XTBBaseTask, IOOptimizer):
     """
     Optimize conformers using the xTB software.
 
@@ -25,57 +18,37 @@ class XTBOptimizer(BaseOptimizer):
                     normal, tight, vtight, extreme. Defaults to normal.
     """
 
-    request_external_software = ['xtb']
+    label = 'XTBOptimizer'
+    subtask_dir_name = 'xtb_opt'
+    create_mol_flag = True
+    init_attrs = {'energies': np.nan,}
+    keep_files = ['xtbout.json', 'xtbout.log', 'xtbopt.log', 'g98.out']
+    calc_type = '--opt'
 
-    def task_prep(self,
-                  method: str = "gfn2",
-                  level: str = "normal",
-                  **kwargs,):
+    def save_data(self, **kwargs):
         """
-        Prepare the task.
+        Save the data.
         """
-        self.method = method
-        self.level = level
+        super(XTBBaseTask, self).save_data(**kwargs)  # from IOOptimizer
 
-    @BaseOptimizer.timer
-    def run(self,
-            mol: 'RDKitMol',
-            multiplicity: Optional[int] = None,
-            charge: Optional[int] = None,
-            **kwargs):
+    def post_run(self, **kwargs):
         """
-        Optimize conformers using the xTB software.
+        Setting the success information, also set the energy to the
+        conformers. Remove temporary directory if necessary.
         """
-        mult, charge = self._get_mult_and_chrg(mol, multiplicity, charge)
+        super(XTBBaseTask, self).post_run(**kwargs)  # from IOOptimizer
 
-        run_ids = getattr(mol, 'keep_ids', [True] * mol.GetNumConformers())
-
-        new_mol = mol.Copy(copy_attrs=['keep_ids'])
-        new_mol.energies = []
-        for cid, keep_id in enumerate(run_ids):
-            if not keep_id:
-                new_mol.energies.append(np.nan)
-                continue
-            try:
-                opt_mol, props = run_xtb_calc(mol,
-                                              conf_id=cid,
-                                              job="--opt",
-                                              method=self.method,
-                                              level=self.level,
-                                              uhf=mult - 1,
-                                              charge=charge,
-                                              )
-            except Exception as exc:
-                new_mol.energies.append(np.nan)
-                new_mol.keep_ids[cid] = False
-                print(exc)
-                continue
-
-            # Renumber the molecule based on the atom mapping just set
-            new_mol.SetPositions(opt_mol.GetPositions(), id=cid)
-            new_mol.GetConformer(cid).SetIntProp('n_opt_cycles', props['n_opt_cycles'])
-
-            energy = float(opt_mol.GetProp('total energy / Eh'))
-            new_mol.energies.append(energy)
-
-        return new_mol
+    def analyze_subtask_result(self,
+                               mol: 'RDKitMol',
+                               subtask_id: int,
+                               subtask_result: tuple,
+                               **kwargs):
+        """
+        Analyze the subtask result. This method will parse the number of optimization
+        cycles and the energy from the xTB output file and set them to the molecule.
+        """
+        opt_mol, props = subtask_result
+        mol.SetPositions(opt_mol.GetPositions(), id=subtask_id)
+        mol.GetConformer(subtask_id).SetIntProp('n_opt_cycles', props['n_opt_cycles'])
+        energy = float(opt_mol.GetProp('total energy / Eh'))
+        mol.energies[subtask_id] = energy
