@@ -32,7 +32,6 @@ class QChemBaseTask(MolIOTask):
              'output_file': 'input.out'}
     keep_files = ['*']
     subtask_dir_name = 'qchem'
-    calc_type = ''
     logparser = QChemLog
 
     def task_prep(self,

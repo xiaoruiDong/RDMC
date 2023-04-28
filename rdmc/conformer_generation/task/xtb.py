@@ -23,7 +23,6 @@ class XTBBaseTask(MolIOTask):
 
     request_external_software = ['xtb']
     subtask_dir_name = 'xtb'
-    calc_type = ''
 
     def task_prep(self,
                   method: str = "gfn2",

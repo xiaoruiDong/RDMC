@@ -33,7 +33,6 @@ class ORCABaseTask(MolIOTask):
              'output_xyz': 'input.xyz'}
     keep_files = ['*']
     subtask_dir_name = 'orca'
-    calc_type = ''
     logparser = ORCALog
 
     def task_prep(self,

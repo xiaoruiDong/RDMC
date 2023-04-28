@@ -38,7 +38,6 @@ class GaussianBaseTask(MolIOTask):
     # only save the input file and the log files
     keep_files = ['input.gjf', 'input.log']
     subtask_dir_name = 'gaussian'
-    calc_type = ''
     logparser = GaussianLog
 
     def check_external_software(self,
