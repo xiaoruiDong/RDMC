@@ -52,59 +52,54 @@ class ORCAOptimizer(ORCABaseTask, IOOptimizer):
         Analyze the subtask result. This method will parse the number of optimization
         cycles and the energy from the xTB output file and set them to the molecule.
         """
-        try:
-            log = self.logparser(self.paths['log_file'][subtask_id])
-            if log.success:
-                try:
-                    mol.SetPositions(log.converged_geometries[-1],
-                                     id=subtask_id)
-                except IndexError:
-                    # ORCA treats the following as converged job as well while not fulfilling
-                    # all of the convergence criteria. This is currently treated as non-converged
-                    # by the ORCALog parser. Therefore, we need to catch this exception.
-                    #
-                    #                         .--------------------.
-                    #   ----------------------|Geometry convergence|-------------------------
-                    #   Item                value                   Tolerance       Converged
-                    #   ---------------------------------------------------------------------
-                    #   Energy change      -0.0000139792            0.0000050000      NO
-                    #   RMS gradient        0.0000407031            0.0001000000      YES
-                    #   MAX gradient        0.0000648215            0.0003000000      YES
-                    #   RMS step            0.0000999215            0.0020000000      YES
-                    #   MAX step            0.0001589253            0.0040000000      YES
-                    #   ........................................................
-                    #   Max(Bonds)      0.0001      Max(Angles)    0.00
-                    #   Max(Dihed)        0.00      Max(Improp)    0.00
-                    #   ---------------------------------------------------------------------
-                    #
-                    #    Everything but the energy has converged. However, the energy
-                    #    appears to be close enough to convergence to make sure that the
-                    #    final evaluation at the new geometry represents the equilibrium energy.
-                    #    Convergence will therefore be signaled now
-                    #
-                    # todo: 1. wait until updates in cclib. or
-                    # todo: 2. in ORCALog force the last geometry to be converged if the following is detected.
-                    # ***********************HURRAY********************
-                    # ***        THE OPTIMIZATION HAS CONVERGED     ***
-                    # *************************************************
-                    mol.SetPositions(log.all_geometries[-1],
-                                     id=subtask_id)
-
-        except Exception as exc:
+        log = self.logparser(self.paths['log_file'][subtask_id])
+        # 1. Parse coordinates
+        if log.success:
+            mol.SetPositions(log.all_geometries[-1],
+                             id=subtask_id)
+            # Not using more preferred
+            # mol.SetPositions(log.converged_geometries[-1], id=subtask_id)
+            # ORCA treats the following as converged job as well while not fulfilling
+            # all of the convergence criteria. This is currently treated as non-converged
+            # by the ORCALog parser. Therefore, we need to catch this exception.
+            #
+            #                         .--------------------.
+            #   ----------------------|Geometry convergence|-------------------------
+            #   Item                value                   Tolerance       Converged
+            #   ---------------------------------------------------------------------
+            #   Energy change      -0.0000139792            0.0000050000      NO
+            #   RMS gradient        0.0000407031            0.0001000000      YES
+            #   MAX gradient        0.0000648215            0.0003000000      YES
+            #   RMS step            0.0000999215            0.0020000000      YES
+            #   MAX step            0.0001589253            0.0040000000      YES
+            #   ........................................................
+            #   Max(Bonds)      0.0001      Max(Angles)    0.00
+            #   Max(Dihed)        0.00      Max(Improp)    0.00
+            #   ---------------------------------------------------------------------
+            #
+            #    Everything but the energy has converged. However, the energy
+            #    appears to be close enough to convergence to make sure that the
+            #    final evaluation at the new geometry represents the equilibrium energy.
+            #    Convergence will therefore be signaled now
+            #
+            # todo: 1. wait until updates in cclib. or
+            # todo: 2. in ORCALog force the last geometry to be converged if the following is detected.
+            #   ***********************HURRAY********************
+            #   ***        THE OPTIMIZATION HAS CONVERGED     ***
+            #   *************************************************
+        else:  # not log.success
             mol.keep_ids[subtask_id] = False
-            print(f'ORCA optimization failed:\n{exc}')
-        else:
-            try:
-                mol.energies[subtask_id] = log.get_scf_energies(relative=False)[-1].item()
-            except AttributeError:
-                # Enable to parse the energies of the xTB methods.
-                try:
-                    mol.energies[subtask_id] = \
-                            parse_energy_from_opt_file(self.paths['opt_file'][subtask_id])
-                except FileNotFoundError:
-                    mol.energies[subtask_id] = np.nan
-                    # todo: log energy value not found
-            mol.frequencies[subtask_id] = log.freqs
+            print(f'Error in optimizing the geometry of conformer {subtask_id} in {self.label}')
+            return
+        # 2. Parse Energy
+        try:
+            mol.energies[subtask_id] = log.get_scf_energies(relative=False)[-1].item()
+        except AttributeError:
+            # Unable to parse the energies of the xTB methods from the log file.
+            # use .opt file instead.
+            mol.energies[subtask_id] = \
+                    parse_energy_from_opt_file(self.paths['opt_file'][subtask_id])
+        mol.frequencies[subtask_id] = log.freqs
 
 
 def parse_energy_from_opt_file(path: str):
