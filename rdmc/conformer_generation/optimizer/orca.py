@@ -20,7 +20,6 @@ class ORCAOptimizer(ORCABaseTask, IOOptimizer):
         memory (int, optional): The memory to use in GB. Defaults to 1.
     """
 
-    label = 'ORCAOptimizer'
     subtask_dir_name = 'orca_opt'
     files = {'input_file': 'orca_opt.inp',
              'log_file': 'orca_opt.log',

@@ -8,9 +8,6 @@ class ETKDGEmbedder(ConformerEmbedder):
     """
     Embed conformers using the ETKDG method.
     """
-
-    label = 'ETKDGEmbedder'
-
     @ConformerEmbedder.timer
     def run(self,
             mol: 'RDKitMol',
@@ -29,9 +26,6 @@ class RandomEmbedder(ConformerEmbedder):
     """
     Embed conformers using the random coordinates.
     """
-
-    label = 'RandomEmbedder'
-
     @ConformerEmbedder.timer
     def run(self,
             mol: 'RDKitMol',

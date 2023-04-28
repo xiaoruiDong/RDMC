@@ -15,7 +15,6 @@ from rdmc.conformer_generation.utils import _software_available
 
 class Task(object):
 
-    label = 'Task'
     # A list of external software required by the task
     request_external_software = []
     # keep the following files after the task is done
@@ -54,6 +53,13 @@ class Task(object):
             self.check_external_software()
 
         self.task_prep(**kwargs)
+
+    @property
+    def label(self):
+        """
+        The label of the task defined as the class name.
+        """
+        return self.__class__.__name__
 
     # check if the external software is available
     def check_external_software(self):

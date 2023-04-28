@@ -18,7 +18,6 @@ class XTBOptimizer(XTBBaseTask, IOOptimizer):
                     normal, tight, vtight, extreme. Defaults to normal.
     """
 
-    label = 'XTBOptimizer'
     subtask_dir_name = 'xtb_opt'
     create_mol_flag = True
     init_attrs = {'energies': np.nan,}

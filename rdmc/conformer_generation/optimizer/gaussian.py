@@ -21,7 +21,6 @@ class GaussianOptimizer(GaussianBaseTask, IOOptimizer):
                                          Defaults to the latest version found in the environment variables.
     """
 
-    label = 'GaussianOptimizer'
     subtask_dir_name = 'gaussian_opt'
     files = {'input_file': 'gaussian.gjf',
              'log_file': 'input.log'}

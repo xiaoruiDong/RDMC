@@ -11,13 +11,11 @@ import os.path as osp
 from rdmc.conformer_generation.task import Task
 from rdmc.conformer_generation.utils import mol_to_sdf
 
+
 class ConformerEmbedder(Task):
     """
     Base class for conformer embedding tasks.
     """
-
-    label = 'ConformerEmbedder'
-
     def pre_run(self,
                 *,
                 n_conformers: int,

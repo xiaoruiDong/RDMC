@@ -13,9 +13,6 @@ class MMFFOptimizer(BaseOptimizer):
         software (str): software to use for optimization. Options: rdkit, openbabel.
         variant (str): MMFF variant. Options: MMFF94, MMFF94s.
     """
-
-    label = 'MMFFOptimizer'
-
     def task_prep(self,
                   software: str = "rdkit",
                   variant: str = "MMFF94s",

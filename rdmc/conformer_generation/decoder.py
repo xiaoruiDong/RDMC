@@ -6,9 +6,7 @@ from rdmc.mol import RDKitMol
 
 
 class MolDecoder(Task):
-
-    label = 'MolDecoder'
-
+    """base class for decoding representations to RDKitMol object"""
     def post_run(self, **kwargs):
         """
         Set the SMILES as the name of the RDKitMol object.
@@ -37,9 +35,6 @@ class MolDecoder(Task):
 
 class SmilesDecoder(MolDecoder):
     """ Decode SMILES to RDKitMol object """
-
-    label = 'SmilesDecoder'
-
     @MolDecoder.timer
     def run(self,
             *,
@@ -56,9 +51,6 @@ class SmilesDecoder(MolDecoder):
 
 class InchiDecoder(MolDecoder):
     """ Decode InChI to RDKitMol object """
-
-    label = 'InchiDecoder'
-
     @MolDecoder.timer
     def run(self,
             *,
@@ -75,9 +67,6 @@ class InchiDecoder(MolDecoder):
 
 class SmartsDecoder(MolDecoder):
     """ Decode SMARTS to RDKitMol object """
-
-    label = 'SmartsDecoder'
-
     @MolDecoder.timer
     def run(self,
             *,
@@ -94,9 +83,6 @@ class SmartsDecoder(MolDecoder):
 
 class RxnSmilesDecoder(Task):
     """ Decode reaction SMILES to RDKitMol object """
-
-    label = 'RxnSmilesDecoder'
-
     @MolDecoder.timer
     def run(self,
             *,

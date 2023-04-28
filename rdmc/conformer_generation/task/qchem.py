@@ -26,7 +26,6 @@ class QChemBaseTask(MolIOTask):
         nprocs (int, optional): The number of processors to use. Defaults to 1.
     """
 
-    label = 'QChemBaseTask'
     request_external_software = ['qchem']
     files = {'input_file': 'input.qcin',
              'log_file': 'input.log',

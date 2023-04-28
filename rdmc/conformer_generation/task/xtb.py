@@ -21,7 +21,6 @@ class XTBBaseTask(MolIOTask):
         method (str, optional): The method to be used for xTB calculation. Defaults to GFN2-xTB.
     """
 
-    label = 'XTBBaseTask'
     request_external_software = ['xtb']
     subtask_dir_name = 'xtb'
     calc_type = ''

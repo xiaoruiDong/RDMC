@@ -27,7 +27,6 @@ class MolIOTask(Task):
     parallelized version of this class is under development.
     """
 
-    label = 'MolIOTask'
     # Define the files as {type: name} that are used in the task
     # Usually 'input_file', 'log_file', and 'output_file' are defined
     # (but of course you can change the names)

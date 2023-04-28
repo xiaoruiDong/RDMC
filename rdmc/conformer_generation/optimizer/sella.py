@@ -31,7 +31,6 @@ class SellaOptimizer(IOOptimizer):
         steps (int, optional): Max number of steps allowed in the optimization. Defaults to 1000.
     """
 
-    label = 'SellaOptimizer'
     request_external_software = ['sella', 'xtb-python']
     subtask_dir_name = 'sella_opt'
     files = {'traj_file': 'sella_opt.traj',

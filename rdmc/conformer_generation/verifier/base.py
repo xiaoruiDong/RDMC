@@ -10,8 +10,6 @@ from rdmc.conformer_generation.utils import mol_to_sdf
 
 class BaseVerifier(Task):
 
-    label = 'Verify'
-
     def pre_run(self, mol, **kwargs):
         """
         Set the number of conformers to be optimized to n_subtasks.

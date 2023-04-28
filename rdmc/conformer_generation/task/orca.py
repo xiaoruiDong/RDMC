@@ -26,7 +26,6 @@ class ORCABaseTask(MolIOTask):
         memory (int, optional): The memory to use in GB. Defaults to 1.
     """
 
-    label = 'ORCABaseTask'
     request_external_software = ['orca']
     files = {'input_file': 'input.inp',
              'log_file': 'input.log',

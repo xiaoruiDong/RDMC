@@ -29,7 +29,6 @@ class GaussianBaseTask(MolIOTask):
         gaussian_binary (str, optional): The name of the gaussian binary, useful when there is multiple versions of Gaussian installed.
     """
 
-    label = 'GaussianBaseTask'
     # Note, request_external_software is not used for
     # check_external_software as other tasks
     request_external_software = ['g16', 'g09', 'g03']

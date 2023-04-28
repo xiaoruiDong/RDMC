@@ -20,7 +20,6 @@ class QChemOptimizer(QChemBaseTask, IOOptimizer):
         nprocs (int, optional): The number of processors to use. Defaults to 1.
     """
 
-    label = 'QChemOptimizer'
     subtask_dir_name = 'qchem_opt'
     files = {'input_file': 'qchem_opt.qcin',
              'log_file': 'qchem_opt.log',
