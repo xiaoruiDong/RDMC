@@ -115,6 +115,7 @@ def run_xtb_calc(mol: 'RDKitMol',
                  end_conf_id: int = 0,
                  save_dir: Optional[str] = None,
                  env_var: dict = XTB_ENV,
+                 **kwargs,
                  ):
     """
     Runs xTB single-point calculation with optional geometry optimization.

@@ -77,10 +77,9 @@ class XTBBaseTask(MolIOTask):
         """
         return run_xtb_calc(mol,
                             conf_id=subtask_id,
-                            charge=kwargs['charge'],
                             uhf=kwargs['mult'] - 1,
                             job=calc_type_dict[self.calc_type],
                             method=self.method,
                             level=self.level,
                             save_dir=self.work_dir,
-                            **kwargs)
+                            **kwargs)  # charge is stored inside kwargs
