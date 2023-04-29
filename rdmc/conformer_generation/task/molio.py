@@ -5,26 +5,35 @@ import os
 import os.path as osp
 import subprocess
 import traceback
-from typing import Any, Optional
+from typing import Any
 
-from rdmc.conformer_generation.task.base import Task
+from rdmc.conformer_generation.task.mol import MolTask
 
 
-class MolIOTask(Task):
+class MolIOTask(MolTask):
     """
     An abstract class for tasks that deals with molecules and involves I/O operations.
 
-    The mol object that to be operated on, will be the first arguments of run and __call__
-    and should has an attribute called `keep_ids` which indicates the indices of the
-    conformers to work on in the current task. The number of Trues' in keep_ids will be
-    used to determine the number of subtasks; it will be modified by the task to indicate
-    the success of the subtasks.
+    The mol object that to be operated on, will be the first arguments of run and __call__.
+    It should already has a few conformers embedded, and an attribute called `keep_ids`
+    which indicates the indices of the conformers to work on in the current task.
 
-    This class should at least involves a write_input function, an execute function, and a
-    read_output function. These will be called by the run function.
+    In a typical workflow, the task will create the working directories and necessary
+    input files in the pre_run process; preprocessing the molecule input, execute the actual
+    task by subprocesses, and parse the output files in the run; and update the job status
+    information and copy important results to saving directory and remove the working directory.
 
-    Each subtask will be executed in a separate directory and in a sequential way. The
-    parallelized version of this class is under development.
+    For developers:
+    This class should at minimum involves a `files` attribute, which is a dictionary of the
+    file type: file name used/generated/analyzed in the task; a `subtask_dir_name` attribute,
+    which is the common directory title for the subtasks; a `get_execute_command` to obtain
+    the command to execute the task; and a `analyze_subtask_result` function to analyze the
+    result of each subtask and assign the result (e.g., energy) to the mol object.
+
+    Besides, you may also want to define a `input_writer` function that returns the input file
+    content to allow writing input files for each subtask. You can also re-define the `runner`
+    and `run` function in case you don't want to use subprocesses to execute the task, and
+    and execute each subtask in serial.
     """
 
     # Define the files as {type: name} that are used in the task
@@ -34,43 +43,11 @@ class MolIOTask(Task):
              'log_file': 'output.log',
              'output_file': 'output.out',
              'file_type': 'file_name'}
+    # Define the files to be kept after the task is finished; usually the output/log files
+    # are kept, but you can change it to any file names. To keep all files, set it to ['*']
     keep_files = ['*']
     # Define the common directory title for the subtasks
     subtask_dir_name = 'subtask'
-    # Whether to create a new mol object for each subtask
-    # This is suggested if the task involves changing the
-    # molecule geometries
-    create_mol_flag = False
-    # The attributes to be calculated and attached to the mol object
-    # and their initial values
-    init_attrs = {}
-
-    @property
-    def run_ids(self):
-        """
-        The indices of the subtasks to be run.
-
-        Returns:
-            list: The indices of the subtasks to be run.
-        """
-        try:
-            return self._run_ids
-        except AttributeError:
-            return []
-
-    def update_run_ids(self,
-                       mol: 'RDKitMol'):
-        """
-        Update the indices of the subtasks to be run.
-
-        Args:
-            mol (RDKitMol): The molecule with conformers to be operated on.
-        """
-        if hasattr(mol, 'keep_ids'):
-            self._run_ids = [i for i, keep in enumerate(mol.keep_ids) if keep]
-        else:
-            self._run_ids = list(range(mol.GetNumConformers()))
-        return self.run_ids
 
     @staticmethod
     def input_writer(mol: 'RDKitMol',
@@ -109,10 +86,11 @@ class MolIOTask(Task):
                       f' subtask {cid}')
                 traceback.print_exc()
 
+        # update run_ids so job failed in input generation won't run in later steps
         self.update_run_ids(mol=mol)
 
     def get_execute_command(self,
-                            subtask_id: int
+                            subtask_id: int,
                             ) -> list:
         """
         Get the command to execute the subtask. This function should be implemented in the
@@ -120,35 +98,6 @@ class MolIOTask(Task):
         It can be left as it is if the child class does not utilize subproc_runner.
         """
         raise NotImplementedError
-
-    def update_n_subtasks(self, mol: 'RDKitMol'):
-        """
-        Update the number of subtasks, defined by the number of `True`s in the
-        keep_ids attribute of the mol object.
-
-        Args:
-            mol (RDKitMol): The molecule to be operated on.
-        """
-        try:
-            if not hasattr(mol, 'keep_ids'):
-                mol.keep_ids = [bool(conf.GetProp('KeepID'))
-                                for conf in mol.GetAllConformers()]
-            self.n_subtasks = sum(mol.keep_ids)
-        except KeyError:
-            # No keepID property, assume all conformers are to be optimized
-            self.n_subtasks = mol.GetNumConformers()
-
-    def update_n_success(self):
-        """
-        Update the number of successful subtasks. This is ran after the task is executed.
-        Therefore computed molecule and its properties are stored in self.last_result.
-        """
-        mol = self.last_result
-        self.n_success = sum(mol.keep_ids)
-        for conf, keep_id in zip(mol.GetAllConformers(),
-                                 mol.keep_ids,):
-            conf.SetBoolProp("KeepID", keep_id)
-            conf.SetBoolProp(f"{self.label}Success", keep_id)
 
     def update_paths(self):
         """
@@ -210,13 +159,12 @@ class MolIOTask(Task):
         # This step will update run_ids (an attribute of the task)
         # to let aware of the subtasks to be run
         # and assign file paths to the paths attribute
-        self.update_run_ids(mol=mol)
         self.update_paths()
 
         # 4. Write the input files
         self.write_input_file(mol=mol, **kwargs)
 
-    @Task.timer
+    @MolTask.timer
     def run(self, mol, **kwargs):
         """
         Run the task on the molecule.
@@ -225,13 +173,12 @@ class MolIOTask(Task):
         # 1. Create a copy of the molecule if necessary
         # 2. Initialize the attributes of the molecule
         # 3. Update the multiplicity and charge of the molecule
-        new_mol = mol.Copy(copy_attrs=['keep_ids']) if self.create_mol_flag else mol
-        for attr_name, init_value in self.init_attrs.items():
-            setattr(new_mol, attr_name, [init_value] * new_mol.GetNumConformers())
+        new_mol = self.update_mol(mol=mol)
         # update multiplicity and charge
-        kwargs['mult'], kwargs['charge'] = self._get_mult_and_chrg(mol=mol,
-                                                                   multiplicity=kwargs.get('multiplicity'),
-                                                                   charge=kwargs.get('charge'))
+        kwargs['mult'], kwargs['charge'] = \
+                self._get_mult_and_chrg(mol=mol,
+                                        multiplicity=kwargs.get('multiplicity'),
+                                        charge=kwargs.get('charge'))
 
         # Run the subtasks in sequence
         for subtask_id in self.run_ids:
@@ -270,17 +217,3 @@ class MolIOTask(Task):
 
         # 2. Clean up working directory
         self.clean_work_dir()
-
-    @staticmethod
-    def _get_mult_and_chrg(mol: 'RDKitMol',
-                           multiplicity: Optional[int],
-                           charge: Optional[int]):
-        """
-        A helper function when parsing multiplicity and charge from the function
-        arguments. Use the multiplicity and charge from the molecule if not specified
-        """
-        if multiplicity is None:
-            multiplicity = mol.GetSpinMultiplicity()
-        if charge is None:
-            charge = mol.GetFormalCharge()
-        return multiplicity, charge
