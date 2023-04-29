@@ -5,6 +5,7 @@
 Modules for providing molecule guess geometries by GeoMol
 """
 
+from functools import lru_cache
 import os.path as osp
 import yaml
 
@@ -64,9 +65,21 @@ class GeoMolEmbedder(ConformerEmbedder):
         if temp_schedule == "linear":
             self.model.random_vec_std *= (1 + self.iter / 10)
         self.model.eval()
-
         self.dataset = dataset
-        self.tg_data = None
+
+    @lru_cache(maxsize=1)
+    def get_tg_data(self,
+                    mol: 'Chem.Mol',
+                    dataset: str):
+        """
+        Get the molecule featurization in Torch Geometric Data.
+
+        Args:
+            mol (Mol): The molecule in RDKit Mol object.
+            dataset (str): Dataset used to train the model with two options: "drugs" or "qm9".
+        """
+        return featurize_mol(mol=mol._mol,
+                             dataset=self.dataset)
 
     @ConformerEmbedder.timer
     def run(self,
@@ -84,13 +97,11 @@ class GeoMolEmbedder(ConformerEmbedder):
         mol.keep_ids = [False] * n_conformers
 
         # featurize data and run GeoMol
-        if self.tg_data is None:
-            self.tg_data = featurize_mol(
-                                mol=mol._mol,
-                                dataset=self.dataset)
+        tg_data = self.get_tg_data(mol=mol,
+                                   dataset=self.dataset)
         # need to run this bc of dumb internal GeoMol processing
         try:
-            data = from_data_list([self.tg_data])
+            data = from_data_list([tg_data])
         except TypeError:
             raise ValueError("GeoMol requires a molecule with at least one rotor.")
         self.model(data,
