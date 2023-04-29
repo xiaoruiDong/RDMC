@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from rdmc.conformer_generation.task.base import Task
 
@@ -42,7 +42,8 @@ class MolTask(Task):
             return []
 
     def update_run_ids(self,
-                       mol: 'RDKitMol'):
+                       mol: 'RDKitMol',
+                       ) -> List[int]:
         """
         Update the indices of the subtasks to be run. This method uses the keep_ids
         (a list of True or False) of the given molecule to determine which conformers
@@ -53,7 +54,7 @@ class MolTask(Task):
             mol (RDKitMol): The molecule with conformers to be operated on.
 
         Returns:
-            list: The indices of the subtasks to be run (the same as self.run_ids)
+            List[int]: The indices of the subtasks to be run (the same as self.run_ids)
         """
         if hasattr(mol, 'keep_ids'):
             self._run_ids = [i for i, keep in enumerate(mol.keep_ids) if keep]
@@ -68,7 +69,8 @@ class MolTask(Task):
             self._run_ids = list(range(mol.GetNumConformers()))
         return self.run_ids
 
-    def update_n_subtasks(self, mol: 'RDKitMol'):
+    def update_n_subtasks(self,
+                          mol: 'RDKitMol'):
         """
         Update the number of subtasks, defined by the number of `True`s in the
         keep_ids attribute of the mol object.
@@ -158,10 +160,19 @@ class MolTask(Task):
     @staticmethod
     def _get_mult_and_chrg(mol: 'RDKitMol',
                            multiplicity: Optional[int],
-                           charge: Optional[int]):
+                           charge: Optional[int],
+                           ) -> Tuple[int, int]:
         """
         A helper function when parsing multiplicity and charge from the function
         arguments. Use the multiplicity and charge from the molecule if not specified.
+
+        Args:
+            mol (RDKitMol): The molecule to be operated on.
+            multiplicity (Optional[int]): The multiplicity of the molecule.
+            charge (Optional[int]): The charge of the molecule.
+
+        Returns:
+            Tuple[int, int]: The multiplicity and charge of the molecule.
         """
         if multiplicity is None:
             multiplicity = mol.GetSpinMultiplicity()

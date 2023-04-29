@@ -5,7 +5,7 @@ import os
 import os.path as osp
 import subprocess
 import traceback
-from typing import Any
+from typing import Any, List
 
 from rdmc.conformer_generation.task.mol import MolTask
 
@@ -43,22 +43,43 @@ class MolIOTask(MolTask):
              'log_file': 'output.log',
              'output_file': 'output.out',
              'file_type': 'file_name'}
-    # Define the files to be kept after the task is finished; usually the output/log files
-    # are kept, but you can change it to any file names. To keep all files, set it to ['*']
-    keep_files = ['*']
     # Define the common directory title for the subtasks
     subtask_dir_name = 'subtask'
 
     @staticmethod
     def input_writer(mol: 'RDKitMol',
                      conf_id: int,
-                     **kwargs):
+                     **kwargs,
+                     ) -> str:
         """
-        The input writer of the task. This function should be implemented by the developer.
-        It should return the writer function of the input file. This function should take at
-        least two arguments: mol and conf_id, where mol is the molecule to be operated on, and
+        The input writer of the task. The input geometry is based on the conf_id-th conformer of
+        the mol object. It also takes the kwargs as input, which is useful for tasks that need
+        additional input information.
+
+        For developers: This function should be implemented by the developer in the child class.
+        It should return the writer function of the input file. This function should take at least
+        two arguments: mol and conf_id, where mol is the molecule to be operated on, and
         conf_id is the index of the conformer to be operated on. However, some tasks may not need
         a input writer, in which case this function can be left as it is.
+        E.g., for the simple case where only xyz coordinates are needed, the input writer can be
+        defined as:
+        ```
+        @staticmethod
+        def input_writer(mol: 'RDKitMol',
+                         conf_id: int,
+                         **kwargs):
+            return mol.ToXYZ(conf_id)
+        ```
+
+        Args:
+            mol (RDKitMol): The molecule with conformers to be operated on.
+            conf_id (int): The index of the conformer to be operated on.
+
+        Returns:
+            str: The content of the input file.
+
+        Raises:
+            NotImplementedError: If the function is not implemented in the child class.
         """
         raise NotImplementedError
 
@@ -68,7 +89,8 @@ class MolIOTask(MolTask):
         """
         The default input writer of the task. This function iterates through run_ids,
         and call input_writer for each subtask. If failed to write the input file for a
-        subtask, the subtask will be marked as failed in mol.keep_ids.
+        subtask, the subtask will be marked as failed in mol.keep_ids. The run_ids will be
+        updated after the input files are written.
 
         Args:
             mol (RDKitMol): The molecule with conformers to be operated on.
@@ -83,7 +105,7 @@ class MolIOTask(MolTask):
             except Exception as exc:
                 mol.keep_ids[cid] = False
                 print(f'Error in writing input file for {self.label}'
-                      f' subtask {cid}')
+                      f' subtask {cid}: {exc}')
                 traceback.print_exc()
 
         # update run_ids so job failed in input generation won't run in later steps
@@ -91,25 +113,44 @@ class MolIOTask(MolTask):
 
     def get_execute_command(self,
                             subtask_id: int,
-                            ) -> list:
+                            ) -> List[str]:
         """
-        Get the command to execute the subtask. This function should be implemented in the
-        child class. This is used by subproc_runner to get the command to execute the subtask.
-        It can be left as it is if the child class does not utilize subproc_runner.
+        Get the command to execute the subtask. The command should be a list of strings,
+        where each string is a part of the command. E.g., ['g16', 'input.gjf']. The command
+        will be executed in the subtask directory by subprocesses.
+
+        For developers, This function should be implemented in the child class. It should
+        return the command to execute the subtask. The subtask_id is the index of the subtask
+        to be executed, used for obtaining the path of the input file, etc. This method can be
+        left as it is if the task does not need to be executed by subprocesses.
+
+        Args:
+            subtask_id (int): The index of the subtask to be executed. Used for obtaining the
+                              path of the input file, etc.
+
+        Returns:
+            List[str]: The command to execute the subtask.
+
+        Raises:
+            NotImplementedError: If the function is not implemented in the child class.
         """
         raise NotImplementedError
 
     def update_paths(self):
         """
         Update the paths of the subtasks. This function creates the subtask directories
-        and the paths of the files in the subtask directories according to the subtask_dir_name
-        and the files defined in the class.
+        and the paths of the files in the subtask directories according to the `subtask_dir_name`
+        and the `files` defined in the class.
+
+        For developers: This function is designed to be called in the pre-run function of the task.
         """
+        # create subtask directories
         subtask_dirs = [osp.join(self.work_dir, f'{self.subtask_dir_name}{subtask_id}')
                         for subtask_id in self.run_ids]
         for subtask_dir in subtask_dirs:
             os.makedirs(subtask_dir, exist_ok=True)
         self.paths = {'subtask_dir': subtask_dirs}
+        # create file paths
         for ftype, fname in self.files.items():
             self.paths[ftype] = [osp.join(self.paths['subtask_dir'][subtask_id], fname)
                                  for subtask_id in self.run_ids]
@@ -118,10 +159,22 @@ class MolIOTask(MolTask):
                subtask_id: int,
                **kwargs):
         """
-        The subprocess runner of the task. This function might be re-implemented in the child class.
+        The runner of each subtask. The default implementation is to execute the command
+        (get from get_execute_command) via subprocess. The working directory of the subprocess
+        is the working directory. The stdout is redirected to the log file.
 
-        By default, the runner will utilize subprocess module to exectute the command returned by
-        get_execute_command.
+        For developers: This function might be re-implemented in the child class. It can
+        also changed to use other methods to run the subtask, e.g., using the python API of
+        the program. However, the default implementation should be sufficient for most cases.
+        The default implementation return None, and that will be the `subtask_result` argument
+        of the `analyze_subtask_result` function. To prepare a parallelized version of the task,
+        It is recommended to re-implement the parent `run` function.
+
+        Args:
+            subtask_id (int): The index of the subtask to be executed.
+
+        Returns:
+            None: This will be passed to the `analyze_subtask_result`.
         """
         with open(self.paths['log_file'][subtask_id], 'w') as f_out:
             subprocess.run(
@@ -139,15 +192,39 @@ class MolIOTask(MolTask):
                                ):
         """
         Analyze the result of the subtask. This function should be implemented in the child class.
+        Basically, the function should read the output file and update the mol object accordingly.
+        E.g., read the gaussian log file of subtask N, extract the optimized geometry and energy, and
+        update the mol object with the optimized geometry and energy.
+
+        For developers: This function should be implemented in the child class. The subtask_result
+        is the return value of the `runner` function. In this function, attributes mentioned in the
+        `init_attrs` are suggested to be updated; `keep_ids` should be updated as well to mark the
+        subtask's status. All errors raised in this function will be caught and printed in the upper level
+        function `run`.
+
+        Args:
+            mol (RDKitMol): The molecule with conformers to be operated on.
+            subtask_id (int): The index of the subtask to be executed.
+            subtask_result (Any): The result of the subtask. This is the return value of the `runner` function.
+            **kwargs: Other keyword arguments.
+
+        Raises:
+            NotImplementedError: If the function is not implemented in the child class.
         """
         raise NotImplementedError
 
-    def pre_run(self, mol, **kwargs):
+    def pre_run(self,
+                mol: 'RDKitMol',
+                **kwargs):
         """
-        Pre-run involves the following steps:
-        1. Set the number of conformers to be optimized to n_subtasks.
-        2. Create the directories and paths for the subtasks.
-        3. Write the input files for the subtasks.
+        The preprocessing steps before running the actual task (e.g., gaussian calculation, defined in `run`).
+        The default implementation involves the following steps:
+            1. Set the number of conformers to be optimized to n_subtasks.
+            2. Create the directories and paths for the subtasks.
+            3. Write the input files for the subtasks.
+
+        Args:
+            mol (RDKitMol): The molecule with conformers to be operated on.
         """
         # 1. Assign the number of subtasks
         self.update_n_subtasks(mol=mol)
@@ -165,25 +242,41 @@ class MolIOTask(MolTask):
         self.write_input_file(mol=mol, **kwargs)
 
     @MolTask.timer
-    def run(self, mol, **kwargs):
+    def run(self,
+            mol: 'RDKitMol',
+            **kwargs):
         """
-        Run the task on the molecule.
+        Run the task on the molecule. This conducts the most important work of the task.
+        The default implementation involves the following steps:
+            1. Update the molecule information (e.g., create a copy of the molecule if necessary)
+            2. Update the multiplicity and charge of the molecule
+            3. Run the subtasks in sequence and analyze the results of each subtask
+        The subtasks are defined in the `run_ids` attribute of the task and executed in sequence by
+        the `runner` function. The results of the subtasks are analyzed in the `analyze_subtask_result`.
+
+        Args:
+            mol (RDKitMol): The molecule with conformers to be operated on.
+            kwargs: Other keyword arguments.
+
+        Returns:
+            'RDKitMol': The molecule (or its copy) with updated attributes.
+
+        For developers: If you want to re-implement this function, it is recommended to keep the first two
+        steps and only change the third step.
         """
         # Set up molecule information
-        # 1. Create a copy of the molecule if necessary
-        # 2. Initialize the attributes of the molecule
-        # 3. Update the multiplicity and charge of the molecule
+        # 1. Update the molecule information
+        # 2. Update the multiplicity and charge of the molecule
         new_mol = self.update_mol(mol=mol)
-        # update multiplicity and charge
         kwargs['mult'], kwargs['charge'] = \
                 self._get_mult_and_chrg(mol=mol,
                                         multiplicity=kwargs.get('multiplicity'),
                                         charge=kwargs.get('charge'))
 
-        # Run the subtasks in sequence
+        # 4. Run the subtasks in sequence
         for subtask_id in self.run_ids:
 
-            # 1. run the subtask defined in runner
+            # 4.1. run the subtask defined in runner
             try:
                 subtask_result = self.runner(mol=mol,
                                              subtask_id=subtask_id,
@@ -194,7 +287,7 @@ class MolIOTask(MolTask):
                 traceback.print_exc()
                 continue
 
-            # 2. analyze the subtask result
+            # 4.2. analyze the subtask result
             try:
                 self.analyze_subtask_result(mol=new_mol,
                                             subtask_id=subtask_id,
@@ -210,7 +303,10 @@ class MolIOTask(MolTask):
 
     def post_run(self, **kwargs):
         """
-        Set the energy and keepid to conformers.
+        The postprocessing steps after running the actual task (e.g., gaussian calculation, defined in `run`).
+        The default implementation involves the following steps:
+            1. Update the number of successful subtasks
+            2. Clean up working directory
         """
         # 1. Update the number of successful subtasks
         self.update_n_success()
