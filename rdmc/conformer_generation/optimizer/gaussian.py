@@ -40,6 +40,8 @@ class GaussianOptimizer(IOOptimizer, GaussianBaseTask):
                                                     log.optstatus.shape[0] - 1)
         else:
             mol.keep_ids[subtask_id] = False
+            print(f'Unsuccessful optimization of the geometry of conformer {subtask_id} in {self.label}')
+            return
         # 2. Parse energy
         mol.energies[subtask_id] = \
                         log.get_scf_energies(converged=True,

@@ -42,6 +42,8 @@ class QChemOptimizer(IOOptimizer, QChemBaseTask):
                                                     log.optstatus.shape[0] - 1)
         else:
             mol.keep_ids[subtask_id] = False
+            print(f'Unsuccessful optimization of the geometry of conformer {subtask_id} in {self.label}')
+            return
         # 2. Parse energies
         try:
             mol.energies[subtask_id] = log.get_scf_energies(relative=False)[-1].item()
