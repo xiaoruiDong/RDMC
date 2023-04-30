@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
-
 from rdmc.conformer_generation.optimizer.base import IOOptimizer
 from rdmc.conformer_generation.task import XTBBaseTask
 
 
-class XTBOptimizer(XTBBaseTask, IOOptimizer):
+class XTBOptimizer(IOOptimizer, XTBBaseTask):
     """
     Optimize conformers using the xTB software.
 
@@ -19,23 +17,7 @@ class XTBOptimizer(XTBBaseTask, IOOptimizer):
     """
 
     subtask_dir_name = 'xtb_opt'
-    create_mol_flag = True
-    init_attrs = {'energies': np.nan,}
     keep_files = ['xtbout.json', 'xtbout.log', 'xtbopt.log', 'g98.out']
-    calc_type = 'opt'
-
-    def save_data(self, **kwargs):
-        """
-        Save the data.
-        """
-        super(XTBBaseTask, self).save_data(**kwargs)  # from IOOptimizer
-
-    def post_run(self, **kwargs):
-        """
-        Setting the success information, also set the energy to the
-        conformers. Remove temporary directory if necessary.
-        """
-        super(XTBBaseTask, self).post_run(**kwargs)  # from IOOptimizer
 
     def analyze_subtask_result(self,
                                mol: 'RDKitMol',

@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
-
 from rdmc.conformer_generation.optimizer.base import IOOptimizer
 from rdmc.conformer_generation.task import ORCABaseTask
 
 
-class ORCAOptimizer(ORCABaseTask, IOOptimizer):
+class ORCAOptimizer(IOOptimizer, ORCABaseTask):
     """
     The class to optimize geometries using the algorithm built in ORCA.
     You have to have the Orca package installed to run this optimizer.
@@ -25,27 +23,10 @@ class ORCAOptimizer(ORCABaseTask, IOOptimizer):
              'log_file': 'orca_opt.log',
              'opt_file': 'orca_opt.opt'}
     keep_files = ['orca_opt.inp', 'orca_opt.log', 'orca_opt.opt']
-    create_mol_flag = True
-    init_attrs = {'energies': np.nan, 'frequencies': None}
-    calc_type = 'opt'
-
-    def save_data(self, **kwargs):
-        """
-        Save the data.
-        """
-        super(ORCABaseTask, self).save_data(**kwargs)  # from IOOptimizer
-
-    def post_run(self, **kwargs):
-        """
-        Setting the success information, also set the energy to the
-        conformers. Remove temporary directory if necessary.
-        """
-        super(ORCABaseTask, self).post_run(**kwargs)  # from IOOptimizer
 
     def analyze_subtask_result(self,
                                mol: 'RDKitMol',
                                subtask_id: int,
-                               subtask_result: tuple,
                                **kwargs):
         """
         Analyze the subtask result. This method will parse the number of optimization

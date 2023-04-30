@@ -8,7 +8,7 @@ from rdmc.conformer_generation.optimizer.base import IOOptimizer
 from rdmc.conformer_generation.task import QChemBaseTask
 
 
-class QChemOptimizer(QChemBaseTask, IOOptimizer):
+class QChemOptimizer(IOOptimizer, QChemBaseTask):
     """
     The class to optimize geometries using the algorithm built in QChem.
     You have to have the QChem package installed and run `source qcenv.sh` to run this optimizer.
@@ -24,28 +24,10 @@ class QChemOptimizer(QChemBaseTask, IOOptimizer):
     files = {'input_file': 'qchem_opt.qcin',
              'log_file': 'qchem_opt.log',
              'output_file': 'qchem_opt.out'}
-    keep_files = ['*']
-    create_mol_flag = True,
-    init_attrs = {'energies': np.nan, 'frequencies': None}
-    calc_type = 'opt'
-
-    def save_data(self, **kwargs):
-        """
-        Save the data.
-        """
-        super(QChemBaseTask, self).save_data(**kwargs)  # from IOOptimizer
-
-    def post_run(self, **kwargs):
-        """
-        Setting the success information, also set the energy to the
-        conformers. Remove temporary directory if necessary.
-        """
-        super(QChemBaseTask, self).post_run(**kwargs)  # from IOOptimizer
 
     def analyze_subtask_result(self,
                                mol: 'RDKitMol',
                                subtask_id: int,
-                               subtask_result: tuple,
                                **kwargs):
         """
         Analyze the subtask result. This method will parse the number of optimization

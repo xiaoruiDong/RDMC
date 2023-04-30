@@ -6,7 +6,6 @@ import io
 import traceback
 
 from ase.calculators.orca import ORCA
-import numpy as np
 
 from rdmc import RDKitMol
 from rdmc.conformer_generation.optimizer.base import IOOptimizer
@@ -23,10 +22,13 @@ with register_software('xtb-python'):
 class SellaOptimizer(IOOptimizer):
     """
     The class to optimize TS geometries using the Sella algorithm.
-    It uses XTB as the backend calculator, ASE as the interface, and Sella module from the Sella repo.
+    It uses XTB as the backend calculator (by default), ASE as the interface,
+    and Sella module from the Sella repo. The class can also utilize other calculators,
+    though haven't been tested yet.
 
     Args:
-        method (str, optional): The method in XTB used to optimize the geometry. Options are 'GFN1-xTB' and 'GFN2-xTB'. Defaults to "GFN2-xTB".
+        method (str, optional): The method in XTB used to optimize the geometry.
+                                Options are 'GFN1-xTB' and 'GFN2-xTB'. Defaults to "GFN2-xTB".
         fmax (float, optional): The force threshold used in the optimization. Defaults to 1e-3.
         steps (int, optional): Max number of steps allowed in the optimization. Defaults to 1000.
     """
@@ -37,8 +39,6 @@ class SellaOptimizer(IOOptimizer):
              'log_file': 'sella_opt.log',
              'common_name': 'sella_opt'}
     keep_files = ['sella_opt.traj', 'sella_opt.log']
-    create_mol_flag = True
-    init_attrs = {'energies': np.nan, 'frequencies': None}
 
     def task_prep(self,
                   method: str = "GFN2-xTB",
@@ -84,8 +84,19 @@ class SellaOptimizer(IOOptimizer):
                subtask_id: int,
                **kwargs):
         """
-        Run the Sella optimization.
+        Run the Sella optimization. First, it converts the RDKitMol object to an ASE atoms object.
+        Then, it runs the Sella optimization. A Sella object is returned with optimized geometries
+        and other information.
+
+        Args:
+            mol (RDKitMol): The RDKitMol object to be optimized.
+            subtask_id (int): The subtask id of the molecule.
+            **kwargs: Other keyword arguments.
+
+        Returns:
+            Sella: The Sella object with optimized geometries and other information.
         """
+        assert kwargs.get('ts', False) is False, 'Sella is only used for optimizing TSs.'
         # 1. Convert the mol to atoms
         atoms = self.mol_to_atoms(mol=mol, subtask_id=subtask_id)
         # 2. Run the Sella optimization
@@ -105,8 +116,6 @@ class SellaOptimizer(IOOptimizer):
         """
         Analyze the subtask result. This method will parse the number of optimization
         cycles and the energy from the Sella output file and set them to the molecule.
-
-        Note, n_opt_cycles and energy parsing hasn't been tested yet.
         """
         opt = subtask_result  # better readability
         mol.SetPositions(opt.atoms.positions, id=subtask_id)
@@ -114,5 +123,5 @@ class SellaOptimizer(IOOptimizer):
             mol.GetConformer(subtask_id).SetIntProp('n_opt_cycles', opt.nsteps)
             mol.energies[subtask_id] = opt.atoms.get_potential_energy()
         except Exception as exc:
-                print(f'Sella optimization finished but result parsing failed:\n{exc}')
-                traceback.print_exc()
+            print(f'Sella optimization finished but result parsing failed:\n{exc}')
+            traceback.print_exc()

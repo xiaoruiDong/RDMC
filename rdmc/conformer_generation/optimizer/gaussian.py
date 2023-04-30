@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
-
 from rdmc.conformer_generation.optimizer.base import IOOptimizer
 from rdmc.conformer_generation.task import GaussianBaseTask
 
 
-class GaussianOptimizer(GaussianBaseTask, IOOptimizer):
+class GaussianOptimizer(IOOptimizer, GaussianBaseTask):
     """
     The class to optimize geometries using the algorithm built in Gaussian.
     You have to have the Gaussian package installed to run this optimizer.
@@ -22,30 +20,13 @@ class GaussianOptimizer(GaussianBaseTask, IOOptimizer):
     """
 
     subtask_dir_name = 'gaussian_opt'
-    files = {'input_file': 'gaussian.gjf',
-             'log_file': 'input.log'}
-    keep_files = ['gaussian.gjf', 'input.log']
-    create_mol_flag = True
-    init_attrs = {'energies': np.nan, 'frequencies': None}
-    calc_type = 'opt'
-
-    def save_data(self, **kwargs):
-        """
-        Save the data.
-        """
-        super(GaussianBaseTask, self).save_data(**kwargs)  # from IOOptimizer
-
-    def post_run(self, **kwargs):
-        """
-        Setting the success information, also set the energy to the
-        conformers. Remove temporary directory if necessary.
-        """
-        super(GaussianBaseTask, self).post_run(**kwargs)  # from IOOptimizer
+    files = {'input_file': 'gaussian_opt.gjf',
+             'log_file': 'gaussian_opt.log'}
+    keep_files = ['gaussian_opt.gjf', 'gaussian_opt.log']
 
     def analyze_subtask_result(self,
                                mol: 'RDKitMol',
                                subtask_id: int,
-                               subtask_result: tuple,
                                **kwargs):
         """
         Analyze the subtask result. This method will parse the number of optimization
