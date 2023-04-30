@@ -28,7 +28,7 @@ class BaseOptimizer(MolTask):
         Set the SMILES as the name of the RDKitMol object.
         """
         path = osp.join(self.save_dir, "optimized_confs.sdf")
-        mol_to_sdf(mol=self.save_dir,
+        mol_to_sdf(mol=self.last_result,
                    path=path,)
 
 
