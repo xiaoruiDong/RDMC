@@ -593,6 +593,7 @@ def parse_xyz_by_jensen(xyz: str,
                         correct_CO: bool = True,
                         use_atom_maps: bool = False,
                         force_rdmc: bool = False,
+                        **kwargs,
                         ) -> 'Mol':
     """
     Perceive a xyz str using `xyz2mol` by Jensen et al. and generate the corresponding RDKit Mol.

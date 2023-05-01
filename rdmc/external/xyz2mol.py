@@ -763,6 +763,7 @@ def parse_xyz_by_jensen(xyz: str,
                         embed_chiral: bool = True,
                         use_atom_maps: bool = False,
                         correct_CO: bool = True,
+                        **kwargs,
                         ) -> 'Mol':
     """
     Perceive a xyz str using `xyz2mol` by Jensen et al. and generate the corresponding RDKit Mol.
@@ -796,7 +797,7 @@ def parse_xyz_by_jensen(xyz: str,
                       embed_chiral=embed_chiral,
                       use_atom_maps=use_atom_maps)[0]
     except IndexError:
-        raise ValueError(f'Cannot perceive the xyz by Jensen et al. method')
+        raise ValueError('Cannot perceive the xyz by Jensen et al. method')
     else:
         for atom in mol.GetAtoms():
             atom.SetNoImplicit(True)
