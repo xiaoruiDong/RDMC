@@ -114,6 +114,29 @@ class Task(object):
         return wrapper
 
     @property
+    def paths(self) -> dict:
+        """
+        The paths used in the task.
+
+        For developers: Don't use this property to store save_dir and work_dir.
+        If no files are created, please level `paths` as an empty dict.
+        """
+        try:
+            return self._paths
+        except AttributeError:
+            return {}
+
+    @paths.setter
+    def paths(self, paths: dict):
+        """
+        Set the paths used in the task.
+
+        Args:
+            paths (dict): The paths used in the task.
+        """
+        self._paths = paths
+
+    @property
     def last_run_time(self):
         """
         The time of the last run of the task
@@ -208,9 +231,8 @@ class Task(object):
 
     def save_data(self):
         """
-        Save the data of the task.
+        Save the data of the task. By default, do nothing.
         """
-        raise NotImplementedError
 
     def clean_work_dir(self):
         """
@@ -221,17 +243,22 @@ class Task(object):
             shutil.rmtree(self.work_dir)
             return
 
+        if not self.paths:
+            # It seems that no files are generated.
+            return
+
         if '*' not in self.keep_files:
-            # Otherwise, first delete all files in work_dir except those in keep_files
-            # Delete files in work_dir that are not in keep_files
-            for root, _, filenames in os.walk(self.work_dir):
-                for filename in filenames:
-                    file_path = os.path.join(root, filename)
-                    if file_path not in self.keep_files:
-                        os.remove(file_path)
+            # Otherwise, first delete all files in subtask_dir except those in keep_files
+            # Note, subtask_dirs are always within work_dir
+            for subtask_dir in self.paths['subtask_dir'].values():
+                for root, _, filenames in os.walk(subtask_dir):
+                    for filename in filenames:
+                        if filename not in self.keep_files:
+                            file_path = os.path.join(root, filename)
+                            os.remove(file_path)
 
         # Then move all files in work_dir to save_dir
-        if self.save_dir != self.work_dir:
+        if not osp.samefile(self.save_dir, self.work_dir):
             shutil.copytree(self.work_dir, self.save_dir, dirs_exist_ok=True)
             shutil.rmtree(self.work_dir)
 
