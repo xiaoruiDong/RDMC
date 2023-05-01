@@ -77,7 +77,8 @@ class ORCAOptimizer(IOOptimizer, ORCABaseTask):
             return
         # 2. Parse Energy
         try:
-            mol.energies[subtask_id] = log.get_scf_energies(relative=False)[-1].item()
+            mol.energies[subtask_id] = log.get_scf_energies(converged=False,
+                                                            relative=False)[-1].item()
         except AttributeError:
             # Unable to parse the energies of the xTB methods from the log file.
             # use .opt file instead.
