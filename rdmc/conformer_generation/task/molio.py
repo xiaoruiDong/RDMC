@@ -145,15 +145,15 @@ class MolIOTask(MolTask):
         For developers: This function is designed to be called in the pre-run function of the task.
         """
         # create subtask directories
-        subtask_dirs = [osp.join(self.work_dir, f'{self.subtask_dir_name}{subtask_id}')
-                        for subtask_id in self.run_ids]
-        for subtask_dir in subtask_dirs:
+        subtask_dirs = {subtask_id: osp.join(self.work_dir, f'{self.subtask_dir_name}{subtask_id}')
+                        for subtask_id in self.run_ids}
+        for subtask_dir in subtask_dirs.values():
             os.makedirs(subtask_dir, exist_ok=True)
         self.paths = {'subtask_dir': subtask_dirs}
         # create file paths
         for ftype, fname in self.files.items():
-            self.paths[ftype] = [osp.join(self.paths['subtask_dir'][subtask_id], fname)
-                                 for subtask_id in self.run_ids]
+            self.paths[ftype] = {subtask_id: osp.join(self.paths['subtask_dir'][subtask_id], fname)
+                                 for subtask_id in self.run_ids}
 
     def runner(self,
                subtask_id: int,
