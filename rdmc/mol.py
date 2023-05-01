@@ -8,6 +8,7 @@ This module provides class and methods for dealing with RDKit RWMol, Mol.
 import copy
 from itertools import combinations
 from itertools import product as cartesian_product
+import traceback
 from typing import Iterable, List, Optional, Sequence, Union
 import pathlib
 
@@ -1011,6 +1012,46 @@ class RDKitMol(object):
         dist_mat = np.triu(self.GetDistanceMatrix())
         # if the distance is smaller than a threshold, the atom has a high chance of colliding
         return not np.all(self.GetVdwMatrix(threshold=threshold) <= dist_mat)
+
+    def HasSameConnectivity(self,
+                            confId: int = 0,
+                            backend: str = 'openbabel',
+                            **kwargs,
+                            ) -> bool:
+        """
+        Check whether the conformer of the molecule (defined by its spacial coordinates)
+        as the same connectivity as the molecule.
+
+        Args:
+            confId (int, optional): The conformer ID. Defaults to ``0``.
+            backend (str, optional): The backend to use for the comparison. Defaults to ``openbabel``.
+            **kwargs: The keyword arguments to pass to the backend.
+
+        Returns:
+            bool: Whether the conformer has the same connectivity as the molecule.
+        """
+        mol_adj_mat = self.GetAdjacencyMatrix()
+
+        # Get the connectivity of ith conformer
+        try:
+            xyz_str = self.ToXYZ(confId=confId, header=True)
+            # Sanitization is not applied to account for
+            # special cases like zwitterionic molecules
+            # or molecule complexes
+            new_mol = RDKitMol.FromXYZ(xyz_str,
+                                       header=True,
+                                       backend=backend,
+                                       sanitize=False,
+                                       **kwargs)
+        except Exception as exc:
+            # Error in preserving the molecule
+            print(f'Error in preserving the molecule: {exc}')
+            traceback.print_exc()
+            return False
+        else:
+            conf_adj_mat = new_mol.GetAdjacencyMatrix()
+
+        return (mol_adj_mat == conf_adj_mat).all()
 
     def PrepareOutputMol(self,
                           removeHs: bool = False,
