@@ -4,15 +4,11 @@
 import os.path as osp
 from typing import Optional
 
+from rdmc.conformer_generation.task import XTBBaseTask
 from rdmc.conformer_generation.verifier.freq import FreqVerifier
-from rdmc.conformer_generation.utils import _software_available
-from rdmc.external.xtb_tools.run_xtb import run_xtb_calc
-from rdmc.external.xtb_tools.utils import XTB_BINARY
-
-_software_available['xtb'] = osp.isfile(XTB_BINARY)
 
 
-class XTBFreqVerifier(FreqVerifier):
+class XTBFreqVerifier(FreqVerifier, XTBBaseTask):
     """
     The class for verifying the species or TS by calculating and checking its frequencies using XTB.
     Since frequency may be calculated in an previous job. The class will first check if frequency
@@ -20,17 +16,15 @@ class XTBFreqVerifier(FreqVerifier):
 
     Args:
         method (str, optional): The method used to calculate frequencies. Defaults to "gfn2".
-        cutoff_freq (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
-                                     imaginary frequency to avoid small magnitude frequencies which correspond
-                                     to internal bond rotations. This is only used when the molecule is a TS.
-                                     Defaults to -100 cm^-1.
+        cutoff_freq (float, optional): A cutoff frequency determine whether a imaginary frequency
+                                       is a valid mode. Only used for TS verification. Defaults to -100 cm^-1,
+                                       that is imaginary frequencies between -100 to 0 cm^-1 are
+                                       considered not valid reaction mode.
     """
 
-    request_external_software = ['xtb']
+    subtask_dir = 'xtb_freq'
 
     def task_prep(self,
-                  method: str = "gfn2",
-                  cutoff_freq: float = -100.,
                   **kwargs,
                   ):
         """
@@ -40,14 +34,42 @@ class XTBFreqVerifier(FreqVerifier):
             method (str, optional): The method used to calculate frequencies. Defaults to "gfn2".
             cutoff_freq (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
         """
-        super().task_prep(cutoff_freq=cutoff_freq)
-        self.method = method
+        super().task_prep(**kwargs)  # FreqVerifier.task_prep
+        super(FreqVerifier, self).task_prep(**kwargs)  # XTBBaseTask.task_prep
 
-    def calc_freq(self,
-                  mol: 'RDKitMol',
-                  multiplicity: Optional[int] = None,
-                  charge: Optional[int] = None,
-                  **kwargs):
+    def runner(self,
+               mol: 'RDKitMol',
+               subtask_id: int,
+               **kwargs,
+               ) -> tuple:
+        """
+        The runner of each subtask using `run_xtb_calc` in RDMC.external.xtb_tools.
+
+        For developers: In the xTB freq verifier implementation,
+        It will first check if the frequencies are already calculated. If not,
+        it will call `run_xtb_calc` (XTBBaseTask's runner) defined in
+        RDMC.external.xtb_tools to calculate frequencies. Also as a note,
+        kwargs will always have keys of charge and mult, as they are
+        assigned by the second step of `run` in `MolIOTask`. Be careful if you need to
+        reimplement `run` or `runner`.
+
+        Args:
+            mol ('RDKitMol') The molecule.
+            subtask_id (int) The id of the subtask.
+            kwargs: Other arguments.
+
+        Returns:
+            tuple: The molecule and its properties.
+        """
+        if self.need_calc_freqs(mol=mol, subtask_id=subtask_id):
+            # Not using subprocess runner but XTBBaseTask.runner
+            return super(FreqVerifier, self).runner(mol=mol, subtask_id=subtask_id, **kwargs)
+
+    def analyze_subtask_result(self,
+                               mol: 'RDKitMol',
+                               subtask_id: int,
+                               subtask_result: tuple,
+                               **kwargs):
         """
         Calculate the frequencies using xTB.
 
@@ -56,21 +78,7 @@ class XTBFreqVerifier(FreqVerifier):
             multiplicity (int): The multiplicity of the molecule. Defaults to None, to use the multiplicity of mol.
             charge (int): The charge of the molecule. Defaults to None, to use the charge of mol.
         """
-        mult, charge = self._get_mult_and_chrg(mol, multiplicity, charge)
-
-        run_ids = getattr(mol, 'keep_ids', [True] * mol.GetNumConformers())
-        for cid, keep_id in enumerate(run_ids):
-            if not keep_id:
-                continue
-            try:
-                _, props = run_xtb_calc(mol,
-                                        conf_id=cid,
-                                        charge=charge,
-                                        uhf=mult - 1,
-                                        job="--hess",
-                                        method=self.method)
-                mol.frequencies[cid] = props["frequencies"]
-            except Exception as exc:
-                mol.frequencies[cid] = None
-                mol.keep_ids[cid] = False
-                print(exc)
+        if self.need_calc_freqs(mol, subtask_id):
+            mol.frequencies[subtask_id] = subtask_result[1].get("frequencies")
+        mol.keep_ids[subtask_id] = self.check_negative_freqs(freqs=mol.frequencies[subtask_id],
+                                                             ts=kwargs.get('ts') or False)

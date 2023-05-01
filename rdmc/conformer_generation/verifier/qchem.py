@@ -1,32 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from rdmc.conformer_generation.task import GaussianBaseTask
+from rdmc.conformer_generation.task import QChemBaseTask
 from rdmc.conformer_generation.verifier.freq import FreqVerifier
 
 
-class GaussianFreqVerifier(FreqVerifier, GaussianBaseTask):
+class QChemFreqVerifier(FreqVerifier, QChemBaseTask):
     """
-    The class for verifying the species or TS by calculating and checking its frequencies using Gaussian.
+    The class for verifying the species or TS by calculating and checking its frequencies using QChem.
     Since frequency may be calculated in an previous job. The class will first check if frequency
     results are available. If not, it will launch jobs to calculate frequencies.
 
     Args:
-        method (str, optional): The method used to calculate frequencies. Defaults to "gfn2".
+        method (str, optional): The method (level of theory) available in QChem to be used.
+                                defaults to wb97x-d3.
+        basis (str, optional): The basis set to use. Defaults to def2-svp.
         nprocs (int, optional): The number of processors to use. Defaults to 1.
-        memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
-        gaussian_binary (str, optional): The name of the gaussian binary, useful when there is multiple versions of Gaussian installed.
-                                    Defaults to the latest version found in the environment variables.
         cutoff_freq (float, optional): A cutoff frequency determine whether a imaginary frequency
                                        is a valid mode. Only used for TS verification. Defaults to -100 cm^-1,
                                        that is imaginary frequencies between -100 to 0 cm^-1 are
                                        considered not valid reaction mode.
     """
 
-    subtask_dir_name = 'gaussian_freq'
-    files = {'input_file': 'gaussian_freq.gjf',
-             'log_file': 'gaussian_freq.log'}
-    keep_files = ['gaussian_freq.gjf', 'gaussian_freq.log']
+    subtask_dir_name = 'qchem_freq'
+    files = {'input_file': 'qchem_freq.gjf',
+             'log_file': 'qchem_freq.log'}
+    keep_files = ['qchem_freq.gjf', 'qchem_freq.log']
 
     def task_prep(self,
                   **kwargs,
@@ -35,11 +34,10 @@ class GaussianFreqVerifier(FreqVerifier, GaussianBaseTask):
         Set the method, number of processors, memory and cutoff.
 
         Args:
-            method (str, optional): The method used to calculate frequencies. Defaults to "gfn2".
+            method (str, optional): The method (level of theory) available in QChem to be used.
+                                    defaults to wb97x-d3.
+            basis (str, optional): The basis set to use. Defaults to def2-svp.
             nprocs (int, optional): The number of processors to use. Defaults to 1.
-            memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
-            gaussian_binary (str, optional): The name of the gaussian binary, useful when there is multiple versions of Gaussian installed.
-                                        Defaults to the latest version found in the environment variables.
             cutoff_freq (float, optional): A cutoff frequency determine whether a imaginary frequency
                                         is a valid mode. Only used for TS verification. Defaults to -100 cm^-1,
                                         that is imaginary frequencies between -100 to 0 cm^-1 are
@@ -54,7 +52,7 @@ class GaussianFreqVerifier(FreqVerifier, GaussianBaseTask):
                                **kwargs):
         """
         Analyze the subtask result. This method will parse the frequencies
-        from the Gaussian log file and set them to the molecule.
+        from the QChem log file and set them to the molecule.
         """
         if self.need_calc_freqs(mol, subtask_id):
             log = self.logparser(self.paths['log_file'][subtask_id])

@@ -1,32 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from rdmc.conformer_generation.task import GaussianBaseTask
+from rdmc.conformer_generation.task import ORCABaseTask
 from rdmc.conformer_generation.verifier.freq import FreqVerifier
 
 
-class GaussianFreqVerifier(FreqVerifier, GaussianBaseTask):
+class ORCAFreqVerifier(FreqVerifier, ORCABaseTask):
     """
-    The class for verifying the species or TS by calculating and checking its frequencies using Gaussian.
+    The class for verifying the species or TS by calculating and checking its frequencies using ORCA.
     Since frequency may be calculated in an previous job. The class will first check if frequency
     results are available. If not, it will launch jobs to calculate frequencies.
 
     Args:
         method (str, optional): The method used to calculate frequencies. Defaults to "gfn2".
         nprocs (int, optional): The number of processors to use. Defaults to 1.
-        memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
-        gaussian_binary (str, optional): The name of the gaussian binary, useful when there is multiple versions of Gaussian installed.
-                                    Defaults to the latest version found in the environment variables.
+        memory (int, optional): Memory in GB used by ORCA. Defaults to 1.
         cutoff_freq (float, optional): A cutoff frequency determine whether a imaginary frequency
                                        is a valid mode. Only used for TS verification. Defaults to -100 cm^-1,
                                        that is imaginary frequencies between -100 to 0 cm^-1 are
                                        considered not valid reaction mode.
     """
 
-    subtask_dir_name = 'gaussian_freq'
-    files = {'input_file': 'gaussian_freq.gjf',
-             'log_file': 'gaussian_freq.log'}
-    keep_files = ['gaussian_freq.gjf', 'gaussian_freq.log']
+    subtask_dir_name = 'orca_freq'
+    files = {'input_file': 'orca_freq.gjf',
+             'log_file': 'orca_freq.log'}
+    keep_files = ['orca_freq.gjf', 'orca_freq.log']
 
     def task_prep(self,
                   **kwargs,
@@ -37,9 +35,7 @@ class GaussianFreqVerifier(FreqVerifier, GaussianBaseTask):
         Args:
             method (str, optional): The method used to calculate frequencies. Defaults to "gfn2".
             nprocs (int, optional): The number of processors to use. Defaults to 1.
-            memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
-            gaussian_binary (str, optional): The name of the gaussian binary, useful when there is multiple versions of Gaussian installed.
-                                        Defaults to the latest version found in the environment variables.
+            memory (int, optional): Memory in GB used by ORCA. Defaults to 1.
             cutoff_freq (float, optional): A cutoff frequency determine whether a imaginary frequency
                                         is a valid mode. Only used for TS verification. Defaults to -100 cm^-1,
                                         that is imaginary frequencies between -100 to 0 cm^-1 are
@@ -54,7 +50,7 @@ class GaussianFreqVerifier(FreqVerifier, GaussianBaseTask):
                                **kwargs):
         """
         Analyze the subtask result. This method will parse the frequencies
-        from the Gaussian log file and set them to the molecule.
+        from the ORCA log file and set them to the molecule.
         """
         if self.need_calc_freqs(mol, subtask_id):
             log = self.logparser(self.paths['log_file'][subtask_id])
