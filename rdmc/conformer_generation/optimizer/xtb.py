@@ -17,7 +17,7 @@ class XTBOptimizer(IOOptimizer, XTBBaseTask):
     """
 
     subtask_dir_name = 'xtb_opt'
-    keep_files = ['xtbout.json', 'xtbout.log', 'xtbopt.log', 'g98.out']
+    keep_files = ['xtbout.json', 'xtb.log', 'xtbopt.log', 'g98.out']
 
     def analyze_subtask_result(self,
                                mol: 'RDKitMol',
