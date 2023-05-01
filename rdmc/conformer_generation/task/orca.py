@@ -66,6 +66,7 @@ class ORCABaseTask(MolIOTask):
         self.method = method
         self.nprocs = nprocs
         self.memory = memory
+        super().task_prep(**kwargs)
 
     def input_writer(self,
                      mol: 'RDKitMol',

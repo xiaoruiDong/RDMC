@@ -66,6 +66,7 @@ class QChemBaseTask(MolIOTask):
         self.method = method
         self.basis = basis
         self.nprocs = nprocs
+        super().task_prep(**kwargs)
 
     def input_writer(self,
                      mol: 'RDKitMol',

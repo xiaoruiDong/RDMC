@@ -80,7 +80,8 @@ class GaussianBaseTask(MolIOTask):
     def task_prep(self,
                   method: str = "GFN2-xTB",
                   nprocs: int = 1,
-                  memory: int = 1,):
+                  memory: int = 1,
+                  **kwargs,):
         """
         Set up the Gaussian calculation. For the default implementation,
         it will set the method (level of theory), number of processors and memory,
@@ -97,6 +98,7 @@ class GaussianBaseTask(MolIOTask):
         self.method = method
         self.nprocs = nprocs
         self.memory = memory
+        super().task_prep(**kwargs)
 
     def input_writer(self,
                      mol: 'RDKitMol',

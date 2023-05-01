@@ -43,7 +43,8 @@ class SellaOptimizer(IOOptimizer):
     def task_prep(self,
                   method: str = "GFN2-xTB",
                   fmax: float = 1e-3,
-                  steps: int = 1000,):
+                  steps: int = 1000,
+                  **kwargs):
         """
         Set up the Sella optimizer.
         """
@@ -51,6 +52,7 @@ class SellaOptimizer(IOOptimizer):
         self.method = get_method(method) or method
         self.fmax = fmax
         self.steps = steps
+        super().task_prep(**kwargs)
 
     def write_input_file(self, **kwargs):
         """

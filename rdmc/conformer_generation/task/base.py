@@ -93,7 +93,7 @@ class Task(object):
         """
         Prepare the task.
         """
-        return True
+        self.extra_args = kwargs
 
     def timer(func):
         """
@@ -112,6 +112,26 @@ class Task(object):
             self._last_run_time = time_end - time_start
             return result
         return wrapper
+
+    @property
+    def extra_args(self) -> dict:
+        """
+        The extra arguments of the task. Usually used for writing input file.
+        """
+        try:
+            return self._extra_args
+        except AttributeError:
+            return {}
+
+    @extra_args.setter
+    def extra_args(self, kwargs: dict):
+        """
+        Set the extra arguments of the task.
+
+        Args:
+            kwargs (dict): The extra arguments of the task.
+        """
+        self._extra_args = kwargs
 
     @property
     def paths(self) -> dict:
@@ -294,6 +314,8 @@ class Task(object):
         """
         Run the task.
         """
+        kwargs = {**self.extra_args, **kwargs}
+
         self.pre_run(**kwargs)
         self.last_result = self.run(**kwargs)
         self.post_run(**kwargs)

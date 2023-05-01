@@ -52,6 +52,7 @@ class XTBBaseTask(MolIOTask):
         """
         self.method = method
         self.level = level
+        super().task_prep(**kwargs)
 
     def write_input_file(self,
                          **kwargs):
@@ -66,7 +67,8 @@ class XTBBaseTask(MolIOTask):
     def runner(self,
                mol: 'RDKitMol',
                subtask_id: int,
-               **kwargs):
+               **kwargs,
+               ) -> tuple:
         """
         The runner of each subtask. In the xTB implementation, it is actually a wrapper
         of `run_xtb_calc` defined in RDMC.external.xtb_tools.
