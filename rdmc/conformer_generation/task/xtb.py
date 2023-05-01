@@ -81,5 +81,5 @@ class XTBBaseTask(MolIOTask):
                             job=calc_type_dict[self.calc_type],
                             method=self.method,
                             level=self.level,
-                            save_dir=self.work_dir,
+                            save_dir=self.paths['subtask_dir'][subtask_id],
                             **kwargs)  # charge is stored inside kwargs
