@@ -1292,6 +1292,7 @@ class RDKitMol(object):
     def ToXYZ(self,
               confId: int = -1,
               header: bool = True,
+              comment: str = '',
               ) -> str:
         """
         Convert RDKitMol to a xyz string.
@@ -1307,6 +1308,8 @@ class RDKitMol(object):
         xyz = Chem.MolToXYZBlock(self._mol, confId)
         if not header:
             xyz = '\n'.join(xyz.splitlines()[2:])
+        elif comment:
+            xyz = f'{self.GetNumAtoms()}\n{comment}\n' + '\n'.join(xyz.splitlines()[2:])
         return xyz
 
     def ToMolBlock(self,
