@@ -45,6 +45,10 @@ class MolIOTask(MolTask):
              'file_type': 'file_name'}
     # Define the common directory title for the subtasks
     subtask_dir_name = 'subtask'
+    # While for many tasks, each subtask has its own directory and runs separately,
+    # some tasks may only need to create one directory for all subtasks, and only need
+    # to run once. In this case, set the singleshot_subtask to True.
+    singleshot_subtask = False
 
     @staticmethod
     def input_writer(mol: 'RDKitMol',
@@ -145,15 +149,19 @@ class MolIOTask(MolTask):
         For developers: This function is designed to be called in the pre-run function of the task.
         """
         # create subtask directories
-        subtask_dirs = {subtask_id: osp.join(self.work_dir, f'{self.subtask_dir_name}{subtask_id}')
-                        for subtask_id in self.run_ids}
-        for subtask_dir in subtask_dirs.values():
-            os.makedirs(subtask_dir, exist_ok=True)
+        if self.singleshot_subtask:
+            subtask_dirs = {0: osp.join(self.work_dir, self.subtask_dir_name)}
+            os.makedirs(subtask_dirs[0], exist_ok=True)
+        else:
+            subtask_dirs = {subtask_id: osp.join(self.work_dir, f'{self.subtask_dir_name}{subtask_id}')
+                            for subtask_id in self.run_ids}
+            for subtask_dir in subtask_dirs.values():
+                os.makedirs(subtask_dir, exist_ok=True)
         self.paths = {'subtask_dir': subtask_dirs}
         # create file paths
         for ftype, fname in self.files.items():
-            self.paths[ftype] = {subtask_id: osp.join(self.paths['subtask_dir'][subtask_id], fname)
-                                 for subtask_id in self.run_ids}
+            self.paths[ftype] = {subtask_id: osp.join(subtask_dir, fname)
+                                 for subtask_id, subtask_dir in subtask_dirs.items()}
 
     def runner(self,
                subtask_id: int,
@@ -274,7 +282,8 @@ class MolIOTask(MolTask):
                                         charge=kwargs.get('charge'))
 
         # 4. Run the subtasks in sequence
-        for subtask_id in self.run_ids:
+        run_ids = self.run_ids if not self.singleshot_subtask else [0]
+        for subtask_id in run_ids:
 
             # 4.1. run the subtask defined in runner
             try:
