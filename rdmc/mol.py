@@ -571,6 +571,7 @@ class RDKitMol(object):
                 header: bool = True,
                 correctCO: bool = True,
                 sanitize: bool = True,
+                embed_chiral: bool = False,
                 **kwargs):
         """
         Convert xyz string to RDKitMol.
@@ -583,13 +584,17 @@ class RDKitMol(object):
                                      Defaults to ``True.``
             sanitize (bool): Sanitize the RDKit mol created using openbabel or not. Helpful to set this to False
                              when reading in TSs. Defaults to ``True.``
+            embed_chiral: ``True`` to embed chiral information. Defaults to True.
             supported kwargs:
                 jensen:
                     - charge: The charge of the species. Defaults to ``0``.
                     - allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to False.
                     - use_graph: ``True`` to use networkx module for accelerate. Defaults to True.
                     - use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
-                    - embed_chiral: ``True`` to embed chiral information. Defaults to True.
+                    - forced_rdmc: Defaults to False. In rare case, we may hope to use a tailored
+                                   version of the Jensen XYZ parser, other than the one available in RDKit.
+                                   Set this argument to ``True`` to force use RDMC's implementation,
+                                   which user's may have some flexibility to modify.
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the xyz.
@@ -600,12 +605,18 @@ class RDKitMol(object):
         # Openbabel support read xyz and perceive atom connectivities
         if backend.lower() == 'openbabel':
             obmol = parse_xyz_by_openbabel(xyz, correct_CO=correctCO)
-            return cls.FromOBMol(obmol, sanitize=sanitize)
+            rdmol = cls.FromOBMol(obmol, sanitize=sanitize)
+            if embed_chiral:
+                rdmol.AssignStereochemistryFrom3D()
+            return rdmol
 
         # https://github.com/jensengroup/xyz2mol/blob/master/xyz2mol.py
         # provides an approach to convert xyz to mol
         elif backend.lower() == 'jensen':
-            mol = parse_xyz_by_jensen(xyz, correct_CO=correctCO, **kwargs)
+            mol = parse_xyz_by_jensen(xyz,
+                                      correct_CO=correctCO,
+                                      embed_chiral=embed_chiral,
+                                      **kwargs)
             return cls(mol)
 
         else:
