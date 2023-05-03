@@ -1334,8 +1334,15 @@ class RDKitMol(object):
         Args:
             confId (int): The conformer ID to be exported.
         """
-        return Atoms(positions=self.GetPositions(id=confId),
-                     numbers=self.GetAtomicNumbers())
+        atoms = Atoms(positions=self.GetPositions(id=confId),
+                      numbers=self.GetAtomicNumbers())
+        atoms.set_initial_magnetic_moments(
+                    [atom.GetNumRadicalElectrons() + 1
+                     for atom in self.GetAtoms()])
+        atoms.set_initial_charges(
+                    [atom.GetFormalCharge()
+                     for atom in self.GetAtoms()])
+        return atoms
 
     def GetFormalCharge(self):
         """
