@@ -74,14 +74,14 @@ def mol_viewer(obj: str,
     if atom_index:
         viewer.addPropertyLabels("index",
                                  "",
-                                {'fontSize':15,
-                                  'fontColor':'white',
-                                  'showBackground': False,
+                                 {'fontSize': 15,
+                                  'fontColor': 'white',
                                   'alignment': 'center',
                                   'showBackground': True,
                                   'backgroundOpacity': 0.2,
                                   'backgroundColor': 'black',
-                                 }, viewer=viewer_loc)
+                                  },
+                                 viewer=viewer_loc)
     if gv_background:
         viewer.setBackgroundColor('#e5e5ff')
     viewer.zoomTo(viewer=viewer_loc)
@@ -96,7 +96,7 @@ def conformer_viewer(mol: 'RDKitMol',
                      viewer: Optional[py3Dmol.view] = None,
                      viewer_size: tuple = (400, 400),
                      viewer_loc: Optional[tuple] = None,
-                    ) -> py3Dmol.view:
+                     ) -> py3Dmol.view:
     """
     This is a viewer for viewing multiple overlaid conformers.
 
@@ -127,7 +127,7 @@ def conformer_viewer(mol: 'RDKitMol',
     if not conf_ids:
         conf_ids = list(range(mol.GetNumConformers()))
     for i in range(len(conf_ids)):
-            viewer.addModel(mol.ToMolBlock(confId=conf_ids[i]), 'sdf')
+        viewer.addModel(mol.ToMolBlock(confId=conf_ids[i]), 'sdf')
 
     if style_spec is None:
         style_spec = {'stick': {'radius': 0.05, 'color': '#f2f2f2'},
@@ -276,7 +276,7 @@ def ts_viewer(r_mol: 'RDKitMol',
             grid_arguments['viewer_grid'] = (1, len(alignment))
         if kwargs.get('viewer_size'):
             grid_arguments['viewer_size'] = (grid_arguments['viewer_grid'][0] * kwargs['viewer_size'][0],
-                                            grid_arguments['viewer_grid'][1] * kwargs['viewer_size'][1],)
+                                             grid_arguments['viewer_grid'][1] * kwargs['viewer_size'][1],)
         grid_arguments['linked'] = kwargs.get('linked', False)
         viewer = grid_viewer(**grid_arguments)
 
@@ -313,7 +313,7 @@ def ts_viewer(r_mol: 'RDKitMol',
                                     "color": ts_bond_color[1],
                                     "radius": ts_bond_width,
                                     "dashed": True,
-                                    },**{**kwargs, **{'viewer': viewer_loc}})
+                                    }, **{**kwargs, **{'viewer': viewer_loc}})
 
         viewer.zoomTo(viewer=viewer_loc)
         i += 1
@@ -375,13 +375,13 @@ def mol_animation(obj: str,
     if atom_index:
         viewer.addPropertyLabels("index",
                                  "",
-                                {'fontSize':15,
-                                  'fontColor':'white',
-                                  'showBackground': False,
+                                 {'fontSize': 15,
+                                  'fontColor': 'white',
                                   'alignment': 'center',
                                   'showBackground': True,
                                   'backgroundOpacity': 0.2,
                                   'backgroundColor': 'black',
-                                 }, viewer=viewer_loc)
+                                  },
+                                 viewer=viewer_loc)
     viewer.zoomTo(viewer=viewer_loc)
     return viewer
