@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 This module provides class and methods for reaction path analysis.
 """
 
-from typing import List, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union
 
 import numpy as np
 from scipy import optimize
@@ -38,7 +38,7 @@ class NaiveAlign(object):
     dist = 2.0
 
     def __init__(self,
-                 coords: np.array,
+                 coords: np.ndarray,
                  atom_maps: List[List],
                  formed_bonds: List[tuple],
                  broken_bonds: List[tuple],
@@ -77,7 +77,8 @@ class NaiveAlign(object):
         Returns:
             list: A list of radius.
         """
-        return [get_max_distance_from_center(self.coords[atom_map, :]) for atom_map in self.atom_maps]
+        return [get_max_distance_from_center(self.coords[atom_map, :])
+                for atom_map in self.atom_maps]
 
     def get_reacting_atoms_in_fragments(self,) -> List[list]:
         """
@@ -99,15 +100,17 @@ class NaiveAlign(object):
                     break
         self.formed_bonds = new_formed_bonds
         reacting_atoms = set([i for bond in self.formed_bonds for i in bond])
-        return ([[i for i in atom_map if i in reacting_atoms] for atom_map in self.atom_maps],
-                [[i for i in atom_map if i not in reacting_atoms] for atom_map in self.atom_maps])
+        return ([[i for i in atom_map if i in reacting_atoms]
+                 for atom_map in self.atom_maps],
+                [[i for i in atom_map if i not in reacting_atoms]
+                 for atom_map in self.atom_maps])
 
     @classmethod
     def from_reactants(cls,
                        mols: List['RDKitMol'],
                        formed_bonds: List[tuple],
                        broken_bonds: List[tuple],
-                       conf_ids: List[int] = None,
+                       conf_ids: Optional[List[int]] = None,
                        ):
         """
         Create a complex in place by stacking the molecules together.
@@ -120,12 +123,12 @@ class NaiveAlign(object):
             conf_id2 (int, optional): The conformer id to be used in `mol2`. Defaults to 0.
         """
         if conf_ids is None:
-            conf_ids == [0] * len(mols)
+            conf_ids = [0] * len(mols)
         elif len(conf_ids) != len(mols):
             raise ValueError(f'The conf_ids\'s length (currently {len(conf_ids)}) should be '
                              f'the same as the length of moles (currently {len(mols)}.')
         coord_list = [mol.GetPostions(id=conf_id) for mol, conf_id in zip(mols, conf_ids)]
-        coords  = np.concatenate(coord_list, axis=0)
+        coords = np.concatenate(coord_list, axis=0)
         atom_maps, counter = [], 0
         for mol in mols:
             atom_maps.append(list(range(counter, counter + mol.GetNumAtoms())))
@@ -173,9 +176,9 @@ class NaiveAlign(object):
         return cls(coords, atom_maps, formed_bonds, broken_bonds)
 
     def rotate_fragment_separately(self,
-                                   *angles: np.array,
+                                   *angles: np.ndarray,
                                    about_reacting: bool = False,
-                                   ) -> np.array:
+                                   ) -> np.ndarray:
         """
         Rotate the molecule fragments in the complex by angles. The length of angles should be same as the length of
         `self.atom_maps`.
@@ -189,19 +192,19 @@ class NaiveAlign(object):
             np.array: The coordinates after the rotation operation.
         """
         coords = np.copy(self.coords)
-        for i in range(len(angles)):
+        for i, angle in enumerate(angles):
             atom_map = self.atom_maps[i]
             if about_reacting:
                 kwargs = {'about': get_centroid(coords[self.reacting_atoms[i], :])}
             else:
                 kwargs = {'about_center': True}
             coords[atom_map, :] = rotate(self.coords[atom_map, :],
-                                         angles[i],
+                                         angle,
                                          **kwargs)
         return coords
 
     def initialize_align(self,
-                         dist: float = None,
+                         dist: Optional[float] = None,
                          ):
         """
         Initialize the alignment for the reactants. Currently only available for 1 reactant and 2 reactant systems.
@@ -217,7 +220,7 @@ class NaiveAlign(object):
                                              np.zeros(3))
         elif len(self.atom_maps) == 2:
             pos = [np.zeros(3), np.array([self.dist, 0., 0.])]
-            for i in [0, 1] :
+            for i in [0, 1]:
                 atom_map = self.atom_maps[i]
                 # Make the first fragment centered at (0, 0, 0)
                 # Make the second fragment centered at (R1 + R2 + dist)
@@ -227,7 +230,7 @@ class NaiveAlign(object):
             raise NotImplementedError('Hasn\'t been implemented for 3 and 4 reactant systems.')
 
     def score_bimolecule(self,
-                         angles: np.array,
+                         angles: np.ndarray,
                          ) -> float:
         """
         Calculate the score of bimolecule alignment.
@@ -264,8 +267,8 @@ class NaiveAlign(object):
         # Square euclideans distance is used as score for each bond.
         score2 = 0.
         for bond in self.formed_bonds:
-                # Only bonds form between fragments will help decrease this score3
-                # Bonds formed inside a fragment will not change this score since molecules are rigid and the distances are fixed
+            # Only bonds form between fragments will help decrease this score3
+            # Bonds formed inside a fragment will not change this score since molecules are rigid and the distances are fixed
             score2 += np.sum((coords[bond[0], :] - coords[bond[1], :]) ** 2)
         score2 = score2 / len(self.formed_bonds) / dist_ref
 
@@ -276,33 +279,39 @@ class NaiveAlign(object):
         react_atom_center = [get_centroid(coords[self.reacting_atoms[i], :]) for i in range(2)]
         for i in [0, 1]:
             if len(self.non_reacting_atoms[i]):
-                score3 += np.sum(1 / distance.cdist(coords[self.non_reacting_atoms[i],:], react_atom_center[i-1].reshape(1, -1), 'sqeuclidean') ** 2)
+                score3 += np.sum(1 / distance.cdist(coords[self.non_reacting_atoms[i], :],
+                                                    react_atom_center[i-1].reshape(1, -1),
+                                                    'sqeuclidean') ** 2)
 
         return score1 + score2 + score3
 
     def get_alignment_coords(self,
-                             dist: float = None,):
+                             dist: Optional[float] = None,):
         """
         Get coordinates of the alignment.
 
         Args:
             dist (float, optional): The a preset distance used to separate molecules. Defaults to None meaning using the value of `self.dist`.
         """
-        self.initialize_align(dist=dist,)
+        self.initialize_align(dist=dist)
 
         if len(self.atom_maps) == 1:
             return self.coords
         elif len(self.atom_maps) == 2:
-            result = optimize.minimize(self.score_bimolecule,
-                                       2 * np.pi * (np.random.rand(6) - 0.5),
+            result = optimize.minimize(fun=self.score_bimolecule,
+                                       x0=2 * np.pi * (np.random.rand(6) - 0.5),
                                        method='BFGS',
-                                       options={'maxiter': 5000, 'disp': False})
+                                       options={'maxiter': 5000, 'disp': False}
+                                       )
             angles = result.x[:3].reshape(1, -1), result.x[3:].reshape(1, -1)
-            return self.rotate_fragment_separately(*angles, about_reacting=True)
+            return self.rotate_fragment_separately(*angles,
+                                                   about_reacting=True)
         else:
             raise NotImplementedError('Hasn\'t been implemented for 3 and 4 reactant systems.')
 
-    def __call__(self, dist: float = None,):
+    def __call__(self,
+                 dist: Optional[float] = None,
+                 ) -> np.ndarray:
         """
         Get coordinates of the alignment. Same as `self.get_alignment`
 
@@ -312,7 +321,11 @@ class NaiveAlign(object):
         return self.get_alignment_coords(dist=dist)
 
 
-def reset_pmol(r_mol, p_mol):
+def reset_pmol(r_mol: 'RDKitMol',
+               p_mol: 'RDKitMol',
+               conf_ids: Optional[list] = None,
+               inplace: bool = False,
+               ):
     """
     Reset the product mol to best align with the reactant. This procedure consists of initializing the product 3D
     structure with the reactant coordinates and then 1) minimizing the product structure with constraints for broken
@@ -325,60 +338,106 @@ def reset_pmol(r_mol, p_mol):
     Returns
         new_p_mol: The new product mol with changed coordinates
     """
-    # copy current pmol and set new positions
-    p_mol_new = p_mol.Copy(quickCopy=True)
-    p_mol_new.SetPositions(r_mol.GetPositions())
+    if conf_ids is None:  # Align all conformers
+        conf_ids = list(range(r_mol.GetNumConformers()))
 
-    # setup first minimization with broken bond constraints
-    obff = OpenBabelFF(force_field="uff")
-    obff.setup(p_mol_new)
+    if inplace:
+        p_mol_reset = p_mol
+    else:
+        p_mol_reset = p_mol.Copy(quickCopy=True)
+
+    # Todo: currently assumes conf_ids are in order 0, 1, 2, N
+    # Todo: future should reassign conformer IDs
+    p_mol_reset.EmbedMultipleNullConfs(len(conf_ids),
+                                       random=False)
+
     broken_bonds = get_broken_bonds(r_mol, p_mol)
-    r_conf = r_mol.GetConformer()
-    current_distances = [r_conf.GetBondLength(b) for b in broken_bonds]
-    [obff.add_distance_constraint(b, 1.5*d) for b, d in zip(broken_bonds, current_distances)]
-    obff.optimize(max_step=2000)
+    p_mol_step1 = p_mol_reset.Copy(confId=0)
+    for conf_id in conf_ids:
+        # copy current pmol and set new positions
+        p_mol_step1.SetPositions(r_mol.GetPositions(id=conf_id))
 
-    # second minimization without constraints
-    obff.constraints = None
-    obff.optimize(max_step=2000)
-    p_mol_intermediate = obff.get_optimized_mol()
+        # setup first minimization with broken bond constraints
+        obff = OpenBabelFF(force_field="uff")
+        obff.setup(p_mol_step1)
+        r_conf = r_mol.GetConformer(id=conf_id)
+        current_bond_distances = [r_conf.GetBondLength(bond)
+                                  for bond in broken_bonds]
+        for bond, bd in zip(broken_bonds, current_bond_distances):
+            obff.add_distance_constraint(bond, 1.5 * bd)
+        obff.optimize(max_step=2000)
 
-    # third optimization with MMFF94s
-    obff = OpenBabelFF(force_field="mmff94s")
-    obff.setup(p_mol_intermediate)
-    obff.optimize(max_step=2000)
+        # second minimization without constraints
+        obff.constraints = None
+        obff.optimize(max_step=2000)
+        p_mol_step2 = obff.get_optimized_mol()
 
-    return obff.get_optimized_mol()
+        # third optimization with MMFF94s
+        obff = OpenBabelFF(force_field="mmff94s")
+        obff.setup(p_mol_step2)
+        obff.optimize(max_step=2000)
+
+        p_mol_step3 = obff.get_optimized_mol()
+        p_mol_reset.SetPositions(p_mol_step3.GetPositions(id=0),
+                                 id=conf_id)
+
+    return p_mol_reset
 
 
-def prepare_mols(r_mol, p_mol, align_bimolecular=True):
+def prepare_mols(r_mol: 'RDKitMol',
+                 p_mol: 'RDKitMol',
+                 align_bimolecular: bool = True,
+                 conf_ids: Optional[list] = None,
+                 inplace: bool = False,
+                 ) -> Tuple['RDKitMol', 'RDKitMol']:
     """
     Prepare mols for reaction path analysis. If reactant has multiple fragments, first orient reactants in reacting
-    orientation. Then, reinitialize coordinates of product using reset_pmol function
+    orientation. Then, reinitialize coordinates of product using reset_pmol function. If conf_ids is applied, it should be
+    a list of available conformer ids in r_mol.
 
     Args:
         r_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
         p_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
         align_bimolecular (bool, optional): Whether or not to use alignment algorithm on bimolecular reactions
                                             (defaults to True)
+        conf_ids (list, optional): A list of conformer ids to align. Defaults to None.
+        inplace (bool, optional): Whether or not to modify the input reactant. Defaults to False.
 
     Returns
-        r_mol, new_p_mol: The new reactant and product mols
+        r_mol_new, p_mol_new: The new reactant and product mols
     """
-    if len(r_mol.GetMolFrags()) == 2:
-        if align_bimolecular:
-            r_mol = align_reactant_fragments(r_mol, p_mol)
-    p_mol_new = reset_pmol(r_mol, p_mol)  # reconfigure p_mol as if starting from SMILES
-    return r_mol, p_mol_new
+    if conf_ids is None:
+        conf_ids = list(range(r_mol.GetNumConformers()))
+    else:
+        assert r_mol.GetNumConformers() <= len(conf_ids), "Number of conformers in r_mol must be less than or equal to length of conf_ids"
+
+    if len(r_mol.GetMolFrags()) == 2 and align_bimolecular:
+        r_mol_new = align_reactant_fragments(r_mol=r_mol,
+                                             p_mol=p_mol,
+                                             conf_ids=conf_ids)
+    else:
+        r_mol_new = r_mol
+
+    p_mol_new = reset_pmol(r_mol=r_mol_new,
+                           p_mol=p_mol,
+                           conf_ids=conf_ids,
+                           inplace=inplace)  # reconfigure p_mol as if starting from SMILES
+    return r_mol_new, p_mol_new
 
 
-def align_reactant_fragments(r_mol, p_mol):
+def align_reactant_fragments(r_mol: 'RDKitMol',
+                             p_mol: 'RDKitMol',
+                             conf_ids: Optional[list] = None,
+                             inplace: bool = False,
+                             ) -> 'RDKitMol':
     """
     Given reactant and product mols, find details of formed and broken bonds and generate reacting reactant complex
 
     Args:
         r_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
         p_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
+        confids (list, optional): A list of conformer ids to align. Defaults to None.
+        inplace (bool, optional): Whether or not to modify the input reactant. Defaults to False.
 
     Returns
         r_mol_naive_align: The new reactant with aligned fragments
@@ -387,7 +446,20 @@ def align_reactant_fragments(r_mol, p_mol):
     if len(formed_bonds + broken_bonds) == 0:
         print("Careful! No broken or formed bonds in this reaction! Returning input reactants")
         return r_mol
+
+    if conf_ids is None:  # Align all conformers
+        conf_ids = list(range(r_mol.GetNumConformers()))
+
+    if inplace:
+        r_mol_naive_align = r_mol
+    elif len(conf_ids) == 1:
+        r_mol_naive_align = r_mol.Copy(confId=conf_ids[0])
+    else:
+        r_mol_naive_align = r_mol.Copy()
+
     naive_align = NaiveAlign.from_complex(r_mol, formed_bonds, broken_bonds)
-    r_mol_naive_align = r_mol.Copy(quickCopy=True)
-    r_mol_naive_align.SetPositions(naive_align())
+    for conf_id in conf_ids:
+        naive_align.coords = r_mol.GetPositions(id=conf_id)
+        r_mol_naive_align.SetPositions(naive_align(), id=conf_id)
+
     return r_mol_naive_align
