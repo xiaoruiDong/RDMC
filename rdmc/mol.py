@@ -297,6 +297,7 @@ class RDKitMol(object):
 
     def Copy(self,
              quickCopy: bool = False,
+             confId: int = -1,
              copy_attrs: Optional[list] = None,
              ) -> 'RDKitMol':
         """
@@ -304,14 +305,14 @@ class RDKitMol(object):
 
         Args:
             quickCopy (bool, optional): Use the quick copy mode without copying conformers. Defaults to False.
+            confId (int, optional): The conformer ID to be copied. Defaults to -1, meaning all conformers.
             copy_attrs (list, optional): copy specific attributes to the new mol
 
         Returns:
             RDKitMol: a copied molecule
         """
-        new_mol = RDKitMol(Chem.RWMol(self._mol, quickCopy))
-        if copy_attrs is None:
-            copy_attrs = []
+        new_mol = RDKitMol(Chem.RWMol(self._mol, quickCopy, confId=confId))
+        copy_attrs = copy_attrs or []
         for attr in copy_attrs:
             setattr(new_mol, attr, copy.deepcopy(getattr(self, attr)))
         return new_mol
