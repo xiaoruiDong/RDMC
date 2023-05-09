@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 This module provides class and methods for dealing with RDKit RWMol, Mol.
@@ -41,6 +41,7 @@ KEEP_RDMOL_ATTRIBUTES = ['_repr_html_',
                          '_repr_png_',
                          '_repr_svg_']
 
+
 class RDKitMol(object):
     """
     A helpful wrapper for rdchem.Mol.
@@ -51,7 +52,7 @@ class RDKitMol(object):
 
     def __init__(self,
                  mol: Union[Mol, RWMol],
-                 keepAtomMap: bool=True):
+                 keepAtomMap: bool = True):
         """
         Generate an RDKitMol Molecule instance from a RDKit ``Chem.rdchem.Mol`` or ``RWMol`` molecule.
 
@@ -90,7 +91,7 @@ class RDKitMol(object):
         self.GetSymmSSSR()
 
     def AddNullConformer(self,
-                         confId: int = None,
+                         confId: Optional[int] = None,
                          random: bool = True):
         """
         Embed null conformer to existing RDKit mol.
@@ -130,7 +131,7 @@ class RDKitMol(object):
                  prbCid: int = 0,
                  refCid: int = 0,
                  reflect: bool = False,
-                 atomMaps: list = None,
+                 atomMaps: Optional[list] = None,
                  maxIters: int = 1000,
                  weights: list = [],
                  ) -> float:
@@ -154,13 +155,13 @@ class RDKitMol(object):
         Returns:
             float: RMSD value.
         """
-        if prbMol != None and refMol != None:
+        if prbMol is not None and refMol is not None:
             raise ValueError('`refMol` and `prbMol` should not be provided simultaneously.')
-        elif prbMol == None and refMol == None and prbCid == refCid:
+        elif prbMol is None and refMol is None and prbCid == refCid:
             raise ValueError('Cannot match the same conformer for the given molecule. `prbCid` and `refCid` needs'
                              'to be different if either `prbMol` or `refMol` is not provided.')
 
-        refMol  = refMol or self
+        refMol = refMol or self
         prbMol = prbMol or self
 
         if atomMaps is None:
@@ -185,13 +186,13 @@ class RDKitMol(object):
         return rmsd
 
     def CalcRMSD(self,
-                prbMol: 'RDKitMol',
-                prbCid: int = 0,
-                refCid: int = 0,
-                reflect: bool = False,
-                atomMaps: list = None,
-                weights: list = [],
-               ):
+                 prbMol: 'RDKitMol',
+                 prbCid: int = 0,
+                 refCid: int = 0,
+                 reflect: bool = False,
+                 atomMaps: Optional[list] = None,
+                 weights: list = [],
+                 ):
         """
         Calculate the RMSD for between conformers of two molecules. Note this function will not align molecule, thus molecules geometries
         in the calculation are not translated or rotated. You can expect a larger number compared to the RMSD from AlignMol.
@@ -220,12 +221,13 @@ class RDKitMol(object):
                                            weights=weights,
                                            )
         except AttributeError:
-            raise NotImplementedError(f'The RDKit version used doesn\'t support this calculation.')
+            raise NotImplementedError('The RDKit version used doesn\'t support this calculation.')
         if reflect:
             prbMol.Reflect(id=prbCid)
         return rmsd
 
-    def AssignStereochemistryFrom3D(self, confId: int = 0):
+    def AssignStereochemistryFrom3D(self,
+                                    confId: int = 0):
         """
         Assign the chiraltype to a molecule's atoms.
         """
@@ -233,7 +235,7 @@ class RDKitMol(object):
 
     def CombineMol(self,
                    molFrag: Union['RDKitMol', 'Mol'],
-                   offset: Union[list, tuple, float, np.array] = 0,
+                   offset: Union[list, tuple, float, np.ndarray] = 0,
                    c_product: bool = False,
                    ) -> 'RDKitMol':
         """
@@ -294,7 +296,8 @@ class RDKitMol(object):
 
     def Copy(self,
              quickCopy: bool = False,
-             copy_attrs: list = None) -> 'RDKitMol':
+             copy_attrs: Optional[list] = None,
+             ) -> 'RDKitMol':
         """
         Make a copy of the RDKitMol.
 
@@ -722,7 +725,7 @@ class RDKitMol(object):
                      refMol,
                      prbCid: int = 0,
                      refCid: int = 0,
-                     atomMaps: list = None,
+                     atomMaps: Optional[list] = None,
                      maxIters: int = 1000,
                      keepBestConformer: bool = True):
         """
@@ -805,7 +808,8 @@ class RDKitMol(object):
         return get_atom_masses(self.GetAtomicNumbers())
 
     def GetConformer(self,
-                     id: int = 0) -> 'RDKitConf':
+                     id: int = 0,
+                     ) -> 'RDKitConf':
         """
         Get the embedded conformer according to ID.
 
@@ -1003,7 +1007,9 @@ class RDKitMol(object):
             self.SetVdwMatrix(threshold=threshold)
             return self._vdw_mat
 
-    def HasCollidingAtoms(self, threshold=0.4) -> np.ndarray:
+    def HasCollidingAtoms(self,
+                          threshold=0.4,
+                          ) -> bool:
         """
         Args:
             threshold: float indicating the threshold to use in the vdw matrix
@@ -1054,9 +1060,9 @@ class RDKitMol(object):
         return (mol_adj_mat == conf_adj_mat).all()
 
     def PrepareOutputMol(self,
-                          removeHs: bool = False,
-                          sanitize: bool = True,
-                          ) -> Mol:
+                         removeHs: bool = False,
+                         sanitize: bool = True,
+                         ) -> Mol:
         """
         Generate a RDKit Mol instance for output purpose, to ensure that the original molecule is not modified.
 
@@ -1085,7 +1091,7 @@ class RDKitMol(object):
         return mol
 
     def RemoveHs(self,
-                 sanitize: bool=True):
+                 sanitize: bool = True):
         """
         Remove H atoms. Useful when trying to match heavy atoms.py
 
@@ -1097,7 +1103,7 @@ class RDKitMol(object):
     def RenumberAtoms(self,
                       newOrder: Optional[list] = None,
                       updateAtomMap: bool = True,
-                      )-> 'RDKitMol':
+                      ) -> 'RDKitMol':
         """
         Return a new copy of RDKitMol that has atom (index) reordered.
 
@@ -1125,7 +1131,8 @@ class RDKitMol(object):
             [rwmol.GetAtomWithIdx(i).SetAtomMapNum(i + 1) for i in range(rwmol.GetNumAtoms())]
         return RDKitMol(rwmol)
 
-    def Sanitize(self, sanitizeOps: Optional[Union[int,'SanitizeFlags']] = Chem.rdmolops.SANITIZE_ALL):
+    def Sanitize(self,
+                 sanitizeOps: Optional[Union[int,'SanitizeFlags']] = Chem.rdmolops.SANITIZE_ALL):
         """
         Sanitize the molecule.
 
@@ -1137,7 +1144,7 @@ class RDKitMol(object):
         Chem.rdmolops.SanitizeMol(self._mol, sanitizeOps)
 
     def SetAtomMapNumbers(self,
-                          atomMap: Optional[Sequence[int]] = None,):
+                          atomMap: Optional[Sequence[int]] = None):
         """
         Set the atom mapping number. By defaults, atom indexes are used. It can be helpful
         when plotting the molecule in a 2D graph.
@@ -1168,7 +1175,8 @@ class RDKitMol(object):
         """
         return tuple(atom.GetAtomMapNum() for atom in self.GetAtoms())
 
-    def Reflect(self, id: int = 0):
+    def Reflect(self,
+                id: int = 0):
         """
         Reflect the atom coordinates of a molecule, and therefore its mirror image.
 
@@ -1276,8 +1284,8 @@ class RDKitMol(object):
                                            canonical=canonical)
 
     def ToInchi(self,
-                options="",
-                ):
+                options: str = "",
+                ) -> str:
         """
         Convert the RDKitMol to a InChI string using RDKit builtin converter.
 
@@ -1327,7 +1335,8 @@ class RDKitMol(object):
         return Chem.MolToMolBlock(self._mol, confId=confId)
 
     def ToAtoms(self,
-                confId: int = 0,):
+                confId: int = 0,
+                ) -> Atoms:
         """
         Convert RDKitMol to the ase.Atoms object.
 
@@ -1362,10 +1371,10 @@ class RDKitMol(object):
         bonds, angles, torsions = get_internal_coords(self.ToOBMol(),
                                                       nonredundant=nonredundant)
         return [[[element - 1 for element in item]
-                  for item in ic]
-                  for ic in [bonds, angles, torsions]]
+                 for item in ic]
+                for ic in [bonds, angles, torsions]]
 
-    def GetSpinMultiplicity(self):
+    def GetSpinMultiplicity(self) -> int:
         """
         Get spin multiplicity of a molecule. The spin multiplicity is calculated
         using Hund's rule of maximum multiplicity defined as 2S + 1.
@@ -1444,7 +1453,7 @@ class RDKitMol(object):
             verbose (bool): Whether to print additional information. Defaults to ``True``.
         """
         cur_multiplicity = self.GetSpinMultiplicity()
-        if  cur_multiplicity == multiplicity:
+        if cur_multiplicity == multiplicity:
             # No need to fix
             return
         elif cur_multiplicity < multiplicity:
@@ -1528,18 +1537,18 @@ class RDKitMol(object):
             verbose (int): Whether to print additional information. Defaults to ``True``.
         """
         cur_multiplicity = self.GetSpinMultiplicity()
-        if  cur_multiplicity == multiplicity:
+        if cur_multiplicity == multiplicity:
             # No need to fix
             return
         elif cur_multiplicity < multiplicity:
             if verbose:
                 print('It is not possible to match the multiplicity '
-                    'by saturating conjugated biradical sites.')
+                      'by saturating conjugated biradical sites.')
             return
         elif (cur_multiplicity - multiplicity) % 2:
             if verbose:
                 print('It is not possible to match the multiplicity '
-                    'by saturating conjugatged biradical sites.')
+                      'by saturating conjugatged biradical sites.')
             return
 
         num_dbs = (cur_multiplicity - multiplicity) / 2
@@ -1560,7 +1569,7 @@ class RDKitMol(object):
                 # problem solved in the previous run
                 break
 
-            all_paths = [list(p) for p in \
+            all_paths = [list(p) for p in
                          list(Chem.rdmolops.FindAllPathsOfLengthN(self._mol,
                                                                   path_length,
                                                                   useBonds=False))]
@@ -1585,7 +1594,7 @@ class RDKitMol(object):
                              for i in range(path_length-1)]
 
                     new_bond_types = [ORDERS.get(bond.GetBondTypeAsDouble() + (-1) ** i)
-                                    for i, bond in enumerate(bonds)]
+                                      for i, bond in enumerate(bonds)]
 
                     if any([bond_type is None for bond_type in new_bond_types]):
                         # Although a match is found, cannot decide what bond to make, pass
@@ -1609,7 +1618,7 @@ class RDKitMol(object):
                     # TODO: Change this to a log in the future
                     break
                 paths = [path for path in paths
-                        if path[0] in rad_atoms and path[-1] in rad_atoms]
+                         if path[0] in rad_atoms and path[-1] in rad_atoms]
 
         # Update things including explicity / implicit valence, etc.
             self.UpdatePropertyCache(strict=False)
@@ -1634,18 +1643,18 @@ class RDKitMol(object):
             verbose (int): Whether to print additional information. Defaults to ``True``.
         """
         cur_multiplicity = self.GetSpinMultiplicity()
-        if  cur_multiplicity == multiplicity:
+        if cur_multiplicity == multiplicity:
             # No need to fix
             return
         elif cur_multiplicity < multiplicity:
             if verbose:
                 print('It is not possible to match the multiplicity '
-                    'by saturating carbene sites.')
+                      'by saturating carbene sites.')
             return
         elif (cur_multiplicity - multiplicity) % 2:
             if verbose:
                 print('It is not possible to match the multiplicity '
-                    'by saturating carbene sites.')
+                      'by saturating carbene sites.')
             return
         elec_to_pair = cur_multiplicity - multiplicity
 
@@ -1657,7 +1666,7 @@ class RDKitMol(object):
 
         for atom in carbene_atoms:
             atom = self.GetAtomWithIdx(atom[0])
-            while atom.GetNumRadicalElectrons() >=2 and elec_to_pair:
+            while atom.GetNumRadicalElectrons() >= 2 and elec_to_pair:
                 atom.SetNumRadicalElectrons(atom.GetNumRadicalElectrons() - 2)
                 elec_to_pair -= 2
             if not elec_to_pair:
@@ -1667,7 +1676,8 @@ class RDKitMol(object):
             if verbose:
                 print('Cannot match the multiplicity by saturating carbene(-like) atoms')
 
-    def SaturateMol(self, multiplicity: int,
+    def SaturateMol(self,
+                    multiplicity: int,
                     chain_length: int = 8,
                     verbose: bool = False):
         """
@@ -1752,13 +1762,14 @@ def parse_xyz_or_smiles_list(mol_list,
         else:
             is_3D.append(True)
         finally:
-            if mult != None:
+            if mult is not None:
                 rd_mol.SaturateMol(multiplicity=mult)
             mols.append(rd_mol)
     if with_3d_info:
         return mols, is_3D
     else:
         return mols
+
 
 def generate_vdw_mat(rd_mol,
                      threshold: float = 0.4,
@@ -1841,7 +1852,7 @@ def generate_radical_resonance_structures(mol: RDKitMol,
     # Avoid generating certain resonance bonds
     for atom in mol_copy.GetAtoms():
         if (atom.GetAtomicNum() == 8 and len(atom.GetNeighbors()) > 1) or \
-            (atom.GetAtomicNum() == 7 and len(atom.GetNeighbors()) > 2):
+                (atom.GetAtomicNum() == 7 and len(atom.GetNeighbors()) > 2):
             # Avoid X-O-Y be part of the resonance and forms X-O.=Y
             # Avoid X-N(-Y)-Z be part of the resonance and forms X=N.(-Y)(-Z)
             [bond.SetIsConjugated(False) for bond in atom.GetBonds()]
