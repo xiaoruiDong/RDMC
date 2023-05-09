@@ -22,6 +22,7 @@ from rdmc.conf import RDKitConf
 from rdmc.utils import *
 
 from ase import Atoms
+import networkx as nx
 
 # Additional notes:
 # Although current .py does not contain openbabel, but actually
@@ -1353,7 +1354,34 @@ class RDKitMol(object):
                      for atom in self.GetAtoms()])
         return atoms
 
-    def GetFormalCharge(self):
+    def ToGraph(self,
+                keep_bond_order: bool = False,
+                ) -> nx.Graph:
+        """
+        Convert RDKitMol to a networkx graph.
+
+        Args:
+            keep_bond_order (bool): Whether to keep bond order information. Defaults to ``False``,
+                                    meaning treat all bonds as single bonds.
+
+        Returns:
+            nx.Graph: A networkx graph representing the molecule.
+        """
+        nx_graph = nx.Graph()
+        for atom in self.GetAtoms():
+            nx_graph.add_node(atom.GetIdx(),
+                              symbol=atom.GetSymbol(),
+                              atomic_num=atom.GetAtomicNum())
+
+        for bond in self.GetBonds():
+            bond_type = 1 if not keep_bond_order else self.GetBondTypeAsDouble()
+            nx_graph.add_edge(bond.GetBeginAtomIdx(),
+                              bond.GetEndAtomIdx(),
+                              bond_type=bond_type)
+
+        return nx_graph
+
+    def GetFormalCharge(self) -> int:
         """
         Get formal charge of the molecule.
 
