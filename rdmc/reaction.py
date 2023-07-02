@@ -16,6 +16,7 @@ from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
 from rdmc.ts import get_formed_and_broken_bonds
+from rdmc.ts import get_all_changing_bonds
 
 
 class Reaction:
@@ -203,12 +204,21 @@ class Reaction:
             try:
                 return func(self, *args, **kwargs)
             except AttributeError:
-                self._formed_bonds, self._broken_bonds = get_formed_and_broken_bonds(
+                self._formed_bonds, self._broken_bonds, self._changed_bonds = get_all_changing_bonds(
                                                             r_mol=self.reactant_complex,
                                                             p_mol=self.product_complex,
                                                             )
                 return func(self, *args, **kwargs)
         return wrapper
+
+    def bond_analysis(self):
+        """
+        Perform bond analysis on the reaction.
+        """
+        self._formed_bonds, self._broken_bonds, self._changed_bonds = get_all_changing_bonds(
+                                                            r_mol=self.reactant_complex,
+                                                            p_mol=self.product_complex,
+                                                            )
 
     @property
     @require_bond_analysis
@@ -228,6 +238,14 @@ class Reaction:
 
     @property
     @require_bond_analysis
+    def num_changed_bonds(self) -> int:
+        """
+        The number of bonds with bond order changed in the reaction.
+        """
+        return len(self._changed_bonds)
+
+    @property
+    @require_bond_analysis
     def broken_bonds(self) -> List[Tuple[int]]:
         """
         The bonds broken in the reaction.
@@ -241,6 +259,14 @@ class Reaction:
         The bonds formed in the reaction.
         """
         return self._formed_bonds
+    
+    @property
+    @require_bond_analysis
+    def changed_bonds(self) -> List[Tuple[int]]:
+        """
+        The bonds with bond order changed in the reaction.
+        """
+        return self._changed_bonds   
 
     @property
     @require_bond_analysis
@@ -249,6 +275,14 @@ class Reaction:
         The bonds broken and formed in the reaction.
         """
         return self._broken_bonds + self._formed_bonds
+    
+    @property
+    @require_bond_analysis
+    def involved_bonds(self) -> List[Tuple[int]]:
+        """
+        The bonds broken and formed in the reaction.
+        """
+        return self._broken_bonds + self._formed_bonds + self._changed_bonds
 
     @property
     @require_bond_analysis
@@ -257,7 +291,15 @@ class Reaction:
         The atoms involved in the bonds broken and formed in the reaction.
         """
         return list(set(chain(*self.active_bonds)))
-
+    
+    @property
+    @require_bond_analysis
+    def involved_atoms(self) -> List[int]:
+        """
+        The atoms involved in the bonds broken and formed in the reaction.
+        """
+        return list(set(chain(*self.involved_bonds)))
+    
     def to_smiles(self,
                   removeHs: bool = False,
                   removeAtomMap: bool = False,
