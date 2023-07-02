@@ -42,6 +42,18 @@ class Reaction:
         self.init_reactant_product(reactant=reactant, product=product)
         self.ts = ts
 
+    def __str__(self):
+        """
+        Return the reaction SMILES.
+        """
+        return self.to_smiles()
+
+    def _repr_svg_(self):
+        """
+        Return the reaction SVG.
+        """
+        return self.draw_2d()
+
     @classmethod
     def from_reactant_and_product_smiles(cls,
                                          rsmi: Union[List[str], str],
