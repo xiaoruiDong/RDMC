@@ -35,10 +35,13 @@ class SCGMetric:
 
     def check_metric(self):
 
-        min_metric = np.min(self.metric_history[-self.window:])
-        max_metric = np.max(self.metric_history[-self.window:])
-        change = (max_metric - min_metric) / np.clip(min_metric, a_min=1e-10, a_max=None)
-        return True if change <= self.threshold else False
+        if self.metric == "total conformers":
+            return False
+        else:
+            min_metric = np.min(self.metric_history[-self.window:])
+            max_metric = np.max(self.metric_history[-self.window:])
+            change = (max_metric - min_metric) / np.clip(min_metric, a_min=1e-10, a_max=None)
+            return True if change <= self.threshold else False
 
     def calculate_entropy(self, mol_data):
 

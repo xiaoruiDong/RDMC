@@ -88,7 +88,6 @@ class StochasticConformerGenerator:
                 self.logger.info(f"Iteration {self.iter}: optimizing initial guesses...")
                 opt_mol_data = self.optimizer(initial_mol_data)
             else:
-                # TODO: fix default behavior when no optimizer specified
                 opt_mol_data = []
                 for c_id in range(len(initial_mol_data)):
                     conf = initial_mol_data[c_id]["conf"]
