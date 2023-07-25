@@ -1,16 +1,37 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Modules for computing metrics to decide when to stop generating conformers
 """
 
 import numpy as np
+from typing import Optional
+
 R = 0.0019872  # kcal/(K*mol)
 
 
 class SCGMetric:
-    def __init__(self, metric="entropy", window=5, threshold=0.01, T=298):
+    """
+    A class to calculate and track the given metric ("entropy", "partition function", or "total conformers") for a molecule over time.
+    """
+
+    def __init__(
+        self,
+        metric: Optional[str] = "entropy",
+        window: Optional[int] = 5,
+        threshold: Optional[float] = 0.01,
+        T: Optional[float] = 298,
+    ):
+        """
+        Generate an SCGMetric instance.
+
+        Args:
+            metric (str): Metric to be calculated.
+            window (int): Window size to compute the change in metric (doesn't work when the metric is "total conformers").
+            threshold (float): Threshold for the change in metric to decide when to stop generating conformers.
+            T (float): Temperature for entropy or partition function calculations.
+        """
         self.metric = metric
         self.window = window
         self.threshold = threshold
@@ -38,9 +59,11 @@ class SCGMetric:
         if self.metric == "total conformers":
             return False
         else:
-            min_metric = np.min(self.metric_history[-self.window:])
-            max_metric = np.max(self.metric_history[-self.window:])
-            change = (max_metric - min_metric) / np.clip(min_metric, a_min=1e-10, a_max=None)
+            min_metric = np.min(self.metric_history[-self.window :])
+            max_metric = np.max(self.metric_history[-self.window :])
+            change = (max_metric - min_metric) / np.clip(
+                min_metric, a_min=1e-10, a_max=None
+            )
             return True if change <= self.threshold else False
 
     def calculate_entropy(self, mol_data):
