@@ -1857,7 +1857,8 @@ def generate_vdw_mat(rd_mol,
 
 def generate_radical_resonance_structures(mol: RDKitMol,
                                           unique: bool = True,
-                                          consider_atommap: bool = True):
+                                          consider_atommap: bool = True,
+                                          kekulize: bool = False):
     """
     Generate resonance structures for a radical molecule.  RDKit by design doesn't work
     for radical resonance. The approach is a temporary workaround by replacing radical electrons by positive
@@ -1869,6 +1870,8 @@ def generate_radical_resonance_structures(mol: RDKitMol,
         unique (bool, optional): Filter out duplicate resonance structures from the list. Defaults to True.
         consider_atommap (bool, atommap): If consider atom map numbers in filtration duplicates.
                                           Only effective when uniquify=True. Defaults to False.
+        kekulize (bool, optional): Whether to kekulize the molecule. Defaults to False. When True, uniquifying
+                                   process will be skipped.
 
     Returns:
         list: a list of molecules with resonance structures.
@@ -1928,17 +1931,20 @@ def generate_radical_resonance_structures(mol: RDKitMol,
         except:
             # todo: make error type more specific and add a warning message
             continue
+        if kekulize:
+            res_mol.Kekulize()
         cleaned_mols.append(res_mol)
 
     # To remove duplicate resonance structures
-    if unique:
+    if unique and not kekulize:
         cleaned_mols = get_unique_mols(cleaned_mols,
                                        consider_atommap=consider_atommap)
         # Temporary fix to remove highlight flag
         # TODO: replace with a better method after knowing the mechanism of highlighting substructures
         cleaned_mols = [RDKitMol.FromSmiles(
                             mol.ToSmiles(removeAtomMap=False,
-                                         removeHs=False)
+                                         removeHs=False,
+                                         kekule=kekulize,)
                             )
                         for mol in cleaned_mols]
     return cleaned_mols
