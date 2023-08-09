@@ -1061,6 +1061,16 @@ class RDKitMol(object):
 
         return (mol_adj_mat == conf_adj_mat).all()
 
+    def Kekulize(self,
+                 clearAromaticFlags: bool = False):
+        """
+        Kekulizes the molecule.
+
+        Args:
+            clearAromaticFlags (optional): if `True`, all atoms and bonds in the molecule will be marked non-aromatic following the kekulization. Defaults to `False`.
+        """
+        Chem.KekulizeIfPossible(self._mol, clearAromaticFlags=clearAromaticFlags)
+
     def PrepareOutputMol(self,
                          removeHs: bool = False,
                          sanitize: bool = True,
