@@ -13,7 +13,7 @@ from rdmc import RDKitMol
 from rdmc.conformer_generation.optimizer.base import BaseOptimizer
 from rdmc.conformer_generation.utils import get_binary
 from rdmc.external.logparser import ORCALog
-from rdmc.external.orca import write_orca_opt
+from rdmc.external.inpwriter import write_orca_opt
 
 orca_binary = get_binary('orca')
 
@@ -54,6 +54,7 @@ class ORCAOptimizer(BaseOptimizer):
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
+            ts (bool, optional): Whether the molecule is a TS. Defaults to False.
             multiplicity (int): The multiplicity of the molecule. Defaults to None, to use the multiplicity of mol.
             charge (int): The charge of the molecule. Defaults to None, to use the charge of mol.
 
