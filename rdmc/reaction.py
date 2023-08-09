@@ -7,9 +7,8 @@ Module for Reaction
 
 from collections import Counter
 from functools import reduce, wraps
-from itertools import chain
+from itertools import chain, product
 from typing import List, Optional, Tuple, Union
-
 
 from rdkit.Chem import rdChemReactions, rdFMCS
 from rdkit.Chem.Draw import rdMolDraw2D
