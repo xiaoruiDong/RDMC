@@ -1385,7 +1385,7 @@ class RDKitMol(object):
                               atomic_num=atom.GetAtomicNum())
 
         for bond in self.GetBonds():
-            bond_type = 1 if not keep_bond_order else self.GetBondTypeAsDouble()
+            bond_type = 1 if not keep_bond_order else bond.GetBondTypeAsDouble()
             nx_graph.add_edge(bond.GetBeginAtomIdx(),
                               bond.GetEndAtomIdx(),
                               bond_type=bond_type)
