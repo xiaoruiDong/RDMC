@@ -68,12 +68,6 @@ class SellaOptimizer(IOOptimizer):
         set up the calculator.
         """
         atoms = mol.ToAtoms(confId=subtask_id)
-        atoms.set_initial_magnetic_moments(
-                    [atom.GetNumRadicalElectrons() + 1
-                     for atom in mol.GetAtoms()])
-        atoms.set_initial_charges(
-                    [atom.GetFormalCharge()
-                     for atom in mol.GetAtoms()])
         if self.is_xtb_calc:
             atoms.calc = XTB(method=self.method)
         else:
