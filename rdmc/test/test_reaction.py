@@ -147,6 +147,8 @@ class TestReaction(unittest.TestCase):
         """
         Test the num_broken_bonds property.
         """
+        # Reaction 1
+        self.assertSequenceEqual(self.rxn1.num_broken_bonds, [(2, 7)])
         
 
 if __name__ == '__main__':
