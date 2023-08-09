@@ -40,7 +40,8 @@ class Reaction:
                                                             Defaults to None.
         """
         self.init_reactant_product(reactant=reactant, product=product)
-        self.ts = ts
+        if ts is not None:
+            self.ts = ts
 
     def __str__(self):
         """
@@ -353,6 +354,45 @@ class Reaction:
                                              **kwargs)
         return f'{rsmi}>>{psmi}'
 
+    def make_ts(self):
+        """
+        Make the transition state of the reaction based on the reactant and product.
+        This method assumes that the reactant complex and product complex are atom-mapped
+        already.
+        """
+        self.ts = self.reactant_complex.AddRedundantBonds(self.formed_bonds)
+        return self.ts
+
+    def _update_ts(self):
+        """
+        Update the transition state of the reaction. Assign reaction, reactant,
+        and product attributes to the transition state based on the reaction.
+        """
+        if not hasattr(self._ts, 'reaction'):
+            self._ts.reaction = self
+        if not hasattr(self._ts, 'reactant'):
+            self._ts.reactant = self.reactant_complex
+        if not hasattr(self._ts, 'product'):
+            self._ts.product = self.product_complex
+
+    @property
+    def ts(self):
+        """
+        The transition state of the reaction.
+        """
+        if not hasattr(self, '_ts'):
+            self.make_ts()
+        self._update_ts()
+        return self._ts
+
+    @ts.setter
+    def ts(self,
+           mol: 'RDKitMol'):
+        """
+        Set the transition state of the reaction.
+        """
+        self._ts = mol
+        self._update_ts()
     def draw_2d(self,
                 font_scale: float = 1.0,
                 highlight_by_reactant: bool = True,
