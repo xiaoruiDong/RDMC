@@ -428,19 +428,17 @@ class Reaction:
                 if atom.GetAtomMapNum():
                     atom.SetProp("atomNote", str(atom.GetAtomMapNum()))
 
-        rxn = rdChemReactions.ReactionFromSmarts(self.to_smiles(),
-                                                 useSmiles=True)
-        trxn = rdChemReactions.ChemicalReaction(rxn)
+        rxn = self.to_rdkit_reaction()
 
         # move atom maps to be annotations:
-        for mol in trxn.GetReactants():
+        for mol in rxn.GetReactants():
             move_atommaps_to_notes(mol)
-        for mol in trxn.GetProducts():
+        for mol in rxn.GetProducts():
             move_atommaps_to_notes(mol)
 
         d2d = rdMolDraw2D.MolDraw2DSVG(800, 300)
         d2d.drawOptions().annotationFontScale = font_scale
-        d2d.DrawReaction(trxn,
+        d2d.DrawReaction(rxn,
                          highlightByReactant=highlight_by_reactant)
 
         d2d.FinishDrawing()
