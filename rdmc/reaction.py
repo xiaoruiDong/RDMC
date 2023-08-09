@@ -259,14 +259,14 @@ class Reaction:
         The bonds formed in the reaction.
         """
         return self._formed_bonds
-    
+
     @property
     @require_bond_analysis
     def changed_bonds(self) -> List[Tuple[int]]:
         """
         The bonds with bond order changed in the reaction.
         """
-        return self._changed_bonds   
+        return self._changed_bonds
 
     @property
     @require_bond_analysis
@@ -275,7 +275,7 @@ class Reaction:
         The bonds broken and formed in the reaction.
         """
         return self._broken_bonds + self._formed_bonds
-    
+
     @property
     @require_bond_analysis
     def involved_bonds(self) -> List[Tuple[int]]:
@@ -291,7 +291,7 @@ class Reaction:
         The atoms involved in the bonds broken and formed in the reaction.
         """
         return list(set(chain(*self.active_bonds)))
-    
+
     @property
     @require_bond_analysis
     def involved_atoms(self) -> List[int]:
@@ -338,19 +338,27 @@ class Reaction:
                 return Reaction(rmol, pmol, ts=self.ts)
         return self
 
+    def get_reverse_reaction(self):
+        """
+        Get the reverse reaction.
+        """
+        return Reaction(self.product_complex,
+                        self.reactant_complex,
+                        ts=self.ts)
+
     def to_smiles(self,
-                  removeHs: bool = False,
-                  removeAtomMap: bool = False,
+                  remove_hs: bool = False,
+                  remove_atom_map: bool = False,
                   **kwargs,
                   ) -> str:
         """
         Convert the reaction to reaction SMILES.
         """
-        rsmi = self.reactant_complex.ToSmiles(removeAtomMap=removeAtomMap,
-                                              removeHs=removeHs,
+        rsmi = self.reactant_complex.ToSmiles(removeAtomMap=remove_atom_map,
+                                              removeHs=remove_hs,
                                               **kwargs)
-        psmi = self.product_complex.ToSmiles(removeAtomMap=removeAtomMap,
-                                             removeHs=removeHs,
+        psmi = self.product_complex.ToSmiles(removeAtomMap=remove_atom_map,
+                                             removeHs=remove_hs,
                                              **kwargs)
         return f'{rsmi}>>{psmi}'
 
@@ -393,6 +401,14 @@ class Reaction:
         """
         self._ts = mol
         self._update_ts()
+
+    def to_rdkit_reaction(self) -> rdChemReactions.ChemicalReaction:
+        """
+        Convert the reaction to RDKit ChemicalReaction.
+        """
+        return rdChemReactions.ReactionFromSmarts(self.to_smiles(),
+                                                  useSmiles=True)
+
     def draw_2d(self,
                 font_scale: float = 1.0,
                 highlight_by_reactant: bool = True,
