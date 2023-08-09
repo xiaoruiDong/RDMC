@@ -15,7 +15,7 @@ from rdkit.Chem import rdChemReactions, rdFMCS
 from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
-from rdmc.ts import get_formed_and_broken_bonds
+from rdmc.mol import generate_radical_resonance_structures
 from rdmc.ts import get_all_changing_bonds
 
 
@@ -299,7 +299,45 @@ class Reaction:
         The atoms involved in the bonds broken and formed in the reaction.
         """
         return list(set(chain(*self.involved_bonds)))
-    
+
+    def apply_resonance_correction(self,
+                                   inplace: bool = True,
+                                   kekulize: bool = True,
+                                   ) -> 'Reaction':
+        """
+        Apply resonance correction to the reactant and product complexes.
+        """
+        try:
+            rcps = generate_radical_resonance_structures(self.reactant_complex, kekulize=kekulize)
+        except:
+            rcps = [self.reactant_complex]
+        try:
+            pcps = generate_radical_resonance_structures(self.product_complex, kekulize=kekulize)
+        except:
+            pcps = [self.product_complex]
+
+        n_changed_bonds = self.num_changed_bonds
+        rmol = self.reactant_complex
+        pmol = self.product_complex
+
+        modify_flag = False
+        for rcp, pcp in product(rcps, pcps):
+            _, _, new_changed_bonds = get_all_changing_bonds(rcp, pcp)
+            if len(new_changed_bonds) < n_changed_bonds:
+                modify_flag = True
+                n_changed_bonds = len(new_changed_bonds)
+                rmol, pmol = rcp, pcp
+
+        if modify_flag:
+            if inplace:
+                self.init_reactant_product(rmol, pmol)
+                self.bond_analysis()
+                return self
+            else:
+                # todo: check if ts has 3d coordinates
+                return Reaction(rmol, pmol, ts=self.ts)
+        return self
+
     def to_smiles(self,
                   removeHs: bool = False,
                   removeAtomMap: bool = False,
