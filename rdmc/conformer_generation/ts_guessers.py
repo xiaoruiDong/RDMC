@@ -69,7 +69,7 @@ except:
     print("XTB cannot be used for AutoNEBGuesser as its ASE interface imported incorrectly. Skipping import...")
 
 # Use [pygsm-gaussian](https://pypi.org/project/pygsm-gaussian/) for DE-GSM calculation
-from rdmc.external.gaussian import write_gaussian_gsm
+from rdmc.external.inpwriter import write_gaussian_gsm
 
 # Uses XTB binary for the RMSD-PP method
 from rdmc.external.xtb_tools.opt import run_xtb_calc

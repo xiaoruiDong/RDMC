@@ -15,7 +15,7 @@ from collections import defaultdict
 from typing import Union
 
 from rdmc.utils import PERIODIC_TABLE as PT
-from rdmc.external.gaussian import GaussianLog
+from rdmc.external.logparser import GaussianLog
 
 
 def mol_to_dict(mol,

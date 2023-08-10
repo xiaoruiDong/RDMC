@@ -12,6 +12,7 @@ Hopefully, this repository can make life easier and let people know how to make 
 * openbabel
 * rdkit
 * py3dmol
+* ase
 * pygsm-gaussian
 * scine-sparrow
 

@@ -9,6 +9,7 @@ dependencies:
   - rdkit>=2021.03.1
   - openbabel>=3
   - py3dmol
+  - ase
   - networkx
   - matplotlib
   - cclib
