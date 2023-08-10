@@ -15,10 +15,13 @@ import subprocess
 from time import time
 from typing import Optional
 
+from rdmc.external.inpwriter import (write_gaussian_irc,
+                                     write_orca_irc,
+                                     write_qchem_irc)
+from rdmc.external.logparser import (GaussianLog,
+                                     QChemLog)
 from rdmc.external.xtb_tools.opt import run_xtb_calc
-from rdmc.external.orca import write_orca_irc
-from rdmc.external.gaussian import GaussianLog, write_gaussian_irc
-from rdmc.external.qchem import QChemLog, write_qchem_irc
+
 from rdmc.conformer_generation.utils import convert_log_to_mol
 
 # Check TS-Screener
@@ -203,7 +206,7 @@ class OrcaIRCVerifier(TSVerifier):
 
                 # Create and save the Orca input file
                 orca_str = write_orca_irc(ts_mol,
-                                          confId=i,
+                                          conf_id=i,
                                           method=self.method,
                                           mult=multiplicity,
                                           nprocs=self.nprocs)
@@ -333,13 +336,13 @@ class GaussianIRCVerifier(TSVerifier):
                     # Generate and save input file
                     gaussian_str = write_gaussian_irc(
                         ts_mol,
-                        confId=i,
+                        conf_id=i,
                         method=self.method,
                         direction=direction,
                         mult=multiplicity,
                         nprocs=self.nprocs,
                         memory=self.memory,
-                        fc_kw=self.fc_kw,
+                        hess=self.fc_kw,
                     )
                     with open(gaussian_input_file, "w") as f:
                         f.writelines(gaussian_str)
@@ -458,7 +461,7 @@ class QChemIRCVerifier(TSVerifier):
                 # Generate and save input file
                 qchem_str = write_qchem_irc(
                     ts_mol,
-                    confId=i,
+                    conf_id=i,
                     method=self.method,
                     basis=self.basis,
                     mult=multiplicity

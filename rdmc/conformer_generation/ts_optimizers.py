@@ -18,9 +18,11 @@ import subprocess
 from time import time
 from typing import List, Optional
 
-from rdmc.external.gaussian import GaussianLog, write_gaussian_ts_opt
-from rdmc.external.orca import write_orca_opt
-from rdmc.external.qchem import QChemLog, write_qchem_ts_opt
+from rdmc.external.inpwriter import (write_gaussian_opt,
+                                     write_orca_opt,
+                                     write_qchem_opt)
+from rdmc.external.logparser import (GaussianLog, ORCALog, QChemLog)
+
 try:
     from rdmc.external.sella import run_sella_opt
 except:
@@ -276,7 +278,8 @@ class OrcaOptimizer(TSOptimizer):
 
             # Generate and save the ORCA input file
             orca_str = write_orca_opt(mol,
-                                      confId=i,
+                                      conf_id=i,
+                                      ts=True,
                                       method=self.method,
                                       mult=multiplicity,
                                       nprocs=self.nprocs)
@@ -383,12 +386,13 @@ class GaussianOptimizer(TSOptimizer):
                 os.makedirs(ts_conf_dir, exist_ok=True)
 
             # Generate and save the gaussian input file
-            gaussian_str = write_gaussian_ts_opt(mol,
-                                                 confId=i,
-                                                 method=self.method,
-                                                 mult=multiplicity,
-                                                 nprocs=self.nprocs,
-                                                 memory=self.memory)
+            gaussian_str = write_gaussian_opt(mol,
+                                              conf_id=i,
+                                              ts=True,
+                                              method=self.method,
+                                              mult=multiplicity,
+                                              nprocs=self.nprocs,
+                                              memory=self.memory)
             gaussian_input_file = os.path.join(ts_conf_dir, "gaussian_opt.gjf")
             with open(gaussian_input_file, "w") as f:
                 f.writelines(gaussian_str)
@@ -490,11 +494,12 @@ class QChemOptimizer(TSOptimizer):
                 os.makedirs(ts_conf_dir, exist_ok=True)
 
             # Generate and save the qchem input file
-            qchem_str = write_qchem_ts_opt(mol,
-                                           confId=i,
-                                           method=self.method,
-                                           basis=self.basis,
-                                           mult=multiplicity)
+            qchem_str = write_qchem_opt(mol,
+                                        conf_id=i,
+                                        ts=True,
+                                        method=self.method,
+                                        basis=self.basis,
+                                        mult=multiplicity)
 
             qchem_input_file = os.path.join(ts_conf_dir, "qchem_opt.qcin")
             with open(qchem_input_file, "w") as f:

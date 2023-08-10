@@ -14,7 +14,8 @@ from typing import List, Tuple, Optional, Union
 
 from rdkit import Chem
 from rdmc.conformer_generation.utils import *
-from rdmc.external.gaussian import GaussianLog, write_gaussian_opt
+from rdmc.external.logparser import GaussianLog
+from rdmc.external.inpwriter import write_gaussian_opt
 try:
     from rdmc.external.xtb_tools.opt import run_xtb_calc
 except ImportError:
@@ -198,7 +199,7 @@ class GaussianOptimizer(ConfGenOptimizer):
 
             # Generate and save the gaussian input file
             gaussian_str = write_gaussian_opt(mol,
-                                              confId=i,
+                                              conf_id=i,
                                               method=self.method,
                                               mult=multiplicity,
                                               nprocs=self.nprocs,

@@ -16,10 +16,6 @@ from time import time
 from typing import Optional
 
 from rdmc.external.xtb_tools.opt import run_xtb_calc
-from rdmc.external.orca import write_orca_irc
-from rdmc.external.gaussian import GaussianLog, write_gaussian_irc
-from rdmc.external.qchem import QChemLog, write_qchem_irc
-from rdmc.conformer_generation.utils import convert_log_to_mol
 
 
 class Verifier:
