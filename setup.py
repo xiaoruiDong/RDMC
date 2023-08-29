@@ -16,7 +16,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/xiaoruiDong/RDMC",
     packages=find_packages(),
-    install_requires=['numpy', 'py3Dmol'],  # you install rdkit and openbabel from environment.yml
+    install_requires=['numpy', 'py3Dmol', 'ase'],  # you install rdkit and openbabel from environment.yml
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
