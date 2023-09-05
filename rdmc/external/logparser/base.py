@@ -623,6 +623,7 @@ class CclibLog(BaseLog):
         """
         df = self.opt_convergence
         df = df[1:] / df.loc['target'] if relative else df[1:]
+        df.index = df.index.astype('int64')
         if ax:
             ax = df.plot(logy=logy, ax=ax)
         else:
@@ -661,7 +662,7 @@ class CclibLog(BaseLog):
         def visual(idx):
             mol_viewer(sdfs[idx-1], 'sdf').update()
             ax = plt.axes()
-            self.plot_convergence(highlight_index=idx, ax=ax)
+            self.plot_opt_convergence(highlight_index=idx, ax=ax)
             plt.show()
             print(xyzs[idx-1])
 
