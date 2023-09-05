@@ -81,12 +81,7 @@ class GaussianLog(CclibLog):
                 if 'addred' in key or 'modred' in key:
                     # Here, dict.get is not used.
                     # Using loops and `in` is because users may write the keyword differently, e.g., addredundant
-                    try:
-                        # If this is not a scan, the following function will raises a Runtime Error
-                        self.get_scannames()
-                    except RuntimeError:
-                        continue
-                    else:
+                    if hasattr(self.cclib_results, "scannames"):
                         job_type.append('scan')
                     break
             else:
