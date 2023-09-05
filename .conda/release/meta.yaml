@@ -1,0 +1,41 @@
+{% set name = "rdmc" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: ../../
+
+build:
+  number: 0
+  script: {{ PYTHON }} -m pip install --no-deps -vv ./
+  noarch: python
+
+requirements:
+  host:
+    - python>=3.6
+  run:
+    - numpy
+    - scipy
+    - rdkit>=2021.03.1
+    - openbabel>=3
+    - py3dmol
+    - ase
+    - networkx
+    - matplotlib
+    - cclib
+
+test:
+  imports:
+    - rdmc
+
+about:
+  home: https://github.com/xiaoruiDong/RDMC/
+  license: MIT
+  summary: "RDMC: a python package handling Reaction Data and Molecular Conformers."
+
+extra:
+  recipe-maintainers:
+    - xiaoruiDong
