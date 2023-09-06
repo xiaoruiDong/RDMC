@@ -7,22 +7,35 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="RDMC", # Replace with your own username
-    version="0.0.1",
-    author="Xiaorui Dong",
+    name="RDMC",
+    version="0.1.0",
+    author="Xiaorui Dong, Lagnajit Pattanaik, Shih-Cheng Li, Kevin Spiekermann, Hao-Wei Pang, and William H. Green",
     author_email="xiaorui@mit.com",
-    description="An RDKit Wrapper for molecule and conformer operation",
+    description="A light-weight software package with expertise in handling Reaction Data and Molecular (including transitions states) Conformers.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/xiaoruiDong/RDMC",
     packages=find_packages(),
-    install_requires=['numpy', 'py3Dmol', 'ase'],  # you install rdkit and openbabel from environment.yml
+    install_requires=['numpy',
+                      'scipy',
+                      # RDKit and OpenBabel are canceled out to avoid duplicated
+                      # installation by PyPI
+                      # OpenBabel also has installation issues at least on Mchip Mac
+                      # 'rdkit>=2021.03.1',
+                      # 'openbabel',
+                      'networkx',
+                      'py3Dmol',
+                      'ase',
+                      'matplotlib',
+                      'cclib'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Chemistry"
     ],
+    keywords="chemistry, RDKit, molecule, conformer, reaction",
     license = "MIT License",
     python_requires='>=3.6',
+    platforms=["Any."],
 )
