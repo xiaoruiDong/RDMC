@@ -3,7 +3,15 @@
 [![Documentation Status](https://readthedocs.org/projects/rdmc/badge/?version=latest)](https://rdmc.readthedocs.io/en/latest/?badge=latest)
 [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
-A light-weight software package with expertise in handling Reaction Data and Molecular (including transitions states) Conformers. For detailed APIs, please check the [documentation](https://rdmc.readthedocs.io).
+A light-weight software package with expertise in handling Reaction Data and Molecular (including transitions states) Conformers.
+
+The package can be easily installed with conda or mamba
+
+```
+conda install -c xiaoruidong rdmc
+```
+
+For detailed APIs, please check the [documentation](https://rdmc.readthedocs.io).
 
 ## Requirements
 * python
