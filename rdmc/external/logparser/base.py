@@ -186,6 +186,28 @@ class CclibLog(BaseLog):
         """
         return cclib.io.ccread(self.path)
 
+    def _update_status(self):
+        """
+        Check job status from the metadata in the cclib_results.
+        This is a lazy implementation, only assigning `success`.
+        It is added to allow CClibLog to work with
+        logs without a specific parser like GaussianLog.
+        """
+        self._success = self.cclib_results.metadata['success']
+        self._finished = True if self._success else None
+        self._termination_time = None
+
+    def _update_job_type(self):
+        """
+        This is only a lazy implementation to allow CClibLog to work with
+        logs without a specific parser like GaussianLog.
+        """
+        self._job_type = []
+        if hasattr(self.cclib_results, 'vibfreqs'):
+            self._job_type.append('freq')
+        if hasattr(self.cclib_results, 'optstatus'):
+            self._job_type.append('opt')
+
     @property
     def multiplicity(self):
         """
@@ -578,6 +600,8 @@ class CclibLog(BaseLog):
         index = ['target']
         if self.optstatus[0] == 1:
             index += list(range(1, self.cclib_results.geovalues.shape[0] + 1))
+        if not self.opt_criteria:
+            self.opt_criteria = [f'Criterion {i}' for i in range(data.shape[1])]
         self._opt_convergence = pd.DataFrame(data=data,
                                              index=index,
                                              columns=self.opt_criteria)
@@ -635,7 +659,7 @@ class CclibLog(BaseLog):
                       colors='grey', linestyles='dashed',
                       label='ref', alpha=0.5)
         else:
-            colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+            colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink']
             for i, item in enumerate(self.opt_criteria):
                 ax.hlines(y=self.opt_convergence.loc['target', item],
                           xmin=df.index[0],
