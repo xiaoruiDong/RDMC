@@ -1,0 +1,38 @@
+name: Build and Publish Conda Package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+            shell: bash -l {0}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+            activate-environment: rdmc_env
+            environment-file: environment.yml
+            miniforge-variant: mambaforge
+            miniforge-version: latest
+            python-version: 3.7
+            auto-activate-base: true
+            use-mamba: true
+
+    - name: Conda info
+      run: |
+        conda info
+        conda list
+
+    - name: Build Conda package
+      run: |
+        mamba install -y conda-build anaconda-client boa
+        conda mambabuild --output-folder conda-bld ../.conda/release
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload --force conda-bld/noarch/**/rdmc-*.tar.bz2
