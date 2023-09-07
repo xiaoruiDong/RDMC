@@ -10,17 +10,17 @@ rdmc
 .. toctree::
    :maxdepth: 4
 
-   rdmc.external
-   rdmc.mathlib
+   external/index
+   mathlib/index
 
 
 .. toctree::
    :maxdepth: 4
 
-   rdmc.conf
-   rdmc.forcefield
-   rdmc.mol
-   rdmc.reaction
-   rdmc.ts
-   rdmc.utils
-   rdmc.view
+   conf
+   forcefield
+   mol
+   reaction
+   ts
+   utils
+   view
