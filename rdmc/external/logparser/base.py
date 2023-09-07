@@ -186,6 +186,28 @@ class CclibLog(BaseLog):
         """
         return cclib.io.ccread(self.path)
 
+    def _update_status(self):
+        """
+        Check job status from the metadata in the cclib_results.
+        This is a lazy implementation, only assigning `success`.
+        It is added to allow CClibLog to work with
+        logs without a specific parser like GaussianLog.
+        """
+        self._success = self.cclib_results.metadata['success']
+        self._finished = True if self._success else None
+        self._termination_time = None
+
+    def _update_job_type(self):
+        """
+        This is only a lazy implementation to allow CClibLog to work with
+        logs without a specific parser like GaussianLog.
+        """
+        self._job_type = []
+        if hasattr(self.cclib_results, 'vibfreqs'):
+            self._job_type.append('freq')
+        if hasattr(self.cclib_results, 'optstatus'):
+            self._job_type.append('opt')
+
     @property
     def multiplicity(self):
         """
@@ -578,6 +600,8 @@ class CclibLog(BaseLog):
         index = ['target']
         if self.optstatus[0] == 1:
             index += list(range(1, self.cclib_results.geovalues.shape[0] + 1))
+        if not self.opt_criteria:
+            self.opt_criteria = [f'Criterion {i}' for i in range(data.shape[1])]
         self._opt_convergence = pd.DataFrame(data=data,
                                              index=index,
                                              columns=self.opt_criteria)
@@ -623,6 +647,7 @@ class CclibLog(BaseLog):
         """
         df = self.opt_convergence
         df = df[1:] / df.loc['target'] if relative else df[1:]
+        df.index = df.index.astype('int64')
         if ax:
             ax = df.plot(logy=logy, ax=ax)
         else:
@@ -634,7 +659,7 @@ class CclibLog(BaseLog):
                       colors='grey', linestyles='dashed',
                       label='ref', alpha=0.5)
         else:
-            colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+            colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink']
             for i, item in enumerate(self.opt_criteria):
                 ax.hlines(y=self.opt_convergence.loc['target', item],
                           xmin=df.index[0],
@@ -646,13 +671,21 @@ class CclibLog(BaseLog):
             df.loc[[highlight_index]].plot(marker='o', ax=ax, legend=False)
         return ax
 
-    def interact_opt(self, sanitize: bool = True, backend: str = 'openbabel'):
+    def interact_opt(self,
+                     sanitize: bool = True,
+                     backend: str = 'openbabel',
+                     continuous_update: bool = False,
+                     ) -> interact:
         """
         Create a IPython interactive widget to investigate the optimization convergence.
 
         Args:
             sanitize (bool, optional): Whether to sanitize the molecule. Defaults to True.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            continuous_update (bool): Whether to update the widget continuously. Defaults to ``False``.
+
+        Returns:
+            interact
         """
         mol = self.get_mol(converged=False, sanitize=sanitize, backend=backend)
         xyzs = self.get_xyzs(converged=False)
@@ -661,7 +694,7 @@ class CclibLog(BaseLog):
         def visual(idx):
             mol_viewer(sdfs[idx-1], 'sdf').update()
             ax = plt.axes()
-            self.plot_convergence(highlight_index=idx, ax=ax)
+            self.plot_opt_convergence(highlight_index=idx, ax=ax)
             plt.show()
             print(xyzs[idx-1])
 
@@ -671,7 +704,7 @@ class CclibLog(BaseLog):
                            )
         if self.opt_convergence.shape[0] - 1 < self.num_all_geoms:
             print('Warning: The last geometry doesn\'t has convergence information due to error.')
-        return interact(visual, idx=slider)
+        return interact(visual, idx=slider, continuous_update=continuous_update)
 
     ###################################################################
     ####                                                           ####
@@ -777,14 +810,20 @@ class CclibLog(BaseLog):
                   mode_idx: int = 0,
                   frames: int = 10,
                   amplitude: float = 1.0,
-                  *args, **kwargs):
+                  *args,
+                  **kwargs,
+                  ) -> interact:
         """
         Create a Py3DMol viewer for the frequency mode.
 
-        mode_idx (int): The index of the frequency mode to display.
-        frames (int): The number of frames of the animation. The larger the value,
-                      the slower the change of the animation.
-        amplitude (float): The magnitude of the mode change.
+        Args:
+            mode_idx (int): The index of the frequency mode to display. Defaults to 0.
+            frames (int): The number of frames of the animation. The larger the value,
+                          the slower the change of the animation. Defaults to 10.
+            amplitude (float): The magnitude of the mode change. Defaults to 1.0.
+
+        Returns:
+            interact
         """
         xyz = self.get_xyzs(converged=True)[0]
         lines = xyz.splitlines()
@@ -948,13 +987,20 @@ class CclibLog(BaseLog):
     def interact_irc(self,
                      sanitize: bool = False,
                      converged: bool = True,
-                     backend: str = 'openbabel'):
+                     backend: str = 'openbabel',
+                     continuous_update: bool = False,
+                     ) -> interact:
         """
         Create a IPython interactive widget to investigate the IRC results.
 
         Args:
             sanitize (bool): Whether to sanitize the molecule. Defaults to ``False``.
+            converged (bool): Whether to only embed converged conformers to the mol. Defaults to ``True``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            continuous_update (bool): Whether to update the widget continuously. Defaults to ``False``.
+
+        Returns:
+            interact
         """
         mol = self._process_irc_mol(sanitize=sanitize, converged=converged, backend=backend)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
@@ -984,7 +1030,7 @@ class CclibLog(BaseLog):
                            description='Index',
                            )
 
-        return interact(visual, idx=slider)
+        return interact(visual, idx=slider, continuous_update=continuous_update)
 
     ###################################################################
     ####                                                           ####
@@ -1108,7 +1154,9 @@ class CclibLog(BaseLog):
                       align_scan: bool = True,
                       align_frag_idx: int = 1,
                       backend: str = 'openbabel',
-                      **kwargs):
+                      continuous_update: bool = False,
+                      **kwargs,
+                      ) -> interact:
         """
         Create a IPython interactive widget to investigate the scan results.
 
@@ -1119,6 +1167,10 @@ class CclibLog(BaseLog):
             align_frag_idx (int): Value should be either 1 or 2. Assign which of the part to be
                                   aligned. Defaults to ``1``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            continuous_update (bool): Whether to update the widget continuously. Defaults to ``False``.
+
+        Returns:
+            interact
         """
         mol = self._process_scan_mol(align_scan=align_scan,
                                      align_frag_idx=align_frag_idx,
@@ -1157,7 +1209,7 @@ class CclibLog(BaseLog):
                         description='Index',
                         )
 
-        return interact(visual, idx=slider)
+        return interact(visual, idx=slider, continuous_update=continuous_update)
 
     def plot_scan_energies(self,
                            converged: bool = True,
