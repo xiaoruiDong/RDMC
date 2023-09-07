@@ -18,9 +18,9 @@ try:
     from rdkit.Chem import rdDetermineBonds
 except ImportError:
     rdDetermineBonds = None
-    from rdmc.external.xyz2mol import parse_xyz_by_jensen as parse_xyz_by_jensen_rdmc
     # TODO: Could raise an warning says RDKit built-in xyz2mol not supported due to lower version
     # uses a rdmc-implemented version of xyz2mol
+from rdmc.external.xyz2mol import parse_xyz_by_jensen as parse_xyz_by_jensen_rdmc
 from rdkit.Chem.TorsionFingerprints import CalculateTorsionLists
 
 # Mute RDKit's error logs
