@@ -671,13 +671,21 @@ class CclibLog(BaseLog):
             df.loc[[highlight_index]].plot(marker='o', ax=ax, legend=False)
         return ax
 
-    def interact_opt(self, sanitize: bool = True, backend: str = 'openbabel'):
+    def interact_opt(self,
+                     sanitize: bool = True,
+                     backend: str = 'openbabel',
+                     continuous_update: bool = False,
+                     ) -> interact:
         """
         Create a IPython interactive widget to investigate the optimization convergence.
 
         Args:
             sanitize (bool, optional): Whether to sanitize the molecule. Defaults to True.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            continuous_update (bool): Whether to update the widget continuously. Defaults to ``False``.
+
+        Returns:
+            interact
         """
         mol = self.get_mol(converged=False, sanitize=sanitize, backend=backend)
         xyzs = self.get_xyzs(converged=False)
@@ -696,7 +704,7 @@ class CclibLog(BaseLog):
                            )
         if self.opt_convergence.shape[0] - 1 < self.num_all_geoms:
             print('Warning: The last geometry doesn\'t has convergence information due to error.')
-        return interact(visual, idx=slider)
+        return interact(visual, idx=slider, continuous_update=continuous_update)
 
     ###################################################################
     ####                                                           ####
@@ -802,14 +810,20 @@ class CclibLog(BaseLog):
                   mode_idx: int = 0,
                   frames: int = 10,
                   amplitude: float = 1.0,
-                  *args, **kwargs):
+                  *args,
+                  **kwargs,
+                  ) -> interact:
         """
         Create a Py3DMol viewer for the frequency mode.
 
-        mode_idx (int): The index of the frequency mode to display.
-        frames (int): The number of frames of the animation. The larger the value,
-                      the slower the change of the animation.
-        amplitude (float): The magnitude of the mode change.
+        Args:
+            mode_idx (int): The index of the frequency mode to display. Defaults to 0.
+            frames (int): The number of frames of the animation. The larger the value,
+                          the slower the change of the animation. Defaults to 10.
+            amplitude (float): The magnitude of the mode change. Defaults to 1.0.
+
+        Returns:
+            interact
         """
         xyz = self.get_xyzs(converged=True)[0]
         lines = xyz.splitlines()
@@ -973,13 +987,20 @@ class CclibLog(BaseLog):
     def interact_irc(self,
                      sanitize: bool = False,
                      converged: bool = True,
-                     backend: str = 'openbabel'):
+                     backend: str = 'openbabel',
+                     continuous_update: bool = False,
+                     ) -> interact:
         """
         Create a IPython interactive widget to investigate the IRC results.
 
         Args:
             sanitize (bool): Whether to sanitize the molecule. Defaults to ``False``.
+            converged (bool): Whether to only embed converged conformers to the mol. Defaults to ``True``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            continuous_update (bool): Whether to update the widget continuously. Defaults to ``False``.
+
+        Returns:
+            interact
         """
         mol = self._process_irc_mol(sanitize=sanitize, converged=converged, backend=backend)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
@@ -1009,7 +1030,7 @@ class CclibLog(BaseLog):
                            description='Index',
                            )
 
-        return interact(visual, idx=slider)
+        return interact(visual, idx=slider, continuous_update=continuous_update)
 
     ###################################################################
     ####                                                           ####
@@ -1133,7 +1154,9 @@ class CclibLog(BaseLog):
                       align_scan: bool = True,
                       align_frag_idx: int = 1,
                       backend: str = 'openbabel',
-                      **kwargs):
+                      continuous_update: bool = False,
+                      **kwargs,
+                      ) -> interact:
         """
         Create a IPython interactive widget to investigate the scan results.
 
@@ -1144,6 +1167,10 @@ class CclibLog(BaseLog):
             align_frag_idx (int): Value should be either 1 or 2. Assign which of the part to be
                                   aligned. Defaults to ``1``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
+            continuous_update (bool): Whether to update the widget continuously. Defaults to ``False``.
+
+        Returns:
+            interact
         """
         mol = self._process_scan_mol(align_scan=align_scan,
                                      align_frag_idx=align_frag_idx,
@@ -1182,7 +1209,7 @@ class CclibLog(BaseLog):
                         description='Index',
                         )
 
-        return interact(visual, idx=slider)
+        return interact(visual, idx=slider, continuous_update=continuous_update)
 
     def plot_scan_energies(self,
                            converged: bool = True,
