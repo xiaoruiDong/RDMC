@@ -11,4 +11,5 @@ rdmc.external
    :maxdepth: 4
 
    rdmc.external.rmg
-   rdmc.external.xyz2mol
+   rdmc.external.inpwriter
+   rdmc.external.logparser
