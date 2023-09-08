@@ -596,25 +596,25 @@ class ConformerFilter(object):
                          ):
         """
         The implementation of an hierarchy clustering method based on scipy.
-        It is basically defining clusters based on points within a hypercube defined by threhold.
-        More details refer to:
-            https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fclusterdata.html
+        It is basically defining clusters based on points within a hypercube defined by threshold.
+        More details refer to `scipy <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.fclusterdata.html>`_.
 
         Args:
             confs (list): A list of conformer IDs.
-            threshold (float, optional): The threshold (in degree) used for hierarchy clustering. Defaults to 5.
-            criterion (str, optional): Specifies the criterion for forming flat clusters. Valid values are ‘inconsistent’,
-                                      ‘distance’ (default), or ‘maxclust’ cluster formation algorithms
-            method (str, optional): The linkage method to use. Valid values are single, complete, average (default),
-                                    weighted, median centroid, and ward. Except median centroid (O(n^3)), others have a
-                                    computational cost scaled by O(n^2).
-            adjust_periodicity (bool, optional): Since dihedral angles have a period of 360 degrees. Defaults to ``True``.
+            threshold (float, optional): The threshold (in degree) used for hierarchy clustering. Defaults to ``5``.
+            criterion (str, optional): Specifies the criterion for forming flat clusters. Valid values are ``'inconsistent'``,
+                                      ``'distance'`` (default), or ``'maxclust'`` cluster formation algorithms.
+            method (str, optional): The linkage method to use. Valid values are ``'single'``, ``'complete'``, ``'average'`` (default),
+                                    ``'weighted'``, ``'median centroid'``, and ``'ward'``. Except median centroid (:math:`O(n^3)`), others have a
+                                    computational cost scaled by :math:`O(n^2)`.
+            adjust_periodicity (bool, optional): Since dihedral angles have a period of 360 degrees, adjusting for periodicity helps
+                                                 create better clustering results. Defaults to ``True``.
                                                  It is suggested to run twice with this value be ``True`` and ``False`` to
                                                  get a better performance.
-            as_dict (bool): Return the result as a dict object with keys for the index of clusters and values
-                            of conformer indexes (provided in confs). Otherwise, return as a list of grouped
+            as_dict (bool): Return the result as a ``dict`` object with keys for the index of clusters and values
+                            of conformer indexes (provided in ``confs``). Otherwise, return as a ``list`` of grouped
                             conformer indexes. Defaults to ``True``.
-            as_list_idx (bool): Return the indexes in the `confs` list other than the value in the ``confs``.
+            as_list_idx (bool): Return the indexes in the ``confs`` list other than the value in the ``confs``.
                                 Default to ``False``.
         """
         # Generate torsional matrix
