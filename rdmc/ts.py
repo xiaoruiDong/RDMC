@@ -115,18 +115,20 @@ def clean_ts(r_mol: 'RDKitMol',
              p_mol: 'RDKitMol',
              ts_mol: 'RDKitMol'):
     """
-    Cleans transition state `ts_mol` by removing all bonds that correspond to broken or formed bonds.
-    `r_mol`, `p_mol`, and `ts_mol` need to be atom mapped. Bond order changes are not considered.
+    Cleans transition state ``ts_mol`` by removing all bonds that correspond to broken or formed bonds.
+    ``r_mol``, ``p_mol``, and ``ts_mol`` need to be atom mapped. Bond order changes are not considered.
 
     Args:
         r_mol (RDKitMol): the reactant complex.
         p_mol (RDKitMol): the product complex.
-        ts_mol (RDKitMol): the transition state corresponding to `r_mol` and `p_mol`.
+        ts_mol (RDKitMol): the transition state corresponding to ``r_mol`` and ``p_mol``.
 
     Returns:
-        RDKitMol: an edited version of ts_mol, which is the original `ts_mol` with cleaned bonding.
-        list: broken bonds: A list of length-2 tuples that contains the atom indexes of the bonds broken in the rxn.
-              formed bonds: A list of length-2 tuples that contains the atom indexes of the bonds formed in the rxn.
+        RDKitMol: an edited version of ``ts_mol``, which is the original ``ts_mol`` with cleaned bonding.
+        list:
+
+            - broken bonds: A list of length-2 tuples that contains the atom indexes of the bonds broken in the reaction.
+            - formed bonds: A list of length-2 tuples that contains the atom indexes of the bonds formed in the reaction.
     """
     r_bonds, p_bonds, ts_bonds = _get_bonds_as_sets(r_mol, p_mol, ts_mol)
     formed_bonds, broken_bonds = p_bonds - r_bonds, r_bonds - p_bonds
@@ -225,27 +227,27 @@ def guess_rxn_from_normal_mode(xyz: np.array,
                                backend: str = 'openbabel',
                                multiplicity: int = 1):
     """
-    Guess reaction according to the normal mode analysis for a TS.
+    Guess reaction according to the normal mode analysis for a transition state.
 
     Args:
         xyz (np.array): The xyz coordinates of the transition state. It should have a
-                        size of N x 3.
-        symbols (np.array): The symbols of each atoms. It should have a size of N.
+                        size of :math:`N \\times 3`.
+        symbols (np.array): The symbols of each atoms. It should have a size of :math:`N`.
         disp (np.array): The displacement of the normal mode. It should have a size of
-                        N x 3.
+                         :math:`N \\times 3`.
         amplitude (float): The amplitude of the motion. If a single value is provided then the guess
-                           will be unique (if available). 0.25 will be the default. Otherwise, a list
+                           will be unique (if available). ``0.25`` will be the default. Otherwise, a list
                            can be provided, and all possible results will be returned.
-        weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
-                              If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
-                              The concern is that light atoms (e.g., H) tend to have larger motions
-                              than heavier atoms.
+        weights (bool or np.array): If ``True``, use the :math:`\\sqrt(atom mass)` as a scaling factor to the displacement.
+                                    If ``False``, use the identity weights. If a :math:`N \\times 1` ``np.ndarray`` is provided,
+                                    then use the provided weights. The concern is that light atoms (e.g., H)
+                                    tend to have larger motions than heavier atoms.
         backend (str): The backend used to perceive xyz. Defaults to ``'openbabel'``.
-        multiplicity (int): The spin multiplicity of the transition states. Defaults to 1.
+        multiplicity (int): The spin multiplicity of the transition states. Defaults to ``1``.
 
     Returns:
-        list: a list of potential reactants
-        list: a list of potential products
+        list: Potential reactants
+        list: Potential products
     """
     if isinstance(amplitude, float):
         amplitude = [amplitude]
@@ -310,11 +312,11 @@ def examine_normal_mode(r_mol: RDKitMol,
                            size of N x 3.
         disp (np.array): The displacement of the normal mode. It should have a size of
                          N x 3.
-        amplitude (float): The amplitude of the motion. Defaults to 0.25.
+        amplitude (float): The amplitude of the motion. Defaults to ``0.25``.
         weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
-                              If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
-                              The concern is that light atoms (e.g., H) tend to have larger motions
-                              than heavier atoms.
+                                    If ``False``, use the identity weights. If a N x 1 ``np.array`` is provided, then
+                                    The concern is that light atoms (e.g., H) tend to have larger motions
+                                    than heavier atoms.
         verbose (bool): If print detailed information. Defaults to ``True``.
         as_factors (bool): If return the value of factors instead of a judgment.
                            Defaults to ``False``
