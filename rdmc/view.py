@@ -102,25 +102,30 @@ def conformer_viewer(mol: 'RDKitMol',
 
     Args:
         mol (RDKitMol): An RDKitMol object with embedded conformers.
-        conf_ids (list, optional): A list of conformer ids (int) to be overlaid and viewed.
+        conf_ids (list, optional): A list of conformer ids (as ``int``) to be overlaid and viewed.
                                    If not provided, all embedded conformers will be used.
         highlight_ids (list, optional): It is possible to highlight some of the conformers while greying out
                                         other conformers by providing the conformer IDs you want to highlight.
         opacity (float, optional): Set the opacity of the non-highlighted conformers and is only used with the highlighting feature.
-                                   the value should be a float number between 0 to 1. The default value is 0.5.
-                                   Values below 0.3 may be hard to see.
-        style_spec (dict, Optional): Style of the shown molecule. The default setting is
-                                     {'stick': {'radius': 0.05, 'color': '#f2f2f2'},
-                                      'sphere': {'scale': 0.25},}
+                                   the value should be a ``float`` between ``0.0`` to ``1.0``. The default value is ``0.5``.
+                                   Values below ``0.3`` may be hard to see.
+        style_spec (dict, Optional): Style of the shown molecule. The default setting is:
+
+                                     .. code-block:: javascript
+                                     
+                                        {'stick': {'radius': 0.05,
+                                                   'color': '#f2f2f2'},
+                                         'sphere': {'scale': 0.25},}
+
                                      which set both bond width/color and atom sizes. For more details, please refer to the
-                                     original APIs in 3DMol.js.
+                                     original APIs in `3DMol.js <https://3dmol.org/doc/tutorial-home.html>`_.
         viewer (py3Dmol.view, optional): Provide an existing viewer, instead of create a new one.
         viewer_size (tuple, optional): Set the viewer size. Only useful if ``viewer`` is not provided.
-                                       Defaults to (400, 400).
-        viewer_loc (tuple, optional): The location of the viewer in the grid. E.g., (0, 1). Defaults to None.
+                                       Defaults to ``(400, 400)``.
+        viewer_loc (tuple, optional): The location of the viewer in the grid. E.g., ``(0, 1)``. Only useful if ``viewer`` is not provided.
 
     Returns:
-        py3Dmol.view: The molecule viewer.
+        py3Dmol.view: The conformer viewer.
     """
     if not viewer:
         viewer = py3Dmol.view(width=viewer_size[0], height=viewer_size[1])
