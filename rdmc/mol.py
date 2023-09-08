@@ -1481,8 +1481,10 @@ class RDKitMol(object):
                                  verbose: bool = True):
         """
         A method help to saturate 1,2 biradicals to match the given
-        molecule spin multiplicity. E.g.,
+        molecule spin multiplicity. E.g.::
+
             *C - C* => C = C
+
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1563,8 +1565,10 @@ class RDKitMol(object):
         """
         A method help to saturate biradicals that have conjugated double bond in between
         to match the given molecule spin multiplicity. E.g, 1,4 biradicals can be saturated
-        if there is a unsaturated bond between them:
+        if there is a unsaturated bond between them::
+
             *C - C = C - C* => C = C - C = C
+
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1572,8 +1576,9 @@ class RDKitMol(object):
         Args:
             multiplicity (int): The target multiplicity.
             chain_length (int): How long the conjugated double bond chain is.
-                                A larger value will result in longer time. defaults to 8.
-            verbose (int): Whether to print additional information. Defaults to ``True``.
+                                A larger value will result in longer computational time.
+                                Defaults to ``8``.
+            verbose (bool): Whether to print additional information. Defaults to ``True``.
         """
         cur_multiplicity = self.GetSpinMultiplicity()
         if cur_multiplicity == multiplicity:
@@ -1671,8 +1676,10 @@ class RDKitMol(object):
                         verbose: bool = True):
         """
         A method help to saturate carbenes and nitrenes to match the given
-        molecule spin multiplicity:
+        molecule spin multiplicity::
+
             *-C-* (triplet) => C-(**) (singlet)
+
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1721,12 +1728,14 @@ class RDKitMol(object):
                     verbose: bool = False):
         """
         A method help to saturate the molecule to match the given
-        molecule spin multiplicity. This is just a wrapper to call both
-        `SaturateBiradicalSites12`, `SaturateBiradicalSitesCDB`, and
-        `SaturateCarbene`:
+        molecule spin multiplicity. This is just a wrapper to call
+        :func:`SaturateBiradicalSites12`, :func:`SaturateBiradicalSitesCDB`, and
+        :func:`SaturateCarbene`::
+
             *C - C* => C = C
             *C - C = C - C* => C = C - C = C
             *-C-* (triplet) => C-(**) (singlet)
+
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1735,6 +1744,7 @@ class RDKitMol(object):
             multiplicity (int): The target multiplicity.
             chain_length (int): How long the conjugated double bond chain is.
                                 A larger value will result in longer time.
+                                Defaults to ``8``.
             verbose (bool): Whether to print intermediate information.
                             Defaults to ``False``.
         """
