@@ -1,5 +1,5 @@
 rdmc.reaction
-========
+=============
 
 .. automodule:: rdmc.reaction
    :members:

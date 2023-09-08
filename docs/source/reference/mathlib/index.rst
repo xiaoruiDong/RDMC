@@ -1,5 +1,5 @@
 rdmc.mathlib
-=========
+============
 
 .. automodule:: rdmc.mathlib
    :members:

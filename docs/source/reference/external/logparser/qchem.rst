@@ -1,7 +1,7 @@
-rdmc.external.logparser.utils
-=================
+rdmc.external.logparser.qchem
+==============================
 
-.. automodule:: rdmc.external.logparser.utils
+.. automodule:: rdmc.external.logparser.qchem
    :members:
    :undoc-members:
    :show-inheritance:

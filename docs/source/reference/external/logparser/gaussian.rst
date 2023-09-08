@@ -1,5 +1,5 @@
 rdmc.external.logparser.gaussian
-=================
+=================================
 
 .. automodule:: rdmc.external.logparser.gaussian
    :members:
