@@ -12,4 +12,5 @@ rdmc.conformer_generation
    embedding_geometries/index
    geometry_optimization/index
    postprocessing/index
+   workflow/index
    utils

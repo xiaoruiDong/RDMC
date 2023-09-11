@@ -2,15 +2,16 @@
 #-*- coding: utf-8 -*-
 
 """
-Modules for ts conformer generation workflows
+Modules for TS conformer generation workflows.
 """
 
-import os
-import numpy as np
 import logging
-import random
+import os
 import pickle
 from typing import List, Optional, Union
+import random
+
+import numpy as np
 
 from rdmc.conformer_generation.utils import *
 from rdmc.conformer_generation.generators import StochasticConformerGenerator
@@ -21,12 +22,47 @@ from rdmc.conformer_generation.align import prepare_mols
 class TSConformerGenerator:
     """
     The class used to define a workflow for generating a set of TS conformers.
+
+    Args:
+        rxn_smiles (str): The SMILES of the reaction. The SMILES should be formatted similar to ``"reactant1.reactant2>>product1.product2."``.
+        multiplicity (int, optional): The spin multiplicity of the reaction. The spin multiplicity will be interpreted from the reaction smiles if this
+                                      is not given by the user.
+        use_smaller_multiplicity (bool, optional): Whether to use the smaller multiplicity when the interpreted multiplicity from the reaction smiles is
+                                                   inconsistent between reactants and products. Defaults to ``True``.
+        embedder (TSInitialGuesser, optional): Instance of a :obj:`TSInitialGuesser <rdmc.conformer_generation.ts_guessers.TSInitialGuesser>`. Available options are 
+                                               :obj:`TSEGNNGuesser <rdmc.conformer_generation.ts_guessers.TSEGNNGuesser>`,
+                                               :obj:`TSGCNGuesser <rdmc.conformer_generation.ts_guessers.TSGCNGuesser>`,
+                                               :obj:`AutoNEBGuesser <rdmc.conformer_generation.ts_guessers.AutoNEBGuesser>`,
+                                               :obj:`RMSDPPGuesser <rdmc.conformer_generation.ts_guessers.RMSDPPGuesser>`, and
+                                               :obj:`DEGSMGuesser <rdmc.conformer_generation.ts_guessers.DEGSMGuesser>`.
+        optimizer (TSOptimizer, optional): Instance of a :obj:`TSOptimizer <rdmc.conformer_generation.ts_optimizers.TSOptimizer>`. Available options are
+                                           :obj:`SellaOptimizer <rdmc.conformer_generation.ts_optimizers.SellaOptimizer>`,
+                                           :obj:`OrcaOptimizer <rdmc.conformer_generation.ts_optimizers.OrcaOptimizer>`,
+                                           :obj:`GaussianOptimizer <rdmc.conformer_generation.ts_optimizers.GaussianOptimizer>`, and
+                                           :obj:`QChemOptimizer <rdmc.conformer_generation.ts_optimizers.QChemOptimizer>`.
+        pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization.
+                                          Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
+                                          :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                          :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+        verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer.
+                                                                 Instance of a :obj:`TSVerifier <rdmc.conformer_generation.ts_verifiers.TSVerifier>`.
+                                                                 Available options are
+                                                                 :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.ts_verifiers.XTBFrequencyVerifier>`,
+                                                                 :obj:`GaussianIRCVerifier <rdmc.conformer_generation.ts_verifiers.GaussianIRCVerifier>`,
+                                                                 :obj:`OrcaIRCVerifier <rdmc.conformer_generation.ts_verifiers.OrcaIRCVerifier>`,
+                                                                 :obj:`QChemIRCVerifier <rdmc.conformer_generation.ts_verifiers.QChemIRCVerifier>`, and
+                                                                 :obj:`TSScreener <rdmc.conformer_generation.ts_verifiers.TSScreener>`.
+        sampler (TorisonalSampler, optional): The sampler used to do automated conformer search for the obtained TS conformer. You can use
+                                              :obj:`TorsionalSampler <rdmc.conformer_generation.torsional_sampling.TorsionalSampler>` to define your own sampler.
+        final_modules (TSOptimizer, TSVerifier or list of TSVerifiers, optional): The final modules can include optimizer in different LoT than previous
+                                                                                  one and verifier(s) used to verify the obtained TS conformer.
+        save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation. Defaults to ``None``.
     """
 
     def __init__(self,
                  rxn_smiles: str,
                  multiplicity: Optional[int] = None,
-                 use_smaller_multiplicity: Optional[bool] = True,
+                 use_smaller_multiplicity: bool = True,
                  embedder: Optional['TSInitialGuesser'] = None,
                  optimizer: Optional['TSOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
@@ -36,32 +72,48 @@ class TSConformerGenerator:
                  save_dir: Optional[str] = None,
                  ) -> 'TSConformerGenerator':
         """
-        Initiate the TS conformer generator object. The best practice is set all information here
+        The class used to define a workflow for generating a set of TS conformers.
 
         Args:
-            rxn_smiles (str): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
+            rxn_smiles (str): The SMILES of the reaction. The SMILES should be formatted similar to ``"reactant1.reactant2>>product1.product2."``.
             multiplicity (int, optional): The spin multiplicity of the reaction. The spin multiplicity will be interpreted from the reaction smiles if this
-                                          is not given by the user.
+                                        is not given by the user.
             use_smaller_multiplicity (bool, optional): Whether to use the smaller multiplicity when the interpreted multiplicity from the reaction smiles is
-                                                       inconsistent.
-            embedder (TSInitialGuesser, optional): The embedder used to generate TS initial guessers. Available options are `TSEGNNGuesser`, `TSGCNGuesser`.
-                                                   `RMSDPPGuesser`, and `AutoNEBGuesser`.
-            optimizer (TSOptimizer, optional): The optimizer used to optimize TS geometries. Available options are `SellaOptimizer`, `OrcaOptimizer`, and
-                                               `GaussianOptimizer`.
-            pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
-                                              `CRESTPruner` and `TorsionPruner`.
-            verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer. Available
-                                                                     options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
-            sampler (TorisonalSampler, optional): The sampler used to do automated conformer search for the obtained TS conformer.
+                                                       inconsistent between reactants and products. Defaults to ``True``.
+            embedder (TSInitialGuesser, optional): Instance of a :obj:`TSInitialGuesser <rdmc.conformer_generation.ts_guessers.TSInitialGuesser>`. Available options are
+                                                   :obj:`TSEGNNGuesser <rdmc.conformer_generation.ts_guessers.TSEGNNGuesser>`,
+                                                   :obj:`TSGCNGuesser <rdmc.conformer_generation.ts_guessers.TSGCNGuesser>`,
+                                                   :obj:`AutoNEBGuesser <rdmc.conformer_generation.ts_guessers.AutoNEBGuesser>`,
+                                                   :obj:`RMSDPPGuesser <rdmc.conformer_generation.ts_guessers.RMSDPPGuesser>`, and
+                                                   :obj:`DEGSMGuesser <rdmc.conformer_generation.ts_guessers.DEGSMGuesser>`.
+            optimizer (TSOptimizer, optional): Instance of a :obj:`TSOptimizer <rdmc.conformer_generation.ts_optimizers.TSOptimizer>`. Available options are
+                                               :obj:`SellaOptimizer <rdmc.conformer_generation.ts_optimizers.SellaOptimizer>`,
+                                               :obj:`OrcaOptimizer <rdmc.conformer_generation.ts_optimizers.OrcaOptimizer>`,
+                                               :obj:`GaussianOptimizer <rdmc.conformer_generation.ts_optimizers.GaussianOptimizer>`, and
+                                               :obj:`QChemOptimizer <rdmc.conformer_generation.ts_optimizers.QChemOptimizer>`.
+            pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization.
+                                              Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
+                                              :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                              :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+            verifiers (TSVerifier or list of TSVerifiers, optional): The verifier or a list of verifiers used to verify the obtained TS conformer.
+                                                                     Instance of a :obj:`TSVerifier <rdmc.conformer_generation.ts_verifiers.TSVerifier>`.
+                                                                     Available options are
+                                                                     :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.ts_verifiers.XTBFrequencyVerifier>`,
+                                                                     :obj:`GaussianIRCVerifier <rdmc.conformer_generation.ts_verifiers.GaussianIRCVerifier>`,
+                                                                     :obj:`OrcaIRCVerifier <rdmc.conformer_generation.ts_verifiers.OrcaIRCVerifier>`,
+                                                                     :obj:`QChemIRCVerifier <rdmc.conformer_generation.ts_verifiers.QChemIRCVerifier>`, and
+                                                                     :obj:`TSScreener <rdmc.conformer_generation.ts_verifiers.TSScreener>`.
+            sampler (TorisonalSampler, optional): The sampler used to do automated conformer search for the obtained TS conformer. You can use
+                                                  :obj:`TorsionalSampler <rdmc.conformer_generation.torsional.TorsionalSampler>` to define your own sampler.
             final_modules (TSOptimizer, TSVerifier or list of TSVerifiers, optional): The final modules can include optimizer in different LoT than previous
                                                                                       one and verifier(s) used to verify the obtained TS conformer.
-            save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
+            save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation. Defaults to ``None``.
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.rxn_smiles = rxn_smiles
         if multiplicity:
-           self.multiplicity = multiplicity
-        else: 
+            self.multiplicity = multiplicity
+        else:
             r_smi, p_smi = rxn_smiles.split(">>")
             r_mol = RDKitMol.FromSmiles(r_smi)
             p_mol = RDKitMol.FromSmiles(p_smi)
@@ -99,10 +151,10 @@ class TSConformerGenerator:
 
         Args:
             smiles (str): The reactant or product complex in SMILES. if multiple molecules involve,
-                          use `.` to separate them.
+                          use ``"."`` to separate them.
 
         Returns:
-            An RDKitMol of the reactant or product complex with 3D geometry embedded.
+            RDKitMol: An RDKitMol of the reactant or product complex with 3D geometry embedded.
         """
         # Split the complex smiles into a list of molecule smiles
         smiles_list = smiles.split(".")
@@ -166,11 +218,11 @@ class TSConformerGenerator:
 
         Args:
             rxn_smiles (str): The reaction smiles of the reaction.
-            n_conformers (int, optional): The maximum number of conformers to be generated. Defaults to 20.
-            shuffle (Bool, optional): Whether or not to shuffle the embedded mols.
+            n_conformers (int, optional): The maximum number of conformers to be generated. Defaults to ``20``.
+            shuffle (bool, optional): Whether or not to shuffle the embedded mols. Defaults to ``False``.
 
         Returns:
-            list
+            list: A list of reactant/product pairs in ``RDKitMol``.
         """
         # Convert SMILES to reactant and product complexes
         r_smi, p_smi = rxn_smiles.split(">>")
@@ -234,16 +286,16 @@ class TSConformerGenerator:
     def set_filter(self,
                    ts_mol: 'RDKitMol',
                    n_conformers: int,
-                   ) -> list:
+                   ) -> RDKitMol:
         """
-        Assign the indices of reactions to track wheter the conformers are passed to the following steps.
+        Assign the indices of reactions to track whether the conformers are passed to the following steps.
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
             n_conformers (int): The maximum number of conformers to be passed to the following steps.
 
         Returns:
-            An RDKitMol with KeepIDs having `True` values to be passed to the following steps.
+            RDKitMol: with ``KeepIDs`` as a list of ``True`` and ``False`` indicating whether a conformer passes the check.
         """
         energy_dict = ts_mol.energy
         KeepIDs = ts_mol.KeepIDs
@@ -259,15 +311,19 @@ class TSConformerGenerator:
                  n_conformers: int = 20,
                  n_verifies: int = 20,
                  n_sampling: int = 1,
-                 n_refines: int = 1):
+                 n_refines: int = 1,
+                 ) -> 'RDKitMol':
         """
         Run the workflow of TS conformer generation.
 
         Args:
-            n_conformers (int): The maximum number of conformers to be generated. Defaults to 20.
-            n_verifies (int): The maximum number of conformers to be passed to the verifiers.  Defaults to 20.
-            n_sampling (int): The maximum number of conformers to be passed to the torsional sampling. Defaults to 1.
-            n_refines (int): The maximum number of conformers to be passed to the final modeuls. Defaults to 1.
+            n_conformers (int): The maximum number of conformers to be generated. Defaults to ``20``.
+            n_verifies (int): The maximum number of conformers to be passed to the verifiers.  Defaults to ``20``.
+            n_sampling (int): The maximum number of conformers to be passed to the torsional sampling. Defaults to ``1``.
+            n_refines (int): The maximum number of conformers to be passed to the final modules. Defaults to ``1``.
+
+        Returns:
+            RDKitMol: The TS in RDKitMol object with 3D geometries embedded.
         """
 
         if self.save_dir:

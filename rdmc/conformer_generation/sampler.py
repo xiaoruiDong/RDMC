@@ -16,7 +16,6 @@ from typing import List, Tuple, Optional, Union
 import numpy as np
 from scipy import constants
 from rdkit import Chem
-import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
@@ -25,49 +24,83 @@ from rdmc.conformer_generation.utils import mol_to_dict
 from rdmc.mathlib.greedymin import search_minimum
 from rdmc.ts import get_formed_and_broken_bonds
 
-from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED
-from xtb.utils import get_method, _methods
-from xtb.interface import Calculator
+try:
+    from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED
+    from xtb.utils import get_method, _methods
+    from xtb.interface import Calculator
+except ImportError:
+    print("No xtb-python installation detected. Skipping import...")
 
 try:
     import scine_sparrow
     import scine_utilities as su
 except:
-    print("No scine_sparrow installation deteced. Skipping import...")
+    print("No scine_sparrow installation detected. Skipping import...")
 
 
 class TorsionalSampler:
     """
     A class to find possible conformers by sampling the PES for each torsional pair.
-    You have to have the Spharrow and xtb-python packages installed to run this workflow.
+    You have to have the `Sparrow <https://github.com/qcscine/sparrow>`_ and `xtb-python <https://github.com/grimme-lab/xtb-python>`_ packages installed to run this workflow.
+
+    Args:
+        method (str, optional): The method to be used for automated conformer search. Only the methods available in Spharrow and xtb-python can be used.
+                                Defaults to ``"GFN2-xTB"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
+        n_point_each_torsion (float, optional): Number of points to be sampled along each rotational mode. Defaults to ``45.``.
+        n_dimension (int, optional): Number of dimensions. Defaults to ``2``. If ``-1`` is assigned, the number of dimension would be the number of rotatable bonds.
+        optimizer (ConfGenOptimizer or TSOptimizer, optional): The optimizer used to optimize TS or stable specials geometries. Available options for
+                                                               `TSOptimizer <rdmc.conformer_generation.ts_optimizers.TSOptimizer>`
+                                                               are :obj:`SellaOptimizer <rdmc.conformer_generation.ts_optimizers.SellaOptimizer>`,
+                                                               :obj:`OrcaOptimizer <rdmc.conformer_generation.ts_optimizers.OrcaOptimizer>`,
+                                                               and :obj:`GaussianOptimizer <rdmc.conformer_generation.ts_optimizers.GaussianOptimizer>`.
+        pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
+                                          :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                          :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+        verifiers (TSVerifier, Verifier, list of TSVerifiers or list of Verifiers, optional): The verifier or a list of verifiers used to verify the obtained conformer. Available
+                                                                                              options are
+                                                                                              :obj:`GaussianIRCVerifier <rdmc.conformer_generation.ts_verifiers.GaussianIRCVerifier>`,
+                                                                                              :obj:`OrcaIRCVerifier <rdmc.conformer_generation.ts_verifiers.OrcaIRCVerifier>`, and
+                                                                                              :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.ts_verifiers.XTBFrequencyVerifier>`.
     """
 
-    def __init__(
-        self,
-        method: str = "GFN2-xTB",
-        nprocs: int = 1,
-        memory: int = 1,
-        n_point_each_torsion: int = 45,
-        n_dimension: int = 2,
-        optimizer: Optional[Union["XTBOptimizer", "TSOptimizer", "Optimizer"]] = None,
-        pruner: Optional["ConfGenPruner"] = None,
-        verifiers: Optional[Union["TSVerifier", "Verifier", List["TSVerifier"], List["Verifier"]]] = None,
-    ):
+    def __init__(self,
+                 method: str = "GFN2-xTB",
+                 nprocs: int = 1,
+                 memory: int = 1,
+                 n_point_each_torsion: int = 45,
+                 n_dimension: int = 2,
+                 optimizer: Optional[Union["ConfGenOptimizer","TSOptimizer"]] = None,
+                 pruner: Optional["ConfGenPruner"] = None,
+                 verifiers: Optional[Union["TSVerifier",
+                                           "Verifier",
+                                           List["TSVerifier"],
+                                           List["Verifier"]]] = None,
+                 ):
         """
         Initiate the TorsionalSampler class object.
+
         Args:
             method (str, optional): The method to be used for automated conformer search. Only the methods available in Spharrow and xtb-python can be used.
-                                    Defaults to GFN2-xTB.
-            nprocs (int, optional): The number of processors to use. Defaults to 1.
-            memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
-            n_point_each_torsion (int): Number of points to be sampled along each rotational mode. Defaults to 45.
-            n_dimension (int): Number of dimensions. Defaults to 2. If `-1` is assigned, the n_dimension would be the number of rotatable bonds.
-            optimizer (XTBOptimizer, TSOptimizer or Optimizer, optional): The optimizer used to optimize TS or stable specials geometries. Available options for `TSOptimizer`
-                                                                          are `SellaOptimizer`, `OrcaOptimizer`, and `GaussianOptimizer`.
+                                    Defaults to ``"GFN2-xTB"``.
+            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+            memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
+            n_point_each_torsion (float, optional): Number of points to be sampled along each rotational mode. Defaults to ``45.``.
+            n_dimension (int, optional): Number of dimensions. Defaults to ``2``. If ``-1`` is assigned, the number of dimension would be the number of rotatable bonds.
+            optimizer (ConfGenOptimizer or TSOptimizer, optional): The optimizer used to optimize TS or stable specials geometries. Available options for
+                                                                `TSOptimizer <rdmc.conformer_generation.ts_optimizers.TSOptimizer>`
+                                                                are :obj:`SellaOptimizer <rdmc.conformer_generation.ts_optimizers.SellaOptimizer>`,
+                                                                :obj:`OrcaOptimizer <rdmc.conformer_generation.ts_optimizers.OrcaOptimizer>`,
+                                                                and :obj:`GaussianOptimizer <rdmc.conformer_generation.ts_optimizers.GaussianOptimizer>`.
             pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
-                                              `CRESTPruner` and `TorsionPruner`.
+                                            :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                            :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
             verifiers (TSVerifier, Verifier, list of TSVerifiers or list of Verifiers, optional): The verifier or a list of verifiers used to verify the obtained conformer. Available
-                                                                                                  options are `GaussianIRCVerifier`, `OrcaIRCVerifier`, and `XTBFrequencyVerifier`.
+                                                                                                options are
+                                                                                                :obj:`GaussianIRCVerifier <rdmc.conformer_generation.ts_verifiers.GaussianIRCVerifier>`,
+                                                                                                :obj:`OrcaIRCVerifier <rdmc.conformer_generation.ts_verifiers.OrcaIRCVerifier>`, and
+                                                                                                :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.ts_verifiers.XTBFrequencyVerifier>`.
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.method = method
@@ -79,28 +112,28 @@ class TorsionalSampler:
         self.pruner = pruner
         self.verifiers = [] if not verifiers else verifiers
 
-    def get_conformers_by_change_torsions(
-        self,
-        mol: RDKitMol,
-        id: int = 0,
-        torsions: List = None,
-        exclude_methyl: bool = True,
-        on_the_fly_check: bool = True,
-    ) -> List[RDKitMol]:
+    def get_conformers_by_change_torsions(self,
+                                          mol: RDKitMol,
+                                          id: int = 0,
+                                          torsions: Optional[list] = None,
+                                          exclude_methyl: bool = True,
+                                          on_the_fly_check: bool = True,
+                                          ) -> List[RDKitMol]:
         """
         Generate conformers by rotating the angles of the torsions. A on-the-fly check
         can be applied, which identifies the conformers with colliding atoms.
 
         Args:
             mol (RDKitMol): A RDKitMol molecule object.
-            id (int): The ID of the conformer to be obtained. Defaults to 0.
-            torsions (list): A list of four-atom-index lists indicating the torsional modes.
-            exclude_methyl (bool): Whether exclude the torsions with methyl groups. Defaults to False.
-                                   If `torsions` is provided, this function won't work. 
-            on_the_fly_filter (bool): Whether to check colliding atoms on the fly. Defaults to True.
+            id (int): The ID of the conformer to be obtained. Defaults to ``0``.
+            torsions (list): A list of four-atom-index lists indicating the torsional modes. Defaults to ``None``,
+                             which means all the rotatable bonds will be used.
+            exclude_methyl (bool): Whether exclude the torsions with methyl groups. Defaults to ``False``.
+                                   Only valid if ``torsions`` is not provided.
+            on_the_fly_filter (bool): Whether to check colliding atoms on the fly. Defaults to ``True``.
 
         Returns:
-            A list of RDKitMol of sampled 3D geometries for each torsional mode.
+            lis: A list of RDKitMol of sampled 3D geometries for each torsional mode.
         """
         conf = mol.Copy().GetConformer(id=id)
         origin_coords = mol.GetPositions(id=id)
@@ -167,30 +200,31 @@ class TorsionalSampler:
 
         return conformers_by_change_torsions
 
-    def __call__(
-        self,
-        mol: RDKitMol,
-        id: int,
-        rxn_smiles: Optional[str] = None,
-        torsions: Optional[List] = None,
-        no_sample_dangling_bonds: bool = True,
-        no_greedy: bool = False,
-        save_dir: Optional[str] = None,
-        save_plot: bool = True,
-    ):
+    def __call__(self,
+                 mol: RDKitMol,
+                 id: int,
+                 rxn_smiles: Optional[str] = None,
+                 torsions: Optional[List] = None,
+                 no_sample_dangling_bonds: bool = True,
+                 no_greedy: bool = False,
+                 save_dir: Optional[str] = None,
+                 save_plot: bool = True,
+                 ):
         """
         Run the workflow of conformer generation.
 
         Args:
             mol (RDKitMol): An RDKitMol object.
             id (int): The ID of the conformer to be obtained.
-            rxn_smiles (str, optional): The SMILES of the reaction. The SMILES should be formatted similar to `"reactant1.reactant2>>product1.product2."`.
+            rxn_smiles (str, optional): The SMILES of the reaction. The SMILES should be formatted similar to
+                                        `"reactant1.reactant2>>product1.product2."`. Defaults to ``None``, which means
+                                        ``torsions`` will be provided and used to generate conformers.
             torsions (list, optional): A list of four-atom-index lists indicating the torsional modes.
-            no_sample_dangling_bonds (bool): Whether to sample dangling bonds. Defaults to False.
-            no_greedy (bool): Whether to use greedy algorithm to find local minima. If `True`, all the sampled conformers
-                              would be passed to the optimization and verification steps. Defaults to False.
+            no_sample_dangling_bonds (bool): Whether to sample dangling bonds. Defaults to ``False``.
+            no_greedy (bool): Whether to use greedy algorithm to find local minima. If ``True``, all the sampled conformers
+                              would be passed to the optimization and verification steps. Defaults to ``False``.
             save_dir (str or Pathlike object, optional): The path to save the outputs generated during the generation.
-            save_plot (bool): Whether to save the heat plot for the PES of each torsinal mode. Defaults to True.
+            save_plot (bool): Whether to save the heat plot for the PES of each torsional mode. Defaults to ``True``.
         """
         # Get bonds which will not be rotated during conformer searching
         sampler_mol = mol.Copy()
@@ -395,27 +429,30 @@ class TorsionalSampler:
         return mol
 
 
-def get_separable_angle_list(
-    samplings: Union[List, Tuple], from_angles: Optional[Union[List, Tuple]] = None
-) -> List[List]:
+def get_separable_angle_list(samplings: Union[List, Tuple],
+                             from_angles: Optional[Union[List, Tuple]] = None
+                             ) -> List[List]:
     """
     Get a angle list for each input dimension. For each dimension
-    The input can be a int, indicating the angles will be evenly sampled;
-    Or a list, indicate the angles to be sampled;
-    Examples:
-    [[120, 240,], 4, 0] => [[120, 240],
-                            [0, 90, 180, 270],
-                            [0]]
-    List of lists are returned for the sake of further calculation
+    The input can be a ``int`` indicating the angles will be evenly sampled;
+    or a ``list`` indicating the angles to be sampled;
 
     Args:
         samplings (Union[List, Tuple]): An array of sampling information.
-                  For each element, it can be either list or int.
+                                        For each element, it can be either list or int.
         from_angles (Union[List, Tuple]): An array of initial angles.
-                    If not set, angles will begin at zeros.
+                                          If not set, all angles will begin at zeros.
 
     Returns:
         list: A list of sampled angles sets.
+
+    Examples:
+
+        .. code-block:: python
+
+            get_separable_angle_list([[120, 240,], 4, 0])
+            >>> [[120, 240], [0, 90, 180, 270], [0]]
+
     """
     from_angles = from_angles or len(samplings) * [0.0]
     angle_list = []
@@ -444,15 +481,18 @@ def get_separable_angle_list(
     return angle_list
 
 
-def get_energy(mol: RDKitMol, confId: int = 0, method: str = "GFN2-xTB") -> float:
+def get_energy(mol: RDKitMol,
+               confId: int = 0,
+               method: str = "GFN2-xTB",
+               ) -> float:
     """
-    Calculate the energy of the `RDKitMol` with given confId. The unit is in kcal/mol.
-    Only support methods already suported either in Spharrow or xtb-python.
+    Calculate the energy of the ``RDKitMol`` with given ``confId``. The unit is in kcal/mol.
+    Only support methods already supported either in sparrow or xtb-python.
 
     Args:
         mol (RDKitMol): A RDKitMol molecule object.
-        confId (int): The ID of the conformer for calculating energy. Defaults to 0.
-        method (str): Which semiempirical method to be used in running energy calcualtion. Defaults to "GFN2-xTB".
+        confId (int): The ID of the conformer for calculating energy. Defaults to ``0``.
+        method (str): Which semi-empirical method to be used in running energy calculation. Defaults to ``"GFN2-xTB"``.
 
     Returns:
         The energy of the conformer.
@@ -495,7 +535,7 @@ def get_energy(mol: RDKitMol, confId: int = 0, method: str = "GFN2-xTB") -> floa
     return energy
 
 
-def preprocess_energies(energies: np.ndarray):
+def preprocess_energies(energies: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
     Rescale the energy based on the lowest energy.
 
@@ -503,7 +543,7 @@ def preprocess_energies(energies: np.ndarray):
         energies (np.ndarray): A np.ndarray containing the energies for each sampled point.
 
     Returns:
-        The rescaled energies and the mask pointing out positions having values
+        tuple: The rescaled energies and the mask pointing out positions having values
     """
     max_energy = np.nanmax(energies)
     min_energy = np.nanmin(energies)
@@ -518,15 +558,26 @@ def preprocess_energies(energies: np.ndarray):
     return rescaled_energies, mask
 
 
-def plot_heat_map(
-    energies: np.ndarray,
-    minimum_points: List[Tuple],
-    save_path: str,
-    mask: np.ndarray = None,
-    detailed_view: bool = False,
-    title: str = None,
-):
-    """Plot and save the heat map of a given PES."""
+def plot_heat_map(energies: np.ndarray,
+                  minimum_points: List[Tuple],
+                  save_path: str,
+                  mask: Optional[np.ndarray] = None,
+                  detailed_view: bool = False,
+                  title: Optional[str] = None,
+                  ):
+    """
+    Plot and save the heat map of a given PES.
+
+    Args:
+        energies (np.ndarray): A ``np.ndarray`` containing the energies for each sampled point.
+        minimum_points (List[Tuple]): A list of tuples containing the indices of the minimum points.
+        save_path (str): The path to save the plot.
+        mask (np.ndarray, optional): A ``np.ndarray`` containing the mask for the energies.
+        detailed_view (bool): Whether to plot the detailed view of the PES. Defaults to ``False``.
+        title (str, optional): The title of the plot.
+    """
+    import seaborn as sns
+
     if detailed_view:
         fig_size = (28, 20)
         annot = True  # detailed view
