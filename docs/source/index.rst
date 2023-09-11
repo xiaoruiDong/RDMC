@@ -27,7 +27,7 @@ You can also install RDMC from the source code:
     cd RDMC
     conda env create -f environment.yml
     conda activate rdmc
-    python setup.py install
+    python -m pip install --no-deps -vv ./
 
 To start with, simply try:
 
