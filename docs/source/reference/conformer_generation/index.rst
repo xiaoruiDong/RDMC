@@ -6,8 +6,8 @@ rdmc.conformer_generation
    :undoc-members:
    :show-inheritance:
 
-
 .. toctree::
    :maxdepth: 2
 
-   align
+   embedding_geometries/index
+

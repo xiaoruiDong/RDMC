@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 """
-Modules for providing transition state initial guess geometries
+Modules for providing transition state initial guess geometries.
 """
 # RDKit import first to avoid some import or runtime issues
 # TODO: Details to be added.
@@ -78,6 +78,9 @@ from rdmc.external.xtb_tools.opt import run_xtb_calc
 class TSInitialGuesser:
     """
     The abstract class for TS initial Guesser.
+
+    Args:
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     _avail_ = True
 
@@ -88,7 +91,7 @@ class TSInitialGuesser:
         Initialize the TS initial guesser.
 
         Args:
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         assert self._avail, f"The dependency requirement needs to be fulfilled to use {self.__class__.__name__}. Please install the relevant dependencies and try again.."
         self.track_stats = track_stats
@@ -104,6 +107,16 @@ class TSInitialGuesser:
         The key function used to generate TS guesses. It varies by the actual classes and need to implemented inside each class.
         The function should at least take mols and save_dir as input arguments. The returned value should be a RDKitMol with TS
         geometries.
+
+        Args:
+            mols (list): A list of reactant and product pairs.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None`` for not saving.
+
+        Returns:
+            RDKitMol: The TS molecule in ``RDKitMol`` with 3D conformer saved with the molecule.
+
+        Raises:
+            NotImplementedError: This method needs to be implemented in the subclass.
         """
         raise NotImplementedError
 
@@ -112,7 +125,7 @@ class TSInitialGuesser:
                      rp_combos: list,
                      ts_mol: 'RDKitMol'):
         """
-        Save the generated guesses into the given `save_dir`.
+        Save the generated guesses into the given ``save_dir``.
 
         Args:
             save_dir (str): The path to the directory to save the results.
@@ -168,12 +181,12 @@ class TSInitialGuesser:
         The workflow to generate TS initial guesses.
 
         Args:
-            mols (list): A list of molecules
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
-            save_dir (str, optional): The path to save results. Defaults to None.
+            mols (list): A list of molecules.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None`` for not setting.
+            save_dir (str, optional): The path to save results. Defaults to ``None`` for not saving.
 
         Returns:
-            'RDKitMol'
+            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         time_start = time()
         ts_mol_data = self.generate_ts_guesses(mols, multiplicity, save_dir)
@@ -189,6 +202,10 @@ class TSInitialGuesser:
 class TSEGNNGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the TS-EGNN model.
+
+    Args:
+        trained_model_dir (str): The path to the directory storing the trained TS-EGNN model.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     _avail = _ts_egnn_avail
 
@@ -200,7 +217,7 @@ class TSEGNNGuesser(TSInitialGuesser):
 
         Args:
             trained_model_dir (str): The path to the directory storing the trained TS-EGNN model.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(TSEGNNGuesser, self).__init__(track_stats)
 
@@ -225,11 +242,11 @@ class TSEGNNGuesser(TSInitialGuesser):
 
         Args:
             mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None``.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The TS molecule in ``RDKitMol`` with 3D conformer saved with the molecule.
         """
         # Generate the input for the TS-EGNN model
         rp_inputs = [(x[0].ToRWMol(), None, x[1].ToRWMol()) for x in mols]  # reactant, None (for TS), product
@@ -255,6 +272,10 @@ class TSEGNNGuesser(TSInitialGuesser):
 class TSGCNGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the TS-GCN model.
+
+    Args:
+        trained_model_dir (str): The path to the directory storing the trained TS-GCN model.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     _avail = _ts_gcn_avail
 
@@ -266,7 +287,7 @@ class TSGCNGuesser(TSInitialGuesser):
 
         Args:
             trained_model_dir (str): The path to the directory storing the trained TS-GCN model.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(TSGCNGuesser, self).__init__(track_stats)
 
@@ -292,11 +313,11 @@ class TSGCNGuesser(TSInitialGuesser):
 
         Args:
             mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None``.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         # Prepare the input for the TS-GCN model
         rp_inputs = [(x[0].ToRWMol(), None, x[1].ToRWMol()) for x in mols]
@@ -323,6 +344,9 @@ class TSGCNGuesser(TSInitialGuesser):
 class RMSDPPGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the RMSD-PP method.
+
+    Args:
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     _avail = True
 
@@ -349,7 +373,7 @@ class RMSDPPGuesser(TSInitialGuesser):
             save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
-            RDKitMol
+            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         ts_guesses, used_rp_combos = [], []
         multiplicity = multiplicity or 1
@@ -377,6 +401,10 @@ class RMSDPPGuesser(TSInitialGuesser):
 class AutoNEBGuesser(TSInitialGuesser):
     """
     The class for generating TS guesses using the AutoNEB method.
+
+    Args:
+        optimizer (ase.calculator.calculator.Calculator): ASE calculator. Defaults to the XTB implementation ``xtb.ase.calculator.XTB``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     _avail = _ase_avail
 
@@ -387,8 +415,8 @@ class AutoNEBGuesser(TSInitialGuesser):
         Initialize the AutoNEB TS initial guesser.
 
         Args:
-            optimizer (ase.calculator.calculator.Calculator): ASE calculator. Defaults to the XTB implementation `xtb.ase.calculator.XTB`.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+            optimizer (ase.calculator.calculator.Calculator): ASE calculator. Defaults to the XTB implementation ``xtb.ase.calculator.XTB``.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(AutoNEBGuesser, self).__init__(track_stats)
         self.optimizer = optimizer
@@ -411,7 +439,8 @@ class AutoNEBGuesser(TSInitialGuesser):
         return self._optimizer
 
     @optimizer.setter
-    def optimizer(self, optimizer: 'Calculator'):
+    def optimizer(self,
+                  optimizer: 'Calculator'):
         try:
             assert isinstance(optimizer, Calculator), f"Invalid optimizer used ('{optimizer}'). Please use ASE calculators."
         except NameError:
@@ -427,11 +456,11 @@ class AutoNEBGuesser(TSInitialGuesser):
 
         Args:
             mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None``.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
 
         ts_guesses, used_rp_combos = [], []
@@ -502,7 +531,10 @@ class AutoNEBGuesser(TSInitialGuesser):
 
 class DEGSMGuesser(TSInitialGuesser):
     """
-    The class for generatign TS guesses using the DE-GSM method.
+    The class for generating TS guesses using the DE-GSM method.
+
+    Args:
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     _avail = True
 
@@ -516,7 +548,7 @@ class DEGSMGuesser(TSInitialGuesser):
         Initialize the DE-GSM TS initial guesser.
 
         Args:
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(DEGSMGuesser, self).__init__(track_stats)
         self.gsm_args = gsm_args
@@ -538,11 +570,11 @@ class DEGSMGuesser(TSInitialGuesser):
 
         Args:
             mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None``.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         # #TODO: May add a support for scratch directory
         # currently use the save directory as the working directory
