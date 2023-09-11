@@ -1,4 +1,4 @@
-Embedding geometries
+Embedding Geometries
 =====================
 
 .. toctree::

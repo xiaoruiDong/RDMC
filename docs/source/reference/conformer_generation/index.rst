@@ -10,4 +10,5 @@ rdmc.conformer_generation
    :maxdepth: 2
 
    embedding_geometries/index
+   geometry_optimization/index
 

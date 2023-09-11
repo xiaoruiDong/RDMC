@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 """
-Modules for optimizing initial guess geometries
+Modules for optimizing initial guess geometries.
 """
 
 from rdmc.forcefield import RDKitFF
@@ -23,6 +23,12 @@ except ImportError:
 
 
 class ConfGenOptimizer:
+    """
+    Base class for the geometry optimizers used in conformer generation.
+
+    Args:
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
+    """
     def __init__(self, track_stats=False):
 
         self.iter = 0
@@ -32,10 +38,31 @@ class ConfGenOptimizer:
         self.n_opt_cycles = None
         self.stats = []
 
-    def optimize_conformers(self, mol_data):
+    def optimize_conformers(self,
+                            mol_data: List[dict]):
+        """
+        Optimize the conformers.
+
+        Args:
+            mol_data (List[dict]): The list of conformers to be optimized.
+
+        Raises:
+            NotImplementedError: This function should be implemented in the child class.
+        """
         raise NotImplementedError
 
-    def __call__(self, mol_data):
+    def __call__(self,
+                 mol_data: List[dict],
+                 ) -> List[dict]:
+        """
+        Run the workflow to optimize the conformers.
+
+        Args:
+            mol_data (List[dict]): The list of conformers to be optimized.
+
+        Returns:
+            List[dict]: The list of optimized conformers.
+        """
 
         self.iter += 1
         time_start = time()
@@ -55,15 +82,34 @@ class ConfGenOptimizer:
 
 
 class MMFFOptimizer(ConfGenOptimizer):
-    def __init__(self, method="rdkit", track_stats=False):
+    """
+    Optimizer using the MMFF force field.
+
+    Args:
+        method (str, optional): The method to be used for stable species optimization. Defaults to ``"rdkit"``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
+    """
+    def __init__(self,
+                 method: str = "rdkit",
+                 track_stats: bool = False):
         super(MMFFOptimizer, self).__init__(track_stats)
         if method == "rdkit":
             self.ff = RDKitFF()
         elif method == "openbabel":
             raise NotImplementedError
 
-    def optimize_conformers(self, mol_data):
+    def optimize_conformers(self,
+                            mol_data: List[dict],
+                            ) -> List[dict]:
+        """
+        Optimize the conformers.
 
+        Args:
+            mol_data (List[dict]): The list of conformers to be optimized.
+
+        Returns:
+            List[dict]: The list of optimized conformers sorted by energy.
+        """
         if len(mol_data) == 0:
             return mol_data
 
@@ -90,13 +136,34 @@ class MMFFOptimizer(ConfGenOptimizer):
 
 
 class XTBOptimizer(ConfGenOptimizer):
-    def __init__(self, method="gff", level="normal", track_stats=False):
+    """
+    Optimizer using the xTB.
+
+    Args:
+        method (str, optional): The method to be used for species optimization. Defaults to ``"gff"``.
+        level (str, optional): The level of theory. Defaults to ``"normal"``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
+    """
+    def __init__(self,
+                 method: str = "gff",
+                 level: str = "normal",
+                 track_stats: bool = False):
         super(XTBOptimizer, self).__init__(track_stats)
         self.method = method
         self.level = level
 
-    def optimize_conformers(self, mol_data):
+    def optimize_conformers(self,
+                            mol_data: List[dict],
+                            ) -> List[dict]:
+        """
+        Optimize the conformers.
 
+        Args:
+            mol_data (List[dict]): The list of conformers to be optimized.
+
+        Returns:
+            List[dict]: The list of optimized conformers sorted by energy.
+        """
         if len(mol_data) == 0:
             return mol_data
 
@@ -137,20 +204,30 @@ class XTBOptimizer(ConfGenOptimizer):
         return sorted(final_mol_data, key=lambda x: x["energy"])
 
 class GaussianOptimizer(ConfGenOptimizer):
+    """
+    Optimizer using the Gaussian.
+
+    Args:
+        method (str, optional): The method to be used for species optimization. You can use the level of theory available in Gaussian.
+                                Defaults to ``"GFN2-xTB"``, which is realized by additional scripts provided in the ``rdmc`` package.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
+    """
     def __init__(self,
                  method: str = "GFN2-xTB",
                  nprocs: int = 1,
                  memory: int = 1,
                  track_stats: bool = False):
         """
-        Initiate the Gaussian berny optimizer.
+        Initiate the Gaussian optimizer.
 
         Args:
             method (str, optional): The method to be used for stable species optimization. you can use the level of theory available in Gaussian.
                                     We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
-            nprocs (int, optional): The number of processors to use. Defaults to 1.
-            memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+            memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(GaussianOptimizer, self).__init__(track_stats)
         self.method = method
@@ -170,17 +247,18 @@ class GaussianOptimizer(ConfGenOptimizer):
                             mol: 'RDKitMol',
                             multiplicity: int = 1,
                             save_dir: Optional[str] = None,
-                            **kwargs):
+                            **kwargs,
+                            ) -> 'RDKitMol':
         """
         Optimize the conformers.
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            multiplicity (int): The multiplicity of the molecule. Defaults to 1.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            multiplicity (int): The multiplicity of the molecule. Defaults to ``1``.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The optimized molecule as RDKitMol with 3D geometries embedded.
         """
 
         opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
@@ -258,11 +336,12 @@ class GaussianOptimizer(ConfGenOptimizer):
                       ):
         """
         Save the information of the optimized stable species into the directory.
+
         Args:
             save_dir (str): The path to the directory to save the results.
             opt_mol (RDKitMol): The optimized stable species in RDKitMol with 3D conformer saved with the molecule.
-            keep_ids (dict): Dictionary of which opts succeeded and which failed
-            energies (dict): Dictionary of energies for each conformer
+            keep_ids (dict): Dictionary of which opts succeeded and which failed.
+            energies (dict): Dictionary of energies for each conformer.
         """
         # Save optimized stable species mols
         path = os.path.join(save_dir, "optimized_confs.sdf")
@@ -286,9 +365,11 @@ class GaussianOptimizer(ConfGenOptimizer):
                  **kwargs):
         """
         Run the workflow to generate optimize stable species guesses.
+
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            save_dir (str, optional): The path to save results. Defaults to None.
+            save_dir (str, optional): The path to save results. Defaults to ``None``.
+
         Returns:
             'RDKitMol': The optimized molecule as RDKitMol with 3D geometries embedded.
         """
