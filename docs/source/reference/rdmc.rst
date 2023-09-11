@@ -12,6 +12,7 @@ rdmc
 
    external/index
    mathlib/index
+   conformer_generation/index
 
 
 .. toctree::
