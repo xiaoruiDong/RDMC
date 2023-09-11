@@ -11,4 +11,4 @@ rdmc.conformer_generation
 
    embedding_geometries/index
    geometry_optimization/index
-
+   utils

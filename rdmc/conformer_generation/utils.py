@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 """
-Utilities for conformer generation modules
+Utilities for conformer generation modules.
 """
 
 from rdkit.Chem import AllChem
@@ -12,25 +12,27 @@ import os
 import pickle
 import numpy as np
 from collections import defaultdict
-from typing import Union
+from typing import List, Optional, Union
 
 from rdmc.utils import PERIODIC_TABLE as PT
 from rdmc.external.logparser import GaussianLog
 
 
-def mol_to_dict(mol,
+def mol_to_dict(mol: 'RDKitMol',
                 copy: bool = True,
-                iter: int = None,
-                conf_copy_attrs: list = None):
+                iter: Optional[int] = None,
+                conf_copy_attrs: Optional[list] = None,
+                ) -> list[dict]:
     """
     Convert a molecule to a dictionary that stores its conformers object, atom coordinates,
     and iteration numbers for a certain calculation (optional).
 
     Args:
         mol ('RDKitMol'): An RDKitMol object.
-        copy (bool, optional): Use a copy of the molecule to process data. Defaults to True.
-        iter (int, optional): Number of iterations. Defaults to None.
+        copy (bool, optional): Use a copy of the molecule to process data. Defaults to ``True``.
+        iter (int, optional): Number of iterations. Defaults to ``None``.
         conf_copy_attrs (list, optional): Conformer-level attributes to copy to the dictionary.
+                                          Defaults to ``None``, which means no attributes will be copied.
 
     Returns:
         list: mol data as a list of dict; each dict corresponds to a conformer.
@@ -52,18 +54,19 @@ def mol_to_dict(mol,
     return mol_data
 
 
-def dict_to_mol(mol_data,
-                conf_copy_attrs: list = None):
+def dict_to_mol(mol_data: List[dict],
+                conf_copy_attrs: Optional[list] = None):
     """
     Convert a dictionary that stores its conformers object, atom coordinates,
     and conformer-level attributes to an RDKitMol. The method assumes that the
     first conformer's owning mol contains the conformer-level attributes, which
     are extracted through the Copy function (this should be the case if the
-    dictionary was generated with the mol_to_dict function).
+    dictionary was generated with the :obj:`mol_to_dict` function).
 
     Args:
-        mol_data (list) List containing dictionaries of data entries for each conformer.
+        mol_data (list): A list containing dictionaries of data entries for each conformer.
         conf_copy_attrs (list, optional): Conformer-level attributes to copy to the mol.
+                                          Defaults to ``None``, which means no attributes will be copied.
 
     Returns:
         mol ('RDKitMol'): An RDKitMol object.
@@ -75,7 +78,19 @@ def dict_to_mol(mol_data,
     return mol
 
 
-def cluster_confs(mol, cutoff=1.0):
+def cluster_confs(mol: 'RDKitMol',
+                  cutoff: float = 1.0,
+                  ) -> 'RDKitMol':
+    """
+    Cluster conformers of a molecule based on RMSD.
+
+    Args:
+        mol ('RDKitMol'): An RDKitMol object.
+        cutoff (float, optional): The cutoff for clustering. Defaults to ``1.0``.
+
+    Returns:
+        mol ('RDKitMol'): An RDKitMol object with clustered conformers.
+    """
     rmsmat = AllChem.GetConformerRMSMatrix(mol.ToRWMol(), prealigned=False)
     num = mol.GetNumConformers()
     clusters = Butina.ClusterData(rmsmat, num, cutoff, isDistData=True, reordering=True)
@@ -87,17 +102,21 @@ def cluster_confs(mol, cutoff=1.0):
     return updated_mol
 
 
-def get_conf_failure_mode(rxn_dir, pruner=True):
+def get_conf_failure_mode(rxn_dir: str,
+                          pruner: bool = True,
+                          ) -> dict:
     """
     Parse a reaction directory for a TS generation run and extract failure modes (which conformer failed the
-    full workflow and for what reason)
+    full workflow and for what reason).
 
     Args:
         rxn_dir (str) Path to the reaction directory.
-        pruner (bool: Optional) Whether or not pruner was used during workflow
+        pruner (bool: Optional) Whether or not pruner was used during workflow. Defaults to ``True``.
 
     Returns:
         failure_dict ('dict'): Dictionary of conformer ids mapped to the corresponding failure mode.
+                               the ``failure_mode`` can be one of the following:
+                               ``opt``, ``prune``, ``freq``, ``irc``, ``workflow``, ``none``.
     """
 
     failure_modes = {
@@ -133,21 +152,24 @@ def get_conf_failure_mode(rxn_dir, pruner=True):
     return failure_dict
 
 
-def get_frames_from_freq(log,
+def get_frames_from_freq(log: GaussianLog,
                          amplitude: float = 1.0,
                          num_frames: int = 10,
-                         weights: Union[bool, np.array] = False):
+                         weights: Union[bool, np.array] = False,
+                         ) -> (np.array,np.array):
     """
+    Get the reaction mode as frames from a TS optimization log file.
+
     Args:
         log (GaussianLog): A gaussian log object with vibrational freq calculated.
         amplitude (float): The amplitude of the motion. If a single value is provided then the guess
-                           will be unique (if available). 0.25 will be the default. Otherwise, a list
+                           will be unique (if available). ``0.25`` is the default. Otherwise, a list
                            can be provided, and all possible results will be returned.
-        num_frames (int): The number of frames in each direction (forward and reverse). Defaults to 10.
+        num_frames (int): The number of frames in each direction (forward and reverse). Defaults to ``10``.
         weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
-                              If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
-                              The concern is that light atoms (e.g., H) tend to have larger motions
-                              than heavier atoms.
+                                    If ``False``, use the identity weights. If a N x 1 ``np.array`` is provided, then
+                                    The concern is that light atoms (e.g., H) tend to have larger motions
+                                    than heavier atoms.
 
     Returns:
         np.array: The atomic numbers as an 1D array
@@ -174,18 +196,24 @@ def get_frames_from_freq(log,
 def convert_log_to_mol(log_path: str,
                        amplitude: float = 1.0,
                        num_frames: int = 10,
-                       weights: Union[bool, np.array] = False):
+                       weights: Union[bool, np.array] = False,
+                       ) -> Union[None,'RDKitMol']:
     """
+    Convert a TS optimization log file to an RDKitMol object with conformers.
+
     Args:
         log_path (str): The path to the log file.
         amplitude (float): The amplitude of the motion. If a single value is provided then the guess
-                           will be unique (if available). 0.25 will be the default. Otherwise, a list
+                           will be unique (if available). ``0.25`` is the default. Otherwise, a list
                            can be provided, and all possible results will be returned.
-        num_frames (int): The number of frames in each direction (forward and reverse). Defaults to 10.
+        num_frames (int): The number of frames in each direction (forward and reverse). Defaults to ``10``.
         weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
-                              If ``False``, use the identity weights. If a N x 1 ``np.array` is provided, then
-                              The concern is that light atoms (e.g., H) tend to have larger motions
-                              than heavier atoms.
+                                    If ``False``, use the identity weights. If a N x 1 ``np.array`` is provided, then
+                                    The concern is that light atoms (e.g., H) tend to have larger motions
+                                    than heavier atoms.
+
+    Returns:
+        mol ('RDKitMol'): An RDKitMol object.
     """
     glog = GaussianLog(log_path)
 
