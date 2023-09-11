@@ -5,9 +5,12 @@
 Modules for pruning a group of conformers
 """
 
-from rdmc.mol import RDKitMol
-import numpy as np
 from time import time
+from typing import List, Optional
+
+import numpy as np
+
+from rdmc.mol import RDKitMol
 try:
     from rdmc.external.xtb_tools.crest import run_cre_check
 except ImportError:
@@ -15,7 +18,14 @@ except ImportError:
 
 
 class ConfGenPruner:
-    def __init__(self, track_stats=False):
+    """
+    Base class for conformer pruning.
+
+    Args:
+        track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
+    """
+    def __init__(self,
+                 track_stats: bool = False):
 
         self.iter = 0
         self.track_stats = track_stats
@@ -24,11 +34,42 @@ class ConfGenPruner:
         self.n_output_confs = None
         self.stats = []
 
-    def prune_conformers(self, current_mol_data, unique_mol_data=None, sort_by_energy=True, return_ids=False):
+    def prune_conformers(self,
+                         current_mol_data: List[dict],
+                         unique_mol_data: Optional[List[dict]] = None,
+                         sort_by_energy: bool = True,
+                         return_ids: bool = False):
+        """
+        Prune conformers.
+
+        Args:
+            current_mol_data (list[dict]): conformer data of the current iteration.
+            unique_mol_data (list[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
+            sort_by_energy (bool, optional): Whether to sort conformers by energy. Defaults to ``True``.
+            return_ids (bool, optional): Whether to return conformer IDs. Defaults to ``False``.
+
+        Raises:
+            NotImplementedError: This method should be implemented in the subclass.
+        """
         raise NotImplementedError
 
-    def __call__(self, current_mol_data, unique_mol_data=None, sort_by_energy=True, return_ids=False):
+    def __call__(self,
+                 current_mol_data: List[dict],
+                 unique_mol_data: Optional[List[dict]] = None,
+                 sort_by_energy: bool = True,
+                 return_ids: bool = False):
+        """
+        Execute the task of pruning conformers.
 
+        Args:
+            current_mol_data (list[dict]): conformer data of the current iteration.
+            unique_mol_data (list[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
+            sort_by_energy (bool, optional): Whether to sort conformers by energy. Defaults to ``True``.
+            return_ids (bool, optional): Whether to return conformer IDs. Defaults to ``False``.
+
+        Returns:
+            list[dict]: Updated conformer data.
+        """
         self.iter += 1
         time_start = time()
         mol_data = self.prune_conformers(current_mol_data, unique_mol_data, sort_by_energy, return_ids)
@@ -51,20 +92,42 @@ class TorsionPruner(ConfGenPruner):
     Prune conformers based on torsion angle criteria.
     This method uses a mean and max criteria to prune conformers:
     A conformer is considered unique if it satisfies either of the following criteria:
-        mean difference of all torsion angles > mean_chk_threshold
-        max difference of all torsion angles > max_chk_threshold
-    New conformers are compared to all conformers that have already been deemed unique
+
+    - mean difference of all torsion angles > mean_chk_threshold
+    - max difference of all torsion angles > max_chk_threshold
+
+    New conformers are compared to all conformers that have already been deemed unique.
+
+    Args:
+        mean_chk_threshold (float, optional): Mean difference threshold. Defaults to ``10.``.
+        max_chk_threshold (float, optional): Max difference threshold. Defaults to ``20.``.
+        track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
     """
 
-    def __init__(self, mean_chk_threshold=10, max_chk_threshold=20, track_stats=False):
+    def __init__(self,
+                 mean_chk_threshold: float = 10.,
+                 max_chk_threshold: float = 20.,
+                 track_stats: bool = False):
         super(TorsionPruner, self).__init__(track_stats)
 
         self.mean_chk_threshold = mean_chk_threshold
         self.max_chk_threshold = max_chk_threshold
         self.torsions_list = None
 
-    def initialize_torsions_list(self, smiles=None, torsions=None, excludeMethyl=False):
+    def initialize_torsions_list(self,
+                                 smiles: Optional[str] = None,
+                                 torsions: Optional[list] = None,
+                                 excludeMethyl: bool = False):
+        """
+        Initialize the list of torsions to be used for comparison and pruning.
 
+        Args:
+            smiles (str, optional): SMILES of the molecule. Defaults to ``None``. This should be provided if
+                                    ``torsions`` is not provided.
+            torsions (list, optional): List of torsions. Defaults to ``None``,
+                                       in which case the torsions will be extracted from the molecule.
+            excludeMethyl (bool, optional): Whether to exclude methyl groups. Defaults to ``False``.
+        """
         if torsions:
             self.torsions_list = torsions
         elif smiles:
@@ -73,7 +136,20 @@ class TorsionPruner(ConfGenPruner):
         else:
             raise ValueError("Either a SMILES or a list of torsional modes should be provided.")
 
-    def initialize_ts_torsions_list(self, rxn_smiles=None, torsions=None, excludeMethyl=False):
+    def initialize_ts_torsions_list(self,
+                                    rxn_smiles: Optional[str] = None,
+                                    torsions: Optional[list] = None,
+                                    excludeMethyl: bool = False):
+        """
+        Initialize the list of torsions to be used for comparison and pruning for TS molecules.
+
+        Args:
+            rxn_smiles (str, optional): SMILES of the reaction. Defaults to ``None``. This should be provided if
+                                        ``torsions`` is not provided.
+            torsions (list, optional): List of torsions. Defaults to ``None``, in which case the torsions will be
+                                       extracted according to the reactants and the products.
+            excludeMethyl (bool, optional): Whether to exclude methyl groups. Defaults to ``False``.
+        """
 
         if torsions:
             self.torsions_list = torsions
@@ -87,26 +163,74 @@ class TorsionPruner(ConfGenPruner):
         else:
             raise ValueError("Either a SMILES or a list of torsional modes should be provided.")
 
-    def calculate_torsions(self, mol_data):
+    def calculate_torsions(self,
+                           mol_data: List[dict],
+                           ) -> List[dict]:
+        """
+        Calculate torsions for a list of conformers.
 
+        Args:
+            mol_data (list[dict]): conformer data.
+
+        Returns:
+            list[dict]: Conformer data with values of torsions added.
+        """
         for conf_data in mol_data:
             conf = conf_data["conf"]
             torsions = np.array([conf.GetTorsionDeg(t) for t in self.torsions_list]) % 360
             conf_data.update({"torsions": torsions})
         return mol_data
 
-    def rad_angle_compare(self, x, y):
+    @staticmethod
+    def rad_angle_compare(x: float,
+                          y: float,
+                          ) -> float:
+        """
+        Compare two angles in radians.
 
-        # compare angles in radians
+        Args:
+            x (float): angle in degrees.
+            y (float): angle in degrees.
+
+        Returns:
+            float: Absolute difference between the two angles in radians.
+        """
         return np.abs(np.arctan2(np.sin(x - y), np.cos(x - y))) * 180 / np.pi
 
-    def torsion_list_compare(self, c1_ts, c2_ts):
+    @staticmethod
+    def torsion_list_compare(c1_ts: List[float],
+                             c2_ts: List[float],
+                             ) -> list[float]:
+        """
+        Compare two lists of torsions in radians.
 
+        Args:
+            c1_ts (list): list of torsions in degrees.
+            c2_ts (list): list of torsions in degress.
+
+        Returns:
+            list: Absolute difference between the two lists of torsions in radians.
+        """
         # compare two lists of torsions in radians
-        return [self.rad_angle_compare(t1, t2) for t1, t2 in zip(c1_ts, c2_ts)]
+        return [TorsionPruner.rad_angle_compare(t1, t2) for t1, t2 in zip(c1_ts, c2_ts)]
 
-    def prune_conformers(self, current_mol_data, unique_mol_data=None, sort_by_energy=True, return_ids=False):
+    def prune_conformers(self,
+                         current_mol_data: List[dict],
+                         unique_mol_data: Optional[List[dict]] = None,
+                         sort_by_energy: bool = True,
+                         return_ids: bool = False):
+        """
+        Prune conformers.
 
+        Args:
+            current_mol_data (list[dict]): conformer data of the current iteration.
+            unique_mol_data (list[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
+            sort_by_energy (bool, optional): Whether to sort conformers by energy. Defaults to ``True``.
+            return_ids (bool, optional): Whether to return conformer IDs. Defaults to ``False``.
+
+        Returns:
+            list[dict]: Updated conformer data.
+        """
         if unique_mol_data is None:
             unique_mol_data = []
 
@@ -153,7 +277,32 @@ class TorsionPruner(ConfGenPruner):
 
 
 class CRESTPruner(ConfGenPruner):
-    def __init__(self, ethr=0.15, rthr=0.125, bthr=0.01, ewin=10000, track_stats=False):
+    """
+    Prune conformers using CREST.
+
+    Args:
+        ethr (float, optional): Energy threshold. Defaults to ``0.15``.
+        rthr (float, optional): RMSD threshold. Defaults to ``0.125``.
+        bthr (float, optional): Bond threshold. Defaults to ``0.01``.
+        ewin (int, optional): Energy window. Defaults to ``10000``.
+        track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
+    """
+    def __init__(self,
+                 ethr: float = 0.15,
+                 rthr: float = 0.125,
+                 bthr: float = 0.01,
+                 ewin: float = 10000,
+                 track_stats: bool = False):
+        """
+        Initialize the CREST pruner.
+
+        Args:
+            ethr (float, optional): Energy threshold. Defaults to ``0.15``.
+            rthr (float, optional): RMSD threshold. Defaults to ``0.125``.
+            bthr (float, optional): Bond threshold. Defaults to ``0.01``.
+            ewin (int, optional): Energy window. Defaults to ``10000``.
+            track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
+        """
         super(CRESTPruner, self).__init__(track_stats)
 
         self.ethr = ethr
@@ -161,8 +310,23 @@ class CRESTPruner(ConfGenPruner):
         self.bthr = bthr
         self.ewin = ewin
 
-    def prune_conformers(self, current_mol_data, unique_mol_data=None, sort_by_energy=True, return_ids=False):
+    def prune_conformers(self,
+                         current_mol_data: List[dict],
+                         unique_mol_data: Optional[List[dict]] = None,
+                         sort_by_energy: bool = True,
+                         return_ids: bool = False):
+        """
+        Prune conformers.
 
+        Args:
+            current_mol_data (list[dict]): conformer data of the current iteration.
+            unique_mol_data (list[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
+            sort_by_energy (bool, optional): Whether to sort conformers by energy. Defaults to ``True``.
+            return_ids (bool, optional): Whether to return conformer IDs. Defaults to ``False``.
+
+        Returns:
+            list[dict]: Updated conformer data.
+        """
         if unique_mol_data is None:
             unique_mol_data = []
 

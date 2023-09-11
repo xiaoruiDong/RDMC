@@ -2,16 +2,17 @@
 #-*- coding: utf-8 -*-
 
 """
-Modules for including solvation corrections
+Modules for including computing solvation corrections.
 """
 
 import os
-from typing import Optional
-from ase import Atoms
 from time import time
-import torch
+from typing import List, Optional
+
+from ase import Atoms
 
 try:
+    import torch
     from conf_solv.trainer import LitConfSolvModule
     from conf_solv.dataloaders.collate import Collater
     from conf_solv.dataloaders.loader import create_pairdata, MolGraph
@@ -22,43 +23,50 @@ except:
 class Estimator:
     """
     The abstract class for energy estimator.
+
+    Args:
+        track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
     """
     def __init__(self,
                  track_stats: Optional[bool] = False):
         """
         Initialize the TS optimizer.
+
+        Args:
+            track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
         """
         self.track_stats = track_stats
         self.stats = []
 
     def predict_energies(self,
-                         mol_data: dict,
+                         mol_data: List[dict],
                          **kwargs):
         """
         The abstract method for predicting energies. It will be implemented in actual classes.
-        The method needs to take `mol_data` which is a dictionary containing info about the
-        conformers of the moelcule. It will return the molecule as the same 'mol_data' object
+        The method needs to take ``mol_data`` which is a dictionary containing info about the
+        conformers of the molecules. It will return the molecule as the same ``mol_data`` object
         with the energy values altered.
 
         Args:
-            mol_data (list): A list of molecule dictionaries.
+            mol_data (List[dict]): A list of molecule dictionaries.
 
         Returns:
-            mol_data
+            mol_data (List[dict]): A list of molecule dictionaries with energy values updated.
         """
         raise NotImplementedError
 
     def __call__(self,
-                 mol_data: dict,
-                 **kwargs):
+                 mol_data: List[dict],
+                 **kwargs,
+                 ) -> List[dict]:
         """
-        Run the workflow to predict energies.
+        Run the workflow to predict solvation energies.
 
         Args:
-            mol_data (list): A list of molecule dictionaries.
+            mol_data (List[dict]): A list of molecule dictionaries.
 
         Returns:
-            mol_data
+            mol_data (List[dict]): A list of molecule dictionaries with energy values updated.
         """
         time_start = time()
         updated_mol_data = self.predict_energies(mol_data=mol_data, **kwargs)
@@ -77,6 +85,10 @@ class Estimator:
 class ConfSolv(Estimator):
     """
     Class for estimating conformer energies in solution with neural networks.
+
+    Args:
+        trained_model_dir (str): The path to the directory storing the trained ConfSolv model.
+        track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
     """
 
     def __init__(self,
@@ -87,7 +99,7 @@ class ConfSolv(Estimator):
 
         Args:
             trained_model_dir (str): The path to the directory storing the trained ConfSolv model.
-            track_stats (bool, optional): Whether to track timing stats. Defaults to False.
+            track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
         """
         super(ConfSolv, self).__init__(track_stats)
 
@@ -99,16 +111,17 @@ class ConfSolv(Estimator):
         self.collater = Collater(follow_batch=["x_solvent", "x_solute"], exclude_keys=None)
 
     def predict_energies(self,
-                         mol_data: list,
-                         **kwargs):
+                         mol_data: List[dict],
+                         **kwargs,
+                         ) -> List[dict]:
         """
-        Predict conformer free energies in given solvent.
+        Predict conformer free energies in a given solvent.
 
         Args:
-            mol_data (list): A list of molecule dictionaries.
+            mol_data (List[dict]): A list of molecule dictionaries.
 
         Returns:
-            mol_data
+            mol_data (List[dict]): A list of molecule dictionaries with energy values updated.
         """
         # prepare inputs
         syms = [a.GetSymbol() for a in mol_data[0]['conf'].ToMol().GetAtoms()]

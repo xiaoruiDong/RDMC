@@ -37,6 +37,9 @@ except ImportError:
 class TSVerifier:
     """
     The abstract class for TS verifiers.
+
+    Args:
+        track_stats (bool, optional): Whether to track status. Defaults to ``False``.
     """
     def __init__(self,
                  track_stats: bool = False):
@@ -44,7 +47,7 @@ class TSVerifier:
         Initialize the TS verifier.
 
         Args:
-            track_stats (bool, optional): Whether to track status. Defaults to False.
+            track_stats (bool, optional): Whether to track status. Defaults to ``False``.
         """
         self.track_stats = track_stats
         self.n_failures = None
@@ -59,16 +62,15 @@ class TSVerifier:
                           **kwargs):
         """
         The abstract method for verifying TS guesses (or optimized TS geometries). The method need to take
-        `ts_mol` in RDKitMol, `keep_ids` in list, `multiplicity` in int, and `save_dir` in str, and returns
-        a list indicating the ones passing the check.
+        ``ts_mol`` in ``RDKitMol``, ``keep_ids`` in ``list``, ``multiplicity`` in ``int``, and ``save_dir`` in ``str``.
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
+            save_dir (str, optional): The directory path to save the results. Defaults to ``None``.
 
         Raises:
-            NotImplementedError
+            NotImplementedError: This method needs to be implemented in the subclass.
         """
         raise NotImplementedError
 
@@ -76,17 +78,18 @@ class TSVerifier:
                  ts_mol: 'RDKitMol',
                  multiplicity: int = 1,
                  save_dir: Optional[str] = None,
-                 **kwargs):
+                 **kwargs,
+                 ) -> 'RDKitMol':
         """
         Run the workflow for verifying the TS guessers (or optimized TS conformers).
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
+            save_dir (str, optional): The directory path to save the results. Defaults to ``None``.
 
         Returns:
-            list: a list of true and false
+            RDKitMol: The TS in RDKitMol object with verification results stored in ``KeepIDs``.
         """
         time_start = time()
         ts_mol = self.verify_ts_guesses(
@@ -107,18 +110,24 @@ class TSVerifier:
 class XTBFrequencyVerifier(TSVerifier):
     """
     The class for verifying the TS by calculating and checking its frequencies using XTB.
+
+    Args:
+        cutoff_frequency (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
+                                            imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations
+                                            Defaults to ``-100.`` cm-1
+        track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
     """
     def __init__(self,
-                 cutoff_frequency: int = -100,
+                 cutoff_frequency: float = -100.,
                  track_stats: bool = False):
         """
         Initiate the XTB frequency verifier.
 
         Args:
-            cutoff_frequency (int, optional): Cutoff frequency above which a frequency does not correspond to a TS
-                imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations
-                (defaults to -100 cm-1)
-            track_stats (bool, optional): Whether to track stats. Defaults to False.
+            cutoff_frequency (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
+                                                imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations
+                                                Defaults to ``-100.`` cm-1
+            track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
         """
         super(XTBFrequencyVerifier, self).__init__(track_stats)
 
@@ -128,17 +137,18 @@ class XTBFrequencyVerifier(TSVerifier):
                           ts_mol: 'RDKitMol',
                           multiplicity: int = 1,
                           save_dir: Optional[str] = None,
-                          **kwargs):
+                          **kwargs,
+                          ) -> 'RDKitMol':
         """
         Verifying TS guesses (or optimized TS geometries).
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
+            save_dir (str, optional): The directory path to save the results. Defaults to ``None``.
 
         Returns:
-            list
+            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
@@ -162,6 +172,13 @@ class XTBFrequencyVerifier(TSVerifier):
 class OrcaIRCVerifier(TSVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Orca.
+
+    Args:
+        method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Orca.
+                                If you want to use XTB methods, you need to put the xtb binary into the Orca directory.
+                                Defaults to ``"XTB2"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
     def __init__(self,
@@ -173,9 +190,10 @@ class OrcaIRCVerifier(TSVerifier):
 
         Args:
             method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Orca.
-                                    If you want to use XTB methods, you need to put the xtb binary into the Orca directory. Defaults to XTB2.
-            nprocs (int, optional): The number of processors to use. Defaults to 1.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+                                    If you want to use XTB methods, you need to put the xtb binary into the Orca directory.
+                                    Defaults to ``"XTB2"``.
+            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(OrcaIRCVerifier, self).__init__(track_stats)
 
@@ -192,14 +210,18 @@ class OrcaIRCVerifier(TSVerifier):
                           ts_mol: 'RDKitMol',
                           multiplicity: int = 1,
                           save_dir: Optional[str] = None,
-                          **kwargs):
+                          **kwargs,
+                          ) -> 'RDKitMol':
         """
         Verifying TS guesses (or optimized TS geometries).
 
         Args:
-            ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            ts_mol (RDKitMol): The TS in RDKitMol object with 3D geometries embedded.
+            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
+            save_dir (str, optional): The directory path to save the results. Defaults to ``None``.
+
+        Returns:
+            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
@@ -270,6 +292,15 @@ class OrcaIRCVerifier(TSVerifier):
 class GaussianIRCVerifier(TSVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Gaussian.
+
+    Args:
+        method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
+                                We provided a script to run XTB using Gaussian, but there are some extra steps to do.
+                                Defaults to ``"GFN2-xTB"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
+        fc_kw (str, optional): Keyword specifying how often to compute force constants Defaults to ``"calcall"``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
     def __init__(self,
@@ -309,14 +340,18 @@ class GaussianIRCVerifier(TSVerifier):
                           ts_mol: 'RDKitMol',
                           multiplicity: int = 1,
                           save_dir: Optional[str] = None,
-                          **kwargs):
+                          **kwargs,
+                          ) -> RDKitMol:
         """
         Verifying TS guesses (or optimized TS geometries).
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
+            save_dir (str, optional): The directory path to save the results. Defaults to ``None``.
+
+        Returns:
+            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
@@ -404,6 +439,14 @@ class GaussianIRCVerifier(TSVerifier):
 class QChemIRCVerifier(TSVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using QChem.
+
+    Args:
+        method (str, optional): The method to be used for TS optimization. you can use the method available in QChem.
+                                Defaults to ``"wB97x-d3"``.
+        basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem.
+                                Defaults to ``"def2-tzvp"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
     def __init__(self,
@@ -415,10 +458,12 @@ class QChemIRCVerifier(TSVerifier):
         Initiate the QChem IRC verifier.
 
         Args:
-            method (str, optional): The method to be used for TS optimization. you can use the method available in QChem. Defaults to wB97x-d3.
-            basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem. Defaults to def2-tzvp.
-            nprocs (int, optional): The number of processors to use. Defaults to 1.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+            method (str, optional): The method to be used for TS optimization. you can use the method available in QChem.
+                                    Defaults to ``"wB97x-d3"``.
+            basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem.
+                                    Defaults to ``"def2-tzvp"``.
+            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(QChemIRCVerifier, self).__init__(track_stats)
 
@@ -442,8 +487,11 @@ class QChemIRCVerifier(TSVerifier):
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
+            save_dir (_type_, optional): The directory path to save the results. Defaults to ``None``.
+
+        Returns:
+            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
@@ -528,19 +576,24 @@ class QChemIRCVerifier(TSVerifier):
 class TSScreener(TSVerifier):
     """
     The class for screening TS guesses using graph neural networks.
+
+    Args:
+        trained_model_dir (str): The path to the directory storing the trained TS-Screener model.
+        threshold (float): Threshold prediction at which we classify a failure/success. Defaults to ``0.95``.
+        track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
     """
 
     def __init__(self,
                  trained_model_dir: str,
-                 threshold: Optional[int],
+                 threshold: float = 0.95,
                  track_stats: Optional[bool] = False):
         """
         Initialize the TS-Screener model.
 
         Args:
             trained_model_dir (str): The path to the directory storing the trained TS-Screener model.
-            threshold (int): Threshold prediction at which we classify a failure/success.
-            track_stats (bool, optional): Whether to track timing stats. Defaults to False.
+            threshold (float): Threshold prediction at which we classify a failure/success. Defaults to ``0.95``.
+            track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
         """
         super(TSScreener, self).__init__(track_stats)
 
@@ -558,17 +611,18 @@ class TSScreener(TSVerifier):
                           ts_mol: 'RDKitMol',
                           multiplicity: int = 1,
                           save_dir: Optional[str] = None,
-                          **kwargs):
+                          **kwargs,
+                          ) -> 'RDKitMol':
         """
         Screen poor TS guesses by using reacting mode from frequency calculation.
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            save_dir (str, optional): The directory path to save the results. Defaults to None.
 
         Returns:
-            None
+            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
         rxn_smiles = kwargs["rxn_smiles"]
         mol_data, ids = [], []
@@ -607,3 +661,5 @@ class TSScreener(TSVerifier):
         # write ids to file
         with open(os.path.join(save_dir, "screener_check_ids.pkl"), "wb") as f:
             pickle.dump(ts_mol.KeepIDs, f)
+
+        return ts_mol
