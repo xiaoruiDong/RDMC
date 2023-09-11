@@ -10,5 +10,6 @@ rdmc.external
 .. toctree::
    :maxdepth: 4
 
-   rdmc.external.rmg
-   rdmc.external.xyz2mol
+   rmg
+   inpwriter/index
+   logparser/index

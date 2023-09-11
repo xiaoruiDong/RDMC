@@ -4,15 +4,17 @@
 """
 Modules for conformer generation workflows
 """
+import logging
+from time import time
+from typing import Optional
+
+import numpy as np
 
 from rdmc.mol import RDKitMol
 from .embedders import *
 from .pruners import *
 from .optimizers import *
 from .metrics import *
-import numpy as np
-import logging
-from time import time
 
 
 logging.basicConfig(
@@ -26,23 +28,61 @@ class StochasticConformerGenerator:
     """
     A module for stochastic conformer generation. The workflow follows an embed -> optimize -> prune cycle with
     custom stopping criteria. Additional final modules can be added at the user's discretion.
+
+    Args:
+        smiles (str): SMILES input for which to generate conformers.
+        embedder (ConfGenEmbedder, optional): Instance of a :obj:`ConfGenEmbedder <rdmc.conformer_generation.embedders.ConfGenEmbedder>`.
+                                              Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
+                                              :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
+                                              :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
+        optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
+                                                Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+                                                :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+                                                :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
+        estimator (Estimator, optional): Instance of an :obj:`Estimator <rdmc.conformer_generation.solvation.Estimator>`. Available option is
+                                         :obj:`ConfSolv <rdmc.conformer_generation.solvation.ConfSolv>`.
+        pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
+                                          :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                          :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+        metric (SCGMetric, optional): The available option is `SCGMetric <rdmc.conformer_generation.metrics.SCGMetric>`.
+        min_iters (int, optional): Minimum number of iterations for which to run the module.
+        max_iters (int, optional}: Maximum number of iterations for which to run the module.
+        final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete.
     """
-    def __init__(self, smiles, embedder=None, optimizer=None, estimator=None, pruner=None,
-                 metric=None, min_iters=None, max_iters=None, final_modules=None,
-                 config=None, track_stats=False):
+    def __init__(self,
+                 smiles,
+                 embedder: Optional['ConfGenEmbedder'] = None,
+                 optimizer: Optional['ConfGenOptimizer'] = None,
+                 estimator: Optional['Estimator'] = None,
+                 pruner: Optional['ConfGenPruner'] = None,
+                 metric: Optional['SCGMetric'] = None,
+                 min_iters: Optional[int] = None,
+                 max_iters: Optional[int] = None,
+                 final_modules: Optional[list] = None,
+                 config: Optional[dict] = None,
+                 track_stats: bool = False):
         """
-        Generate an RDKitMol Molecule instance from a RDKit ``Chem.rdchem.Mol`` or ``RWMol`` molecule.
+        Initialize the StochasticConformerGenerator module.
 
         Args:
             smiles (str): SMILES input for which to generate conformers.
-            embedder (class): Instance of an embedder from embedders.py.
-            optimizer (class): Instance of a optimizer from optimizers.py.
-            estimator (class): Any energy estimator instance.
-            pruner (class): Instance of a pruner from pruners.py.
-            metric (class): Instance of a metric from metrics.py.
-            min_iters (int): Minimum number of iterations for which to run the module (default=5).
-            max_iters (int}: Maximum number of iterations for which to run the module (default=100).
-            final_modules (List): List of instances of optimizer/pruner to run after initial cycles complete.
+            embedder (ConfGenEmbedder, optional): Instance of a :obj:`ConfGenEmbedder <rdmc.conformer_generation.embedders.ConfGenEmbedder>`.
+                                                Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
+                                                :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
+                                                :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
+            optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
+                                                    Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+                                                    :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+                                                    :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
+            estimator (Estimator, optional): Instance of an :obj:`Estimator <rdmc.conformer_generation.solvation.Estimator>`. Available option is
+                                            :obj:`ConfSolv <rdmc.conformer_generation.solvation.ConfSolv>`.
+            pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
+                                            :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                            :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+            metric (SCGMetric, optional): The available option is `SCGMetric <rdmc.conformer_generation.metrics.SCGMetric>`.
+            min_iters (int, optional): Minimum number of iterations for which to run the module.
+            max_iters (int, optional}: Maximum number of iterations for which to run the module.
+            final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete.
         """
 
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
@@ -74,8 +114,19 @@ class StochasticConformerGenerator:
         if isinstance(self.pruner, TorsionPruner):
             self.pruner.initialize_torsions_list(smiles)
 
-    def __call__(self, n_conformers_per_iter, **kwargs):
+    def __call__(self,
+                 n_conformers_per_iter: int,
+                 **kwargs,
+                 ) -> List[dict]:
+        """
+        Run the workflow for stochastic conformer generation.
 
+        Args:
+            n_conformers_per_iter (int): The number of conformers to generate per iteration.
+
+        Returns:
+            unique_mol_data (List[dict]): A list of dictionaries containing the unique conformers.
+        """
         self.logger.info(f"Generating conformers for {self.smiles}")
         time_start = time()
         for _ in range(self.max_iters):
@@ -131,9 +182,46 @@ class StochasticConformerGenerator:
 
         return unique_mol_data
 
-    def set_config(self, config, embedder=None, optimizer=None, pruner=None, metric=None, final_modules=None,
-                   min_iters=None, max_iters=None):
+    def set_config(self,
+                   config: str,
+                   embedder: Optional['ConfGenEmbedder'] = None,
+                   optimizer: Optional['ConfGenOptimizer'] = None,
+                   pruner: Optional['ConfGenPruner'] = None,
+                   metric: Optional['SCGMetric'] = None,
+                   min_iters: Optional[int] = None,
+                   max_iters: Optional[int] = None,
+                   final_modules: Optional[list] = None,
+                   ):
+        """
+        Set the configuration for the conformer generator with pre-defined options: ``"loose"`` and ``"normal"``.
 
+        Args:
+            embedder (ConfGenEmbedder, optional): Instance of a :obj:`ConfGenEmbedder <rdmc.conformer_generation.embedders.ConfGenEmbedder>`.
+                                                Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
+                                                :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
+                                                :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
+                                                Defaults to :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`.
+            optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
+                                                    Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+                                                    :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+                                                    :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`. Defaults to 
+                                                    :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>` with ``"gff"`` method.
+            pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
+                                              :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                              :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`. By default,
+                                              ``"loose"`` utilizes :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>` with 
+                                              ``mean_chk_threshold=20`` and ``max_chk_threshold=30``, and ``"normal"`` utilizes
+                                              :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>`.
+            metric (SCGMetric, optional): The available option is `SCGMetric <rdmc.conformer_generation.metrics.SCGMetric>`.
+                                          By default, both modes use ``"entropy"`` metric, while ``"loose"`` with ``window=3`` and ``threshold=0.05``,
+                                          and ``"normal"`` with ``window=5`` and ``threshold=0.01``.
+            min_iters (int, optional): Minimum number of iterations for which to run the module. Defaults to ``3`` for ``"loose"`` and ``5`` for ``"normal"``.
+            max_iters (int, optional}: Maximum number of iterations for which to run the module. Defaults to ``20`` for ``"loose"`` and ``100`` for ``"normal"``.
+            final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete. By default, no final modules are used for ``"loose"``.
+                                  For ``"normal"``, two :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` with ``ewin=12`` and ``ewin=6``, are introduced
+                                  before and after a :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>` with ``"gfn2"`` method
+                                  and ``"vtight"`` level.
+        """
         if config == "loose":
             self.embedder = ETKDGEmbedder() if not embedder else embedder
             self.optimizer = XTBOptimizer(method="gff") if not optimizer else optimizer
@@ -156,37 +244,63 @@ class StochasticConformerGenerator:
             self.min_iters = 5 if not min_iters else min_iters
             self.max_iters = 100 if not max_iters else max_iters
 
-class ConformerGenerator():
+class ConformerGenerator:
+    """
+    A module for conformer generation. The workflow follows an embed -> optimize -> prune cycle with
+    custom stopping criteria. Additional final modules can be added at the user's discretion.
+
+    Args:
+        smiles (str): SMILES input for which to generate conformers.
+        multiplicity (int, optional): The spin multiplicity of the species. Defaults to ``None``,
+                                      which will be interpreted from molecule generated by the `smiles`.
+        optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
+                                                Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+                                                :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+                                                :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
+        pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
+                                          :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                          :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+        verifiers (Verifier, optional): Instance of a :obj:`Verifier <rdmc.conformer_generation.verifiers.Verifier>`.
+                                        Available option is :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.verifiers.XTBFrequencyVerifier>`.
+        sampler (TorsionalSampler, optional): Instance of a :obj:`TorsionalSampler <rdmc.conformer_generation.sampler.TorsionalSampler>`.
+        final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete.
+        save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
+    """
     def __init__(self,
                  smiles: str,
                  multiplicity: Optional[int] = None,
-                 optimizer: Optional['Optimizer'] = None,
+                 optimizer: Optional['ConfGenOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
                  verifiers: Optional[Union['Verifier',List['Verifier']]] = None,
                  sampler: Optional['TorisonalSampler'] = None,
-                 final_modules: Optional[Union['Optimizer','Verifier']] = None,
+                 final_modules: Optional[Union['ConfGenOptimizer','Verifier']] = None,
                  save_dir: Optional[str] = None,
                  ) -> 'ConformerGenerator':
         """
-        Initiate the conformer generator object. The best practice is set all information here
+        Initiate the conformer generator object. The best practice is set all information here.
+
         Args:
-            smiles (str): The SMILES of the species.
-            multiplicity (int, optional): The spin multiplicity of the species. The spin multiplicity will be interpreted from the smiles if this
-                                          is not given by the user.
-            optimizer (GaussianOptimizer, optional): The optimizer used to optimize geometries.
-            pruner (ConfGenPruner, optional): The pruner used to prune conformers based on geometric similarity after optimization. Available options are
-                                              `CRESTPruner` and `TorsionPruner`.
-            verifiers (XTBFrequencyVerifier, optional): The verifier used to verify the obtained conformer.
-            sampler (TorisonalSampler, optional): The sampler used to do automated conformer search for the obtained conformer.
-            final_modules (Optimizer, Verifier, optional): The final modules can include optimizer in different LoT than previous
-                                                           one and verifier used to verify the obtained conformer.
+            smiles (str): SMILES input for which to generate conformers.
+            multiplicity (int, optional): The spin multiplicity of the species. Defaults to ``None``,
+                                        which will be interpreted from molecule generated by the `smiles`.
+            optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
+                                                    Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+                                                    :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+                                                    :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
+            pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
+                                            :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                                            :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+            verifiers (Verifier, optional): Instance of a :obj:`Verifier <rdmc.conformer_generation.verifiers.Verifier>`.
+                                            Available option is :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.verifiers.XTBFrequencyVerifier>`.
+            sampler (TorsionalSampler, optional): Instance of a :obj:`TorsionalSampler <rdmc.conformer_generation.sampler.TorsionalSampler>`.
+            final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete.
             save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.smiles = smiles
         if multiplicity:
            self.multiplicity = multiplicity
-        else: 
+        else:
             mol = RDKitMol.FromSmiles(smiles)
             mul = mol.GetSpinMultiplicity()
             self.multiplicity = mul
@@ -203,12 +317,14 @@ class ConformerGenerator():
     def embed_stable_species(self,
                              smiles: str,
                              n_conformers: int = 20,
-                             ) -> 'rdmc.RDKitMol':
+                             ) -> 'RDKitMol':
         """
         Embed the well conformer according to the SMILES provided.
+
         Args:
             smiles (str): The well conformer SMILES.
-            n_conformers (int, optional): The maximum number of conformers to be generated. Defaults to 20.
+            n_conformers (int, optional): The maximum number of conformers to be generated. Defaults to ``20``.
+
         Returns:
             An RDKitMol of the well conformer with 3D geometry embedded.
         """
@@ -243,18 +359,18 @@ class ConformerGenerator():
         return mol
 
     def set_filter(self,
-                   mol: 'RDKitMol',
+                   mol: RDKitMol,
                    n_conformers: int,
                    ) -> list:
         """
-        Assign the indices of reactions to track wheter the conformers are passed to the following steps.
+        Assign the indices of conformers to track whether the conformers are passed to the following steps.
 
         Args:
             mol ('RDKitMol'): The stable species in RDKitMol object with 3D geometries embedded.
             n_conformers (int): The maximum number of conformers to be passed to the following steps.
 
         Returns:
-            An RDKitMol with KeepIDs having `True` values to be passed to the following steps.
+            RDKitMol: with ``KeepIDs`` as a list of ``True`` and ``False`` indicating whether a conformer passes the check.
         """
         energy_dict = mol.energy
         KeepIDs = mol.KeepIDs
@@ -275,10 +391,10 @@ class ConformerGenerator():
         Run the workflow of well conformer generation.
 
         Args:
-            n_conformers (int): The maximum number of conformers to be generated. Defaults to 20.
-            n_verifies (int): The maximum number of conformers to be passed to the verifiers.  Defaults to 20.
-            n_sampling (int): The maximum number of conformers to be passed to the torsional sampling. Defaults to 1.
-            n_refines (int): The maximum number of conformers to be passed to the final modeuls. Defaults to 1.
+            n_conformers (int): The maximum number of conformers to be generated. Defaults to ``20``.
+            n_verifies (int): The maximum number of conformers to be passed to the verifiers. Defaults to ``20``.
+            n_sampling (int): The maximum number of conformers to be passed to the torsional sampling. Defaults to ``1``.
+            n_refines (int): The maximum number of conformers to be passed to the final modules. Defaults to ``1``.
         """
 
         if self.save_dir:

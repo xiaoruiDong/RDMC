@@ -53,14 +53,20 @@ class BaseLog(object):
         Args:
             update_fun (str): The method name for the update function.
 
-        Example:
-            @property
-            @auto_update_prop('update_prop1')
-            def prop1(self):
-                pass
+        Examples:
+            This decorator can be used as follows:
 
-            def update_prop1(self):
-                # define self._prop1
+            .. code-block:: python
+
+                @property
+                @auto_update_prop('update_prop1')
+                def prop1(self):
+                    "docstring for prop1"
+
+                def update_prop1(self):
+                    # define how to get the value of prop1
+                    # and set the value to self._prop1
+
         """
         def wrapper(func):
             @property
@@ -405,27 +411,28 @@ class CclibLog(BaseLog):
                 sanitize: Optional[bool] = None,
                 ) -> 'RDKitMol':
         """
-        Perceive the xyzs in the file and turn the geometries to conformers.
+        Perceive the xyzs in the file, create a :func:`rdmc.mol.RDKitMol` and convert the geometries to its conformers.
 
         Args:
             refid (int): The conformer ID in the log file to be used as the reference for mol perception.
-                         Defaults to -1, meaning it is determined by the following criteria:
+                         Defaults to ``-1``, meaning it is determined by the following criteria:
+
                          - For opt, it is the last geometry if succeeded; otherwise, the initial geometry;
                          - For freq, it is the geometry input;
                          - For scan, it is the geometry input;
                          - For IRC, uses the initial geometry if bidirectional job; uses the last converged
                            geometry if uni-directional job.
-            embed_confs (bool): Whether to embed intermediate conformers in the file to the mol.
-                                Defaults to ``True``. To clear, at least one conformer will be included in
-                                obtained mol, and its geometry is determined by `refid`.
-            converged (bool): Whether to only embed converged conformers to the mol. This option
+            embed_confs (bool): Whether to embed intermediate conformers in the file to the obtained molecule.
+                                Defaults to ``True``. To be clear, at least one conformer will be included in
+                                obtained mol, and its geometry is determined by ``refid``.
+            converged (bool): Whether to only embed converged conformers to the obtained molecule. This option
                               is only valid when ``embed_confs`` is ``True``.
             neglect_spin (bool): Whether to neglect the error when spin multiplicity are different
                                  between the generated mol and the value in the output file. This
                                  can be useful for calculations involves TS. Defaults to ``True``.
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
-            sanitize (bool): Whether to sanitize the generated mol. Defaults to `True`.
-                             If a TS involved in the job, better to set it `False`
+            sanitize (bool): Whether to sanitize the generated molecule. Defaults to ``True``.
+                             If a TS involved in the job, better to set it ``False``.
 
         Returns:
             RDKitMol: a molecule generated from the output file.

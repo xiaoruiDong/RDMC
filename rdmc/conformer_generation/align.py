@@ -20,19 +20,23 @@ from rdmc.forcefield import OpenBabelFF
 class NaiveAlign(object):
     """
     This is a naive alignment algorithm aligns reactant conformers.
-        For 1 reactant system, the algorithm simply put the center of the reactant at the origin.
-        For 2 reactant system, the resulting alignment has the following charateristics:
-        - the centroid for fragment 1 is at the origin.
-        - the centroid for fragment 2 is at (R1 + R2 + D), where R1 is the radius of fragment 1, R2 is the radius
-          of fragment 2, and D is a pre-set distance value defined by the user.
-        - the centroid of the reacting atoms in fragment 1 should be around the line (0,0,0) => (1,0,0).
-        - the centroid of the reacting atoms in fragment 2 should be around the line (0,0,0) => (1,0,0).
-        - the distance between atoms to form bonds are minimized.
-        # TODO: [long term goal]
-        For 3 reactant system, the feature is under-development. There should be two cases: close-linear alignment and triangle alignment,
-        depending on the max number of interactions among fragments.
-        For 4 reactant system, the feature is under-development. There should be three cases: close-linear, square, and tetrahedron alignment,
-        depending on the max number of interactions among fragments.
+
+    - For 1 reactant system, the algorithm simply put the center of the reactant at the origin.
+    - For 2 reactant system, the resulting alignment has the following characteristics:
+
+      - the centroid for fragment 1 is at the origin.
+      - the centroid for fragment 2 is at (R1 + R2 + D), where R1 is the radius of fragment 1, R2 is the radius
+        of fragment 2, and D is a pre-set distance value defined by the user.
+      - the centroid of the reacting atoms in fragment 1 should be around the line (0,0,0) => (1,0,0).
+      - the centroid of the reacting atoms in fragment 2 should be around the line (0,0,0) => (1,0,0).
+      - the distance between atoms to form bonds are minimized.
+
+    The following are under development:
+
+    - For 3 reactant system, the feature is under-development. There should be two cases: close-linear alignment and triangle alignment,
+      depending on the max number of interactions among fragments.
+    - For 4 reactant system, the feature is under-development. There should be three cases: close-linear, square, and tetrahedron alignment,
+      depending on the max number of interactions among fragments.
     """
 
     dist = 2.0
@@ -48,12 +52,12 @@ class NaiveAlign(object):
 
         Args:
             coords (np.array): The coordinates of the reactant complex.
-            atom_maps (List[List]): The atom map in the complex. E.g., ([1,2,5], [3,4]) indicates the 1st,
+            atom_maps (List[List]): The atom map in the complex. E.g., ``([1,2,5], [3,4])`` indicates the 1st,
                                     2nd, and 5th atoms are in the first molecule and 3th and 4th atoms are
                                     in the second molecule.
-            formed_bonds (List[tuple]): The bonds that are formed in the reaction. E.g., [(1,2)] indicates
+            formed_bonds (List[tuple]): The bonds that are formed in the reaction. E.g., ``[(1,2)]`` indicates
                                         atoms 1 and 2 will form a bond in the reaction.
-            broken_bonds (List[tuple]): The bonds that are broken in the reaction. E.g., [(1,2)] indicates
+            broken_bonds (List[tuple]): The bonds that are broken in the reaction. E.g., ``[(1,2)]`` indicates
                                         the bond between atoms 1 and 2 will be broken in the reaction.
         """
         self.coords = coords
@@ -116,8 +120,8 @@ class NaiveAlign(object):
             mols (RDKitMol): A list of reactants.
             formed_bonds (List[tuple]): bonds formed in the reaction.
             broken_bonds (List[tuple]): bonds broken in the reaction.
-            conf_id1 (int, optional): The conformer id to be used in `mol1`. Defaults to 0.
-            conf_id2 (int, optional): The conformer id to be used in `mol2`. Defaults to 0.
+            conf_id1 (int, optional): The conformer id to be used in `mol1`. Defaults to ``0``.
+            conf_id2 (int, optional): The conformer id to be used in `mol2`. Defaults to ``0``.
         """
         if conf_ids is None:
             conf_ids == [0] * len(mols)
@@ -145,7 +149,7 @@ class NaiveAlign(object):
             r_complex (RDKitMol): The reactant complex.
             formed_bonds (List[tuple]): bonds formed in the reaction.
             broken_bonds (List[tuple]): bonds broken in the reaction.
-            conf_id (int, optional): The conformer id to be used in the `complex`. Defaults to 0.
+            conf_id (int, optional): The conformer id to be used in the ``r_complex``. Defaults to ``0``.
         """
         coords = r_complex.GetPositions(id=conf_id)
         atom_maps = [list(atom_map) for atom_map in r_complex.GetMolFrags()]
@@ -165,7 +169,7 @@ class NaiveAlign(object):
         Args:
             r_complex (RDKitMol): The reactant complex.
             p_complex (RDKitMol): The product complex.
-            conf_id (int, optional): The conformer id to be used in the reactant complex `r_complex`. Defaults to 0.
+            conf_id (int, optional): The conformer id to be used in the reactant complex ``r_complex``. Defaults to ``0``.
         """
         coords = r_complex.GetPositions(id=conf_id)
         atom_maps = [list(atom_map) for atom_map in r_complex.GetMolFrags()]
@@ -182,8 +186,8 @@ class NaiveAlign(object):
 
         Args:
             angles (np.array): Rotation angles for molecule fragment 1. It should be an array with a
-                               size of (1,3) indicate the rotation angles about the x, y, and z axes, respectively.
-            about_reacting (bool, optional): If rotate about the reactor center instead of the centroid. Defaults to False.
+                               size of ``(1,3)`` indicate the rotation angles about the x, y, and z axes, respectively.
+            about_reacting (bool, optional): If rotate about the reactor center instead of the centroid. Defaults to ``False``.
 
         Returns:
             np.array: The coordinates after the rotation operation.
@@ -207,7 +211,8 @@ class NaiveAlign(object):
         Initialize the alignment for the reactants. Currently only available for 1 reactant and 2 reactant systems.
 
         Args:
-            dist (float, optional): The a preset distance used to separate molecules. Defaults to None meaning using the value of `self.dist`.
+            dist (float, optional): The a preset distance used to separate molecules. Defaults to ``None``,
+                                    meaning using the default value of :obj:`dist`.
         """
         if dist is not None and dist > 0:
             self.dist = dist
@@ -230,7 +235,7 @@ class NaiveAlign(object):
                          angles: np.array,
                          ) -> float:
         """
-        Calculate the score of bimolecule alignment.
+        Calculate the score of bimolecular reaction alignment.
 
         Args:
             angles (np.array): an array with 6 elements. The first 3 angles correspond to the rotation of the first fragment,
@@ -281,12 +286,17 @@ class NaiveAlign(object):
         return score1 + score2 + score3
 
     def get_alignment_coords(self,
-                             dist: float = None,):
+                             dist: float = None,
+                             ) -> np.array:
         """
         Get coordinates of the alignment.
 
         Args:
-            dist (float, optional): The a preset distance used to separate molecules. Defaults to None meaning using the value of `self.dist`.
+            dist (float, optional): The a preset distance used to separate molecules.
+                                    Defaults to ``None meaning`` using the value of :obj:`dist`.
+
+        Returns:
+            np.array: The coordinates of the alignment.
         """
         self.initialize_align(dist=dist,)
 
@@ -304,26 +314,32 @@ class NaiveAlign(object):
 
     def __call__(self, dist: float = None,):
         """
-        Get coordinates of the alignment. Same as `self.get_alignment`
+        Get coordinates of the alignment. Equivalent to calling :obj:`get_alignment`.
 
         Args:
-            dist (float, optional): The a preset distance used to separate molecules. Defaults to None meaning using the value of `self.dist`.
+            dist (float, optional): The preset distance used to separate molecules.
+                                    Defaults to ``None`` meaning using the value of :obj:`dist`.
+
+        Returns:
+            np.array: The coordinates of the alignment.
         """
         return self.get_alignment_coords(dist=dist)
 
 
-def reset_pmol(r_mol, p_mol):
+def reset_pmol(r_mol: 'RDKitMol',
+               p_mol: 'RDKitMol',
+               ) -> 'RDKitMol':
     """
     Reset the product mol to best align with the reactant. This procedure consists of initializing the product 3D
     structure with the reactant coordinates and then 1) minimizing the product structure with constraints for broken
-    bonds and 2) performing a second minimization with no constraints
+    bonds and 2) performing a second minimization with no constraints.
 
     Args:
-        r_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
-        p_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
+        r_mol ('RDKitMol' or 'Mol'): An RDKit Mol object for reactant.
+        p_mol ('RDKitMol' or 'Mol'): An RDKit Mol object for product.
 
-    Returns
-        new_p_mol: The new product mol with changed coordinates
+    Returns:
+        RDKitMol: The new product mol with changed coordinates.
     """
     # copy current pmol and set new positions
     p_mol_new = p_mol.Copy(quickCopy=True)
@@ -351,19 +367,23 @@ def reset_pmol(r_mol, p_mol):
     return obff.get_optimized_mol()
 
 
-def prepare_mols(r_mol, p_mol, align_bimolecular=True):
+def prepare_mols(r_mol: 'RDKitMol',
+                 p_mol: 'RDKitMol',
+                 align_bimolecular: bool = True,
+                 ) -> Tuple['RDKitMol', 'RDKitMol']:
     """
     Prepare mols for reaction path analysis. If reactant has multiple fragments, first orient reactants in reacting
-    orientation. Then, reinitialize coordinates of product using reset_pmol function
+    orientation. Then, reinitialize coordinates of product using :obj:`reset_pmol` function.
 
     Args:
-        r_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
-        p_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
-        align_bimolecular (bool, optional): Whether or not to use alignment algorithm on bimolecular reactions
-                                            (defaults to True)
+        r_mol ('RDKitMol' or 'Mol'): An RDKit Mol object for reactant.
+        p_mol ('RDKitMol' or 'Mol'): An RDKit Mol object for product.
+        align_bimolecular (bool, optional): Whether or not to use alignment algorithm on bimolecular reactions.
+                                            Defaults to ``True``
 
-    Returns
-        r_mol, new_p_mol: The new reactant and product mols
+    Returns:
+        r_mol ('RDKitMol'): The new reactant molecule.
+        p_mol_new ('RDKitMol'): The new product molecule.
     """
     if len(r_mol.GetMolFrags()) == 2:
         if align_bimolecular:
@@ -372,16 +392,18 @@ def prepare_mols(r_mol, p_mol, align_bimolecular=True):
     return r_mol, p_mol_new
 
 
-def align_reactant_fragments(r_mol, p_mol):
+def align_reactant_fragments(r_mol: 'RDKitMol',
+                             p_mol: 'RDKitMol',
+                             ) -> 'RDKitMol':
     """
-    Given reactant and product mols, find details of formed and broken bonds and generate reacting reactant complex
+    Given reactant and product mols, find details of formed and broken bonds and generate reacting reactant complex.
 
     Args:
-        r_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
-        p_mol ('RDKitMol' or 'Mol'): a RDKit Mol object
+        r_mol ('RDKitMol' or 'Mol'): An RDKit Mol object for reactant.
+        p_mol ('RDKitMol' or 'Mol'): An RDKit Mol object for product.
 
-    Returns
-        r_mol_naive_align: The new reactant with aligned fragments
+    Returns:
+        RDKitMol: The new reactant with aligned fragments.
     """
     formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_mol, p_mol)
     if len(formed_bonds + broken_bonds) == 0:

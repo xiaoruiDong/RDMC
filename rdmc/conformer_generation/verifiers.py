@@ -21,6 +21,9 @@ from rdmc.external.xtb_tools.opt import run_xtb_calc
 class Verifier:
     """
     The abstract class for verifiers.
+
+    Args:
+        track_stats (bool, optional): Whether to track status. Defaults to ``False``.
     """
     def __init__(self,
                  track_stats: bool = False):
@@ -28,7 +31,7 @@ class Verifier:
         Initialize the verifier.
 
         Args:
-            track_stats (bool, optional): Whether to track status. Defaults to False.
+            track_stats (bool, optional): Whether to track status. Defaults to ``False``.
         """
         self.track_stats = track_stats
         self.n_failures = None
@@ -43,13 +46,13 @@ class Verifier:
                        **kwargs):
         """
         The abstract method for verifying guesses (or optimized stable species geometries). The method need to take
-        `mol` in RDKitMol, `keep_ids` in list, `multiplicity` in int, and `save_dir` in str, and returns
-        a list indicating the ones passing the check.
+        ``mol`` in RDKitMol, ``keep_ids`` in list, ``multiplicity`` in int, and ``save_dir`` in str, and returns
+        a ``list`` indicating the ones passing the check.
 
         Args:
             mol ('RDKitMol'): The stable species in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the stable species. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the stable species. Defaults to ``1``.
+            save_dir (_type_, optional): The directory path to save the results. Defaults to ``None``.
 
         Raises:
             NotImplementedError
@@ -66,11 +69,11 @@ class Verifier:
 
         Args:
             mol ('RDKitMol'): The stable species in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the stable species. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the stable species. Defaults to ``1``.
+            save_dir (_type_, optional): The directory path to save the results. Defaults to ``None``.
 
         Returns:
-            list: a list of true and false
+            list: a list of ``True`` and ``False`` indicating whether a conformer passes the check.
         """
         time_start = time()
         mol = self.verify_guesses(
@@ -91,18 +94,24 @@ class Verifier:
 class XTBFrequencyVerifier(Verifier):
     """
     The class for verifying the stable species by calculating and checking its frequencies using XTB.
+
+    Args:
+        cutoff_frequency (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
+                                            imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations
+                                            Defaults to ``-100.`` cm-1.
+        track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
     """
     def __init__(self,
-                 cutoff_frequency: int = -100,
+                 cutoff_frequency: float = -100.,
                  track_stats: bool = False):
         """
         Initiate the XTB frequency verifier.
 
         Args:
-            cutoff_frequency (int, optional): Cutoff frequency above which a frequency does not correspond to a TS
-                imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations
-                (defaults to -100 cm-1)
-            track_stats (bool, optional): Whether to track stats. Defaults to False.
+            cutoff_frequency (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
+                                                imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations
+                                                Defaults to ``-100.`` cm-1.
+            track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
         """
         super(XTBFrequencyVerifier, self).__init__(track_stats)
 
@@ -118,11 +127,11 @@ class XTBFrequencyVerifier(Verifier):
 
         Args:
             mol ('RDKitMol'): The stable species in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the stable species. Defaults to 1.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to None.
+            multiplicity (int, optional): The spin multiplicity of the stable species. Defaults to ``1``.
+            save_dir (_type_, optional): The directory path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
         if mol.GetNumAtoms() != 1:
             for i in range(mol.GetNumConformers()):

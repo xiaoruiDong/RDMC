@@ -10,14 +10,18 @@ rdmc
 .. toctree::
    :maxdepth: 4
 
-   rdmc.external
+   external/index
+   mathlib/index
+   conformer_generation/index
 
 
 .. toctree::
    :maxdepth: 4
 
-   rdmc.conf
-   rdmc.forcefield
-   rdmc.mol
-   rdmc.utils
-   rdmc.view
+   conf
+   forcefield
+   mol
+   reaction
+   ts
+   utils
+   view

@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 """
-Modules for optimizing transition state geometries
+Modules for optimizing transition state geometries.
 """
 
 # Import RDKit and RDMC first to avoid unexpected errors
@@ -32,11 +32,17 @@ except:
 class TSOptimizer:
     """
     The abstract class for TS optimizer.
+
+    Args:
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     def __init__(self,
                  track_stats: Optional[bool] = False):
         """
         Initialize the TS optimizer.
+
+        Args:
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         self.track_stats = track_stats
         self.n_failures = None
@@ -50,15 +56,15 @@ class TSOptimizer:
                             **kwargs):
         """
         The abstract method for optimizing TS guesses. It will be implemented in actual classes.
-        The method needs to take `mol` in `RDKitMol` and `save_dir` as `str` as input arguments, and
-        return the optimized molecule as `RDKitMol`.
+        The method needs to take ``mol`` in ``RDKitMol`` and ``save_dir`` as ``str`` as input arguments, and
+        return the optimized molecule as ``RDKitMol``.
 
         Args:
             mol (RDKitMol): The TS in RDKitMol object with geometries embedded as conformers.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         raise NotImplementedError
 
@@ -74,8 +80,8 @@ class TSOptimizer:
         Args:
             save_dir (str): The path to the directory to save the results.
             opt_mol (RDKitMol): The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
-            keep_ids (dict): Dictionary of which opts succeeded and which failed
-            energies (dict): Dictionary of energies for each conformer
+            keep_ids (dict): Dictionary of which opts succeeded and which failed.
+            energies (dict): Dictionary of energies for each conformer.
         """
         # Save optimized ts mols
         ts_path = os.path.join(save_dir, "ts_optimized_confs.sdf")
@@ -102,10 +108,10 @@ class TSOptimizer:
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            save_dir (str, optional): The path to save results. Defaults to None.
+            save_dir (str, optional): The path to save results. Defaults to ``None``.
 
         Returns:
-            'RDKitMol': The optimized molecule as RDKitMol with 3D geometries embedded.
+            'RDKitMol': The optimized TS molecule as ``RDKitMol`` with 3D geometries embedded.
         """
         time_start = time()
 
@@ -126,6 +132,13 @@ class SellaOptimizer(TSOptimizer):
     """
     The class to optimize TS geometries using the Sella algorithm.
     It uses XTB as the backend calculator, ASE as the interface, and Sella module from the Sella repo.
+
+    Args:
+        method (str, optional): The method in XTB used to optimize the geometry. Options are
+                                ``'GFN1-xTB'`` and ``'GFN2-xTB'``. Defaults to ``"GFN2-xTB"``.
+        fmax (float, optional): The force threshold used in the optimization. Defaults to ``1e-3``.
+        steps (int, optional): Max number of steps allowed in the optimization. Defaults to ``1000``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     def __init__(self,
                  method: str = "GFN2-xTB",
@@ -156,10 +169,10 @@ class SellaOptimizer(TSOptimizer):
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            save_dir (str, optional): The path to save results. Defaults to None.
+            save_dir (str, optional): The path to save results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
         opt_mol.energy = {}
@@ -192,7 +205,14 @@ class SellaOptimizer(TSOptimizer):
 class OrcaOptimizer(TSOptimizer):
     """
     The class to optimize TS geometries using the Berny algorithm built in Orca.
-    You have to have the Orca package installed to run this optimizer
+    You have to have the Orca package installed to run this optimizer.
+
+    Args:
+        method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Orca.
+                                If you want to use XTB methods, you need to put the xtb binary into the Orca directory.
+                                Defaults to ``"XTB2"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
     def __init__(self,
                  method: str = "XTB2",
@@ -204,9 +224,10 @@ class OrcaOptimizer(TSOptimizer):
 
         Args:
             method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Orca.
-                                    If you want to use XTB methods, you need to put the xtb binary into the Orca directory. Defaults to XTB2.
-            nprocs (int, optional): The number of processors to use. Defaults to 1.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+                                    If you want to use XTB methods, you need to put the xtb binary into the Orca directory.
+                                    Defaults to ``"XTB2"``.
+            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(OrcaOptimizer, self).__init__(track_stats)
 
@@ -219,13 +240,18 @@ class OrcaOptimizer(TSOptimizer):
         else:
             self.orca_binary = ORCA_BINARY
 
-    def extract_frequencies(self, save_dir, n_atoms):
+    def extract_frequencies(self,
+                            save_dir: str,
+                            n_atoms: int):
         """
         Extract frequencies from the Orca opt job.
 
         Args:
             save_dir (str): Path where Orca logs are saved.
             n_atoms (int): The number of atoms in the molecule.
+
+        Returns:
+            np.ndarray: The frequencies in cm-1.
         """
 
         log_file = os.path.join(save_dir, "orca_opt.log")
@@ -256,11 +282,11 @@ class OrcaOptimizer(TSOptimizer):
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            multiplicity (int): The multiplicity of the molecule. Defaults to 1.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            multiplicity (int): The multiplicity of the molecule. Defaults to ``1``.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
         opt_mol.energy = {}  # TODO: add orca energies
@@ -323,6 +349,14 @@ class GaussianOptimizer(TSOptimizer):
     """
     The class to optimize TS geometries using the Berny algorithm built in Gaussian.
     You have to have the Gaussian package installed to run this optimizer
+
+    Args:
+        method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
+                                We provided a script to run XTB using Gaussian, but there are some extra steps to do.
+                                Defaults to ``"GFN2-xTB"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
     def __init__(self,
@@ -335,10 +369,11 @@ class GaussianOptimizer(TSOptimizer):
 
         Args:
             method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
-                                    We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
-            nprocs (int, optional): The number of processors to use. Defaults to 1.
-            memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+                                    We provided a script to run XTB using Gaussian, but there are some extra steps to do.
+                                    Defaults to ``"GFN2-xTB"``.
+            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+            memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(GaussianOptimizer, self).__init__(track_stats)
 
@@ -365,11 +400,11 @@ class GaussianOptimizer(TSOptimizer):
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            multiplicity (int): The multiplicity of the molecule. Defaults to 1.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            multiplicity (int): The multiplicity of the molecule. Defaults to ``1``.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
         opt_mol.energy = {}
@@ -432,8 +467,16 @@ class GaussianOptimizer(TSOptimizer):
 
 class QChemOptimizer(TSOptimizer):
     """
-    The class to optimize TS geometries using the Baker’s eigenvector-following (EF) algorithm built in QChem.
-    You have to have the QChem package installed to run this optimizer
+    The class to optimize TS geometries using the Baker's eigenvector-following (EF) algorithm built in QChem.
+    You have to have the QChem package installed to run this optimizer.
+
+    Args:
+        method (str, optional): The method to be used for TS optimization. you can use the method available in QChem.
+                                Defaults to ``"wB97x-d3"``.
+        basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem.
+                                Defaults to ``"def2-tzvp"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
     def __init__(self,
@@ -442,13 +485,15 @@ class QChemOptimizer(TSOptimizer):
                  nprocs: int = 1,
                  track_stats: bool = False):
         """
-        Initiate the QChem berny optimizer.
+        Initiate the QChem EF optimizer.
 
         Args:
-            method (str, optional): The method to be used for TS optimization. you can use the method available in QChem. Defaults to wB97x-d3.
-            basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem. Defaults to def2-tzvp.
-            nprocs (int, optional): The number of processors to use. Defaults to 1.
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+            method (str, optional): The method to be used for TS optimization. you can use the method available in QChem.
+                                    Defaults to ``"wB97x-d3"``.
+            basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem.
+                                    Defaults to ``"def2-tzvp"``.
+            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
         super(QChemOptimizer, self).__init__(track_stats)
 
@@ -472,11 +517,11 @@ class QChemOptimizer(TSOptimizer):
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            multiplicity (int): The multiplicity of the molecule. Defaults to 1.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
+            multiplicity (int): The multiplicity of the molecule. Defaults to ``1``.
+            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol
+            RDKitMol: The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
         opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
         opt_mol.energy = {}

@@ -26,6 +26,9 @@ except ImportError:
 
 
 class ConfGenEmbedder:
+    """
+    Base class for conformer generation embedders.
+    """
     def __init__(self, track_stats=False):
 
         self.iter = 0
@@ -35,7 +38,13 @@ class ConfGenEmbedder:
         self.stats = []
         self.smiles = None
 
-    def update_mol(self, smiles):
+    def update_mol(self, smiles: str):
+        """
+        Update the molecule graph based on the SMILES string.
+
+        Args:
+            smiles (str): SMILES string of the molecule
+        """
         # Only update the molecule if smiles is changed
         # Only copy the molecule graph from the previous run rather than conformers
         if smiles != self.smiles:
@@ -45,12 +54,33 @@ class ConfGenEmbedder:
             # Copy the graph but remove conformers
             self.mol = self.mol.Copy(quickCopy=True)
 
-    def embed_conformers(self, n_conformers):
+    def embed_conformers(self,
+                         n_conformers: int):
+        """
+        Embed conformers according to the molecule graph.
+
+        Args:
+            n_conformers (int): Number of conformers to generate.
+
+        Raises:
+            NotImplementedError: This method needs to be implemented in the subclass.
+        """
         raise NotImplementedError
 
     def update_stats(self,
-                     n_trials,
-                     time=0.):
+                     n_trials: int,
+                     time: float = 0.
+                     ) -> dict:
+        """
+        Update the statistics of the conformer generation.
+
+        Args:
+            n_trials (int): Number of trials
+            time (float, optional): Time spent on conformer generation. Defaults to ``0.``.
+
+        Returns:
+            dict: Statistics of the conformer generation
+        """
         n_success = self.mol.GetNumConformers()
         self.n_success = n_success
         self.percent_success = n_success / n_trials * 100
@@ -62,10 +92,27 @@ class ConfGenEmbedder:
         return stats
 
     def write_mol_data(self):
+        """
+        Write the molecule data.
+
+        Returns:
+            dict: Molecule data.
+        """
         return mol_to_dict(self.mol, copy=False, iter=self.iter)
 
-    def __call__(self, smiles, n_conformers):
+    def __call__(self,
+                 smiles: str,
+                 n_conformers: int):
+        """
+        Embed conformers according to the molecule graph.
 
+        Args:
+            smiles (str): SMILES string of the molecule.
+            n_conformers (int): Number of conformers to generate.
+
+        Returns:
+            dict: Molecule data.
+        """
         self.iter += 1
         time_start = time()
         self.update_mol(smiles)
@@ -82,7 +129,20 @@ class ConfGenEmbedder:
 
 
 class GeoMolEmbedder(ConfGenEmbedder):
-    def __init__(self, trained_model_dir, dataset="drugs", temp_schedule="linear", track_stats=False):
+    """
+    Embed conformers using GeoMol.
+
+    Args:
+            trained_model_dir (str): Directory of the trained model.
+            dataset (str, optional): Dataset used for training. Defaults to ``"drugs"``.
+            temp_schedule (str, optional): Temperature schedule. Defaults to ``"linear"``.
+            track_stats (bool, optional): Whether to track the statistics of the conformer generation. Defaults to ``False``.
+    """
+    def __init__(self,
+                 trained_model_dir: str,
+                 dataset: str = "drugs",
+                 temp_schedule: str = "linear",
+                 track_stats: bool = False):
         super(GeoMolEmbedder, self).__init__(track_stats)
 
         # TODO: add option of pre-pruning geometries using alpha values
@@ -101,8 +161,17 @@ class GeoMolEmbedder(ConfGenEmbedder):
         self.temp_schedule = temp_schedule
         self.dataset = dataset
 
-    def embed_conformers(self, n_conformers):
+    def embed_conformers(self,
+                         n_conformers: int):
+        """
+        Embed conformers according to the molecule graph.
 
+        Args:
+            n_conformers (int): Number of conformers to generate.
+
+        Returns:
+            mol: Molecule with conformers.
+        """
         # set "temperature"
         if self.temp_schedule == "none":
             self.model.random_vec_std = self.std
@@ -127,13 +196,37 @@ class GeoMolEmbedder(ConfGenEmbedder):
         return self.mol
 
 class ETKDGEmbedder(ConfGenEmbedder):
+    """
+    Embed conformers using ETKDG.
+    """
 
-    def embed_conformers(self, n_conformers):
+    def embed_conformers(self, n_conformers: int):
+        """
+        Embed conformers according to the molecule graph.
+
+        Args:
+            n_conformers (int): Number of conformers to generate.
+
+        Returns:
+            mol: Molecule with conformers.
+        """
         self.mol.EmbedMultipleConfs(n_conformers)
         return self.mol
 
 class RandomEmbedder(ConfGenEmbedder):
+    """
+    Embed conformers with coordinates of random numbers.
+    """
 
-    def embed_conformers(self, n_conformers):
+    def embed_conformers(self, n_conformers: int):
+        """
+        Embed conformers according to the molecule graph.
+
+        Args:
+            n_conformers (int): Number of conformers to generate.
+
+        Returns:
+            mol: Molecule with conformers.
+        """
         self.mol.EmbedMultipleNullConfs(n_conformers, random=True)
         return self.mol

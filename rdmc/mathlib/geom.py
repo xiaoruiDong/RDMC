@@ -131,20 +131,20 @@ def rotate(coords: np.array,
            about: Optional[np.array] = None,):
     """
     Rotate the coordinates according to the angles about the x, y, and z axes. The rotation is
-    about the origin, but their are a few options about choosing the 'about location'.
+    about the origin, but there are a few options about choosing the ``about`` location.
 
     Args:
-        coords (np.array): The 3D coordinates in numpy array with a size of N x 3.
-        angles (np.array): An array with a size of (1,3) indicate the rotation angles about the
+        coords (np.array): The 3D coordinates in numpy array with a size of :math:`N \\times 3`.
+        angles (np.array): An array with a size of ``(1,3)`` indicates the rotation angles about the
                            x, y, and z axes, respectively.
-        degrees (bool): If the angles are defined as degrees. Defaults to False.
+        degrees (bool): If the angles are defined as degrees. Defaults to ``False``.
         about_center (bool): Whether to rotate the coordinates about their center.
-                             Defaults to False. Note `about_center` cannot be assigned simultaneously with `about`.
+                             Defaults to ``False``. Note ``about_center`` cannot be assigned simultaneously with ``about``.
         about (np.array): The coordinate that the rotation is about. Should be a vector with a length of 3.
-                          It is defaults to `None`, and the coordinates is rotated about the origin.
-                          `about` cannot be specified along with `about_center.
+                          It is defaults to ``None``, rotating about the origin.
+                          ``about`` cannot be specified along with ``about_center``.
     Returns:
-        np.array: An numpy array with the same size as the original coords.
+        np.array: coordinates after the rotation.
     """
     if about_center and about is not None:
         raise ValueError('about and about_center cannot be specified simultaneously.')

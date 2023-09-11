@@ -10,16 +10,17 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import datetime
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../../'))
-import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
 project = 'RDMC'
-copyright = '2020, Xiaorui Dong'
-author = 'Xiaorui Dong'
+copyright = f'2020-{datetime.datetime.now().year}, Xiaorui Dong'
+author = 'Xiaorui Dong, Lagnajit Pattanaik, Shih-Cheng Li, ' \
+         'Kevin Spiekermann, Hao-Wei Pang, and William H. Green'
 
 # The full version, including alpha/beta/rc tags
 release = '0.1'
@@ -50,14 +51,29 @@ exclude_patterns = []
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
-html_theme = 'sphinx_rtd_theme'
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+html_theme = 'pydata_sphinx_theme'
+html_theme_options = {
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/xiaoruidong/rdmc",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        },
+    ]
+}
+
+# Make the `Returns` in docstring behave like `Args`
+napoleon_custom_sections = [('Returns', 'params_style')]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_css_files = [
+    'custom.css',
+]
 
 # -- Packages that are not importable from the default environment ---------
 

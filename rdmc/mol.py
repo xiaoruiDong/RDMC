@@ -45,17 +45,17 @@ KEEP_RDMOL_ATTRIBUTES = ['_repr_html_',
 
 class RDKitMol(object):
     """
-    A helpful wrapper for rdchem.Mol.
+    A helpful wrapper for ``Chem.rdchem.RWMol``.
     The method nomenclature follows the Camel style to be consistent with RDKit.
-    It keeps almost all of the orignal method of Chem.rdchem.Mol/RWMol, but add few useful
-    shortcuts, so that a user doesn't need to refer to other RDKit modules.
+    It keeps almost all of the original methods of ``Chem.rdchem.RWMol`` but has a few useful
+    shortcuts so that users don't need to refer to other RDKit modules.
     """
 
     def __init__(self,
                  mol: Union[Mol, RWMol],
                  keepAtomMap: bool = True):
         """
-        Generate an RDKitMol Molecule instance from a RDKit ``Chem.rdchem.Mol`` or ``RWMol`` molecule.
+        Generate an ``RDKitMol`` molecule object instance from a RDKit ``Chem.rdchem.Mol`` or ``RWMol`` molecule.
 
         Args:
             mol (Union[Mol, RWMol]): The RDKit ``Chem.rdchem.Mol`` / ``RWmol`` molecule to be converted.
@@ -93,12 +93,14 @@ class RDKitMol(object):
 
     def AddNullConformer(self,
                          confId: Optional[int] = None,
-                         random: bool = True):
+                         random: bool = True,
+                         ) -> None:
         """
-        Embed null conformer to existing RDKit mol.
+        Embed a conformer with atoms' coordinates of random numbers or with all atoms
+        located at the origin to the current `RDKitMol`.
 
         Args:
-            confId (int, optional): Which ID to set for the conformer (will add as last conformer by default).
+            confId (int, optional): Which ID to set for the conformer (will be added as the last conformer by default).
             random (bool, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
                                      coordinates. Defaults to ``True``.
         """
@@ -111,14 +113,16 @@ class RDKitMol(object):
         conf.SetId(confId)
         self._mol.AddConformer(conf)
 
-    def AddRedundantBonds(self, bonds: Iterable):
+    def AddRedundantBonds(self,
+                          bonds: Iterable,
+                         ) -> 'RDKitMol':
         """
         Add redundant bonds (not originally exist in the molecule) for
-        the convenience for some molecule operation or analysis. This function
+        facilitating a few molecule operation or analyses. This function
         will only generate a copy of the molecule and no change is conducted inplace.
 
         Args:
-            bonds: a list of length-2 Iterables containing the index of the ended atoms.
+            bonds: a list of length-2 Iterables containing the indexes of the ended atoms.
         """
         mol_cp = self.Copy()
         for bond in bonds:
@@ -138,8 +142,8 @@ class RDKitMol(object):
                  ) -> float:
         """
         Align molecules based on a reference molecule. This function will also return the RMSD value for the best alignment.
-        When leaving both ``prbMol`` and ``refMol`` blank, then the function will match the current molecules' conformers, and
-        PrbCid or refCid must be provided.
+        When leaving both ``prbMol`` and ``refMol`` blank, the function will align current molecule's conformers, and
+        ``PrbCid`` or ``refCid`` must be provided.
 
         Args:
             refMol (Mol): RDKit molecule as a reference. Should not be provided with ``prbMol``.
@@ -148,10 +152,10 @@ class RDKitMol(object):
             refCid (int, optional): The id of reference conformer. Defaults to ``0``.
             reflect (bool, optional): Whether to reflect the conformation of the probe molecule.
                                       Defaults to ``False``.
-            atomMap (list, optional): a vector of pairs of atom IDs ``(probe AtomId, ref AtomId)``
+            atomMap (list, optional): A vector of pairs of atom IDs ``(prb AtomId, ref AtomId)``
                                       used to compute the alignments. If this mapping is not
-                                      specified an attempt is made to generate on by substructure matching.
-            maxIters (int, optional): maximum number of iterations used in mimizing the RMSD. Defaults to ``1000``.
+                                      specified, an attempt is made to generate on by substructure matching.
+            maxIters (int, optional): Maximum number of iterations used in minimizing the RMSD. Defaults to ``1000``.
 
         Returns:
             float: RMSD value.
@@ -193,20 +197,23 @@ class RDKitMol(object):
                  reflect: bool = False,
                  atomMaps: Optional[list] = None,
                  weights: list = [],
-                 ):
+                 ) -> float:
         """
-        Calculate the RMSD for between conformers of two molecules. Note this function will not align molecule, thus molecules geometries
-        in the calculation are not translated or rotated. You can expect a larger number compared to the RMSD from AlignMol.
+        Calculate the RMSD between conformers of two molecules. Note this function will not align conformers, thus molecules' geometries
+        are not translated or rotated during the calculation. You can expect a larger number compared to the RMSD from :func:`~RDKitMol.AlignMol`.
 
         Args:
-            prbMol ('RDKitMol'): The other molecule to compare with. This can be the instance as the current molecule.
-            prbCid (int, optional): The conformer ID of the current molecule to calculate RMSD. Defaults to 0.
-            refCid (int, optional): The conformer ID of the other molecule to calculate RMSD. Defaults to 0.
-            reflect (bool, optional): Whether to reflect the conformation of the prbMol. Defaults to ``False``.
-            atomMaps (list, optional): Provide an atom mapping to calculate the RMSD. By default, prbMol and current molecule
-                                      will be assumed to have the same atom order.
+            prbMol (RDKitMol): The other molecule to compare with. It can be set to the current molecule.
+            prbCid (int, optional): The conformer ID of the current molecule to calculate RMSD. Defaults to ``0``.
+            refCid (int, optional): The conformer ID of the other molecule to calculate RMSD. Defaults to ``0``.
+            reflect (bool, optional): Whether to reflect the conformation of the ``prbMol``. Defaults to ``False``.
+            atomMaps (list, optional): Provide an atom mapping to calculate the RMSD. By default, ``prbMol`` and current molecule
+                                       are assumed to have the same atom order.
             weights (list, optional): Specify weights to each atom pairs. E.g., use atom weights to highlight the importance of
-                                      heavy atoms.
+                                      heavy atoms. Defaults to ``[]`` for using unity weights.
+
+        Returns:
+            float: RMSD value.
         """
         if atomMaps is None:
             atomMaps = [list(enumerate(range(self.GetNumAtoms())))]
@@ -230,7 +237,10 @@ class RDKitMol(object):
     def AssignStereochemistryFrom3D(self,
                                     confId: int = 0):
         """
-        Assign the chiraltype to a molecule's atoms.
+        Assign the chirality type to a molecule's atoms.
+
+        Args:
+            confId (int, optional): The ID of the conformer whose geometry is used to determine the chirality. Defaults to ``0``.
         """
         Chem.rdmolops.AssignStereochemistryFrom3D(self._mol, confId=confId)
 
@@ -240,25 +250,25 @@ class RDKitMol(object):
                    c_product: bool = False,
                    ) -> 'RDKitMol':
         """
-        A function to combine the current molecule with the given ``molFrag`` (another molecule
-        or fragment). It will return a new RDKitMol instance without changing the input molecules.
+        Combine the current molecule with the given ``molFrag`` (another molecule
+        or fragment). A new object instance will be created and changes are not made to the current molecule.
 
         Args:
-            molFrag (RDKitMol, Mol): the molecule or fragment to be combined into the current one.
+            molFrag (RDKitMol or Mol): The molecule or fragment to be combined into the current one.
             offset:
-                - (list, tuple): A 3D vector used to define the offset.
-                - (float): Distance in Angstrom between the current mol and the `molFrag` along the x axis.
-            c_product (bool, optional): If `True`, generate conformers for every possible combination
-                                        between the current molecule and the `molFrag`. E.g.,
-                                        (1,1), (1,2), ... (1,n), (2,1), ...(m,1), ... (m,n)
-                                        Defaults to `False`, meaning it generates conformers pairwise. E.g.,
-                                        (1,1), (2,2), ...
-                                        When `c_product=True`, N(conformer) = m x n.
-                                        When `c_product=False`, if the current molecule has 0 conformer, N(conformer)
-                                        will be equal to the N(conformer) of `molFrag`; Otherwise, N(conformer)
-                                        will be equal to the N(conformer) of the current molecule object. Some
-                                        coordinates may be filled by zeros if the current molecule and `molFrag`
-                                        have different N(conformer).
+                - (list or tuple): A 3-element vector used to define the offset.
+                - (float): Distance in Angstrom between the current mol and the ``molFrag`` along the x axis.
+            c_product (bool, optional): If ``True``, generate conformers for every possible combination
+                                        between the current molecule and the ``molFrag``. E.g.,
+                                        (1,1), (1,2), ... (1,n), (2,1), ...(m,1), ... (m,n). :math:`N(conformer) = m \\times n.`
+
+                                        Defaults to ``False``, meaning only generate conformers according to
+                                        (1,1), (2,2), ... When ``c_product`` is set to ``False``, if the current
+                                        molecule has 0 conformer, conformers will be embedded to the current molecule first.
+                                        The number of conformers of the combined molecule will be equal to the number of conformers
+                                        of ``molFrag``. Otherwise, the number of conformers of the combined molecule will be equal
+                                        to the number of conformers of the current molecule. Some coordinates may be filled by 0s,
+                                        if the current molecule and ``molFrag`` have different numbers of conformers.
 
         Returns:
             RDKitMol: The combined molecule.
@@ -301,12 +311,12 @@ class RDKitMol(object):
              copy_attrs: Optional[list] = None,
              ) -> 'RDKitMol':
         """
-        Make a copy of the RDKitMol.
+        Make a copy of the current ``RDKitMol``.
 
         Args:
-            quickCopy (bool, optional): Use the quick copy mode without copying conformers. Defaults to False.
-            confId (int, optional): The conformer ID to be copied. Defaults to -1, meaning all conformers.
-            copy_attrs (list, optional): copy specific attributes to the new mol
+            quickCopy (bool, optional): Use the quick copy mode without copying conformers. Defaults to ``False``.
+            confId (int, optional): The conformer ID to be copied. Defaults to ``-1``, meaning all conformers.
+            copy_attrs (list, optional): Copy specific attributes to the new molecule. Defaults to ``None``.
 
         Returns:
             RDKitMol: a copied molecule
@@ -322,15 +332,15 @@ class RDKitMol(object):
                        **kwargs):
         """
         Embed a conformer to the ``RDKitMol``. This will overwrite current conformers. By default, it
-        will first try embeding a 3D conformer; if failed, it will then try to compute 2D coordinates
-        and use that for the conformer structure; if both approaches fail and allow embedding a null
-        conformer, then a conformer with all zero coordinates will be embedded. The last one is still
-        helpful if you have the coordinates, so you can use `SetPositions` to set them, or if you want to
-        optimize the geometry using things like forcefields.
+        will first try embedding a 3D conformer; if fails, it then try to compute 2D coordinates
+        and use that for the conformer structure; if both approaches fail, and embedding a null
+        conformer is allowed, a conformer with all zero coordinates will be embedded. The last one is
+        helpful for the case where you can use `SetPositions` to set their positions afterward, or if you want to
+        optimize the geometry using force fields.
 
         Args:
-            embed_null (bool): If Embed 3D and 2D coordinates fails, whether to embed a conformer
-                               with all null coordinates: (0, 0, 0) for each atom. Defaults to ``True``.
+            embed_null (bool): If embedding 3D and 2D coordinates fails, whether to embed a conformer
+                               with all null coordinates, ``(0, 0, 0)``, for each atom. Defaults to ``True``.
         """
         try:
             return_code = AllChem.EmbedMolecule(self._mol, **kwargs)
@@ -352,12 +362,12 @@ class RDKitMol(object):
                            embed_null: bool = True,
                            **kwargs):
         """
-        Embed conformers to the ``RDKitMol``. This will overwrite current conformers. By default, it
-        will first try embeding 3D conformers; if failed, it will then try to compute 2D coordinates
-        and use that for the conformer structures; if both approaches fail and allow embedding null
-        conformers, then conformers with all zero coordinates will be embedded. The last one is still
-        helpful if you have the coordinates, so you can use `SetPositions` to set them, or you want to
-        optimize the geometry using things like forcefields.
+        Embed multiple conformers to the ``RDKitMol``. This will overwrite current conformers. By default, it
+        will first try embedding a 3D conformer; if fails, it then try to compute 2D coordinates
+        and use that for the conformer structure; if both approaches fail, and embedding a null
+        conformer is allowed, a conformer with all zero coordinates will be embedded. The last one is
+        helpful for the case where you can use `SetPositions` to set their positions afterward, or if you want to
+        optimize the geometry using force fields.
 
         Args:
             n (int): The number of conformers to be embedded. The default is ``1``.
@@ -377,10 +387,10 @@ class RDKitMol(object):
     def EmbedNullConformer(self,
                            random: bool = True):
         """
-        Embed a conformer with meaningless atom coordinates. This helps the cases where a conformer
-        can not be successfully embeded. You can choose to generate all zero coordinates or random coordinates.
+        Embed a conformer with null or random atom coordinates. This helps the cases where a conformer
+        can not be successfully embedded. You can choose to generate all zero coordinates or random coordinates.
         You can set to all-zero coordinates, if you will set coordinates later; You should set to random
-        coordinates, if you want to optimize this molecule by forcefield (RDKit force field cannot optimize
+        coordinates, if you want to optimize this molecule by force fields (RDKit force field cannot optimize
         all-zero coordinates).
 
         Args:
@@ -393,10 +403,10 @@ class RDKitMol(object):
                                n: int = 10,
                                random: bool = True):
         """
-        Embed conformers with meaningless atom coordinates. This helps the cases where a conformer
+        Embed conformers with null or random atom coordinates. This helps the cases where a conformer
         can not be successfully embedded. You can choose to generate all zero coordinates or random coordinates.
         You can set to all-zero coordinates, if you will set coordinates later; You should set to random
-        coordinates, if you want to optimize this molecule by forcefield (RDKit force field cannot optimize
+        coordinates, if you want to optimize this molecule by force fields (RDKit force field cannot optimize
         all-zero coordinates).
 
         Args:
@@ -445,12 +455,12 @@ class RDKitMol(object):
 
         Args:
             rdmol (Union[Mol, RWMol]): The RDKit ``Chem.rdchem.Mol`` / ``RWMol`` molecule to be converted.
-            keepAtomMap (bool, optional): Whether keep the original atom mapping. Defaults to True.
+            keepAtomMap (bool, optional): Whether keep the original atom mapping. Defaults to ``True``.
                                           If no atom mapping is stored in the molecule, atom mapping will
                                           be created based on atom indexes.
 
         Returns:
-            RDKitMol: An RDKitMol molecule.
+            RDKitMol: RDKitMol molecule converted from the input RDKit ``Chem.rdchem.Mol`` molecule.
         """
         return cls(mol, keepAtomMap=keepAtomMap)
 
@@ -464,7 +474,7 @@ class RDKitMol(object):
                    keepAtomMap: bool = True,
                    ) -> 'RDKitMol':
         """
-        Convert a SMILES to an ``RDkitMol`` object.
+        Convert a SMILES string to an ``RDkitMol`` object.
 
         Args:
             smiles (str): A SMILES representation of the molecule.
@@ -512,12 +522,16 @@ class RDKitMol(object):
 
     @classmethod
     def FromSmarts(cls,
-                   smarts):
+                   smarts: str,
+                   ) -> 'RDKitMol':
         """
         Convert a SMARTS to an ``RDKitMol`` object.
 
         Args:
             smarts (str): A SMARTS string of the molecule
+
+        Returns:
+            RDKitMol: An RDKit molecule object corresponding to the SMARTS.
         """
         mol = Chem.MolFromSmarts(smarts)
         return cls(mol)
@@ -530,14 +544,14 @@ class RDKitMol(object):
                   sanitize: bool = True,
                   ):
         """
-        Construct a molecule from a InChI string
+        Construct an ``RDKitMol`` object from a InChI string.
 
         Args:
-            inchi (str): a InChI string. https://en.wikipedia.org/wiki/International_Chemical_Identifier
+            inchi (str): A InChI string. https://en.wikipedia.org/wiki/International_Chemical_Identifier
             removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, Due to RDKit implementation,
                                        only effective when sanitize is ``True`` as well. ``True`` to remove.
             addHs (bool, optional): Whether to add explicit hydrogen atoms to the molecule. ``True`` to add.
-                                    Only functioning when removeHs is False.
+                                    Only functioning when ``removeHs`` is ``False``.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
 
         Returns:
@@ -585,20 +599,21 @@ class RDKitMol(object):
 
         Args:
             xyz (str): A XYZ String.
-            backend (str): The backend used to perceive molecule. Defaults to ``openbabel``.
-                           Currently, we only support ``openbabel`` and ``jensen``.
+            backend (str): The backend used to perceive molecule. Defaults to ``'openbabel'``.
+                           Currently, we only support ``'openbabel'`` and ``'jensen'``.
             header (bool, optional): If lines of the number of atoms and title are included.
                                      Defaults to ``True.``
-            sanitize (bool): Sanitize the RDKit mol created using openbabel or not. Helpful to set this to False
-                             when reading in TSs. Defaults to ``True.``
-            embed_chiral: ``True`` to embed chiral information. Defaults to True.
+            correctCO (bool, optional): Whether to correct the CO bond as "[C-]#[O+]". Defaults to ``True``.
+            sanitize (bool): Sanitize the RDKit molecule during conversion. Helpful to set it to ``False``
+                             when reading in TSs. Defaults to ``True``.
+            embed_chiral: ``True`` to embed chiral information. Defaults to ``True``.
             supported kwargs:
                 jensen:
                     - charge: The charge of the species. Defaults to ``0``.
-                    - allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to False.
-                    - use_graph: ``True`` to use networkx module for accelerate. Defaults to True.
-                    - use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
-                    - forced_rdmc: Defaults to False. In rare case, we may hope to use a tailored
+                    - allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to ``False``.
+                    - use_graph: ``True`` to use networkx module for accelerate. Defaults to ``True``.
+                    - use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to ``False``.
+                    - forced_rdmc: Defaults to ``False``. In rare case, we may hope to use a tailored
                                    version of the Jensen XYZ parser, other than the one available in RDKit.
                                    Set this argument to ``True`` to force use RDMC's implementation,
                                    which user's may have some flexibility to modify.
@@ -637,16 +652,16 @@ class RDKitMol(object):
                 sanitize: bool = True,
                 ) -> 'RDKitMol':
         """
-        Convert xyz string to RDKitMol.
+        Convert an SDF string to RDKitMol.
 
         Args:
             sdf (str): An SDF string.
-            removeHs (bool): Whether or not to remove hydrogens from the input (defaults to False)
+            removeHs (bool): Whether or not to remove hydrogens from the input. Defaults to ``False``.
             sanitize (bool): Whether or not to use RDKit's sanitization algorithm to clean input; helpful to set this
-                             to False when reading TS files (defaults to True)
+                             to ``False`` when reading TS files. Defaults to ``True``.
 
         Returns:
-            RDKitMol: An RDKit molecule object corresponding to the sdf.
+            RDKitMol: An RDKit molecule object corresponding to the SDF string.
         """
         mol = Chem.MolFromMolBlock(sdf, removeHs=removeHs, sanitize=sanitize)
         return cls(mol)
@@ -663,19 +678,19 @@ class RDKitMol(object):
                  **kwargs
                  ) -> 'RDKitMol':
         """
-        Read RDKitMol from file.
+        Read RDKitMol from a file.
 
         Args:
             path (str): File path to data.
-            backend (str): The backend used to perceive molecule. Defaults to ``openbabel``.
-                           Currently, we only support ``openbabel`` and ``jensen``.
+            backend (str, optional): The backend used to perceive molecule. Defaults to ``'openbabel'``.
+                                     Currently, we only support ``'openbabel'`` and ``'jensen'``.
             header (bool, optional): If lines of the number of atoms and title are included.
                                      Defaults to ``True.``
-            removeHs (bool): Whether or not to remove hydrogens from the input (defaults to False)
+            removeHs (bool): Whether or not to remove hydrogens from the input. Defaults to ``False``.
             sanitize (bool): Whether or not to use RDKit's sanitization algorithm to clean input; helpful to set this
-                             to False when reading TS files (defaults to True)
+                             to ``False`` when reading TS files. Defaults to ``True``.
             sameMol (bool): Whether or not all the conformers in the (sdf) file are for the same mol, in which case
-                            we will copy conformers directly to the mol  (defaults to False)
+                            we will copy conformers directly to the mol. Defaults to ``False``.
 
         Returns:
             RDKitMol: An RDKit molecule object corresponding to the file.
@@ -709,8 +724,8 @@ class RDKitMol(object):
         Get the adjacency matrix of the molecule.
 
         Returns:
-            numpy.ndarray: A square adjacency matrix of the molecule, where a "1" indicates that atoms are bonded
-            and a "0" indicates that atoms aren't bonded
+            numpy.ndarray: A square adjacency matrix of the molecule, where a `1` indicates that atoms are bonded
+                           and a `0` indicates that atoms aren't bonded.
         """
         return Chem.GetAdjacencyMatrix(self._mol)
 
@@ -731,7 +746,7 @@ class RDKitMol(object):
                      maxIters: int = 1000,
                      keepBestConformer: bool = True):
         """
-        This is a wrapper function for calling `AlignMol` twice, with ``reflect`` to ``True``
+        This is a wrapper function for calling ``AlignMol`` twice, with ``reflect`` to ``True``
         and ``False``, respectively.
 
         Args:
@@ -743,7 +758,7 @@ class RDKitMol(object):
             atomMap (list, optional): a vector of pairs of atom IDs ``(probe AtomId, ref AtomId)``
                                       used to compute the alignments. If this mapping is not
                                       specified an attempt is made to generate on by substructure matching.
-            maxIters (int, optional): maximum number of iterations used in mimizing the RMSD. Defaults to ``1000``.
+            maxIters (int, optional): maximum number of iterations used in minimizing the RMSD. Defaults to ``1000``.
             keepBestConformer (bool, optional): Whether to keep the best Conformer structure. Defaults to ``True``.
                                                 This is less helpful when you are comparing different atom mappings.
 
@@ -784,14 +799,16 @@ class RDKitMol(object):
 
         return rmsd, reflect
 
-    def GetBondsAsTuples(self):
+    def GetBondsAsTuples(self) -> List[tuple]:
         """
-        Generate a list of length-2 sets indicating the bonding atoms
-        in the molecule
+        Generate a list of length-2 sets indicating the bonding atoms in the molecule.
+
+        Returns:
+            list: A list of length-2 sets indicating the bonding atoms.
         """
         return [tuple(sorted((bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()))) for bond in self.GetBonds()]
 
-    def GetElementSymbols(self):
+    def GetElementSymbols(self) -> List[str]:
         """
         Get the element symbols of the molecules. The element symbols are sorted by the atom indexes.
 
@@ -800,7 +817,7 @@ class RDKitMol(object):
         """
         return get_element_symbols(self.GetAtomicNumbers())
 
-    def GetAtomMasses(self):
+    def GetAtomMasses(self) -> List[float]:
         """
         Get the mass of each atom. The order is consistent with the atom indexes.
 
@@ -868,6 +885,16 @@ class RDKitMol(object):
         return self.GetConformers(list(range(self.GetNumConformers())))
 
     def GetDistanceMatrix(self, id: int = 0) -> np.ndarray:
+        """
+        Get the distance matrix of the molecule.
+
+        Args:
+            id (int, optional): The conformer ID to extract distance matrix from.
+                                Defaults to ``0``.
+
+        Returns:
+            np.ndarray: A square distance matrix of the molecule.
+        """
         return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
 
     def GetPositions(self, id: int = 0) -> np.ndarray:
@@ -884,12 +911,12 @@ class RDKitMol(object):
         conf = self.GetConformer(id=id)
         return conf.GetPositions()
 
-    def GetSymmSSSR(self):
+    def GetSymmSSSR(self) -> tuple:
         """
         Get a symmetrized SSSR for a molecule.
 
         Returns:
-            tuple: a sequence of sequences containing the rings found as atom ids
+            tuple: A sequence of sequences containing the rings found as atom IDs.
         """
         return Chem.GetSymmSSSR(self._mol)
 
@@ -902,9 +929,9 @@ class RDKitMol(object):
         Returns the indices of the molecule's atoms that match a substructure query.
 
         Args:
-            query (Mol): a RDkit Molecule.
-            useChirality (bool, optional): enables the use of stereochemistry in the matching. Defaults to ``False``.
-            useQueryQueryMatches (bool, optional): use query-query matching logic. Defaults to ``False``.
+            query (Mol): An RDkit Molecule.
+            useChirality (bool, optional): Enables the use of stereochemistry in the matching. Defaults to ``False``.
+            useQueryQueryMatches (bool, optional): Use query-query matching logic. Defaults to ``False``.
 
         Returns:
             tuple: A tuple of matched indices.
@@ -926,10 +953,11 @@ class RDKitMol(object):
 
         Args:
             query (Mol): a Molecule.
-            uniquify (bool, optional): determines whether or not the matches are uniquified. Defaults to True.
-            useChirality (bool, optional): enables the use of stereochemistry in the matching. Defaults to False.
-            useQueryQueryMatches (bool, optional): use query-query matching logic. Defaults to False.
+            uniquify (bool, optional): determines whether or not the matches are uniquified. Defaults to ``True``.
+            useChirality (bool, optional): enables the use of stereochemistry in the matching. Defaults to ``False``.
+            useQueryQueryMatches (bool, optional): use query-query matching logic. Defaults to ``False``.
             maxMatches: The maximum number of matches that will be returned to prevent a combinatorial explosion.
+                        Defaults to ``1000``.
 
         Returns:
             tuple: A tuple of tuples of matched indices.
@@ -948,20 +976,20 @@ class RDKitMol(object):
                     fragsMolAtomMapping: Optional[list] = None,
                     ) -> tuple:
         """
-        Finds the disconnected fragments from a molecule. For example, for the molecule ‘CC(=O)[O-].[NH3+]C’,
-        this function will split the molecules into a list of ‘CC(=O)[O-]' and '[NH3+]C'. By defaults,
+        Finds the disconnected fragments from a molecule. For example, for the molecule "CC(=O)[O-].[NH3+]C",
+        this function will split the molecules into a list of "CC(=O)[O-]" and "[NH3+]C". By defaults,
         this function will return a list of atom mapping, but options are available for getting mols.
 
         Args:
-            asMols (bool, optional): Whether the fragments will be returned as molecules instead of atom ids.
+            asMols (bool, optional): Whether the fragments will be returned as molecules instead of atom IDs.
                                      Defaults to ``True``.
             sanitize (bool, optional): Whether the fragments molecules will be sanitized before returning them.
                                        Defaults to ``True``.
-            frags (list, optional): If this is provided as an empty list, the result will be mol.GetNumAtoms()
+            frags (list, optional): If this is provided as an empty list, the result will be ``mol.GetNumAtoms()``
                                     long on return and will contain the fragment assignment for each Atom.
-            fragsMolAtomMapping (list, optional): If this is provided as an empty list, the result will be a
+            fragsMolAtomMapping (list, optional): If this is provided as an empty list (``[]``), the result will be a
                                                   numFrags long list on return, and each entry will contain the
-                                                  indices of the Atoms in that fragment: [(0, 1, 2, 3), (4, 5)].values
+                                                  indices of the Atoms in that fragment: [(0, 1, 2, 3), (4, 5)].
 
         Returns:
             tuple: a tuple of atom mapping or a tuple of split molecules (RDKitMol).
@@ -991,13 +1019,15 @@ class RDKitMol(object):
             torsions += find_ring_torsions(self._mol)
         return torsions
 
-    def GetVdwMatrix(self, threshold=0.4) -> Optional[np.ndarray]:
+    def GetVdwMatrix(self,
+                     threshold: float = 0.4,
+                     ) -> Optional[np.ndarray]:
         """
         Get the derived Van der Waals matrix, which can be used to analyze
         the collision of atoms. More information can be found from ``generate_vdw_mat``.
 
         Args:
-            threshold: float indicating the threshold to use in the vdw matrix
+            threshold: A float indicating the threshold to use in the vdw matrix. Defaults to ``0.4``.
 
         Returns:
             Optional[np.ndarray]: A 2D array of the derived Van der Waals Matrix, if the
@@ -1010,11 +1040,16 @@ class RDKitMol(object):
             return self._vdw_mat
 
     def HasCollidingAtoms(self,
-                          threshold=0.4,
+                          threshold: float = 0.4,
                           ) -> bool:
         """
+        Check whether the molecule has colliding atoms.
+
         Args:
-            threshold: float indicating the threshold to use in the vdw matrix
+            threshold: A float indicating the threshold to use in the vdw matrix. Defaults to ``0.4``.
+
+        Returns:
+            bool: Whether the molecule has colliding atoms.
         """
 
         dist_mat = np.triu(self.GetDistanceMatrix())
@@ -1032,7 +1067,7 @@ class RDKitMol(object):
 
         Args:
             confId (int, optional): The conformer ID. Defaults to ``0``.
-            backend (str, optional): The backend to use for the comparison. Defaults to ``openbabel``.
+            backend (str, optional): The backend to use for the comparison. Defaults to ``'openbabel'``.
             **kwargs: The keyword arguments to pass to the backend.
 
         Returns:
@@ -1067,7 +1102,8 @@ class RDKitMol(object):
         Kekulizes the molecule.
 
         Args:
-            clearAromaticFlags (optional): if `True`, all atoms and bonds in the molecule will be marked non-aromatic following the kekulization. Defaults to `False`.
+            clearAromaticFlags (optional): If ``True``, all atoms and bonds in the molecule will be marked non-aromatic
+                                           following the kekulization. Defaults to ``False``.
         """
         Chem.KekulizeIfPossible(self._mol, clearAromaticFlags=clearAromaticFlags)
 
@@ -1083,14 +1119,14 @@ class RDKitMol(object):
                 if explicitly added, will be included and reduce the readablity. Defaults to ``False``.
                 Note, following Hs are not removed:
 
-                    1. H which aren’t connected to a heavy atom. E.g.,[H][H].
+                    1. H which aren't connected to a heavy atom. E.g.,[H][H].
                     2. Labelled H. E.g., atoms with atomic number=1, but isotope > 1.
                     3. Two coordinate Hs. E.g., central H in C[H-]C.
                     4. Hs connected to dummy atoms
                     5. Hs that are part of the definition of double bond Stereochemistry.
                     6. Hs that are not connected to anything else.
 
-            sanitize (bool, optional): whether to sanitize the molecule. Defaults to ``True``.
+            sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
 
         Returns:
             Mol: A Mol instance used for output purpose.
@@ -1105,7 +1141,7 @@ class RDKitMol(object):
     def RemoveHs(self,
                  sanitize: bool = True):
         """
-        Remove H atoms. Useful when trying to match heavy atoms.py
+        Remove H atoms. Useful when trying to match heavy atoms.
 
         Args:
             sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
@@ -1121,12 +1157,12 @@ class RDKitMol(object):
 
         Args:
             newOrder (list, optional): the new ordering the atoms (should be numAtoms long). E.g,
-                                       if newOrder is [3,2,0,1], then atom 3 in the original molecule
-                                       will be atom 0 in the new one. If no value provided, then the molecule
+                                       if newOrder is ``[3,2,0,1]``, then atom ``3`` in the original molecule
+                                       will be atom ``0`` in the new one. If no value provided, then the molecule
                                        will be renumbered based on the current atom map numbers. The latter is helpful
                                        when the sequence of atom map numbers and atom indexes are inconsistent.
             updateAtomMap (bool): Whether to update the atom map number based on the
-                                  new order.
+                                  new order. Defaults to ``True``.
 
         Returns:
             RDKitMol: Molecule with reordered atoms.
@@ -1150,8 +1186,8 @@ class RDKitMol(object):
 
         Args:
             sanitizeOps (int or str, optional): Sanitize operations to be carried out. Defaults to
-                                                SanitizeFlags.SANITIZE_ALL. More details can be found at
-                                                https://www.rdkit.org/docs/source/rdkit.Chem.rdmolops.html?highlight=sanitize#rdkit.Chem.rdmolops.SanitizeFlags.
+                                                ``SanitizeFlags.SANITIZE_ALL``. More details can be found at
+                                                `RDKit docs <https://www.rdkit.org/docs/source/rdkit.Chem.rdmolops.html?highlight=sanitize#rdkit.Chem.rdmolops.SanitizeFlags>`_.
         """
         Chem.rdmolops.SanitizeMol(self._mol, sanitizeOps)
 
@@ -1193,7 +1229,7 @@ class RDKitMol(object):
         Reflect the atom coordinates of a molecule, and therefore its mirror image.
 
         Args:
-            id (int, optional): The conformer id to reflect.
+            id (int, optional): The conformer id to reflect. Defaults to ``0``.
         """
         Chem.rdMolAlign.AlignMol(refMol=self._mol,
                                  prbMol=self._mol,
@@ -1234,19 +1270,19 @@ class RDKitMol(object):
 
     def ToOBMol(self) -> 'openbabel.OBMol':
         """
-        Convert RDKitMol to a OBMol.
+        Convert ``RDKitMol`` to a ``OBMol``.
 
         Returns:
-            OBMol: The corresponding openbabel OBMol.
+            OBMol: The corresponding openbabel ``OBMol``.
         """
         return rdkit_mol_to_openbabel_mol(self)
 
     def ToRWMol(self) -> RWMol:
         """
-        Convert the RDKitMol Molecule back to a RDKit Chem.rdchem.RWMol.
+        Convert the ``RDKitMol`` Molecule back to a RDKit ``Chem.rdchem.RWMol``.
 
         returns:
-            RWMol: A RDKit Chem.rdchem.RWMol molecule.
+            RWMol: A RDKit ``Chem.rdchem.RWMol`` molecule.
         """
         return self._mol
 
@@ -1315,7 +1351,7 @@ class RDKitMol(object):
               comment: str = '',
               ) -> str:
         """
-        Convert RDKitMol to a xyz string.
+        Convert ``RDKitMol`` to a xyz string.
 
         Args:
             confId (int): The conformer ID to be exported.
@@ -1336,7 +1372,7 @@ class RDKitMol(object):
                    confId: int = -1,
                    ) -> str:
         """
-        Convert RDKitMol to a mol block string.
+        Convert ``RDKitMol`` to a mol block string.
 
         Args:
             confId (int): The conformer ID to be exported.
@@ -1350,10 +1386,13 @@ class RDKitMol(object):
                 confId: int = 0,
                 ) -> Atoms:
         """
-        Convert RDKitMol to the ase.Atoms object.
+        Convert ``RDKitMol`` to the ``ase.Atoms`` object.
 
         Args:
-            confId (int): The conformer ID to be exported.
+            confId (int): The conformer ID to be exported. Defaults to ``0``.
+
+        Returns:
+            Atoms: The corresponding ``ase.Atoms`` object.
         """
         atoms = Atoms(positions=self.GetPositions(id=confId),
                       numbers=self.GetAtomicNumbers())
@@ -1406,6 +1445,12 @@ class RDKitMol(object):
                                ) -> list:
         """
         Get internal coordinates of the molecule.
+
+        Args:
+            nonredundant (bool): Whether to return nonredundant internal coordinates. Defaults to ``True``.
+
+        Returns:
+            list: A list of internal coordinates.
         """
         bonds, angles, torsions = get_internal_coords(self.ToOBMol(),
                                                       nonredundant=nonredundant)
@@ -1437,11 +1482,10 @@ class RDKitMol(object):
 
         Args:
             torsion (Iterable): An iterable with four elements and the 2nd and 3rd are the pivot of the torsion.
-            allowNonbondPivots (bool, optional): Allow non-bonding pivots
+            allowNonbondPivots (bool, optional): Allow non-bonding pivots. Defaults to ``False``.
 
         Returns:
-            - one of the top of the torsion
-            - the other top of the torsion
+            tuple: Two frags, one of the top of the torsion, and the other top of the torsion.
         """
         pivot = [int(i) for i in torsion[1:3]]
         try:
@@ -1481,8 +1525,10 @@ class RDKitMol(object):
                                  verbose: bool = True):
         """
         A method help to saturate 1,2 biradicals to match the given
-        molecule spin multiplicity. E.g.,
+        molecule spin multiplicity. E.g.::
+
             *C - C* => C = C
+
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1563,8 +1609,10 @@ class RDKitMol(object):
         """
         A method help to saturate biradicals that have conjugated double bond in between
         to match the given molecule spin multiplicity. E.g, 1,4 biradicals can be saturated
-        if there is a unsaturated bond between them:
+        if there is a unsaturated bond between them::
+
             *C - C = C - C* => C = C - C = C
+
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1572,8 +1620,9 @@ class RDKitMol(object):
         Args:
             multiplicity (int): The target multiplicity.
             chain_length (int): How long the conjugated double bond chain is.
-                                A larger value will result in longer time. defaults to 8.
-            verbose (int): Whether to print additional information. Defaults to ``True``.
+                                A larger value will result in longer computational time.
+                                Defaults to ``8``.
+            verbose (bool): Whether to print additional information. Defaults to ``True``.
         """
         cur_multiplicity = self.GetSpinMultiplicity()
         if cur_multiplicity == multiplicity:
@@ -1671,8 +1720,10 @@ class RDKitMol(object):
                         verbose: bool = True):
         """
         A method help to saturate carbenes and nitrenes to match the given
-        molecule spin multiplicity:
+        molecule spin multiplicity::
+
             *-C-* (triplet) => C-(**) (singlet)
+
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1721,12 +1772,14 @@ class RDKitMol(object):
                     verbose: bool = False):
         """
         A method help to saturate the molecule to match the given
-        molecule spin multiplicity. This is just a wrapper to call both
-        `SaturateBiradicalSites12`, `SaturateBiradicalSitesCDB`, and
-        `SaturateCarbene`:
+        molecule spin multiplicity. This is just a wrapper to call
+        :func:`SaturateBiradicalSites12`, :func:`SaturateBiradicalSitesCDB`, and
+        :func:`SaturateCarbene`::
+
             *C - C* => C = C
             *C - C = C - C* => C = C - C = C
             *-C-* (triplet) => C-(**) (singlet)
+
         In the current implementation, no error will be raised,
         if the function doesn't achieve the goal. This function has not been
         been tested on nitrogenate.
@@ -1735,6 +1788,7 @@ class RDKitMol(object):
             multiplicity (int): The target multiplicity.
             chain_length (int): How long the conjugated double bond chain is.
                                 A larger value will result in longer time.
+                                Defaults to ``8``.
             verbose (bool): Whether to print intermediate information.
                             Defaults to ``False``.
         """
@@ -1752,7 +1806,7 @@ class RDKitMol(object):
                      vdw_radii: dict = VDW_RADII):
         """
         Set the derived Van der Waals matrix, which is an upper triangle matrix
-        calculated from a threshold usually around 0.4 of the Van der Waals Radii.
+        calculated from a threshold usually around ``0.4`` of the Van der Waals Radii.
         Its diagonal elements are all zeros. The element (i, j) is calculated by
         threshold * sum( R(atom i) + R(atom j) ). If two atoms are bonded, the value is
         set to be zero. When threshold = 0.4, the value is close to the covalent bond
@@ -1762,7 +1816,7 @@ class RDKitMol(object):
             threshold (float): The threshold used to calculate the derived Van der Waals
                                matrix. A larger value results in a matrix with larger values;
                                When compared with distance matrix, it may overestiate the
-                               overlapping between atoms. The default value is 0.4.
+                               overlapping between atoms. The default value is ``0.4``.
             vdw_radii (dict): A dict stores the Van der Waals radii of different elements.
 
         Raises:
@@ -1781,10 +1835,12 @@ def parse_xyz_or_smiles_list(mol_list,
     Args:
         mol_list (list): a list of smiles or xyzs or tuples of (string, multiplicity)
                   to specify desired multiplicity.
-                  E.g., ['CCC', 'H 0 0 0', ('[CH2]', 1)]
+                  E.g., ``['CCC', 'H 0 0 0', ('[CH2]', 1)]``
         with_3d_info (bool): Whether to indicate which entries are from 3D representations.
-                             Defaults to False.
+                             Defaults to ``False``.
 
+    Returns:
+        list: A list of RDKitMol objects.
     """
     mols, is_3D = [], []
     for mol in mol_list:
@@ -1825,7 +1881,7 @@ def generate_vdw_mat(rd_mol,
         threshold (float): The threshold used to calculate the derived Van der Waals
                             matrix. A larger value results in a matrix with larger values;
                             When compared with distance matrix, it may overestiate the
-                            overlapping between atoms. The default value is 0.4.
+                            overlapping between atoms. The default value is ``0.4``.
         vdw_radii (dict): A dict stores the Van der Waals radii of different elements.
 
     Raises:
@@ -1867,10 +1923,10 @@ def generate_radical_resonance_structures(mol: RDKitMol,
 
     Args:
         mol (RDKitMol): A radical molecule.
-        unique (bool, optional): Filter out duplicate resonance structures from the list. Defaults to True.
+        unique (bool, optional): Filter out duplicate resonance structures from the list. Defaults to ``True``.
         consider_atommap (bool, atommap): If consider atom map numbers in filtration duplicates.
-                                          Only effective when uniquify=True. Defaults to False.
-        kekulize (bool, optional): Whether to kekulize the molecule. Defaults to False. When True, uniquifying
+                                          Only effective when uniquify=True. Defaults to ``False``.
+        kekulize (bool, optional): Whether to kekulize the molecule. Defaults to ``False``. When ``True``, uniquifying
                                    process will be skipped.
 
     Returns:
@@ -1962,7 +2018,7 @@ def has_matched_mol(mol: RDKitMol,
         mols (List[RDKitMol]): The list of molecules to be processed.
         consider_atommap (bool, optional): If treat chemically equivalent molecules with
                                            different atommap numbers as different molecules.
-                                           Defaults to False.
+                                           Defaults to ``False``.
 
     Returns:
         bool: if a matched molecules if found.
@@ -1988,9 +2044,9 @@ def get_unique_mols(mols: List[RDKitMol],
         mols (list): The molecules to be processed.
         consider_atommap (bool, optional): If treat chemically equivalent molecules with
                                            different atommap numbers as different molecules.
-                                           Defaults to False.
+                                           Defaults to ``False``.
         same_formula (bool, opional): If the mols has the same formula you may set it to True
-                                      to save computational time. Defaults to False.
+                                      to save computational time. Defaults to ``False``.
 
     Returns:
         list: A list of unique molecules.
