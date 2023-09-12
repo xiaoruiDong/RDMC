@@ -39,7 +39,7 @@ class FourierSeries1D(object):
         Args:
             X (np.ndarray): _description_
             y (np.ndarray): 1D array. It is assumed to be a periodic function of `x` with
-                            a periodicity of :math:`2 \pi`.
+                            a periodicity of :math:`2 \\pi`.
         """
         negative_barrier = True
         # numterms is actually half the number of terms. It is called numterms
