@@ -1,0 +1,515 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>RDMC Documentation &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=188e8da4" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script src="_static/documentation_options.js?v=1b390748"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="rdmc" href="reference/rdmc.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  <div class="navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+    <p class="title logo__title">RDMC 0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="reference/rdmc.html">
+                        rdmc
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="reference/credits.html">
+                        Credits
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="reference/cite.html">
+                        How to cite RDMC
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="reference/license.html">
+                        Licence
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="reference/rdmc.html">
+                        rdmc
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="reference/credits.html">
+                        Credits
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="reference/cite.html">
+                        How to cite RDMC
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="reference/license.html">
+                        Licence
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="rdmc-documentation">
+<h1>RDMC Documentation<a class="headerlink" href="#rdmc-documentation" title="Link to this heading">#</a></h1>
+<p><strong>RDMC (Reaction Data and Molecular Conformer)</strong> is an open-source lightweight software package specialized in handling Reaction Data and Molecular (including transition states) Conformers.</p>
+<p>It contains various modules and classes (e.g., <code class="docutils literal notranslate"><span class="pre">RDKitMol</span></code>, <code class="docutils literal notranslate"><span class="pre">Reaction</span></code>, <code class="docutils literal notranslate"><span class="pre">view</span></code>) helpful for relevant tasks to make conversion, visualization, manipulation, and analysis of molecules easier.
+It also provides solutions to pipelining tasks to achieve high-throughput generating and processing of large amount of molecule/reaction data. It is written in Python and has dependencies only
+on popular packages (i.e., <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">scipy</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>, <code class="docutils literal notranslate"><span class="pre">rdkit</span></code>, <code class="docutils literal notranslate"><span class="pre">openbabel</span></code>, <code class="docutils literal notranslate"><span class="pre">py3dmol</span></code>, <code class="docutils literal notranslate"><span class="pre">ase</span></code>, <code class="docutils literal notranslate"><span class="pre">networkx</span></code>, <code class="docutils literal notranslate"><span class="pre">cclib</span></code>), and you can easily incorporate it into your own Python scripts.</p>
+<p>The source code of the RDMC software package is hosted on GitHub, and its binary distribution is available on Anaconda Cloud. The easiest way to install RDMC is to use <code class="docutils literal notranslate"><span class="pre">conda</span></code> or <code class="docutils literal notranslate"><span class="pre">mamba</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">xiaoruidong</span> <span class="n">rdmc</span>
+</pre></div>
+</div>
+<p>Or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>xiaoruidong<span class="w"> </span>rdmc
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">conda</span></code> can be installed by via <a class="reference external" href="https://www.anaconda.com/download/">Anaconda</a> and, <code class="docutils literal notranslate"><span class="pre">mamba</span></code> can be installed via <a class="reference external" href="https://github.com/conda-forge/miniforge#mambaforge">Mambaforge</a>.</p>
+<p>You can also install RDMC from the source code:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/xiaoruidong/rdmc
+<span class="nb">cd</span><span class="w"> </span>RDMC
+conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>rdmc
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span>-vv<span class="w"> </span>./
+</pre></div>
+</div>
+<p>To start with, simply try:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rdmc</span> <span class="kn">import</span> <span class="n">RDKitMol</span><span class="p">,</span> <span class="n">Reaction</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">RDKitMol</span><span class="p">(</span><span class="s1">&#39;CCO&#39;</span><span class="p">)</span>
+<span class="n">rxn</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="s1">&#39;CCO&gt;&gt;CC(=O)O&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And see what the <code class="docutils literal notranslate"><span class="pre">mol</span></code> and <code class="docutils literal notranslate"><span class="pre">rxn</span></code> are capable of! The full lists of APIs of <a class="reference internal" href="reference/mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RDKitMol</span></code></a> and <a class="reference internal" href="reference/reaction.html#rdmc.reaction.Reaction" title="rdmc.reaction.Reaction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reaction</span></code></a> are provided in this documentation.</p>
+<p>We also provided a few notebooks (available in <code class="docutils literal notranslate"><span class="pre">\ipython</span></code> and <a class="reference external" href="https://drive.google.com/drive/folders/1bHSChJOocycE5ZfbnGkocX4-OFVDhShW?usp=sharing">Colab</a>) to demonstrate the usage of RDMC. Please feel invited to try them out!</p>
+<p>RDMC is developed by</p>
+<ul class="simple">
+<li><p>Xiaorui Dong (<a class="reference external" href="https://github.com/xiaoruiDong"><img alt="github" class="social-icon" src="_images/GitHub_icon.svg" /></a> | <a class="reference external" href="https://www.linkedin.com/in/xiaorui-dong/"><img alt="linkedin" class="social-icon" src="_images/LinkedIn_icon.svg" /></a> | <a class="reference external" href="https://scholar.google.com/citations?hl=en&amp;user=r5Wz41EAAAAJ"><img alt="google_scholar" class="social-icon" src="_images/Google_Scholar_icon.svg" /></a>),</p></li>
+<li><p>Dr. Lagnajit Pattanaik (<a class="reference external" href="https://github.com/PattanaikL"><img alt="github" class="social-icon" src="_images/GitHub_icon.svg" /></a> | <a class="reference external" href="https://www.linkedin.com/in/lagnajit-pattanaik-94a564108/"><img alt="linkedin" class="social-icon" src="_images/LinkedIn_icon.svg" /></a> | <a class="reference external" href="https://scholar.google.com/citations?hl=en&amp;user=bVT6lpwAAAAJ"><img alt="google_scholar" class="social-icon" src="_images/Google_Scholar_icon.svg" /></a>),</p></li>
+<li><p>Dr. Shih-Cheng Li (<a class="reference external" href="https://github.com/shihchengli"><img alt="github" class="social-icon" src="_images/GitHub_icon.svg" /></a> | <a class="reference external" href="https://www.linkedin.com/in/shih-cheng-li-564006207/"><img alt="linkedin" class="social-icon" src="_images/LinkedIn_icon.svg" /></a> | <a class="reference external" href="https://scholar.google.com/citations?hl=en&amp;user=kc_rvjoAAAAJ"><img alt="google_scholar" class="social-icon" src="_images/Google_Scholar_icon.svg" /></a>),</p></li>
+<li><p>Dr. Kevin Spiekermann (<a class="reference external" href="https://github.com/kspieks"><img alt="github" class="social-icon" src="_images/GitHub_icon.svg" /></a> | <a class="reference external" href="https://www.linkedin.com/in/kspiekermann/"><img alt="linkedin" class="social-icon" src="_images/LinkedIn_icon.svg" /></a> | <a class="reference external" href="https://scholar.google.com/citations?hl=en&amp;user=qg2LmbgAAAAJ"><img alt="google_scholar" class="social-icon" src="_images/Google_Scholar_icon.svg" /></a>),</p></li>
+<li><p>Hao-Wei Pang (<a class="reference external" href="https://github.com/hwpang"><img alt="github" class="social-icon" src="_images/GitHub_icon.svg" /></a> | <a class="reference external" href="https://www.linkedin.com/in/hao-wei-pang/"><img alt="linkedin" class="social-icon" src="_images/LinkedIn_icon.svg" /></a> | <a class="reference external" href="https://scholar.google.com/citations?hl=en&amp;user=hmkEmtcAAAAJ"><img alt="google_scholar" class="social-icon" src="_images/Google_Scholar_icon.svg" /></a>),</p></li>
+<li><p>Prof. William H. Green (<a class="reference external" href="https://www.linkedin.com/in/william-green-63a9a218/"><img alt="linkedin" class="social-icon" src="_images/LinkedIn_icon.svg" /></a> | <a class="reference external" href="https://scholar.google.com/citations?hl=en&amp;user=PGQTLWwAAAAJ"><img alt="google_scholar" class="social-icon" src="_images/Google_Scholar_icon.svg" /></a>)</p></li>
+</ul>
+<p>at <a class="reference external" href="https://greengroup.mit.edu">Green Research Group</a> at <a class="reference external" href="https://www.mit.edu">Massachusetts Institute of Technology (MIT)</a>.
+For any questions while using RDMC, please contact us via the <a class="reference external" href="https://github.com/xiaoruiDong/RDMC/issues">GitHub issue page</a> or email us at <a class="reference external" href="mailto:rdmc&#37;&#52;&#48;mit&#46;edu">rdmc_dev<span>&#64;</span>mit<span>&#46;</span>edu</a>.</p>
+</section>
+<section id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference/rdmc.html">rdmc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/external/index.html">rdmc.external</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/mathlib/index.html">rdmc.mathlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/conformer_generation/index.html">rdmc.conformer_generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/conf.html">rdmc.conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/forcefield.html">rdmc.forcefield</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/mol.html">rdmc.mol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/reaction.html">rdmc.reaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/ts.html">rdmc.ts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/utils.html">rdmc.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/view.html">rdmc.view</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/cite.html">How to cite RDMC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/license.html">Licence</a></li>
+</ul>
+</div>
+</section>
+<section id="apis">
+<h1>APIs<a class="headerlink" href="#apis" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+</ul>
+</section>
+
+
+                </article>
+              
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="right-next"
+       href="reference/rdmc.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">rdmc</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">RDMC Documentation</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#apis">APIs</a></li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/index.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2020-2023, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,679 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>rdmc.external.rmg &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=188e8da4" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script src="../../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/external/rmg';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rdmc.external.inpwriter" href="inpwriter/index.html" />
+    <link rel="prev" title="rdmc.external" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  <div class="navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">RDMC 0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../rdmc.html">
+                        rdmc
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../credits.html">
+                        Credits
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../cite.html">
+                        How to cite RDMC
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../license.html">
+                        Licence
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../rdmc.html">
+                        rdmc
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../credits.html">
+                        Credits
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../cite.html">
+                        How to cite RDMC
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../license.html">
+                        Licence
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item"><nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">rdmc.external</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">rdmc.external.rmg</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="inpwriter/index.html">rdmc.external.inpwriter</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="inpwriter/gaussian.html">rdmc.external.inpwriter.gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpwriter/qchem.html">rdmc.external.inpwriter.qchem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpwriter/orca.html">rdmc.external.inpwriter.orca</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inpwriter/utils.html">rdmc.external.inpwriter.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="logparser/index.html">rdmc.external.logparser</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="logparser/base.html">rdmc.external.logparser.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="logparser/gaussian.html">rdmc.external.logparser.gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="logparser/qchem.html">rdmc.external.logparser.qchem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="logparser/orca.html">rdmc.external.logparser.orca</a></li>
+<li class="toctree-l3"><a class="reference internal" href="logparser/utils.html">rdmc.external.logparser.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../mathlib/index.html">rdmc.mathlib</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../mathlib/geom.html">rdmc.mathlib.geom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mathlib/curvefit.html">rdmc.mathlib.curvefit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mathlib/greedymin.html">rdmc.mathlib.greedymin</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../conformer_generation/index.html">rdmc.conformer_generation</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../conformer_generation/embedding_geometries/index.html">Embedding Geometries</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/embedding_geometries/embedders.html">rdmc.conformer_generation.embedders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/embedding_geometries/align.html">rdmc.conformer_generation.align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/embedding_geometries/ts_guessers.html">rdmc.conformer_generation.ts_guessers</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../conformer_generation/geometry_optimization/index.html">Geometry Optimization</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/geometry_optimization/optimizers.html">rdmc.conformer_generation.optimizers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/geometry_optimization/ts_optimizers.html">rdmc.conformer_generation.ts_optimizers</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../conformer_generation/postprocessing/index.html">Postprocessing</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/postprocessing/verifiers.html">rdmc.conformer_generation.verifiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/postprocessing/ts_verifiers.html">rdmc.conformer_generation.ts_verifiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/postprocessing/pruners.html">rdmc.conformer_generation.pruners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/postprocessing/solvation.html">rdmc.conformer_generation.solvation</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../conformer_generation/workflow/index.html">Workflow</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/workflow/generators.html">rdmc.conformer_generation.generators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/workflow/ts_generators.html">rdmc.conformer_generation.ts_generators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/workflow/metrics.html">rdmc.conformer_generation.metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../conformer_generation/workflow/sampler.html">rdmc.conformer_generation.sampler</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../conformer_generation/utils.html">Utils</a></li>
+</ul>
+</li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../conf.html">rdmc.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../forcefield.html">rdmc.forcefield</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mol.html">rdmc.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reaction.html">rdmc.reaction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ts.html">rdmc.ts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">rdmc.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../view.html">rdmc.view</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumbs">
+  <ul class="bd-breadcrumbs" role="navigation" aria-label="Breadcrumb">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../rdmc.html" class="nav-link">rdmc</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">rdmc.external</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">rdmc.external.rmg</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="module-rdmc.external.rmg">
+<span id="rdmc-external-rmg"></span><h1>rdmc.external.rmg<a class="headerlink" href="#module-rdmc.external.rmg" title="Link to this heading">#</a></h1>
+<p>A module contains RMG related functions. Needs to run with rmg_env.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.external.rmg.check_isomorphic_molecules">
+<span class="sig-prename descclassname"><span class="pre">rdmc.external.rmg.</span></span><span class="sig-name descname"><span class="pre">check_isomorphic_molecules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mols_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Molecule</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mols_2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Molecule</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdmc.external.rmg.check_isomorphic_molecules" title="Link to this definition">#</a></dt>
+<dd><p>Check if two lists share the same set of molecules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mols_1</strong> (<em>list</em>) – The first set of molecules.</p></li>
+<li><p><strong>mols_2</strong> (<em>list</em>) – The second set of molecules.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – If both sets share exactly same molecules.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.external.rmg.find_reaction_family">
+<span class="sig-prename descclassname"><span class="pre">rdmc.external.rmg.</span></span><span class="sig-name descname"><span class="pre">find_reaction_family</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">rmgpy.data.kinetics.database.KineticsDatabase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactants</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_families</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#rdmc.external.rmg.find_reaction_family" title="Link to this definition">#</a></dt>
+<dd><p>A helper function to find reaction families for given reactants and products.txt</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>database</strong> (<em>KineticsDatabase</em>) – A RMG Kinetics database instance.</p></li>
+<li><p><strong>reactants</strong> (<em>list</em>) – A list of reactant molecules.</p></li>
+<li><p><strong>products</strong> (<em>list</em>) – A list of product molecules.</p></li>
+<li><p><strong>only_families</strong> (<em>list</em><em>, </em><em>optional</em>) – A list of family to search from. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>
+for unlimited.</p></li>
+<li><p><strong>unique</strong> (<em>bool</em>) – Whether to only return a single results. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to print results. Defaults to print.</p></li>
+<li><p><strong>resonance</strong> (<em>bool</em>) – Whether to generate resonance strucuture when searching for reaction
+family. Defauls to <code class="docutils literal notranslate"><span class="pre">`True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>- tuple</strong> – (family_label, is_forward) if <code class="docutils literal notranslate"><span class="pre">unique</span> <span class="pre">==</span> <span class="pre">True</span></code>.</p></li>
+<li><p><strong>- None</strong> – if no match is found.</p></li>
+<li><p><strong>- list</strong> – [(family_label1, is_foward_1), (family_label2, is_forward2)…] if <code class="docutils literal notranslate"><span class="pre">unique</span> <span class="pre">==</span> <span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.external.rmg.from_rdkit_mol">
+<span class="sig-prename descclassname"><span class="pre">rdmc.external.rmg.</span></span><span class="sig-name descname"><span class="pre">from_rdkit_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdkitmol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Molecule</span></span></span><a class="headerlink" href="#rdmc.external.rmg.from_rdkit_mol" title="Link to this definition">#</a></dt>
+<dd><p>Convert a RDKit Mol object <cite>rdkitmol</cite> to a molecular structure. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.external.rmg.generate_reaction_complex">
+<span class="sig-prename descclassname"><span class="pre">rdmc.external.rmg.</span></span><span class="sig-name descname"><span class="pre">generate_reaction_complex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">KineticsDatabase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactants</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_families</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Molecule</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.external.rmg.generate_reaction_complex" title="Link to this definition">#</a></dt>
+<dd><p>Generate a pair of reactant and product complex according to RMG reaction family.</p>
+<p>It will first match the given reactant and product pairs to a family (by calling <code class="docutils literal notranslate"><span class="pre">find_reaction_family</span></code>).
+Then, it will form a reactant complexes based on the <cite>reactants</cite> list. Finally, it will apply the template
+corresponding to the family to the reactants complex and yield a product complex with the correct atom map.
+One can bypasses the searching step by providing <code class="docutils literal notranslate"><span class="pre">only_families</span></code> with a single-element list and assigning
+the forward variable. All allowed families names can be found at <a class="reference external" href="https://rmg.mit.edu/database/kinetics/families/">https://rmg.mit.edu/database/kinetics/families/</a>.
+Please note that this function currently only returns the first template it finds. This is non-idea if a nominal
+reaction has multiple channels.
+# TODO: provide an option if multiple channel if available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>database</strong> (<em>KineticsDatabase</em>) – An RMG Kinetics database instance.</p></li>
+<li><p><strong>reactants</strong> (<em>list</em>) – A list of reactant molecules.</p></li>
+<li><p><strong>products</strong> (<em>list</em>) – A list of product molecules.</p></li>
+<li><p><strong>only_families</strong> (<em>list</em>) – A list of families that constrains the search. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> for no constraint.
+If <code class="docutils literal notranslate"><span class="pre">only_families</span></code> contains only one family and <cite>forward</cite> is specified,
+the function assumes the user is only interested in the specific reaction family and
+will skip the <code class="docutils literal notranslate"><span class="pre">find_reaction_family</span></code> step.</p></li>
+<li><p><strong>forward</strong> (<em>bool</em>) – Whether the reaction is forward or not. Only used if a user wants to skip the <code class="docutils literal notranslate"><span class="pre">find_reaction_family</span></code>
+step and assigns an one-element list to <code class="docutils literal notranslate"><span class="pre">only_families</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>, for not skipping the
+<code class="docutils literal notranslate"><span class="pre">find_reaction_family</span></code> step.</p></li>
+<li><p><strong>resonance</strong> (<em>bool</em>) – Generate resonance structures when identifying template matching.
+Can be potentially expensive for some complicated structures.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to print results. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code> as to print.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Tuple</strong> – a reactant complex and a product complex with consistent atom indexing as in the reactant.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.external.rmg.load_rmg_database">
+<span class="sig-prename descclassname"><span class="pre">rdmc.external.rmg.</span></span><span class="sig-name descname"><span class="pre">load_rmg_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">families</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_families</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.external.rmg.load_rmg_database" title="Link to this definition">#</a></dt>
+<dd><p>A helper function to load RMG database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RMGDatabase</strong> – A instance of RMG database</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.external.rmg.load_rxn_family_database">
+<span class="sig-prename descclassname"><span class="pre">rdmc.external.rmg.</span></span><span class="sig-name descname"><span class="pre">load_rxn_family_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">families</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.external.rmg.load_rxn_family_database" title="Link to this definition">#</a></dt>
+<dd><p>A helper function to load RMG Kinetic database that only contains reaction family info.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>families</strong> (<em>list</em><em>, </em><em>optional</em>) – Accepts a list or str of the following:
+- Specific kinetics family labels
+- Names of family sets defined in recommended.py
+- ‘all’
+- ‘none’. Defaults to ‘all’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">rdmc.external</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="inpwriter/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">rdmc.external.inpwriter</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.rmg.check_isomorphic_molecules"><code class="docutils literal notranslate"><span class="pre">check_isomorphic_molecules()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.rmg.find_reaction_family"><code class="docutils literal notranslate"><span class="pre">find_reaction_family()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.rmg.from_rdkit_mol"><code class="docutils literal notranslate"><span class="pre">from_rdkit_mol()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.rmg.generate_reaction_complex"><code class="docutils literal notranslate"><span class="pre">generate_reaction_complex()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.rmg.load_rmg_database"><code class="docutils literal notranslate"><span class="pre">load_rmg_database()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.rmg.load_rxn_family_database"><code class="docutils literal notranslate"><span class="pre">load_rxn_family_database()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/reference/external/rmg.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2020-2023, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,703 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>rdmc.conformer_generation.sampler &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=188e8da4" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script src="../../../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/conformer_generation/workflow/sampler';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Utils" href="../utils.html" />
+    <link rel="prev" title="rdmc.conformer_generation.metrics" href="metrics.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  <div class="navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">RDMC 0.1 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../../rdmc.html">
+                        rdmc
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../credits.html">
+                        Credits
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../cite.html">
+                        How to cite RDMC
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../license.html">
+                        Licence
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../../rdmc.html">
+                        rdmc
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../credits.html">
+                        Credits
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../cite.html">
+                        How to cite RDMC
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../license.html">
+                        Licence
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item"><nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../external/index.html">rdmc.external</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../external/rmg.html">rdmc.external.rmg</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../external/inpwriter/index.html">rdmc.external.inpwriter</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../external/inpwriter/gaussian.html">rdmc.external.inpwriter.gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../external/inpwriter/qchem.html">rdmc.external.inpwriter.qchem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../external/inpwriter/orca.html">rdmc.external.inpwriter.orca</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../external/inpwriter/utils.html">rdmc.external.inpwriter.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../external/logparser/index.html">rdmc.external.logparser</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../external/logparser/base.html">rdmc.external.logparser.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../external/logparser/gaussian.html">rdmc.external.logparser.gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../external/logparser/qchem.html">rdmc.external.logparser.qchem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../external/logparser/orca.html">rdmc.external.logparser.orca</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../external/logparser/utils.html">rdmc.external.logparser.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../mathlib/index.html">rdmc.mathlib</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../mathlib/geom.html">rdmc.mathlib.geom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mathlib/curvefit.html">rdmc.mathlib.curvefit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mathlib/greedymin.html">rdmc.mathlib.greedymin</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">rdmc.conformer_generation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../embedding_geometries/index.html">Embedding Geometries</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../embedding_geometries/embedders.html">rdmc.conformer_generation.embedders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../embedding_geometries/align.html">rdmc.conformer_generation.align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../embedding_geometries/ts_guessers.html">rdmc.conformer_generation.ts_guessers</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../geometry_optimization/index.html">Geometry Optimization</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../geometry_optimization/optimizers.html">rdmc.conformer_generation.optimizers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../geometry_optimization/ts_optimizers.html">rdmc.conformer_generation.ts_optimizers</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../postprocessing/index.html">Postprocessing</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../postprocessing/verifiers.html">rdmc.conformer_generation.verifiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../postprocessing/ts_verifiers.html">rdmc.conformer_generation.ts_verifiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../postprocessing/pruners.html">rdmc.conformer_generation.pruners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../postprocessing/solvation.html">rdmc.conformer_generation.solvation</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Workflow</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="generators.html">rdmc.conformer_generation.generators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ts_generators.html">rdmc.conformer_generation.ts_generators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrics.html">rdmc.conformer_generation.metrics</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">rdmc.conformer_generation.sampler</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../utils.html">Utils</a></li>
+</ul>
+</li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../conf.html">rdmc.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../forcefield.html">rdmc.forcefield</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mol.html">rdmc.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reaction.html">rdmc.reaction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ts.html">rdmc.ts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utils.html">rdmc.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../view.html">rdmc.view</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+
+
+<nav aria-label="Breadcrumbs">
+  <ul class="bd-breadcrumbs" role="navigation" aria-label="Breadcrumb">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../rdmc.html" class="nav-link">rdmc</a></li>
+    
+    
+    <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Workflow</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">rdmc.conformer_generation.sampler</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="module-rdmc.conformer_generation.sampler">
+<span id="rdmc-conformer-generation-sampler"></span><h1>rdmc.conformer_generation.sampler<a class="headerlink" href="#module-rdmc.conformer_generation.sampler" title="Link to this heading">#</a></h1>
+<p>Modules for torsional sampling</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="rdmc.conformer_generation.sampler.TorsionalSampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdmc.conformer_generation.sampler.</span></span><span class="sig-name descname"><span class="pre">TorsionalSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'GFN2-xTB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nprocs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_point_each_torsion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_dimension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry_optimization/optimizers.html#rdmc.conformer_generation.optimizers.ConfGenOptimizer" title="rdmc.conformer_generation.optimizers.ConfGenOptimizer"><span class="pre">ConfGenOptimizer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../geometry_optimization/ts_optimizers.html#rdmc.conformer_generation.ts_optimizers.TSOptimizer" title="rdmc.conformer_generation.ts_optimizers.TSOptimizer"><span class="pre">TSOptimizer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pruner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../postprocessing/pruners.html#rdmc.conformer_generation.pruners.ConfGenPruner" title="rdmc.conformer_generation.pruners.ConfGenPruner"><span class="pre">ConfGenPruner</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verifiers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../postprocessing/ts_verifiers.html#rdmc.conformer_generation.ts_verifiers.TSVerifier" title="rdmc.conformer_generation.ts_verifiers.TSVerifier"><span class="pre">TSVerifier</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../postprocessing/verifiers.html#rdmc.conformer_generation.verifiers.Verifier" title="rdmc.conformer_generation.verifiers.Verifier"><span class="pre">Verifier</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../postprocessing/ts_verifiers.html#rdmc.conformer_generation.ts_verifiers.TSVerifier" title="rdmc.conformer_generation.ts_verifiers.TSVerifier"><span class="pre">TSVerifier</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../postprocessing/verifiers.html#rdmc.conformer_generation.verifiers.Verifier" title="rdmc.conformer_generation.verifiers.Verifier"><span class="pre">Verifier</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conformer_generation.sampler.TorsionalSampler" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to find possible conformers by sampling the PES for each torsional pair.
+You have to have the <a class="reference external" href="https://github.com/qcscine/sparrow">Sparrow</a> and <a class="reference external" href="https://github.com/grimme-lab/xtb-python">xtb-python</a> packages installed to run this workflow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – The method to be used for automated conformer search. Only the methods available in Spharrow and xtb-python can be used.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;GFN2-xTB&quot;</span></code>.</p></li>
+<li><p><strong>nprocs</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of processors to use. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>memory</strong> (<em>int</em><em>, </em><em>optional</em>) – Memory in GB used by Gaussian. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>n_point_each_torsion</strong> (<em>float</em><em>, </em><em>optional</em>) – Number of points to be sampled along each rotational mode. Defaults to <code class="docutils literal notranslate"><span class="pre">45.</span></code>.</p></li>
+<li><p><strong>n_dimension</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of dimensions. Defaults to <code class="docutils literal notranslate"><span class="pre">2</span></code>. If <code class="docutils literal notranslate"><span class="pre">-1</span></code> is assigned, the number of dimension would be the number of rotatable bonds.</p></li>
+<li><p><strong>optimizer</strong> (<a class="reference internal" href="../geometry_optimization/optimizers.html#rdmc.conformer_generation.optimizers.ConfGenOptimizer" title="rdmc.conformer_generation.optimizers.ConfGenOptimizer"><em>ConfGenOptimizer</em></a><em> or </em><a class="reference internal" href="../geometry_optimization/ts_optimizers.html#rdmc.conformer_generation.ts_optimizers.TSOptimizer" title="rdmc.conformer_generation.ts_optimizers.TSOptimizer"><em>TSOptimizer</em></a><em>, </em><em>optional</em>) – The optimizer used to optimize TS or stable specials geometries. Available options for
+<cite>TSOptimizer &lt;rdmc.conformer_generation.ts_optimizers.TSOptimizer&gt;</cite>
+are <a class="reference internal" href="../geometry_optimization/ts_optimizers.html#rdmc.conformer_generation.ts_optimizers.SellaOptimizer" title="rdmc.conformer_generation.ts_optimizers.SellaOptimizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SellaOptimizer</span></code></a>,
+<a class="reference internal" href="../geometry_optimization/ts_optimizers.html#rdmc.conformer_generation.ts_optimizers.OrcaOptimizer" title="rdmc.conformer_generation.ts_optimizers.OrcaOptimizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OrcaOptimizer</span></code></a>,
+and <a class="reference internal" href="../geometry_optimization/ts_optimizers.html#rdmc.conformer_generation.ts_optimizers.GaussianOptimizer" title="rdmc.conformer_generation.ts_optimizers.GaussianOptimizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GaussianOptimizer</span></code></a>.</p></li>
+<li><p><strong>pruner</strong> (<a class="reference internal" href="../postprocessing/pruners.html#rdmc.conformer_generation.pruners.ConfGenPruner" title="rdmc.conformer_generation.pruners.ConfGenPruner"><em>ConfGenPruner</em></a><em>, </em><em>optional</em>) – The pruner used to prune conformers based on geometric similarity after optimization. Available options are
+<a class="reference internal" href="../postprocessing/pruners.html#rdmc.conformer_generation.pruners.CRESTPruner" title="rdmc.conformer_generation.pruners.CRESTPruner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CRESTPruner</span></code></a> and
+<a class="reference internal" href="../postprocessing/pruners.html#rdmc.conformer_generation.pruners.TorsionPruner" title="rdmc.conformer_generation.pruners.TorsionPruner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TorsionPruner</span></code></a>.</p></li>
+<li><p><strong>verifiers</strong> (<a class="reference internal" href="../postprocessing/ts_verifiers.html#rdmc.conformer_generation.ts_verifiers.TSVerifier" title="rdmc.conformer_generation.ts_verifiers.TSVerifier"><em>TSVerifier</em></a><em>, </em><a class="reference internal" href="../postprocessing/verifiers.html#rdmc.conformer_generation.verifiers.Verifier" title="rdmc.conformer_generation.verifiers.Verifier"><em>Verifier</em></a><em>, </em><em>list</em><em> of </em><em>TSVerifiers</em><em> or </em><em>list</em><em> of </em><em>Verifiers</em><em>, </em><em>optional</em>) – The verifier or a list of verifiers used to verify the obtained conformer. Available
+options are
+<a class="reference internal" href="../postprocessing/ts_verifiers.html#rdmc.conformer_generation.ts_verifiers.GaussianIRCVerifier" title="rdmc.conformer_generation.ts_verifiers.GaussianIRCVerifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GaussianIRCVerifier</span></code></a>,
+<a class="reference internal" href="../postprocessing/ts_verifiers.html#rdmc.conformer_generation.ts_verifiers.OrcaIRCVerifier" title="rdmc.conformer_generation.ts_verifiers.OrcaIRCVerifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OrcaIRCVerifier</span></code></a>, and
+<a class="reference internal" href="../postprocessing/ts_verifiers.html#rdmc.conformer_generation.ts_verifiers.XTBFrequencyVerifier" title="rdmc.conformer_generation.ts_verifiers.XTBFrequencyVerifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XTBFrequencyVerifier</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conformer_generation.sampler.TorsionalSampler.get_conformers_by_change_torsions">
+<span class="sig-name descname"><span class="pre">get_conformers_by_change_torsions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torsions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_methyl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_the_fly_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.conformer_generation.sampler.TorsionalSampler.get_conformers_by_change_torsions" title="Link to this definition">#</a></dt>
+<dd><p>Generate conformers by rotating the angles of the torsions. A on-the-fly check
+can be applied, which identifies the conformers with colliding atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<a class="reference internal" href="../../mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a>) – A RDKitMol molecule object.</p></li>
+<li><p><strong>id</strong> (<em>int</em>) – The ID of the conformer to be obtained. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+<li><p><strong>torsions</strong> (<em>list</em>) – A list of four-atom-index lists indicating the torsional modes. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+which means all the rotatable bonds will be used.</p></li>
+<li><p><strong>exclude_methyl</strong> (<em>bool</em>) – Whether exclude the torsions with methyl groups. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.
+Only valid if <code class="docutils literal notranslate"><span class="pre">torsions</span></code> is not provided.</p></li>
+<li><p><strong>on_the_fly_filter</strong> (<em>bool</em>) – Whether to check colliding atoms on the fly. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>lis</strong> – A list of RDKitMol of sampled 3D geometries for each torsional mode.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.conformer_generation.sampler.get_energy">
+<span class="sig-prename descclassname"><span class="pre">rdmc.conformer_generation.sampler.</span></span><span class="sig-name descname"><span class="pre">get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">confId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'GFN2-xTB'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdmc.conformer_generation.sampler.get_energy" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the energy of the <code class="docutils literal notranslate"><span class="pre">RDKitMol</span></code> with given <code class="docutils literal notranslate"><span class="pre">confId</span></code>. The unit is in kcal/mol.
+Only support methods already supported either in sparrow or xtb-python.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<a class="reference internal" href="../../mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a>) – A RDKitMol molecule object.</p></li>
+<li><p><strong>confId</strong> (<em>int</em>) – The ID of the conformer for calculating energy. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Which semi-empirical method to be used in running energy calculation. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;GFN2-xTB&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>The energy of the conformer.</strong></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.conformer_generation.sampler.get_separable_angle_list">
+<span class="sig-prename descclassname"><span class="pre">rdmc.conformer_generation.sampler.</span></span><span class="sig-name descname"><span class="pre">get_separable_angle_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samplings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_angles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.conformer_generation.sampler.get_separable_angle_list" title="Link to this definition">#</a></dt>
+<dd><p>Get a angle list for each input dimension. For each dimension
+The input can be a <code class="docutils literal notranslate"><span class="pre">int</span></code> indicating the angles will be evenly sampled;
+or a <code class="docutils literal notranslate"><span class="pre">list</span></code> indicating the angles to be sampled;</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>samplings</strong> (<em>Union</em><em>[</em><em>List</em><em>, </em><em>Tuple</em><em>]</em>) – An array of sampling information.
+For each element, it can be either list or int.</p></li>
+<li><p><strong>from_angles</strong> (<em>Union</em><em>[</em><em>List</em><em>, </em><em>Tuple</em><em>]</em>) – An array of initial angles.
+If not set, all angles will begin at zeros.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list</strong> – A list of sampled angles sets.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">get_separable_angle_list</span><span class="p">([[</span><span class="mi">120</span><span class="p">,</span> <span class="mi">240</span><span class="p">,],</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[[</span><span class="mi">120</span><span class="p">,</span> <span class="mi">240</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">270</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.conformer_generation.sampler.plot_heat_map">
+<span class="sig-prename descclassname"><span class="pre">rdmc.conformer_generation.sampler.</span></span><span class="sig-name descname"><span class="pre">plot_heat_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detailed_view</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conformer_generation.sampler.plot_heat_map" title="Link to this definition">#</a></dt>
+<dd><p>Plot and save the heat map of a given PES.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energies</strong> (<em>np.ndarray</em>) – A <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> containing the energies for each sampled point.</p></li>
+<li><p><strong>minimum_points</strong> (<em>List</em><em>[</em><em>Tuple</em><em>]</em>) – A list of tuples containing the indices of the minimum points.</p></li>
+<li><p><strong>save_path</strong> (<em>str</em>) – The path to save the plot.</p></li>
+<li><p><strong>mask</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – A <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> containing the mask for the energies.</p></li>
+<li><p><strong>detailed_view</strong> (<em>bool</em>) – Whether to plot the detailed view of the PES. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – The title of the plot.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.conformer_generation.sampler.preprocess_energies">
+<span class="sig-prename descclassname"><span class="pre">rdmc.conformer_generation.sampler.</span></span><span class="sig-name descname"><span class="pre">preprocess_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.conformer_generation.sampler.preprocess_energies" title="Link to this definition">#</a></dt>
+<dd><p>Rescale the energy based on the lowest energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>energies</strong> (<em>np.ndarray</em>) – A np.ndarray containing the energies for each sampled point.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tuple</strong> – The rescaled energies and the mask pointing out positions having values</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="metrics.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">rdmc.conformer_generation.metrics</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../utils.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Utils</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.sampler.TorsionalSampler"><code class="docutils literal notranslate"><span class="pre">TorsionalSampler</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.sampler.TorsionalSampler.get_conformers_by_change_torsions"><code class="docutils literal notranslate"><span class="pre">TorsionalSampler.get_conformers_by_change_torsions()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.sampler.get_energy"><code class="docutils literal notranslate"><span class="pre">get_energy()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.sampler.get_separable_angle_list"><code class="docutils literal notranslate"><span class="pre">get_separable_angle_list()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.sampler.plot_heat_map"><code class="docutils literal notranslate"><span class="pre">plot_heat_map()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.sampler.preprocess_energies"><code class="docutils literal notranslate"><span class="pre">preprocess_energies()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/reference/conformer_generation/workflow/sampler.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2020-2023, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
