@@ -19,7 +19,7 @@ jobs:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
           miniforge-version: latest
-          python-version: 3.10
+          python-version: "3.10"
           activate-environment: rdmc_env
           use-mamba: true
 
