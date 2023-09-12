@@ -149,7 +149,7 @@ class TestReaction(unittest.TestCase):
         """
         # Reaction 1
         self.assertSequenceEqual(self.rxn1.num_broken_bonds, [(2, 7)])
-        
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))

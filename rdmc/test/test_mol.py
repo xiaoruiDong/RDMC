@@ -24,6 +24,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 ################################################################################
 
+
 class TestRDKitMol(unittest.TestCase):
     """
     A class used to test basic operations for the RDKitMol Class.
@@ -203,7 +204,7 @@ class TestRDKitMol(unittest.TestCase):
         # Check Heavy atoms' index
         self.assertEqual(mol4.GetAtomWithIdx(1).GetAtomicNum(), 6)
         self.assertEqual(mol4.GetAtomWithIdx(4).GetAtomicNum(), 6)
-                # Export SMILES without H atoms and with atom map
+        # Export SMILES without H atoms and with atom map
         # Atom map numbers for heavy atoms are perserved
         self.assertEqual(mol4.ToSmiles(removeAtomMap=False,),
                          '[CH3:2][CH2:5]')
@@ -316,18 +317,18 @@ class TestRDKitMol(unittest.TestCase):
         # Add a redundant bond (C2-H3) that exists in the molecule
         # This should raise an error
         mol1 = RDKitMol.FromSmiles(smi)
-        self.assertIsNotNone(mol1.GetBondBetweenAtoms(1,2))
-        self.assertRaises(RuntimeError, mol1.AddRedundantBonds, [(1,2)])
+        self.assertIsNotNone(mol1.GetBondBetweenAtoms(1, 2))
+        self.assertRaises(RuntimeError, mol1.AddRedundantBonds, [(1, 2)])
 
         # Add a bond between (H1-H3)
         mol2 = RDKitMol.FromSmiles(smi)
-        mol_w_new_bond = mol2.AddRedundantBonds([(0,2)])
+        mol_w_new_bond = mol2.AddRedundantBonds([(0, 2)])
         # mol_w_new_bond should be different mol objects
         self.assertNotEqual(mol_w_new_bond, mol2)
         self.assertNotEqual(mol_w_new_bond._mol, mol2._mol)
         # The new mol should contain the new bond
-        self.assertIsNone(mol2.GetBondBetweenAtoms(0,2))
-        new_bond = mol_w_new_bond.GetBondBetweenAtoms(0,2)
+        self.assertIsNone(mol2.GetBondBetweenAtoms(0, 2))
+        new_bond = mol_w_new_bond.GetBondBetweenAtoms(0, 2)
         self.assertIsNotNone(new_bond)
         # The redundant bond has a bond order of 1.0
         self.assertEqual(new_bond.GetBondTypeAsDouble(), 1.0)
@@ -339,12 +340,12 @@ class TestRDKitMol(unittest.TestCase):
         smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
         mol = RDKitMol.FromSmiles(smi)
         self.assertSequenceEqual(mol.GetAtomicNumbers(),
-                                 [1,6,1,1,1,1,])
+                                 [1, 6, 1, 1, 1, 1,])
 
         smi = '[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]'
         mol = RDKitMol.FromSmiles(smi)
         self.assertSequenceEqual(mol.GetAtomicNumbers(),
-                                 [8,6,6,1,1,1,1])
+                                 [8, 6, 6, 1, 1, 1, 1])
 
     def test_get_element_symbols(self):
         """
@@ -353,12 +354,12 @@ class TestRDKitMol(unittest.TestCase):
         smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
         mol = RDKitMol.FromSmiles(smi)
         self.assertSequenceEqual(mol.GetElementSymbols(),
-                                 ['H','C','H','H','H','H',])
+                                 ['H', 'C', 'H', 'H', 'H', 'H',])
 
         smi = '[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]'
         mol = RDKitMol.FromSmiles(smi)
         self.assertSequenceEqual(mol.GetElementSymbols(),
-                                 ['O','C','C','H','H','H','H'])
+                                 ['O', 'C', 'C', 'H', 'H', 'H', 'H'])
 
     def test_get_atom_masses(self):
         """
@@ -366,17 +367,27 @@ class TestRDKitMol(unittest.TestCase):
         """
         smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
         mol = RDKitMol.FromSmiles(smi)
-        self.assertTrue(np.all(np.isclose(
-                                mol.GetAtomMasses(),
-                                [1.008, 12.011, 1.008, 1.008, 1.008, 1.008],
-                                atol=1e-2, rtol=1e-3)))
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    mol.GetAtomMasses(),
+                    [1.008, 12.011, 1.008, 1.008, 1.008, 1.008],
+                    atol=1e-2,
+                    rtol=1e-3)
+            )
+        )
 
         smi = '[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]'
         mol = RDKitMol.FromSmiles(smi)
-        self.assertTrue(np.all(np.isclose(
-                                mol.GetAtomMasses(),
-                                [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008],
-                                atol=1e-2, rtol=1e-3)))
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    mol.GetAtomMasses(),
+                    [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008],
+                    atol=1e-2,
+                    rtol=1e-3)
+            )
+        )
 
     def test_get_bond_as_tuples(self):
         """
@@ -422,13 +433,13 @@ class TestRDKitMol(unittest.TestCase):
         """
         Test combining molecules using CombineMol.
         """
-        xyz_1 = np.array([[-0.01841209, -0.00118705,  0.00757447],
+        xyz_1 = np.array([[-0.01841209, -0.00118705, 0.00757447],
                           [-0.66894707, -0.81279485, -0.34820667],
-                          [-0.36500814,  1.00785186, -0.31659064],
-                          [ 0.08216461, -0.04465528,  1.09970299],
-                          [ 0.97020269, -0.14921467, -0.44248015]])
-        xyz_2 = np.array([[ 0.49911347,  0.        ,  0.        ],
-                          [-0.49911347,  0.        ,  0.        ]])
+                          [-0.36500814, 1.00785186, -0.31659064],
+                          [0.08216461, -0.04465528, 1.09970299],
+                          [0.97020269, -0.14921467, -0.44248015]])
+        xyz_2 = np.array([[0.49911347, 0., 0.],
+                          [-0.49911347, 0., 0.]])
         m1 = RDKitMol.FromSmiles('C')
         m1.EmbedConformer()
         m1.SetPositions(xyz_1)
@@ -442,15 +453,15 @@ class TestRDKitMol(unittest.TestCase):
                                     combined.GetPositions()))
 
         combined = m1.CombineMol(m2, 1.)
-        self.assertTrue(np.allclose(np.concatenate([xyz_1, xyz_2+np.array([[1., 0., 0.]])],),
+        self.assertTrue(np.allclose(np.concatenate([xyz_1, xyz_2 + np.array([[1., 0., 0.]])],),
                                     combined.GetPositions()))
 
         combined = m1.CombineMol(m2, np.array([[1., 1., 0.]]))
-        self.assertTrue(np.allclose(np.concatenate([xyz_1, xyz_2+np.array([[1., 1., 0.]])],),
+        self.assertTrue(np.allclose(np.concatenate([xyz_1, xyz_2 + np.array([[1., 1., 0.]])],),
                                     combined.GetPositions()))
 
         combined = m2.CombineMol(m1, np.array([[0., 0., 1.]]))
-        self.assertTrue(np.allclose(np.concatenate([xyz_2, xyz_1+np.array([[0., 0., 1.]])],),
+        self.assertTrue(np.allclose(np.concatenate([xyz_2, xyz_1 + np.array([[0., 0., 1.]])],),
                                     combined.GetPositions()))
 
         m1.EmbedMultipleConfs(10)
@@ -481,7 +492,7 @@ class TestRDKitMol(unittest.TestCase):
               '([H:17])([H:18])[H:19].[C:6]([C:7]([C:8]([H:29])([H:30])[H:31])([C:9]([H:32])' \
               '([H:33])[H:34])[c:10]1[c:11]([H:35])[c:12]([H:36])[c:13]([O:14][H:37])[c:15]' \
               '([H:38])[c:16]1[H:39])([H:26])([H:27])[H:28]'
-              
+
         # The generated molecule will maintain all the atom map numbers and the atom indexes
         # have the same sequence as the atom map numbers
         ref_mol = RDKitMol.FromSmiles(smi, keepAtomMap=True)
@@ -551,33 +562,38 @@ class TestRDKitMol(unittest.TestCase):
         list2 = ['C', 'O', '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]']
         list3 = ['C', 'O', '[C:1]([O:6][H:2])([H:3])([H:4])[H:5]']
 
-        self.assertFalse(has_matched_mol(
-                            RDKitMol.FromSmiles(query),
-                            [RDKitMol.FromSmiles(smi) for smi in list1],
-                            )
-                        )
-        self.assertTrue(has_matched_mol(
-                            RDKitMol.FromSmiles(query),
-                            [RDKitMol.FromSmiles(smi) for smi in list2],
-                            )
-                        )
-        self.assertTrue(has_matched_mol(
-                            RDKitMol.FromSmiles(query),
-                            [RDKitMol.FromSmiles(smi) for smi in list2],
-                            consider_atommap=True
-                            )
-                        )
-        self.assertTrue(has_matched_mol(
-                            RDKitMol.FromSmiles(query),
-                            [RDKitMol.FromSmiles(smi) for smi in list3],
-                            )
-                        )
-        self.assertFalse(has_matched_mol(
-                            RDKitMol.FromSmiles(query),
-                            [RDKitMol.FromSmiles(smi) for smi in list3],
-                            consider_atommap=True
-                            )
-                        )
+        self.assertFalse(
+            has_matched_mol(
+                RDKitMol.FromSmiles(query),
+                [RDKitMol.FromSmiles(smi) for smi in list1],
+            )
+        )
+        self.assertTrue(
+            has_matched_mol(
+                RDKitMol.FromSmiles(query),
+                [RDKitMol.FromSmiles(smi) for smi in list2],
+            )
+        )
+        self.assertTrue(
+            has_matched_mol(
+                RDKitMol.FromSmiles(query),
+                [RDKitMol.FromSmiles(smi) for smi in list2],
+                consider_atommap=True
+            )
+        )
+        self.assertTrue(
+            has_matched_mol(
+                RDKitMol.FromSmiles(query),
+                [RDKitMol.FromSmiles(smi) for smi in list3],
+            )
+        )
+        self.assertFalse(
+            has_matched_mol(
+                RDKitMol.FromSmiles(query),
+                [RDKitMol.FromSmiles(smi) for smi in list3],
+                consider_atommap=True
+            )
+        )
 
     def test_get_unique_mols(self):
         """
@@ -588,35 +604,35 @@ class TestRDKitMol(unittest.TestCase):
                  '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]',
                  '[C:1]([H:3])([H:4])([H:5])[O:6][H:2]',]
 
-        self.assertEqual(len(get_unique_mols(
-                            [RDKitMol.FromSmiles(smi) for smi in list1],
-                            )),
-                         2,)
-        self.assertEqual(set([mol.ToSmiles() for mol in get_unique_mols(
-                                [RDKitMol.FromSmiles(smi) for smi in list1])
-                              ]),
-                         {'C', 'O'})
-        self.assertEqual(len(get_unique_mols(
-                            [RDKitMol.FromSmiles(smi) for smi in list2],
-                            consider_atommap=True,
-                            )),
-                         4,)
-        self.assertEqual(set([mol.ToSmiles(removeHs=False, removeAtomMap=False)
-                              for mol in get_unique_mols(
-                                    [RDKitMol.FromSmiles(smi) for smi in list2],
-                                    consider_atommap=True,
-                                )
-                              ]),
-                         {'[O:1]([H:2])[H:3]',
-                          '[C:1]([H:2])([H:3])([H:4])[H:5]',
-                          '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]',
-                          '[C:1]([H:3])([H:4])([H:5])[O:6][H:2]',
-                          })
-        self.assertEqual(len(get_unique_mols(
-                            [RDKitMol.FromSmiles(smi) for smi in list2],
-                            consider_atommap=False,
-                            )),
-                         3,)
+        self.assertEqual(
+            len(get_unique_mols(
+                [RDKitMol.FromSmiles(smi) for smi in list1])),
+            2,)
+        self.assertEqual(
+            set([mol.ToSmiles() for mol in get_unique_mols(
+                 [RDKitMol.FromSmiles(smi) for smi in list1])]),
+            {'C', 'O'})
+        self.assertEqual(
+            len(get_unique_mols(
+                [RDKitMol.FromSmiles(smi) for smi in list2],
+                consider_atommap=True)),
+            4,)
+        self.assertEqual(
+            set([mol.ToSmiles(removeHs=False, removeAtomMap=False)
+                 for mol in get_unique_mols(
+                [RDKitMol.FromSmiles(smi) for smi in list2],
+                consider_atommap=True)]),
+            {'[O:1]([H:2])[H:3]',
+             '[C:1]([H:2])([H:3])([H:4])[H:5]',
+             '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]',
+             '[C:1]([H:3])([H:4])([H:5])[O:6][H:2]',
+             }
+        )
+        self.assertEqual(
+            len(get_unique_mols(
+                [RDKitMol.FromSmiles(smi) for smi in list2],
+                consider_atommap=False)),
+            3,)
 
     def test_generate_radical_resonance_structures(self):
         """
@@ -634,41 +650,39 @@ class TestRDKitMol(unittest.TestCase):
         smi = 'c1ccccc1[CH]C'
         # Without filtration, RDKit returns 5 resonance structures
         # 3 with radical site on the ring and 2 with differently kekulized benzene
-        self.assertEqual(len(generate_radical_resonance_structures(
-                                RDKitMol.FromSmiles(smi),
-                                unique=False,)
-                             ),
-                         5)
+        self.assertEqual(
+            len(generate_radical_resonance_structures(
+                RDKitMol.FromSmiles(smi),
+                unique=False)),
+            5)
         # With filtration and not considering atom map, RDKit returns 3 structures
-        self.assertEqual(len(generate_radical_resonance_structures(
-                                RDKitMol.FromSmiles(smi),
-                                unique=True,
-                                consider_atommap=False,
-                                )
-                             ),
-                         3)
+        self.assertEqual(
+            len(generate_radical_resonance_structures(
+                RDKitMol.FromSmiles(smi),
+                unique=True,
+                consider_atommap=False)),
+            3)
         # With filtration and considering atom map, RDKit returns 4 structures
-        self.assertEqual(len(generate_radical_resonance_structures(
-                                RDKitMol.FromSmiles(smi),
-                                unique=True,
-                                consider_atommap=True,
-                                )
-                             ),
-                         4)
+        self.assertEqual(
+            len(generate_radical_resonance_structures(
+                RDKitMol.FromSmiles(smi),
+                unique=True,
+                consider_atommap=True)),
+            4)
         # Test case 2: Phenyl radical
         smi = '[c:1]1[c:2]([H:7])[c:3]([H:8])[c:4]([H:9])[c:5]([H:10])[c:6]1[H:11]'
         # Without filtration, RDKit returns 3 resonance structures
-        self.assertEqual(len(generate_radical_resonance_structures(
-                                RDKitMol.FromSmiles(smi),
-                                unique=False,)
-                             ),
-                         3)
+        self.assertEqual(
+            len(generate_radical_resonance_structures(
+                RDKitMol.FromSmiles(smi),
+                unique=False)),
+            3)
         # With filtration and not considering atom map, RDKit returns 2 structures
         res_mols = generate_radical_resonance_structures(
-                                    RDKitMol.FromSmiles(smi),
-                                    unique=True,
-                                    consider_atommap=False,
-                                )
+            RDKitMol.FromSmiles(smi),
+            unique=True,
+            consider_atommap=False,
+        )
         self.assertEqual(len(res_mols), 2)
         # The first one (itself) should be aromatic and the second should not
         for i, value in zip([0, 1], [True, False]):

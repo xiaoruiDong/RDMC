@@ -18,6 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 ################################################################################
 
+
 class TestUtils(unittest.TestCase):
     """
     The general class to test functions in the utils module
@@ -27,12 +28,12 @@ class TestUtils(unittest.TestCase):
         """
         Test the functionality to reverse a mapping.
         """
-        map = [ 1,  2,  3,  4,  5, 17, 18, 19, 20, 21, 22, 23, 24, 25,  6,  7,  8,
-                9, 10, 11, 12, 13, 14, 15, 16, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-                35, 36, 37, 38, 39]
-        r_map = [ 0,  1,  2,  3,  4, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,  5,
-                  6,  7,  8,  9, 10, 11, 12, 13, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-                  34, 35, 36, 37, 38]
+        map = [1, 2, 3, 4, 5, 17, 18, 19, 20, 21, 22, 23, 24, 25, 6, 7, 8,
+               9, 10, 11, 12, 13, 14, 15, 16, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+               35, 36, 37, 38, 39]
+        r_map = [0, 1, 2, 3, 4, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 5,
+                 6, 7, 8, 9, 10, 11, 12, 13, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+                 34, 35, 36, 37, 38]
 
         self.assertSequenceEqual(r_map, reverse_map(map))
         np.testing.assert_equal(np.array(r_map), reverse_map(map, as_list=False))
@@ -47,11 +48,12 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(rdmol.GetNumConformers(), 1)
         self.assertEqual(rdmol.GetNumAtoms(), 1)
-        self.assertTrue(np.array_equal(
-                                rdmol.GetConformer().GetPositions(),
-                                np.array([[0., 0., 0.,]])
-                                )
-                        )
+        self.assertTrue(
+            np.array_equal(
+                rdmol.GetConformer().GetPositions(),
+                np.array([[0., 0., 0.,]])
+            )
+        )
 
     def test_parse_xyz_by_jensen(self):
         """
@@ -107,7 +109,7 @@ H     -0.490127    0.000000    0.000000""",
             charge = Chem.GetFormalCharge(mol_smi)
             mol_xyz = parse_xyz_by_jensen(xyz=xyz,
                                           charge=charge,
-                                          allow_charged_fragments=(charge!=0))
+                                          allow_charged_fragments=(charge != 0))
             self.assertEqual(mol_xyz.GetNumAtoms(),
                              len(xyz.splitlines()) - 2)
             if smi != '[H]':
@@ -117,6 +119,7 @@ H     -0.490127    0.000000    0.000000""",
             else:
                 self.assertEqual(smi,
                                  Chem.MolToSmiles(mol_xyz))
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
