@@ -13,13 +13,13 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Mambaforge Python 3.8
+      - name: Setup Mambaforge Python 3.10
         uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
           miniforge-version: latest
-          python-version: 3.8
+          python-version: 3.10
           activate-environment: rdmc_env
           use-mamba: true
 
