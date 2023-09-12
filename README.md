@@ -11,7 +11,7 @@ The package can be easily installed with conda or mamba
 conda install -c xiaoruidong rdmc
 ```
 
-For detailed APIs, please check the [documentation](https://rdmc.readthedocs.io).
+For detailed APIs, please check the [documentation](https://xiaoruidong.github.io/RDMC/).
 
 ## Demos
 Feel free to check demos in the `ipython/`, some of them are also available on the Google Colab:
