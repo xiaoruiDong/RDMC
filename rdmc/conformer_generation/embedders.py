@@ -10,14 +10,17 @@ import os.path as osp
 import yaml
 import numpy as np
 from time import time
-import torch
+
 try:
+    import torch
     from torch_geometric.data import Batch
 except ImportError:
     pass
+
 from .utils import *
 
 try:
+    import torch
     from rdmc.external.GeoMol.model.model import GeoMol
     from rdmc.external.GeoMol.model.featurization import featurize_mol_from_smiles
     from rdmc.external.GeoMol.model.inference import construct_conformers
