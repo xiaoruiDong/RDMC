@@ -88,7 +88,7 @@ class RDKitConf(object):
 
     def GetBondLength(self,
                       atomIds: Sequence[int],
-                     ) -> float:
+                      ) -> float:
         """
         Get the bond length between atoms in Angstrom.
 
@@ -271,7 +271,7 @@ class RDKitConf(object):
     def SetBondLength(self,
                       atomIds: Sequence[int],
                       value: Union[int, float],
-                     ) -> float:
+                      ) -> float:
         """
         Set the bond length between atoms in Angstrom.
 
@@ -311,7 +311,7 @@ class RDKitConf(object):
                 # RDKit doesn't allow change bonds for non-bonding atoms
                 # A workaround may be form a bond and change the distance
                 edit_conf_by_add_bonds(self, 'SetAngleDeg', atomIds, value)
-            except:
+            except BaseException:
                 # RDKit doesn't allow change bonds for atoms in a ring
                 # A workaround hasn't been proposed
                 raise NotImplementedError(f'Approach for modifying the bond angle of {atomIds} is not available.')
@@ -335,7 +335,7 @@ class RDKitConf(object):
                 # RDKit doesn't allow change bonds for non-bonding atoms
                 # A workaround may be form a bond and change the distance
                 edit_conf_by_add_bonds(self, 'SetAngleRad', atomIds, value)
-            except:
+            except BaseException:
                 # RDKit doesn't allow change bonds for atoms in a ring
                 # A workaround hasn't been proposed
                 raise NotImplementedError(f'Approach for modifying the bond angle of {atomIds} is not available.')
@@ -358,7 +358,7 @@ class RDKitConf(object):
                 # RDKit doesn't allow change bonds for non-bonding atoms
                 # A workaround may be form a bond and change the distance
                 edit_conf_by_add_bonds(self, 'SetDihedralDeg', torsion, degree)
-            except:
+            except BaseException:
                 # RDKit doesn't allow change bonds for atoms in a ring
                 # A workaround hasn't been proposed
                 raise NotImplementedError(f'Approach for modifying the dihedral of {torsion} is not available.')
@@ -448,7 +448,7 @@ class ConformerCluster(object):
         Args:
             decimals (int, optional): clustering children based on the number of digit
                                       after the dot of the energy values.
-                                      For kcal/mol and J/mol, 0 or 1 is recommended; for 
+                                      For kcal/mol and J/mol, 0 or 1 is recommended; for
                                       hartree, 3 or 4 is recommended. Defaults to ``1``.
             as_dict (bool, optional): If ``True``, return a dict object whose keys are
                                       energy values and values are divided ConformerCluster
@@ -488,7 +488,7 @@ class ConformerCluster(object):
 
         # Update the children and energies for the current cluster
         self.children, self.energies = (np.concatenate([c.children for c in new_cluster_list]),
-                                       np.concatenate([c.energies for c in new_cluster_list]))
+                                        np.concatenate([c.energies for c in new_cluster_list]))
 
     def _update_energy_and_head(self):
         """
@@ -513,7 +513,7 @@ class ConformerFilter(object):
     def get_torsional_angles(self,
                              confid: int,
                              adjust_periodicity: bool = True,
-                            ) -> 'np.array':
+                             ) -> 'np.array':
         """
         Get torsional angles for a given conformers.
 
@@ -533,9 +533,9 @@ class ConformerFilter(object):
         return np.array(tor_angle)
 
     def get_tor_matrix(self,
-                       confs: Union['np.array',list],
+                       confs: Union['np.array', list],
                        adjust_periodicity: bool = True,
-                      ) -> np.ndarray:
+                       ) -> np.ndarray:
         """
         Get the torsional matrix consists of torsional angles for the input list of conformer indexes.
 
@@ -554,8 +554,8 @@ class ConformerFilter(object):
         return np.array(tor_matrix)
 
     def _get_results_from_cluster_idxs(self,
-                                       confs: Union[list,'np.array'],
-                                       c_idxs: Union[list,'np.array'],
+                                       confs: Union[list, 'np.array'],
+                                       c_idxs: Union[list, 'np.array'],
                                        as_dict: bool,
                                        as_list_idx: bool,):
         """
@@ -593,7 +593,7 @@ class ConformerFilter(object):
                           adjust_periodicity: bool = False,
                           as_dict: bool = True,
                           as_list_idx: bool = False,
-                         ):
+                          ):
         """
         The implementation of an hierarchy clustering method based on scipy.
         It is basically defining clusters based on points within a hypercube defined by threshold.
@@ -624,9 +624,9 @@ class ConformerFilter(object):
         # The output is an array of the same size as 'confs', but with numbers indicating the belonging
         # cluster indexes. E.g., [1,1,1,2,2,2]
         c_idxs = hcluster.fclusterdata(tor_matrix,
-                                         threshold,
-                                         criterion=criterion,
-                                         method=method)
+                                       threshold,
+                                       criterion=criterion,
+                                       method=method)
 
         return self._get_results_from_cluster_idxs(confs=confs, c_idxs=c_idxs,
                                                    as_dict=as_dict, as_list_idx=as_list_idx)
@@ -688,7 +688,7 @@ class ConformerFilter(object):
                                                       method=method,
                                                       as_dict=False,
                                                       as_list_idx=True,
-                                                      adjust_periodicity=i%2)
+                                                      adjust_periodicity=i % 2)
             clusters = self._get_clusters_from_grouped_idxs(clusters, grouped_conf_idx)
             cur_num_clusters = len(clusters)
             if cur_num_clusters == last_num_clusters:
@@ -733,9 +733,9 @@ class ConformerFilter(object):
 
         if mask:
             # Allowing mask some dimensions
-            masked_tor = lambda tor: np.ma.masked_array(tor, mask)
+            def masked_tor(tor): return np.ma.masked_array(tor, mask)
         else:
-            masked_tor = lambda tor: tor
+            def masked_tor(tor): return tor
 
         # Create an array to store cluster indexes
         # Initializing all elements to -1
@@ -801,16 +801,16 @@ class ConformerFilter(object):
                                                 adjust_periodicity=True)
             clusters = [ConformerCluster(clusters.children[c],
                                          clusters.energies[c]) for c in c_tmp]
-            max_iter-=1
+            max_iter -= 1
 
         for i in range(max_iter):
             confs = [cl.head for cl in clusters]
             grouped_conf_idx = self.check_dihed_angle_diff(confs,
-                                                threshold=threshold,
-                                                mask=mask,
-                                                as_dict=False,
-                                                as_list_idx=True,
-                                                adjust_periodicity=i%2)
+                                                           threshold=threshold,
+                                                           mask=mask,
+                                                           as_dict=False,
+                                                           as_list_idx=True,
+                                                           adjust_periodicity=i % 2)
 
             clusters = self._get_clusters_from_grouped_idxs(clusters, grouped_conf_idx)
 
@@ -844,10 +844,9 @@ class ConformerFilter(object):
                                                maxMatches=max_atom_maps)
         self._atom_maps = [list(enumerate(match)) for match in matches]
         if len(self._atom_maps) == 100000:
-                print('WARNING: The atom index mappings are not complete (possibly due to the'
-                      'large size of the molecule or high symmetry). You may want to regenerate'
-                      'atom mappings by `reset_atom_maps` with a number larger than 100000.')
-
+            print('WARNING: The atom index mappings are not complete (possibly due to the'
+                  'large size of the molecule or high symmetry). You may want to regenerate'
+                  'atom mappings by `reset_atom_maps` with a number larger than 100000.')
 
     def pairwise_rmsd(self,
                       i: int,
@@ -862,7 +861,7 @@ class ConformerFilter(object):
         Args:
             i (int): Index of one of the conformer. Usually, used as the 'reference'.
             j (int): Index of the other conformer.
-            reflect (bool, optional): Whether to reflect the j conformer to rule out 
+            reflect (bool, optional): Whether to reflect the j conformer to rule out
                                       mirror symmetry. Defaults to ``False``.
             reorder (bool, optional): Whether to allow atom index order to change (based
                                       on isomorphism check to rule out torsional symmetry
@@ -914,8 +913,8 @@ def edit_conf_by_add_bonds(conf, function_name, atoms, value):
     tmp_atoms = sorted(atoms)
     bonds_to_add = []
     for i in range(len(tmp_atoms) - 1):
-        if not (tmp_atoms[i], tmp_atoms[i+1]) in all_bonds:
-            bonds_to_add.append([tmp_atoms[i], tmp_atoms[i+1]])
+        if not (tmp_atoms[i], tmp_atoms[i + 1]) in all_bonds:
+            bonds_to_add.append([tmp_atoms[i], tmp_atoms[i + 1]])
     tmp_mol = tmp_mol.AddRedundantBonds(bonds_to_add)
     tmp_mol.SetPositions(conf.GetPositions())
     tmp_conf = tmp_mol.GetConformer()

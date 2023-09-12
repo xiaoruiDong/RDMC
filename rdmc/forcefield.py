@@ -35,7 +35,7 @@ H_RAD_TEMP = Chem.MolFromSmiles('[H]')
 H_RAD_MOD = {'edit': {'SetAtomicNum': 17,
                       'SetNumRadicalElectrons': 1},
              'remedy': {'SetAtomicNum': 1,
-                      'SetNumRadicalElectrons': 1}}
+                        'SetNumRadicalElectrons': 1}}
 
 O_RAD_TEMP = Chem.MolFromSmiles('[O]')
 O_RAD_MOD = {'edit': {'SetAtomicNum': 9,
@@ -48,12 +48,12 @@ O2_TEMP = Chem.MolFromSmarts('[O;X1]-,=[O;X1]')
 O2_TEMP.GetAtoms()[0].SetNumRadicalElectrons(1)
 O2_TEMP.GetAtoms()[1].SetNumRadicalElectrons(1)
 O2_MOD = {'edit': {'SetAtomicNum': 9, },
-              'remedy': {'SetAtomicNum': 8, }}
+          'remedy': {'SetAtomicNum': 8, }}
 
 # Match H2 molecule
 H2_TEMP = Chem.MolFromSmiles('[H][H]')
-H2_MOD = {'edit': {'SetAtomicNum': 17,},
-          'remedy': {'SetAtomicNum': 1,}}
+H2_MOD = {'edit': {'SetAtomicNum': 17, },
+          'remedy': {'SetAtomicNum': 1, }}
 
 
 class RDKitFF(object):
@@ -281,7 +281,7 @@ class RDKitFF(object):
     def setup(self,
               mol: Optional[Union['Mol', 'RDKitMol']] = None,
               conf_id: int = -1,
-              ignore_interfrag_interactions = False,
+              ignore_interfrag_interactions=False,
               ):
         """
         Setup the force field and get ready to be optimized.
@@ -334,7 +334,7 @@ class RDKitFF(object):
 
     def is_optimizable(self,
                        mol: Optional['Mol'] = None,
-                      ) -> bool:
+                       ) -> bool:
         """
         Check if RDKit has the parameters for all atom type in the molecule.
 
@@ -440,9 +440,9 @@ class RDKitFF(object):
         return mol_copy, edits
 
     def recover_mol(self,
-                   mol: Optional['Mol'] = None,
-                   edits: dict = {},
-                   in_place: bool = True):
+                    mol: Optional['Mol'] = None,
+                    edits: dict = {},
+                    in_place: bool = True):
         """
         Recover the molecule from modifications.
 
@@ -577,7 +577,7 @@ class RDKitFF(object):
                           num_points: int = 45,
                           rigid: bool = True,
                           init_angle: Optional[float] = None,
-                          force_constant: float=100,
+                          force_constant: float = 100,
                           return_xyz: bool = False):
         mol_copy = self.mol.Copy()
         conf = self.mol.GetConformer()
@@ -781,7 +781,7 @@ class OpenBabelFF:
 
     def is_optimizable(self,
                        mol: Optional['Mol'] = None,
-                      ) -> bool:
+                       ) -> bool:
         """
         Check if Openbabel has the parameters for all atom type in the molecule.
 
@@ -816,7 +816,6 @@ class OpenBabelFF:
         if constraints:
             self.constraints = constraints
 
-
     def set_solver(self,
                    solver_type: str):
         if solver_type not in self.available_solver:
@@ -834,8 +833,8 @@ class OpenBabelFF:
             self.ff.Setup(self.obmol, self.constraints)
         else:
             self.ff.Setup(self.obmol)
-        initial_fun = getattr(self.ff, self.solver_type+'Initialize')
-        take_n_step_fun = getattr(self.ff, self.solver_type+'TakeNSteps')
+        initial_fun = getattr(self.ff, self.solver_type + 'Initialize')
+        take_n_step_fun = getattr(self.ff, self.solver_type + 'TakeNSteps')
 
         initial_fun(max_step, tol)
         while take_n_step_fun(step_per_iter):
@@ -896,7 +895,7 @@ def optimize_mol(mol: 'RDKitMol',
         # It is faster, relatively more robust, but have limited atom-type support
         ff = RDKitFF(force_field)
         # In RDKit FF, setup first then add constraints
-        ff.setup(mol_copy, ignore_interfrag_interactions= ignore_interfrag_interaction)
+        ff.setup(mol_copy, ignore_interfrag_interactions=ignore_interfrag_interaction)
         for frozen_bond in frozen_bonds + frozen_non_bondings:
             if len(frozen_bond) == 1:
                 ff.add_distance_constraint(atoms=frozen_bond[0], relative=True)

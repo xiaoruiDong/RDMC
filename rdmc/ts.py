@@ -31,7 +31,7 @@ def _get_bonds_as_sets(*mols: Union['RDKitMol', 'Mol'],
 
 
 def get_formed_bonds(r_mol: Union['RDKitMol', 'Mol'],
-                     p_mol:  Union['RDKitMol', 'Mol'],
+                     p_mol: Union['RDKitMol', 'Mol'],
                      ) -> List:
     """
     Get all bonds formed in the reaction. Both reactant and product complexes
@@ -49,7 +49,7 @@ def get_formed_bonds(r_mol: Union['RDKitMol', 'Mol'],
 
 
 def get_broken_bonds(r_mol: Union['RDKitMol', 'Mol'],
-                     p_mol:  Union['RDKitMol', 'Mol'],
+                     p_mol: Union['RDKitMol', 'Mol'],
                      ) -> List:
     """
     Get all bonds broken in the reaction. Both reactant and product complexes
@@ -67,7 +67,7 @@ def get_broken_bonds(r_mol: Union['RDKitMol', 'Mol'],
 
 
 def get_formed_and_broken_bonds(r_mol: Union['RDKitMol', 'Mol'],
-                                p_mol:  Union['RDKitMol', 'Mol'],
+                                p_mol: Union['RDKitMol', 'Mol'],
                                 ) -> List:
     """
     Get all bonds broken in the reaction. Both reactant and product complexes
@@ -106,8 +106,8 @@ def get_all_changing_bonds(r_mol: Union['RDKitMol', 'Mol'],
     r_bonds, p_bonds = _get_bonds_as_sets(r_mol, p_mol)
     formed_bonds, broken_bonds = p_bonds - r_bonds, r_bonds - p_bonds
     changed_bonds = [bond for bond in (r_bonds & p_bonds)
-                     if r_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble() != \
-                        p_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()]
+                     if r_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble() !=
+                     p_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()]
     return list(formed_bonds), list(broken_bonds), changed_bonds
 
 
@@ -271,7 +271,7 @@ def guess_rxn_from_normal_mode(xyz: np.array,
             try:
                 mols[side].append(RDKitMol.FromXYZ(xyz_str, header=False, backend=backend))
                 mols[side][-1].SaturateMol(multiplicity=multiplicity)
-            except:
+            except BaseException:
                 # Need to provide a more precise error in the future
                 # Cannot generate the molecule from XYZ
                 pass
@@ -338,8 +338,10 @@ def examine_normal_mode(r_mol: RDKitMol,
 
     # Generate conformer instance according to the displacement
     xyzs = ts_xyz - amplitude * disp * weights, ts_xyz + amplitude * disp * weights
-    r_copy = r_mol.Copy(); r_copy.SetPositions(xyzs[0])
-    p_copy = p_mol.Copy(); p_copy.SetPositions(xyzs[1])
+    r_copy = r_mol.Copy()
+    r_copy.SetPositions(xyzs[0])
+    p_copy = p_mol.Copy()
+    p_copy.SetPositions(xyzs[1])
     r_conf, p_conf = r_copy.GetConformer(), p_copy.GetConformer()
 
     # Calculate bond distance change

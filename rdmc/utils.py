@@ -190,6 +190,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         rw_mol.AddConformer(conf, assignId=True)
     return rw_mol
 
+
 def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
                                embed: bool = True,
                                ) -> 'openbabel.OBMol':

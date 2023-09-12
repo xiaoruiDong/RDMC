@@ -64,7 +64,7 @@ def mol_viewer(obj: str,
 
     if style_spec is None:
         viewer.setStyle({'stick': {'radius': 0.05, 'color': '#f2f2f2'},
-                         'sphere': {'scale': 0.25},}, viewer=viewer_loc)
+                         'sphere': {'scale': 0.25}, }, viewer=viewer_loc)
     else:
         viewer.setStyle(style_spec, viewer=viewer_loc)
 
@@ -112,7 +112,7 @@ def conformer_viewer(mol: 'RDKitMol',
         style_spec (dict, Optional): Style of the shown molecule. The default setting is:
 
                                      .. code-block:: javascript
-                                     
+
                                         {'stick': {'radius': 0.05,
                                                    'color': '#f2f2f2'},
                                          'sphere': {'scale': 0.25},}
@@ -136,7 +136,7 @@ def conformer_viewer(mol: 'RDKitMol',
 
     if style_spec is None:
         style_spec = {'stick': {'radius': 0.05, 'color': '#f2f2f2'},
-                      'sphere': {'scale': 0.25},}
+                      'sphere': {'scale': 0.25}, }
     if highlight_ids is None:
         viewer.setStyle(style_spec, viewer=viewer_loc)
     else:
@@ -162,18 +162,18 @@ def interactive_conformer_viewer(mol, **kwargs):
     Returns:
         py3Dmol.view: The molecule viewer with slider to view different conformers.
     """
-    if type(mol) is list or type(mol) is tuple:
-        viewer = lambda confId: mol_viewer(obj=mol[confId], confId=0, **kwargs)
+    if isinstance(mol, list) or isinstance(mol, tuple):
+        def viewer(confId): return mol_viewer(obj=mol[confId], confId=0, **kwargs)
         return interact(
             viewer,
             confId=IntSlider(min=0, max=len(mol) - 1, step=1)
         )
 
     else:
-        viewer = lambda confId: mol_viewer(obj=mol, confId=confId, **kwargs)
+        def viewer(confId): return mol_viewer(obj=mol, confId=confId, **kwargs)
         return interact(
             viewer,
-            confId=IntSlider(min=0, max=mol.GetNumConformers()-1, step=1)
+            confId=IntSlider(min=0, max=mol.GetNumConformers() - 1, step=1)
         )
 
 
@@ -208,13 +208,14 @@ def freq_viewer(obj: str,
     Returns:
         py3Dmol.view: The molecule frequency viewer.
     """
-    model_extra = {'vibrate': {'frames': frames,'amplitude': amplitude}}
+    model_extra = {'vibrate': {'frames': frames, 'amplitude': amplitude}}
     animate = {'loop': 'backAndForth'}
     viewer = mol_viewer(obj, model, model_extra, animate, atom_index,
                         style_spec, viewer, viewer_size, viewer_loc)
     viewer.vibrate(frames, amplitude, True, {'color': 'black',
-                                             'radius': 0.08,})
+                                             'radius': 0.08, })
     return viewer
+
 
 def grid_viewer(viewer_grid: tuple,
                 linked: bool = False,
@@ -368,7 +369,7 @@ def mol_animation(obj: str,
 
     if style_spec is None:
         viewer.setStyle({'stick': {'radius': 0.05, 'color': '#f2f2f2'},
-                         'sphere': {'scale': 0.25},},)
+                         'sphere': {'scale': 0.25}, },)
 
     else:
         viewer.setStyle(style_spec, viewer=viewer_loc)
