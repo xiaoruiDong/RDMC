@@ -3,7 +3,7 @@ name: Build Documentation
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
   build-documentation:
@@ -13,8 +13,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
-        with:
-            ref: dev
+
       - name: Setup Mambaforge Python 3.10
         uses: conda-incubator/setup-miniconda@v2
         with:
