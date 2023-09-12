@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Modules for pruning a group of conformers
@@ -24,6 +24,7 @@ class ConfGenPruner:
     Args:
         track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
     """
+
     def __init__(self,
                  track_stats: bool = False):
 
@@ -157,8 +158,9 @@ class TorsionPruner(ConfGenPruner):
             r_smi, p_smi = rxn_smiles.split(">>")
             r_mol = RDKitMol.FromSmiles(r_smi)
             p_mol = RDKitMol.FromSmiles(p_smi)
-            torsions_list = r_mol.GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True) + \
-                            p_mol.GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True)
+            torsions_list = \
+                r_mol.GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True) + \
+                p_mol.GetTorsionalModes(excludeMethyl=excludeMethyl, includeRings=True)
             self.torsions_list = [list(x) for x in set(tuple(x) for x in torsions_list)]
         else:
             raise ValueError("Either a SMILES or a list of torsional modes should be provided.")
@@ -287,6 +289,7 @@ class CRESTPruner(ConfGenPruner):
         ewin (int, optional): Energy window. Defaults to ``10000``.
         track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
     """
+
     def __init__(self,
                  ethr: float = 0.15,
                  rthr: float = 0.125,
@@ -332,11 +335,11 @@ class CRESTPruner(ConfGenPruner):
 
         all_mol_data = unique_mol_data + current_mol_data
         updated_unique_mol_data, conf_ids = run_cre_check(all_mol_data,
-                                                ethr=self.ethr,
-                                                rthr=self.rthr,
-                                                bthr=self.bthr,
-                                                ewin=self.ewin
-                                                )
+                                                          ethr=self.ethr,
+                                                          rthr=self.rthr,
+                                                          bthr=self.bthr,
+                                                          ewin=self.ewin
+                                                          )
 
         if sort_by_energy:
             updated_unique_mol_data = sorted(updated_unique_mol_data, key=lambda x: x["energy"])

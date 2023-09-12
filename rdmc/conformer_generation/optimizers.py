@@ -29,6 +29,7 @@ class ConfGenOptimizer:
     Args:
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
     def __init__(self, track_stats=False):
 
         self.iter = 0
@@ -89,6 +90,7 @@ class MMFFOptimizer(ConfGenOptimizer):
         method (str, optional): The method to be used for stable species optimization. Defaults to ``"rdkit"``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
     def __init__(self,
                  method: str = "rdkit",
                  track_stats: bool = False):
@@ -144,6 +146,7 @@ class XTBOptimizer(ConfGenOptimizer):
         level (str, optional): The level of theory. Defaults to ``"normal"``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
     def __init__(self,
                  method: str = "gff",
                  level: str = "normal",
@@ -203,6 +206,7 @@ class XTBOptimizer(ConfGenOptimizer):
 
         return sorted(final_mol_data, key=lambda x: x["energy"])
 
+
 class GaussianOptimizer(ConfGenOptimizer):
     """
     Optimizer using the Gaussian.
@@ -214,6 +218,7 @@ class GaussianOptimizer(ConfGenOptimizer):
         memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
     def __init__(self,
                  method: str = "GFN2-xTB",
                  nprocs: int = 1,
@@ -299,7 +304,7 @@ class GaussianOptimizer(ConfGenOptimizer):
                 try:
                     g16_log = GaussianLog(os.path.join(conf_dir, "gaussian_opt.log"))
                     pre_adj_mat = mol.GetAdjacencyMatrix()
-                    post_adj_mat = g16_log.get_mol(refid=g16_log.num_all_geoms-1,  # The last geometry in the job
+                    post_adj_mat = g16_log.get_mol(refid=g16_log.num_all_geoms - 1,  # The last geometry in the job
                                                    converged=False,
                                                    sanitize=False,
                                                    backend='openbabel').GetAdjacencyMatrix()

@@ -129,7 +129,7 @@ class NaiveAlign(object):
             raise ValueError(f'The conf_ids\'s length (currently {len(conf_ids)}) should be '
                              f'the same as the length of moles (currently {len(mols)}.')
         coord_list = [mol.GetPostions(id=conf_id) for mol, conf_id in zip(mols, conf_ids)]
-        coords  = np.concatenate(coord_list, axis=0)
+        coords = np.concatenate(coord_list, axis=0)
         atom_maps, counter = [], 0
         for mol in mols:
             atom_maps.append(list(range(counter, counter + mol.GetNumAtoms())))
@@ -222,7 +222,7 @@ class NaiveAlign(object):
                                              np.zeros(3))
         elif len(self.atom_maps) == 2:
             pos = [np.zeros(3), np.array([self.dist, 0., 0.])]
-            for i in [0, 1] :
+            for i in [0, 1]:
                 atom_map = self.atom_maps[i]
                 # Make the first fragment centered at (0, 0, 0)
                 # Make the second fragment centered at (R1 + R2 + dist)
@@ -269,8 +269,8 @@ class NaiveAlign(object):
         # Square euclideans distance is used as score for each bond.
         score2 = 0.
         for bond in self.formed_bonds:
-                # Only bonds form between fragments will help decrease this score3
-                # Bonds formed inside a fragment will not change this score since molecules are rigid and the distances are fixed
+            # Only bonds form between fragments will help decrease this score3
+            # Bonds formed inside a fragment will not change this score since molecules are rigid and the distances are fixed
             score2 += np.sum((coords[bond[0], :] - coords[bond[1], :]) ** 2)
         score2 = score2 / len(self.formed_bonds) / dist_ref
 
@@ -281,7 +281,12 @@ class NaiveAlign(object):
         react_atom_center = [get_centroid(coords[self.reacting_atoms[i], :]) for i in range(2)]
         for i in [0, 1]:
             if len(self.non_reacting_atoms[i]):
-                score3 += np.sum(1 / distance.cdist(coords[self.non_reacting_atoms[i],:], react_atom_center[i-1].reshape(1, -1), 'sqeuclidean') ** 2)
+                score3 += np.sum(
+                    1 / distance.cdist(
+                        coords[self.non_reacting_atoms[i], :],
+                        react_atom_center[i - 1].reshape(1, -1),
+                        'sqeuclidean') ** 2
+                )
 
         return score1 + score2 + score3
 
@@ -351,7 +356,8 @@ def reset_pmol(r_mol: 'RDKitMol',
     broken_bonds = get_broken_bonds(r_mol, p_mol)
     r_conf = r_mol.GetConformer()
     current_distances = [r_conf.GetBondLength(b) for b in broken_bonds]
-    [obff.add_distance_constraint(b, 1.5*d) for b, d in zip(broken_bonds, current_distances)]
+    [obff.add_distance_constraint(b, 1.5 * d)
+     for b, d in zip(broken_bonds, current_distances)]
     obff.optimize(max_step=2000)
 
     # second minimization without constraints

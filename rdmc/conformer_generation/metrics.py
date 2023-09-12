@@ -81,8 +81,8 @@ class SCGMetric:
         if self.metric == "total conformers":
             return False
         else:
-            min_metric = np.min(self.metric_history[-self.window :])
-            max_metric = np.max(self.metric_history[-self.window :])
+            min_metric = np.min(self.metric_history[-self.window:])
+            max_metric = np.max(self.metric_history[-self.window:])
             change = (max_metric - min_metric) / np.clip(
                 min_metric, a_min=1e-10, a_max=None
             )

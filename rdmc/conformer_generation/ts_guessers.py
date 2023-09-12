@@ -19,6 +19,11 @@ import numpy as np
 # import torch
 # from torch_geometric.data import Batch
 
+# Use [pygsm-gaussian](https://pypi.org/project/pygsm-gaussian/) for DE-GSM calculation
+from rdmc.external.inpwriter import write_gaussian_gsm
+# Uses XTB binary for the RMSD-PP method
+from rdmc.external.xtb_tools.opt import run_xtb_calc
+
 # Import TS-EGNN
 _ts_egnn_avail = True
 try:
@@ -58,21 +63,15 @@ try:
     from ase.autoneb import AutoNEB
     from ase.calculators.calculator import CalculationFailed, Calculator
     from ase.optimize import QuasiNewton
-except:
+except BaseException:
     _ase_avail = False
     print("No ASE installation detected. Skipping import...")
 # Use xtb ase calculator defined in the xtb-python module
 try:
     from xtb.ase.calculator import XTB
-except:
+except BaseException:
     XTB = "xtb-python not installed"  # Defined to provide informative error message.
     print("XTB cannot be used for AutoNEBGuesser as its ASE interface imported incorrectly. Skipping import...")
-
-# Use [pygsm-gaussian](https://pypi.org/project/pygsm-gaussian/) for DE-GSM calculation
-from rdmc.external.inpwriter import write_gaussian_gsm
-
-# Uses XTB binary for the RMSD-PP method
-from rdmc.external.xtb_tools.opt import run_xtb_calc
 
 
 class TSInitialGuesser:
@@ -261,7 +260,7 @@ class TSEGNNGuesser(TSInitialGuesser):
         ts_mol = mols[0][0].Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(rp_inputs))
         [ts_mol.GetConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float))
-         for i in range(len(rp_inputs))];
+         for i in range(len(rp_inputs))]
 
         if save_dir:
             self.save_guesses(save_dir, mols, ts_mol.ToRWMol())
@@ -333,7 +332,7 @@ class TSGCNGuesser(TSInitialGuesser):
         ts_mol = mols[0][0].Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(rp_inputs))
         [ts_mol.GetConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float))
-         for i in range(len(rp_inputs))];
+         for i in range(len(rp_inputs))]
 
         if save_dir:
             self.save_guesses(save_dir, mols, ts_mol.ToRWMol())
@@ -378,7 +377,7 @@ class RMSDPPGuesser(TSInitialGuesser):
         ts_guesses, used_rp_combos = [], []
         multiplicity = multiplicity or 1
         for r_mol, p_mol in mols:
-            _, ts_guess = run_xtb_calc((r_mol, p_mol), return_optmol=True, job="--path", uhf=multiplicity-1)
+            _, ts_guess = run_xtb_calc((r_mol, p_mol), return_optmol=True, job="--path", uhf=multiplicity - 1)
             if ts_guess:
                 ts_guesses.append(ts_guess)
                 used_rp_combos.append((r_mol, p_mol))

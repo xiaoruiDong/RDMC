@@ -25,7 +25,7 @@ from rdmc.external.logparser import (GaussianLog, ORCALog, QChemLog)
 
 try:
     from rdmc.external.sella import run_sella_opt
-except:
+except BaseException:
     print("No Sella installation deteced. Skipping import...")
 
 
@@ -36,6 +36,7 @@ class TSOptimizer:
     Args:
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
     def __init__(self,
                  track_stats: Optional[bool] = False):
         """
@@ -140,6 +141,7 @@ class SellaOptimizer(TSOptimizer):
         steps (int, optional): Max number of steps allowed in the optimization. Defaults to ``1000``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
     def __init__(self,
                  method: str = "GFN2-xTB",
                  fmax: float = 1e-3,
@@ -214,6 +216,7 @@ class OrcaOptimizer(TSOptimizer):
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
     def __init__(self,
                  method: str = "XTB2",
                  nprocs: int = 1,
@@ -266,7 +269,7 @@ class OrcaOptimizer(TSOptimizer):
                 freq_idx = i
                 break
         if freq_idx:
-            freqs = orca_data[freq_idx-4-dof: freq_idx-4]
+            freqs = orca_data[freq_idx - 4 - dof: freq_idx - 4]
             freqs.reverse()
             return np.array([float(l.split()[1]) for l in freqs])
         else:
