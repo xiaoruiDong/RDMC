@@ -35,7 +35,7 @@ setup(
         "Topic :: Scientific/Engineering :: Chemistry"
     ],
     keywords="chemistry, RDKit, molecule, conformer, reaction",
-    license = "MIT License",
+    license="MIT License",
     python_requires='>=3.6',
     platforms=["Any."],
 )
