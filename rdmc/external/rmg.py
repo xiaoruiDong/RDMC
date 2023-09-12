@@ -33,11 +33,11 @@ def load_rmg_database(families: list = [],
         RMGDatabase: A instance of RMG database
     """
     if all_families:
-        kinetics_families='all'
+        kinetics_families = 'all'
     elif families:
-        kinetics_families=families
+        kinetics_families = families
     else:
-        kinetics_families='default'
+        kinetics_families = 'default'
     database_path = settings['database.directory']
     database = RMGDatabase()
     database.load(
@@ -50,7 +50,7 @@ def load_rmg_database(families: list = [],
     return database
 
 
-def load_rxn_family_database(families: Union[list,str] = 'all'):
+def load_rxn_family_database(families: Union[list, str] = 'all'):
     """
     A helper function to load RMG Kinetic database that only contains reaction family info.
 
@@ -176,9 +176,9 @@ def find_reaction_family(database: 'KineticsDatabase',
         products = [mol.copy() for mol in products]
 
     reaction_list = database.generate_reactions_from_families(
-                                                        reactants=reactants,
-                                                        products=products,
-                                                        only_families=only_families)
+        reactants=reactants,
+        products=products,
+        only_families=only_families)
     # Get reaction information
     all_matches = []
     for rxn in reaction_list:
@@ -211,7 +211,7 @@ def generate_reaction_complex(database: 'KineticsDatabase',
     Then, it will form a reactant complexes based on the `reactants` list. Finally, it will apply the template
     corresponding to the family to the reactants complex and yield a product complex with the correct atom map.
     One can bypasses the searching step by providing ``only_families`` with a single-element list and assigning
-    the forward variable. All allowed families names can be found at https://rmg.mit.edu/database/kinetics/families/. 
+    the forward variable. All allowed families names can be found at https://rmg.mit.edu/database/kinetics/families/.
     Please note that this function currently only returns the first template it finds. This is non-idea if a nominal
     reaction has multiple channels.
     # TODO: provide an option if multiple channel if available.
@@ -245,16 +245,16 @@ def generate_reaction_complex(database: 'KineticsDatabase',
         # Find the reaction in the RMG database
         try:
             family_label, forward = find_reaction_family(database,
-                                                        reactants,
-                                                        products,
-                                                        only_families=only_families,
-                                                        verbose=verbose,
-                                                        resonance=resonance)
+                                                         reactants,
+                                                         products,
+                                                         only_families=only_families,
+                                                         verbose=verbose,
+                                                         resonance=resonance)
         # Cannot find any matches
         except TypeError:
             return None, None
         else:
-            if family_label == None:
+            if family_label is None:
                 return None, None
 
     # Make the reaction family preserver atom orders
@@ -295,10 +295,10 @@ def generate_reaction_complex(database: 'KineticsDatabase',
         for r in reactants:
             try:
                 resonanced_r = r.copy(deep=True).generate_resonance_structures(keep_isomorphic=False,
-                                                                        filter_structures=True,
-                                                                        save_order=True)
+                                                                               filter_structures=True,
+                                                                               save_order=True)
                 r_to_gen.append(resonanced_r)
-            except:
+            except BaseException:
                 r_to_gen.append([r])
         rs_to_gen = list(set_product(*r_to_gen))
         p_to_match = [p.copy(deep=True).generate_resonance_structures() for p in products]
@@ -308,7 +308,7 @@ def generate_reaction_complex(database: 'KineticsDatabase',
         ps_to_match = [products]
 
     for reactants in rs_to_gen:
-    # A = B or A = B + C
+        # A = B or A = B + C
         if len(reactants) == 1:
             # Find all possible mappings
             mappings = family._match_reactant_to_template(reactants[0], template_reactants[0])
@@ -345,8 +345,8 @@ def generate_reaction_complex(database: 'KineticsDatabase',
             else:
                 for struct in reactants:
                     reactant_structure = reactant_structure.merge(
-                                                struct.copy(deep=True)
-                                                )
+                        struct.copy(deep=True)
+                    )
 
             # Make a copy for the reactant complex for output
             reactant_complex = reactant_structure.copy(deep=True)
