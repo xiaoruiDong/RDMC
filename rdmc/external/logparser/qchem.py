@@ -34,8 +34,8 @@ class QChemLog(CclibLog):
         for i, line in enumerate(reverse_lines):
             if 'Thank you very much for using Q-Chem.  Have a nice day.' in line:
                 self._finished = True
-                time_str = re.search(self.time_regex, reverse_lines[i+4]).group()
-                for l in reverse_lines[i+1:]:
+                time_str = re.search(self.time_regex, reverse_lines[i + 4]).group()
+                for l in reverse_lines[i + 1:]:
                     if 'MAXIMUM OPTIMIZATION CYCLES REACHED' in l:
                         self._success = False
                         break

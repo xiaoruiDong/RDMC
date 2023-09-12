@@ -69,7 +69,7 @@ def scheme_to_dict(scheme_str: str) -> dict:
     # split other scheme arguments
     args = re.findall(SCHEME_REGEX, scheme_str)
 
-    schemes = defaultdict(lambda:{})
+    schemes = defaultdict(lambda: {})
     for arg in args:
         if arg.startswith('#'):
             continue
@@ -81,7 +81,7 @@ def scheme_to_dict(scheme_str: str) -> dict:
                 # items may be split by ','
                 try:
                     key, val = item.strip().split('=')
-                except:
+                except BaseException:
                     # There may be items without assigned values
                     key, val = item.strip(), None
                 iop_scheme[key.strip()] = val.strip()
