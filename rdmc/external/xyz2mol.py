@@ -300,12 +300,12 @@ def BO2mol(mol, BO_matrix, atoms, atomic_valence_electrons,
 
     """
 
-    l = len(BO_matrix)
+    l1 = len(BO_matrix)
     l2 = len(atoms)
     BO_valences = list(BO_matrix.sum(axis=1))
 
-    if (l != l2):
-        raise RuntimeError('sizes of adjMat ({0:d}) and Atoms {1:d} differ'.format(l, l2))
+    if (l1 != l2):
+        raise RuntimeError('sizes of adjMat ({0:d}) and Atoms {1:d} differ'.format(l1, l2))
 
     rwMol = Chem.RWMol(mol)
 
@@ -315,8 +315,8 @@ def BO2mol(mol, BO_matrix, atoms, atomic_valence_electrons,
         3: Chem.BondType.TRIPLE
     }
 
-    for i in range(l):
-        for j in range(i + 1, l):
+    for i in range(l1):
+        for j in range(i + 1, l1):
             bo = int(round(BO_matrix[i, j]))
             if (bo == 0):
                 continue

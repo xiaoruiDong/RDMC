@@ -733,9 +733,11 @@ class ConformerFilter(object):
 
         if mask:
             # Allowing mask some dimensions
-            def masked_tor(tor): return np.ma.masked_array(tor, mask)
+            def masked_tor(tor):
+                return np.ma.masked_array(tor, mask)
         else:
-            def masked_tor(tor): return tor
+            def masked_tor(tor):
+                return tor
 
         # Create an array to store cluster indexes
         # Initializing all elements to -1

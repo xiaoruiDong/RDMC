@@ -1906,8 +1906,8 @@ def generate_vdw_mat(rd_mol,
             else:
                 atom2 = rd_mol.GetAtomWithIdx(atom2_ind)
                 vdw_mat[atom1_ind, atom2_ind] = threshold * \
-                    (vdw_radii[atom1.GetAtomicNum()] +
-                        vdw_radii[atom2.GetAtomicNum()])
+                    (vdw_radii[atom1.GetAtomicNum()]
+                     + vdw_radii[atom2.GetAtomicNum()])
     return vdw_mat
 
 

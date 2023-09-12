@@ -163,14 +163,16 @@ def interactive_conformer_viewer(mol, **kwargs):
         py3Dmol.view: The molecule viewer with slider to view different conformers.
     """
     if isinstance(mol, list) or isinstance(mol, tuple):
-        def viewer(confId): return mol_viewer(obj=mol[confId], confId=0, **kwargs)
+        def viewer(confId):
+            return mol_viewer(obj=mol[confId], confId=0, **kwargs)
         return interact(
             viewer,
             confId=IntSlider(min=0, max=len(mol) - 1, step=1)
         )
 
     else:
-        def viewer(confId): return mol_viewer(obj=mol, confId=confId, **kwargs)
+        def viewer(confId):
+            return mol_viewer(obj=mol, confId=confId, **kwargs)
         return interact(
             viewer,
             confId=IntSlider(min=0, max=mol.GetNumConformers() - 1, step=1)

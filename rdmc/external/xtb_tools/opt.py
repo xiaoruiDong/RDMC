@@ -193,7 +193,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
         if job == "--hess":
             with open(xtb_g98) as f:
                 data = f.readlines()
-            frequencies = np.array([l.split()[-3:] for l in data if "Frequencies" in l], dtype=float).ravel()
+            frequencies = np.array([line.split()[-3:] for line in data if "Frequencies" in line], dtype=float).ravel()
             props.update({"frequencies": frequencies})
             not save_dir and rmtree(temp_dir)
             return props

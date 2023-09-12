@@ -271,7 +271,7 @@ class OrcaOptimizer(TSOptimizer):
         if freq_idx:
             freqs = orca_data[freq_idx - 4 - dof: freq_idx - 4]
             freqs.reverse()
-            return np.array([float(l.split()[1]) for l in freqs])
+            return np.array([float(line.split()[1]) for line in freqs])
         else:
             return None
 

@@ -106,8 +106,8 @@ def get_all_changing_bonds(r_mol: Union['RDKitMol', 'Mol'],
     r_bonds, p_bonds = _get_bonds_as_sets(r_mol, p_mol)
     formed_bonds, broken_bonds = p_bonds - r_bonds, r_bonds - p_bonds
     changed_bonds = [bond for bond in (r_bonds & p_bonds)
-                     if r_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble() !=
-                     p_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()]
+                     if (r_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()
+                         != p_mol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble())]
     return list(formed_bonds), list(broken_bonds), changed_bonds
 
 
