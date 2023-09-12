@@ -37,15 +37,6 @@ jobs:
           mamba info
           mamba list
 
-      - uses: actions/checkout@v3
-        with:
-          ref: github_pages
-
-      - name: Update the github_pages to main
-        run: |
-            git fetch origin main
-            git reset --hard origin/main
-
       - name: Make documentation
         run: |
           cd docs
