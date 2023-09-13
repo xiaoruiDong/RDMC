@@ -74,6 +74,8 @@ html_static_path = ['_static']
 html_css_files = [
     'custom.css',
 ]
+html_logo = '_static/RDMC_icon.svg'
+
 
 # -- Packages that are not importable from the default environment ---------
 
