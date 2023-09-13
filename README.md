@@ -1,4 +1,5 @@
-# RDMC (Reaction Data and Molecular Conformer)
+![RDMC Logo](docs/source/_static/RDMC_icon.svg)
+# Reaction Data and Molecular Conformer
 
 [![Documentation Status](https://readthedocs.org/projects/rdmc/badge/?version=latest)](https://rdmc.readthedocs.io/en/latest/?badge=latest)
 [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
