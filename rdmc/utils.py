@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 This module provides methods that can directly apply to RDKit Mol/RWMol.
@@ -189,6 +189,7 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
         set_rdconf_coordinates(conf, coords)
         rw_mol.AddConformer(conf, assignId=True)
     return rw_mol
+
 
 def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
                                embed: bool = True,

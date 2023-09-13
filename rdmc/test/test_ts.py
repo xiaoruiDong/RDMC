@@ -16,6 +16,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 ################################################################################
 
+
 class TestBondAnalysis(unittest.TestCase):
     """
     A class used to test bond analysis on the RDKitMol instances.

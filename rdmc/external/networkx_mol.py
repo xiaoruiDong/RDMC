@@ -56,4 +56,3 @@ def draw_networkx_mol(molgraph: nx.Graph) -> None:
             labels=labels,
             node_color=node_colors,
             edgecolors='black',)
-

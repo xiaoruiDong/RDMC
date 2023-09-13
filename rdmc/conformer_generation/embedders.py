@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Modules for providing initial guess geometries
@@ -32,6 +32,7 @@ class ConfGenEmbedder:
     """
     Base class for conformer generation embedders.
     """
+
     def __init__(self, track_stats=False):
 
         self.iter = 0
@@ -141,6 +142,7 @@ class GeoMolEmbedder(ConfGenEmbedder):
             temp_schedule (str, optional): Temperature schedule. Defaults to ``"linear"``.
             track_stats (bool, optional): Whether to track the statistics of the conformer generation. Defaults to ``False``.
     """
+
     def __init__(self,
                  trained_model_dir: str,
                  dataset: str = "drugs",
@@ -198,6 +200,7 @@ class GeoMolEmbedder(ConfGenEmbedder):
             conf.SetPositions(x.squeeze(axis=1))
         return self.mol
 
+
 class ETKDGEmbedder(ConfGenEmbedder):
     """
     Embed conformers using ETKDG.
@@ -215,6 +218,7 @@ class ETKDGEmbedder(ConfGenEmbedder):
         """
         self.mol.EmbedMultipleConfs(n_conformers)
         return self.mol
+
 
 class RandomEmbedder(ConfGenEmbedder):
     """

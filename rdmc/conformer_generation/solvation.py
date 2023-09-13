@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Modules for including computing solvation corrections.
@@ -16,7 +16,7 @@ try:
     from conf_solv.trainer import LitConfSolvModule
     from conf_solv.dataloaders.collate import Collater
     from conf_solv.dataloaders.loader import create_pairdata, MolGraph
-except:
+except BaseException:
     print("No ConfSolv installation detected. Skipping import...")
 
 
@@ -27,6 +27,7 @@ class Estimator:
     Args:
         track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
     """
+
     def __init__(self,
                  track_stats: Optional[bool] = False):
         """

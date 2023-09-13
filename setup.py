@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
 
@@ -35,7 +35,7 @@ setup(
         "Topic :: Scientific/Engineering :: Chemistry"
     ],
     keywords="chemistry, RDKit, molecule, conformer, reaction",
-    license = "MIT License",
+    license="MIT License",
     python_requires='>=3.6',
     platforms=["Any."],
 )

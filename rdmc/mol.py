@@ -115,7 +115,7 @@ class RDKitMol(object):
 
     def AddRedundantBonds(self,
                           bonds: Iterable,
-                         ) -> 'RDKitMol':
+                          ) -> 'RDKitMol':
         """
         Add redundant bonds (not originally exist in the molecule) for
         facilitating a few molecule operation or analyses. This function
@@ -299,7 +299,7 @@ class RDKitMol(object):
             pos_list = [[c1.GetPositions(), c2.GetPositions() + offset]
                         for c1, c2 in cartesian_product(c1s, c2s)]
 
-            combined.EmbedMultipleNullConfs(len(c1s)*len(c2s), random=False)
+            combined.EmbedMultipleNullConfs(len(c1s) * len(c2s), random=False)
             for i, pos_pair in enumerate(pos_list):
                 combined.SetPositions(np.concatenate(pos_pair), id=i)
 
@@ -348,7 +348,7 @@ class RDKitMol(object):
             try:
                 AllChem.Compute2DCoords(self._mol)
                 return_code = 0
-            except:  # To be replaced by a more specific error type
+            except BaseException:  # To be replaced by a more specific error type
                 return_code = -1
 
         if return_code == -1:
@@ -1180,7 +1180,7 @@ class RDKitMol(object):
         return RDKitMol(rwmol)
 
     def Sanitize(self,
-                 sanitizeOps: Optional[Union[int,'SanitizeFlags']] = Chem.rdmolops.SANITIZE_ALL):
+                 sanitizeOps: Optional[Union[int, 'SanitizeFlags']] = Chem.rdmolops.SANITIZE_ALL):
         """
         Sanitize the molecule.
 
@@ -1397,11 +1397,11 @@ class RDKitMol(object):
         atoms = Atoms(positions=self.GetPositions(id=confId),
                       numbers=self.GetAtomicNumbers())
         atoms.set_initial_magnetic_moments(
-                    [atom.GetNumRadicalElectrons() + 1
-                     for atom in self.GetAtoms()])
+            [atom.GetNumRadicalElectrons() + 1
+             for atom in self.GetAtoms()])
         atoms.set_initial_charges(
-                    [atom.GetFormalCharge()
-                     for atom in self.GetAtoms()])
+            [atom.GetFormalCharge()
+             for atom in self.GetAtoms()])
         return atoms
 
     def ToGraph(self,
@@ -1651,7 +1651,7 @@ class RDKitMol(object):
         chain_length = min(self.GetNumAtoms(), chain_length)
         # Find all paths satisfy *C -[- C = C -]n- C*
         # n = 1, 2, 3 is corresponding to chain length = 4, 6, 8
-        for path_length in range(4, chain_length+1, 2):
+        for path_length in range(4, chain_length + 1, 2):
 
             if not num_dbs:
                 # problem solved in the previous run
@@ -1668,9 +1668,9 @@ class RDKitMol(object):
             paths = []
             for path in all_paths:
                 if path[0] in rad_atoms and path[-1] in rad_atoms:
-                    for sec in range(1, path_length-2, 2):
+                    for sec in range(1, path_length - 2, 2):
                         bond = self.GetBondBetweenAtoms(path[sec],
-                                                        path[sec+1])
+                                                        path[sec + 1])
                         if bond.GetBondTypeAsDouble() not in [2, 3]:
                             break
                     else:
@@ -1678,8 +1678,8 @@ class RDKitMol(object):
 
             while num_dbs and paths:
                 for path in paths:
-                    bonds = [self.GetBondBetweenAtoms(*path[i:i+2])
-                             for i in range(path_length-1)]
+                    bonds = [self.GetBondBetweenAtoms(*path[i:i + 2])
+                             for i in range(path_length - 1)]
 
                     new_bond_types = [ORDERS.get(bond.GetBondTypeAsDouble() + (-1) ** i)
                                       for i, bond in enumerate(bonds)]
@@ -1906,8 +1906,8 @@ def generate_vdw_mat(rd_mol,
             else:
                 atom2 = rd_mol.GetAtomWithIdx(atom2_ind)
                 vdw_mat[atom1_ind, atom2_ind] = threshold * \
-                    (vdw_radii[atom1.GetAtomicNum()] +
-                        vdw_radii[atom2.GetAtomicNum()])
+                    (vdw_radii[atom1.GetAtomicNum()]
+                     + vdw_radii[atom2.GetAtomicNum()])
     return vdw_mat
 
 
@@ -1984,7 +1984,7 @@ def generate_radical_resonance_structures(mol: RDKitMol,
         # If a structure cannot be sanitized, removed it
         try:
             res_mol.Sanitize()
-        except:
+        except BaseException:
             # todo: make error type more specific and add a warning message
             continue
         if kekulize:
@@ -1998,11 +1998,11 @@ def generate_radical_resonance_structures(mol: RDKitMol,
         # Temporary fix to remove highlight flag
         # TODO: replace with a better method after knowing the mechanism of highlighting substructures
         cleaned_mols = [RDKitMol.FromSmiles(
-                            mol.ToSmiles(removeAtomMap=False,
-                                         removeHs=False,
-                                         kekule=kekulize,)
-                            )
-                        for mol in cleaned_mols]
+            mol.ToSmiles(removeAtomMap=False,
+                         removeHs=False,
+                         kekule=kekulize,)
+        )
+            for mol in cleaned_mols]
     return cleaned_mols
 
 

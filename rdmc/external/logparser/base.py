@@ -633,9 +633,9 @@ class CclibLog(BaseLog):
             df = self.opt_convergence
             idx = (df[1:] / df.loc['target']).apply(np.linalg.norm, axis=1).idxmin()
             if xyz_str:
-                return self.cclib_results.writexyz(indices=idx-1)
+                return self.cclib_results.writexyz(indices=idx - 1)
             else:
-                return self.all_geometries[idx-1]
+                return self.all_geometries[idx - 1]
 
     def plot_opt_convergence(self,
                              logy: bool = True,
@@ -699,11 +699,11 @@ class CclibLog(BaseLog):
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
 
         def visual(idx):
-            mol_viewer(sdfs[idx-1], 'sdf').update()
+            mol_viewer(sdfs[idx - 1], 'sdf').update()
             ax = plt.axes()
             self.plot_opt_convergence(highlight_index=idx, ax=ax)
             plt.show()
-            print(xyzs[idx-1])
+            print(xyzs[idx - 1])
 
         slider = IntSlider(value=0,
                            min=1, max=self.num_all_geoms, step=1,
@@ -782,7 +782,7 @@ class CclibLog(BaseLog):
         if 'freq' not in self.job_type and not self.is_ts:
             raise RuntimeError('This method is only valid for TS frequency jobs.')
         if self.num_neg_freqs != 1:
-            raise RuntimeError(f'This may not be a TS, since it has {self.num_neg_freqs}' \
+            raise RuntimeError(f'This may not be a TS, since it has {self.num_neg_freqs}'
                                f' imaginary frequencies.')
 
         xyz, disp = self.converged_geometries[0], self.cclib_results.vibdisps[0]
@@ -836,7 +836,7 @@ class CclibLog(BaseLog):
         lines = xyz.splitlines()
         vib_xyz_list = lines[0:2]
         for i, line in enumerate(lines[2:]):
-            line = line.strip() + f'{"":12}'+ ''.join([f'{item:<12}' for item in self.cclib_results.vibdisps[mode_idx][i].tolist()])
+            line = line.strip() + f'{"":12}' + ''.join([f'{item:<12}' for item in self.cclib_results.vibdisps[mode_idx][i].tolist()])
             vib_xyz_list.append(line)
         vib_xyz = '\n'.join(vib_xyz_list)
         return freq_viewer(vib_xyz, model='xyz', frames=frames, amplitude=amplitude, *args, **kwargs)
@@ -951,7 +951,7 @@ class CclibLog(BaseLog):
             mol.EmbedMultipleNullConfs(n=num_confs)
             coords = self.converged_geometries if converged else self.all_geometries
             # Inverse part of the geometry to make the change in geometry 'monotonically'
-            coords[:midpoint] = coords[midpoint-1::-1]
+            coords[:midpoint] = coords[midpoint - 1::-1]
             for i in range(num_confs):
                 mol.SetPositions(coords=coords[i], id=i)
         else:
@@ -979,7 +979,7 @@ class CclibLog(BaseLog):
         if relative:
             y_params -= y_params.max()
         if midpoint:
-            y_params[:midpoint] = y_params[midpoint-1::-1]
+            y_params[:midpoint] = y_params[midpoint - 1::-1]
 
         x_params = np.arange(1, y_params.shape[0] + 1)
 
@@ -1017,20 +1017,20 @@ class CclibLog(BaseLog):
         midpoint = self.get_irc_midpoint()
         if midpoint:
             xyzs = np.array(xyzs)
-            xyzs[:midpoint] = xyzs[midpoint-1::-1]
-            y_params[:midpoint] = y_params[midpoint-1::-1]
-        x_params = np.arange(1, y_params.shape[0]+1)
+            xyzs[:midpoint] = xyzs[midpoint - 1::-1]
+            y_params[:midpoint] = y_params[midpoint - 1::-1]
+        x_params = np.arange(1, y_params.shape[0] + 1)
         xlabel = 'Index'
         ylabel = 'E(SCF) [kcal/mol]'
 
         def visual(idx):
-            mol_viewer(sdfs[idx-1], 'sdf').update()
+            mol_viewer(sdfs[idx - 1], 'sdf').update()
             ax = plt.axes()
             ax.plot(x_params, y_params)
             ax.set(xlabel=xlabel, ylabel=ylabel)
-            ax.plot(x_params[idx-1], y_params[idx-1], 'ro')
+            ax.plot(x_params[idx - 1], y_params[idx - 1], 'ro')
             plt.show()
-            print(xyzs[idx-1])
+            print(xyzs[idx - 1])
 
         slider = IntSlider(value=0,
                            min=1, max=x_params.shape[0], step=1,
@@ -1152,7 +1152,7 @@ class CclibLog(BaseLog):
                 atom_map = [(i, i) for i in scan_name[-len(scan_name) + 1:]]
             for idx in range(1, mol.GetNumConformers()):
                 mol.AlignMol(refMol=mol, prbCid=idx,
-                            refCid=0, atomMaps=[atom_map])
+                             refCid=0, atomMaps=[atom_map])
         return mol
 
     @BaseLog.require_job_type('scan')
@@ -1196,25 +1196,25 @@ class CclibLog(BaseLog):
         ylabel = 'E(SCF) [kcal/mol]'
 
         def visual(idx):
-            mol_viewer(sdfs[idx-1], 'sdf').update()
+            mol_viewer(sdfs[idx - 1], 'sdf').update()
             ax = plt.axes()
             ax.plot(x_params, y_params)
             ax.set(xlabel=xlabel, ylabel=ylabel)
             # Print reference line
             ax.hlines(y=baseline_y,
-                  xmin=x_params.min(),
-                  xmax=x_params.max(),
-                  colors='grey', linestyles='dashed',
-                  label='ref', alpha=0.5)
-            ax.plot(x_params[idx-1], y_params[idx-1], 'ro')
+                      xmin=x_params.min(),
+                      xmax=x_params.max(),
+                      colors='grey', linestyles='dashed',
+                      label='ref', alpha=0.5)
+            ax.plot(x_params[idx - 1], y_params[idx - 1], 'ro')
 
             plt.show()
-            print(xyzs[idx-1])
+            print(xyzs[idx - 1])
 
         slider = IntSlider(value=0,
-                        min=1, max=x_params.shape[0], step=1,
-                        description='Index',
-                        )
+                           min=1, max=x_params.shape[0], step=1,
+                           description='Index',
+                           )
 
         return interact(visual, idx=slider, continuous_update=continuous_update)
 
@@ -1250,8 +1250,8 @@ class CclibLog(BaseLog):
         x_params = self.get_scanparams(converged=converged, relative=relative_x)
 
         if draw_fit and len(self.get_scannames(as_list=True)[0]) == 4:
-            fs = FourierSeries1D().fit(x_params/ 180. * np.pi, y_params-baseline_y)
-            fitted_y_params = fs.predict(x_params/180. * np.pi) + baseline_y
+            fs = FourierSeries1D().fit(x_params / 180. * np.pi, y_params - baseline_y)
+            fitted_y_params = fs.predict(x_params / 180. * np.pi) + baseline_y
 
         ax = ax or plt.axes()
         ax.plot(x_params, y_params, '.-', label='scan')

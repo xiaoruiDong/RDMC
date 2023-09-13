@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 This module provides class and methods for plotting curves.
@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_curve(y: Union[list,tuple,'np.array'],
-               x: Optional[Union[list,tuple,'np.array']] = None,
-               periodic_x: Optional[Union[float,tuple,list]] = None,
+def plot_curve(y: Union[list, tuple, 'np.array'],
+               x: Optional[Union[list, tuple, 'np.array']] = None,
+               periodic_x: Optional[Union[float, tuple, list]] = None,
                relative_x: Optional[Union[int, str]] = None,
                xlabel: str = '',
                relative_y: Optional[Union[int, str]] = None,
@@ -29,14 +29,14 @@ def plot_curve(y: Union[list,tuple,'np.array'],
         x (list-like): A list-like object to be plotted as y variable.
     """
     # Modify x variables
-    if relative_x != None:
+    if relative_x is not None:
         if isinstance(relative_x, int):
             # Reference based on the index
             try:
                 x_ref = x[relative_x]
             except KeyError:
                 raise ValueError('Invalid x_baseline. If an int is given, it should be within'
-                                    'the range of indices.')
+                                 'the range of indices.')
         elif isinstance(relative_x, str):
             if relative_x == 'min':
                 x_ref = np.min(x)
@@ -52,7 +52,7 @@ def plot_curve(y: Union[list,tuple,'np.array'],
             periodic_x = [0, periodic_x]
         try:
             periodicity = periodic_x[1] - periodic_x[0]
-        except:
+        except BaseException:
             raise ValueError(f'Invalid periodic_x value {periodic_x}')
         too_small = x < periodic_x[0]
         too_large = x > periodic_x[1]
@@ -63,14 +63,14 @@ def plot_curve(y: Union[list,tuple,'np.array'],
             too_large = x > periodic_x[1]
 
     # Modify y variables
-    if relative_y != None:
+    if relative_y is not None:
         if isinstance(relative_y, int):
             # Reference based on the index
             try:
                 y_ref = y[relative_y]
             except KeyError:
                 raise ValueError('Invalid relative_y. If an int is given, it should be within'
-                                    'the range of indices.')
+                                 'the range of indices.')
         elif isinstance(relative_y, str):
             if relative_y == 'min':
                 y_ref = np.min(y)

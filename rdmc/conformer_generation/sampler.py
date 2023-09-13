@@ -34,7 +34,7 @@ except ImportError:
 try:
     import scine_sparrow
     import scine_utilities as su
-except:
+except BaseException:
     print("No scine_sparrow installation detected. Skipping import...")
 
 
@@ -71,7 +71,7 @@ class TorsionalSampler:
                  memory: int = 1,
                  n_point_each_torsion: int = 45,
                  n_dimension: int = 2,
-                 optimizer: Optional[Union["ConfGenOptimizer","TSOptimizer"]] = None,
+                 optimizer: Optional[Union["ConfGenOptimizer", "TSOptimizer"]] = None,
                  pruner: Optional["ConfGenPruner"] = None,
                  verifiers: Optional[Union["TSVerifier",
                                            "Verifier",
@@ -281,7 +281,10 @@ class TorsionalSampler:
 
             if self.n_dimension == -1:
                 n_conformers = minimum_mols.GetNumConformers()
-                self.logger.info(f"After on the fly check of potentially colliding atoms, {n_conformers} conformers will be passed to the following optimization and verification steps.")
+                self.logger.info(
+                    f"After on the fly check of potentially colliding atoms, "
+                    f"{n_conformers} conformers will be passed to the following "
+                    f"optimization and verification steps.")
         else:
             # Setting the environmental parameters before running energy calculations
             try:

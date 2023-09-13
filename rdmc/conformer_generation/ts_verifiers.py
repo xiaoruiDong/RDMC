@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Modules for verifying optimized ts
@@ -41,6 +41,7 @@ class TSVerifier:
     Args:
         track_stats (bool, optional): Whether to track status. Defaults to ``False``.
     """
+
     def __init__(self,
                  track_stats: bool = False):
         """
@@ -93,11 +94,11 @@ class TSVerifier:
         """
         time_start = time()
         ts_mol = self.verify_ts_guesses(
-                ts_mol=ts_mol,
-                multiplicity=multiplicity,
-                save_dir=save_dir,
-                **kwargs
-            )
+            ts_mol=ts_mol,
+            multiplicity=multiplicity,
+            save_dir=save_dir,
+            **kwargs
+        )
 
         if self.track_stats:
             time_end = time()
@@ -117,6 +118,7 @@ class XTBFrequencyVerifier(TSVerifier):
                                             Defaults to ``-100.`` cm-1
         track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
     """
+
     def __init__(self,
                  cutoff_frequency: float = -100.,
                  track_stats: bool = False):
@@ -396,7 +398,7 @@ class GaussianIRCVerifier(TSVerifier):
                     # I personally think it is worth to continue to run the other IRC just to provide more sights
                     try:
                         glog = GaussianLog(gaussian_output_file)
-                        adj_mat.append(glog.get_mol(refid=glog.num_all_geoms-1,  # The last geometry in the job
+                        adj_mat.append(glog.get_mol(refid=glog.num_all_geoms - 1,  # The last geometry in the job
                                                     converged=False,
                                                     sanitize=False,
                                                     backend='openbabel').GetAdjacencyMatrix())
@@ -532,11 +534,11 @@ class QChemIRCVerifier(TSVerifier):
                 try:
                     log = QChemLog(qchem_output_file)
                     adj_mat.append(log.get_mol(refid=log.get_irc_midpoint() - 1,
-                                                sanitize=False,
-                                                backend='openbabel').GetAdjacencyMatrix())
+                                               sanitize=False,
+                                               backend='openbabel').GetAdjacencyMatrix())
                     adj_mat.append(log.get_mol(refid=-2,  # The second to last geometry in the job
-                                                sanitize=False,
-                                                backend='openbabel').GetAdjacencyMatrix())
+                                               sanitize=False,
+                                               backend='openbabel').GetAdjacencyMatrix())
                 except Exception as e:
                     print(f'Run into error when obtaining adjacency matrix from IRC output file. Got: {e}')
                     ts_mol.KeepIDs[i] = False
@@ -628,7 +630,7 @@ class TSScreener(TSVerifier):
         mol_data, ids = [], []
 
         # parse all optimization folders (which hold the frequency jobs)
-        for log_dir in sorted([d for d in glob(os.path.join(save_dir, "*opt*")) if os.path.isdir(d)], \
+        for log_dir in sorted([d for d in glob(os.path.join(save_dir, "*opt*")) if os.path.isdir(d)],
                               key=lambda x: int(x.split("opt")[-1])):
 
             idx = int(log_dir.split("opt")[-1])

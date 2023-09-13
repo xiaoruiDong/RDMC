@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Modules for verifying optimized stable species
@@ -25,6 +25,7 @@ class Verifier:
     Args:
         track_stats (bool, optional): Whether to track status. Defaults to ``False``.
     """
+
     def __init__(self,
                  track_stats: bool = False):
         """
@@ -77,11 +78,11 @@ class Verifier:
         """
         time_start = time()
         mol = self.verify_guesses(
-                mol=mol,
-                multiplicity=multiplicity,
-                save_dir=save_dir,
-                **kwargs
-            )
+            mol=mol,
+            multiplicity=multiplicity,
+            save_dir=save_dir,
+            **kwargs
+        )
 
         if self.track_stats:
             time_end = time()
@@ -101,6 +102,7 @@ class XTBFrequencyVerifier(Verifier):
                                             Defaults to ``-100.`` cm-1.
         track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
     """
+
     def __init__(self,
                  cutoff_frequency: float = -100.,
                  track_stats: bool = False):

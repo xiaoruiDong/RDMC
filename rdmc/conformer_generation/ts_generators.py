@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Modules for TS conformer generation workflows.
@@ -29,7 +29,7 @@ class TSConformerGenerator:
                                       is not given by the user.
         use_smaller_multiplicity (bool, optional): Whether to use the smaller multiplicity when the interpreted multiplicity from the reaction smiles is
                                                    inconsistent between reactants and products. Defaults to ``True``.
-        embedder (TSInitialGuesser, optional): Instance of a :obj:`TSInitialGuesser <rdmc.conformer_generation.ts_guessers.TSInitialGuesser>`. Available options are 
+        embedder (TSInitialGuesser, optional): Instance of a :obj:`TSInitialGuesser <rdmc.conformer_generation.ts_guessers.TSInitialGuesser>`. Available options are
                                                :obj:`TSEGNNGuesser <rdmc.conformer_generation.ts_guessers.TSEGNNGuesser>`,
                                                :obj:`TSGCNGuesser <rdmc.conformer_generation.ts_guessers.TSGCNGuesser>`,
                                                :obj:`AutoNEBGuesser <rdmc.conformer_generation.ts_guessers.AutoNEBGuesser>`,
@@ -66,9 +66,9 @@ class TSConformerGenerator:
                  embedder: Optional['TSInitialGuesser'] = None,
                  optimizer: Optional['TSOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
-                 verifiers: Optional[Union['TSVerifier',List['TSVerifier']]] = None,
+                 verifiers: Optional[Union['TSVerifier', List['TSVerifier']]] = None,
                  sampler: Optional['TorisonalSampler'] = None,
-                 final_modules: Optional[Union['TSOptimizer','TSVerifier',List['TSVerifier']]] = None,
+                 final_modules: Optional[Union['TSOptimizer', 'TSVerifier', List['TSVerifier']]] = None,
                  save_dir: Optional[str] = None,
                  ) -> 'TSConformerGenerator':
         """
@@ -300,7 +300,7 @@ class TSConformerGenerator:
         energy_dict = ts_mol.energy
         KeepIDs = ts_mol.KeepIDs
 
-        sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])]  # Order by energy
+        sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
         filter_index = [k for k in sorted_index if KeepIDs[k]][:n_conformers]
         for i in range(ts_mol.GetNumConformers()):
             if i not in filter_index:
@@ -334,7 +334,7 @@ class TSConformerGenerator:
         seed_mols = self.generate_seed_mols(self.rxn_smiles, n_conformers)
 
         # TODO: Need to double check if multiplicity is generally needed for embedder
-        # It is needed for QST2, probably 
+        # It is needed for QST2, probably
         self.logger.info("Generating initial TS guesses...")
         ts_mol = self.embedder(seed_mols, multiplicity=self.multiplicity, save_dir=self.save_dir)
         ts_mol.KeepIDs = {i: True for i in range(ts_mol.GetNumConformers())}  # map ids of generated guesses thru workflow
@@ -361,7 +361,7 @@ class TSConformerGenerator:
             self.logger.info("Running torsional sampling...")
             energy_dict = opt_ts_mol.energy
             KeepIDs = opt_ts_mol.KeepIDs
-            sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])] # Order by energy
+            sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
             filter_index = [k for k in sorted_index if KeepIDs[k]][:n_sampling]
             found_lower_energy_index = {i: False for i in range(opt_ts_mol.GetNumConformers())}
             for id in filter_index:

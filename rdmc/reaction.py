@@ -148,7 +148,7 @@ class Reaction:
         """
         if self.is_num_atoms_balanced:
             return Counter(self.reactant_complex.GetElementSymbols()) == \
-                   Counter(self.product_complex.GetElementSymbols())
+                Counter(self.product_complex.GetElementSymbols())
         return False
 
     @property
@@ -200,14 +200,15 @@ class Reaction:
             function: The decorated function.
         """
         wraps(func)
+
         def wrapper(self, *args, **kwargs):
             try:
                 return func(self, *args, **kwargs)
             except AttributeError:
                 self._formed_bonds, self._broken_bonds, self._changed_bonds = get_all_changing_bonds(
-                                                            r_mol=self.reactant_complex,
-                                                            p_mol=self.product_complex,
-                                                            )
+                    r_mol=self.reactant_complex,
+                    p_mol=self.product_complex,
+                )
                 return func(self, *args, **kwargs)
         return wrapper
 
@@ -216,9 +217,9 @@ class Reaction:
         Perform bond analysis on the reaction.
         """
         self._formed_bonds, self._broken_bonds, self._changed_bonds = get_all_changing_bonds(
-                                                            r_mol=self.reactant_complex,
-                                                            p_mol=self.product_complex,
-                                                            )
+            r_mol=self.reactant_complex,
+            p_mol=self.product_complex,
+        )
 
     @property
     @require_bond_analysis
@@ -309,11 +310,11 @@ class Reaction:
         """
         try:
             rcps = generate_radical_resonance_structures(self.reactant_complex, kekulize=kekulize)
-        except:
+        except BaseException:
             rcps = [self.reactant_complex]
         try:
             pcps = generate_radical_resonance_structures(self.product_complex, kekulize=kekulize)
-        except:
+        except BaseException:
             pcps = [self.product_complex]
 
         n_changed_bonds = self.num_changed_bonds

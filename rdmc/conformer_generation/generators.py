@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Modules for conformer generation workflows
@@ -49,6 +49,7 @@ class StochasticConformerGenerator:
         max_iters (int, optional}: Maximum number of iterations for which to run the module.
         final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete.
     """
+
     def __init__(self,
                  smiles,
                  embedder: Optional['ConfGenEmbedder'] = None,
@@ -204,12 +205,12 @@ class StochasticConformerGenerator:
             optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
                                                     Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
                                                     :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
-                                                    :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`. Defaults to 
+                                                    :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`. Defaults to
                                                     :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>` with ``"gff"`` method.
             pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
                                               :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
                                               :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`. By default,
-                                              ``"loose"`` utilizes :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>` with 
+                                              ``"loose"`` utilizes :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>` with
                                               ``mean_chk_threshold=20`` and ``max_chk_threshold=30``, and ``"normal"`` utilizes
                                               :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>`.
             metric (SCGMetric, optional): The available option is `SCGMetric <rdmc.conformer_generation.metrics.SCGMetric>`.
@@ -244,6 +245,7 @@ class StochasticConformerGenerator:
             self.min_iters = 5 if not min_iters else min_iters
             self.max_iters = 100 if not max_iters else max_iters
 
+
 class ConformerGenerator:
     """
     A module for conformer generation. The workflow follows an embed -> optimize -> prune cycle with
@@ -266,14 +268,15 @@ class ConformerGenerator:
         final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete.
         save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
     """
+
     def __init__(self,
                  smiles: str,
                  multiplicity: Optional[int] = None,
                  optimizer: Optional['ConfGenOptimizer'] = None,
                  pruner: Optional['ConfGenPruner'] = None,
-                 verifiers: Optional[Union['Verifier',List['Verifier']]] = None,
+                 verifiers: Optional[Union['Verifier', List['Verifier']]] = None,
                  sampler: Optional['TorisonalSampler'] = None,
-                 final_modules: Optional[Union['ConfGenOptimizer','Verifier']] = None,
+                 final_modules: Optional[Union['ConfGenOptimizer', 'Verifier']] = None,
                  save_dir: Optional[str] = None,
                  ) -> 'ConformerGenerator':
         """
@@ -299,7 +302,7 @@ class ConformerGenerator:
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.smiles = smiles
         if multiplicity:
-           self.multiplicity = multiplicity
+            self.multiplicity = multiplicity
         else:
             mol = RDKitMol.FromSmiles(smiles)
             mul = mol.GetSpinMultiplicity()
@@ -375,7 +378,7 @@ class ConformerGenerator:
         energy_dict = mol.energy
         KeepIDs = mol.KeepIDs
 
-        sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])]  # Order by energy
+        sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
         filter_index = [k for k in sorted_index if KeepIDs[k]][:n_conformers]
         for i in range(mol.GetNumConformers()):
             if i not in filter_index:
@@ -428,7 +431,7 @@ class ConformerGenerator:
             self.logger.info("Running torsional sampling...")
             energy_dict = opt_mol.energy
             KeepIDs = opt_mol.KeepIDs
-            sorted_index = [k for k, v in sorted(energy_dict.items(), key = lambda item: item[1])] # Order by energy
+            sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
             filter_index = [k for k in sorted_index if KeepIDs[k]][:n_sampling]
             found_lower_energy_index = {i: False for i in range(opt_mol.GetNumConformers())}
             for id in filter_index:

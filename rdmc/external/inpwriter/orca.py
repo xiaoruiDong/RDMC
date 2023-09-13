@@ -212,7 +212,7 @@ def write_orca_gsm(method="XTB2", memory=1, nprocs=1):
     if method.upper() in ['AM1', 'PM3']:  # NDO methods cannot be used in parallel runs yet
         nprocs = 1
 
-    orca_gsm_input= f"""! {method} Engrad TightSCF
+    orca_gsm_input = f"""! {method} Engrad TightSCF
 %maxcore {memory*1024}
 %pal
 nprocs {nprocs}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 Utilities for conformer generation modules.
@@ -156,7 +156,7 @@ def get_frames_from_freq(log: GaussianLog,
                          amplitude: float = 1.0,
                          num_frames: int = 10,
                          weights: Union[bool, np.array] = False,
-                         ) -> (np.array,np.array):
+                         ) -> (np.array, np.array):
     """
     Get the reaction mode as frames from a TS optimization log file.
 
@@ -197,7 +197,7 @@ def convert_log_to_mol(log_path: str,
                        amplitude: float = 1.0,
                        num_frames: int = 10,
                        weights: Union[bool, np.array] = False,
-                       ) -> Union[None,'RDKitMol']:
+                       ) -> Union[None, 'RDKitMol']:
     """
     Convert a TS optimization log file to an RDKitMol object with conformers.
 

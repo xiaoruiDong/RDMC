@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 xTB optimization and single point routines.
@@ -76,9 +76,8 @@ def get_homo_and_lumo_energies(data):
     if data["number of unpaired electrons"] != 0:
         print("Unpaired electrons are not supported for HOMO/LUMO data extraction.")
         return np.nan, np.nan
-    num_occupied = (
-            np.array(data["fractional occupation"]) > 1e-6
-    ).sum()  # number of occupied orbitals; accounting for occassional very small values
+    # number of occupied orbitals; accounting for occassional very small values
+    num_occupied = (np.array(data["fractional occupation"]) > 1e-6).sum()
     E_homo = data["orbital energies/eV"][num_occupied - 1]  # zero-indexing
     E_lumo = data["orbital energies/eV"][num_occupied]
     return E_homo, E_lumo
@@ -194,7 +193,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
         if job == "--hess":
             with open(xtb_g98) as f:
                 data = f.readlines()
-            frequencies = np.array([l.split()[-3:] for l in data if "Frequencies" in l], dtype=float).ravel()
+            frequencies = np.array([line.split()[-3:] for line in data if "Frequencies" in line], dtype=float).ravel()
             props.update({"frequencies": frequencies})
             not save_dir and rmtree(temp_dir)
             return props
