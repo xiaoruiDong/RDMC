@@ -1,5 +1,5 @@
-rdmc
-====
+RDMC APIs
+=========
 
 .. automodule:: rdmc
    :members:
