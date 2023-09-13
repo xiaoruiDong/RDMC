@@ -1,7 +1,7 @@
 ![RDMC Logo](docs/source/_static/RDMC_icon.svg)
 # Reaction Data and Molecular Conformer
 
-[![Documentation Status](https://readthedocs.org/projects/rdmc/badge/?version=latest)](https://rdmc.readthedocs.io/en/latest/?badge=latest)
+[![Documentation](https://github.com/xiaoruiDong/RDMC/actions/workflows/build_docs.yaml/badge.svg)](https://xiaoruidong.github.io/RDMC/)
 [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
 A light-weight software package with expertise in handling Reaction Data and Molecular (including transitions states) Conformers.
