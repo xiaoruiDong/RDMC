@@ -1,6 +1,9 @@
 RDMC Documentation
 ===================
 
+.. image:: _static/RDMC_icon.svg
+   :align: center
+
 **RDMC (Reaction Data and Molecular Conformer)** is an open-source lightweight software package specialized in handling Reaction Data and Molecular (including transition states) Conformers.
 
 It contains various modules and classes (e.g., ``RDKitMol``, ``Reaction``, ``view``) helpful for relevant tasks to make conversion, visualization, manipulation, and analysis of molecules easier.
