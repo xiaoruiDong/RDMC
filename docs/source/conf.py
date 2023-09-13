@@ -36,6 +36,7 @@ extensions = [
     'sphinx.ext.napoleon',  # support for NumPy and Google style docstrings
     'sphinx.ext.todo',  # include to do
     'sphinx.ext.coverage',
+    'sphinx_favicon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -76,6 +77,13 @@ html_css_files = [
 ]
 html_logo = '_static/RDMC_icon.svg'
 
+# Add favicon
+favicons = {
+    "rel": "icon",
+    "sizes": "240x240",
+    "href": "RDMC_icon_simple_240x240.png",  # use a local file in _static
+    "type": "image/png"
+}
 
 # -- Packages that are not importable from the default environment ---------
 
