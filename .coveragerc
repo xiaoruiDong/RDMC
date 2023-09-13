@@ -20,4 +20,7 @@ omit =
     rdmc/conformer_generation/*
 
 [html]
-directory = test/coverage
+directory = ./coverage/html
+
+[xml]
+output = ./coverage/coverage.xml
