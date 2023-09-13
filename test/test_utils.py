@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 ################################################################################
 
 
-class TestUtils(unittest.TestCase):
+class TestUtils:
     """
     The general class to test functions in the utils module
     """
@@ -35,25 +35,23 @@ class TestUtils(unittest.TestCase):
                  6, 7, 8, 9, 10, 11, 12, 13, 25, 26, 27, 28, 29, 30, 31, 32, 33,
                  34, 35, 36, 37, 38]
 
-        self.assertSequenceEqual(r_map, reverse_map(map))
+        assert r_map == reverse_map(map)
         np.testing.assert_equal(np.array(r_map), reverse_map(map, as_list=False))
 
     def test_openbabel_mol_to_rdkit_mol_single_atom_xyz(self):
         """
-        Test if a single-atom openbabel mol with all-zero xyz coordinates can be successfully converted to rdkit mol with a conformer embedded.
+        Test if a single-atom openbabel mol with all-zero xyz coordinates can be successfully
+        converted to rdkit mol with a conformer embedded.
         """
         xyz = '1\n[Geometry 1]\nH      0.0000000000    0.0000000000    0.0000000000\n'
         obmol = parse_xyz_by_openbabel(xyz)
         rdmol = openbabel_mol_to_rdkit_mol(obmol)
 
-        self.assertEqual(rdmol.GetNumConformers(), 1)
-        self.assertEqual(rdmol.GetNumAtoms(), 1)
-        self.assertTrue(
-            np.array_equal(
-                rdmol.GetConformer().GetPositions(),
-                np.array([[0., 0., 0.,]])
-            )
-        )
+        assert rdmol.GetNumConformers() == 1
+        assert rdmol.GetNumAtoms() == 1
+        assert np.array_equal(rdmol.GetConformer().GetPositions(),
+                              np.array([[0., 0., 0.,]])
+                              )
 
     def test_parse_xyz_by_jensen(self):
         """
@@ -110,15 +108,12 @@ H     -0.490127    0.000000    0.000000""",
             mol_xyz = parse_xyz_by_jensen(xyz=xyz,
                                           charge=charge,
                                           allow_charged_fragments=(charge != 0))
-            self.assertEqual(mol_xyz.GetNumAtoms(),
-                             len(xyz.splitlines()) - 2)
+            assert mol_xyz.GetNumAtoms() == len(xyz.splitlines()) - 2
             if smi != '[H]':
-                self.assertEqual(smi,
-                                 Chem.MolToSmiles(Chem.RemoveAllHs(mol_xyz),
-                                                  canonical=True))
+                assert smi == Chem.MolToSmiles(Chem.RemoveAllHs(mol_xyz),
+                                               canonical=True)
             else:
-                self.assertEqual(smi,
-                                 Chem.MolToSmiles(mol_xyz))
+                assert smi == Chem.MolToSmiles(mol_xyz)
 
 
 if __name__ == '__main__':
