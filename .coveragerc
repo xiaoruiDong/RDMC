@@ -1,0 +1,23 @@
+[run]
+branch = True
+source = rdmc
+omit =
+    rdmc/external/GeoMol/*
+    rdmc/external/rmg.py
+    rdmc/external/xyz2mol.py
+    rdmc/conformer_generation/*
+
+[report]
+show_missing = False
+exclude_lines =
+    def __repr__
+    logger.warning
+    if __name__ == .__main__.:
+omit =
+    rdmc/external/GeoMol/*
+    rdmc/external/rmg.py
+    rdmc/external/xyz2mol.py
+    rdmc/conformer_generation/*
+
+[html]
+directory = test/coverage
