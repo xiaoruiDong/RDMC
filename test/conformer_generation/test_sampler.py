@@ -87,7 +87,12 @@ class TestSampler:
         """
         Test if the TorsionalSampler object with `no_greedy` as `True` works normally.
         """
+        # On windows, SDMolSupplier keep the file open, resulting in
+        # permission error when trying to delete the temporary directory.
+        # Use ignore_cleanup_errors to avoid the irrelevant error to testing,
+        # but the feature is only available in Python 3.10+
         with TemporaryDirectory() as save_dir:
+
             self.sampler(
                 mol=self.mol,
                 id=0,
@@ -100,8 +105,8 @@ class TestSampler:
 
             # Check results
             sdf_path = os.path.join(save_dir, "torsion_sampling_0/sampling_confs.sdf")
-            reader = Chem.SDMolSupplier(sdf_path, removeHs=False, sanitize=False)
-            assert len(reader) == n_conformers
+            confs = list(Chem.SDMolSupplier(sdf_path, removeHs=False, sanitize=False))
+            assert len(confs) == n_conformers
 
 
 if __name__ == "__main__":
