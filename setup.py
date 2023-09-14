@@ -18,23 +18,23 @@ setup(
     packages=find_packages(),
     install_requires=['numpy',
                       'scipy',
-                      # RDKit and OpenBabel are canceled out to avoid duplicated
-                      # installation by PyPI
-                      # OpenBabel also has installation issues at least on Mchip Mac
-                      # 'rdkit>=2021.03.1',
-                      # 'openbabel',
+                      'pandas',
+                      'rdkit>=2021.03.1',
+                      'openbabel-wheel>=3.1.1',
                       'networkx',
                       'py3Dmol',
                       'ase',
                       'matplotlib',
-                      'cclib'],
+                      'cclib',
+                      'ipywidgets', # view molecules (not required to specify when using conda/mamba)
+                      ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Chemistry"
     ],
-    keywords="chemistry, RDKit, molecule, conformer, reaction",
+    keywords="chemistry, RDKit, molecule, conformer, reaction, cheminformatics",
     license="MIT License",
     python_requires='>=3.6',
     platforms=["Any."],
