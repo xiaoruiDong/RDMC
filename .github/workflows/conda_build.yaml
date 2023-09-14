@@ -35,5 +35,5 @@ jobs:
     - name: Build Conda package
       run: |
         mamba install -y conda-build anaconda-client boa
-        conda mambabuild --output-folder conda-bld ../.conda/release
+        conda mambabuild --output-folder conda-bld .conda/release
         anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload --force conda-bld/noarch/**/rdmc-*.tar.bz2
