@@ -22,7 +22,7 @@ def mol_to_dict(mol: 'RDKitMol',
                 copy: bool = True,
                 iter: Optional[int] = None,
                 conf_copy_attrs: Optional[list] = None,
-                ) -> list[dict]:
+                ) -> List[dict]:
     """
     Convert a molecule to a dictionary that stores its conformers object, atom coordinates,
     and iteration numbers for a certain calculation (optional).

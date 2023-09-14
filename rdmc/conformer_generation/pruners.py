@@ -44,8 +44,8 @@ class ConfGenPruner:
         Prune conformers.
 
         Args:
-            current_mol_data (list[dict]): conformer data of the current iteration.
-            unique_mol_data (list[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
+            current_mol_data (List[dict]): conformer data of the current iteration.
+            unique_mol_data (List[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
             sort_by_energy (bool, optional): Whether to sort conformers by energy. Defaults to ``True``.
             return_ids (bool, optional): Whether to return conformer IDs. Defaults to ``False``.
 
@@ -63,13 +63,13 @@ class ConfGenPruner:
         Execute the task of pruning conformers.
 
         Args:
-            current_mol_data (list[dict]): conformer data of the current iteration.
-            unique_mol_data (list[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
+            current_mol_data (List[dict]): conformer data of the current iteration.
+            unique_mol_data (List[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
             sort_by_energy (bool, optional): Whether to sort conformers by energy. Defaults to ``True``.
             return_ids (bool, optional): Whether to return conformer IDs. Defaults to ``False``.
 
         Returns:
-            list[dict]: Updated conformer data.
+            List[dict]: Updated conformer data.
         """
         self.iter += 1
         time_start = time()
@@ -172,10 +172,10 @@ class TorsionPruner(ConfGenPruner):
         Calculate torsions for a list of conformers.
 
         Args:
-            mol_data (list[dict]): conformer data.
+            mol_data (List[dict]): conformer data.
 
         Returns:
-            list[dict]: Conformer data with values of torsions added.
+            List[dict]: Conformer data with values of torsions added.
         """
         for conf_data in mol_data:
             conf = conf_data["conf"]
@@ -202,7 +202,7 @@ class TorsionPruner(ConfGenPruner):
     @staticmethod
     def torsion_list_compare(c1_ts: List[float],
                              c2_ts: List[float],
-                             ) -> list[float]:
+                             ) -> List[float]:
         """
         Compare two lists of torsions in radians.
 
@@ -225,13 +225,13 @@ class TorsionPruner(ConfGenPruner):
         Prune conformers.
 
         Args:
-            current_mol_data (list[dict]): conformer data of the current iteration.
-            unique_mol_data (list[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
+            current_mol_data (List[dict]): conformer data of the current iteration.
+            unique_mol_data (List[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
             sort_by_energy (bool, optional): Whether to sort conformers by energy. Defaults to ``True``.
             return_ids (bool, optional): Whether to return conformer IDs. Defaults to ``False``.
 
         Returns:
-            list[dict]: Updated conformer data.
+            List[dict]: Updated conformer data.
         """
         if unique_mol_data is None:
             unique_mol_data = []
@@ -322,13 +322,13 @@ class CRESTPruner(ConfGenPruner):
         Prune conformers.
 
         Args:
-            current_mol_data (list[dict]): conformer data of the current iteration.
-            unique_mol_data (list[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
+            current_mol_data (List[dict]): conformer data of the current iteration.
+            unique_mol_data (List[dict], optional): Unique conformer data of previous iterations. Defaults to ``None``.
             sort_by_energy (bool, optional): Whether to sort conformers by energy. Defaults to ``True``.
             return_ids (bool, optional): Whether to return conformer IDs. Defaults to ``False``.
 
         Returns:
-            list[dict]: Updated conformer data.
+            List[dict]: Updated conformer data.
         """
         if unique_mol_data is None:
             unique_mol_data = []

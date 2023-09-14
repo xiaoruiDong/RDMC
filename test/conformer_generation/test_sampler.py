@@ -9,7 +9,8 @@ import logging
 import unittest
 from typing import List
 from tempfile import TemporaryDirectory
-from parameterized import parameterized
+
+import pytest
 
 from rdkit import Chem
 from rdmc import RDKitMol
@@ -20,7 +21,7 @@ logging.basicConfig(level=logging.DEBUG)
 ################################################################################
 
 
-class TestSampler(unittest.TestCase):
+class TestSampler:
     """
     A class used to test basic operations for the sampler module.
     """
@@ -55,46 +56,28 @@ class TestSampler(unittest.TestCase):
         n_dimension=-1,
     )
 
-    @parameterized.expand(
-        [
-            (
-                None,
-                True,
-                61,
-            ),
-            (
-                None,
-                False,
-                190,
-            ),
-            (
-                [
-                    [17, 16, 15, 8],
-                    [16, 15, 8, 5],
-                    [15, 8, 5, 4],
-                    [8, 5, 4, 0],
-                    [5, 4, 0, 2],
-                    [4, 0, 2, 18],
-                    [0, 2, 18, 19],
-                ],
-                False,
-                1930,
-            ),
-            (
-                [
-                    [17, 16, 15, 8],
-                    [16, 15, 8, 5],
-                    [15, 8, 5, 4],
-                    [8, 5, 4, 0],
-                    [5, 4, 0, 2],
-                    [4, 0, 2, 18],
-                    [0, 2, 18, 19],
-                ],
-                True,
-                1930,
-            ),
-        ]
-    )
+    @pytest.mark.parametrize("torsions,no_sample_dangling_bonds,n_conformers",
+                             [(None, True, 61,),
+                              (None, False, 190,),
+                              ([[17, 16, 15, 8],
+                                [16, 15, 8, 5],
+                                [15, 8, 5, 4],
+                                [8, 5, 4, 0],
+                                [5, 4, 0, 2],
+                                [4, 0, 2, 18],
+                                [0, 2, 18, 19],],
+                               False,
+                               1930,),
+                              ([[17, 16, 15, 8],
+                                [16, 15, 8, 5],
+                                [15, 8, 5, 4],
+                                [8, 5, 4, 0],
+                                [5, 4, 0, 2],
+                                [4, 0, 2, 18],
+                                [0, 2, 18, 19],],
+                               True,
+                               1930,),
+                              ])
     def test_no_greedy_TorsionalSampler(
         self,
         torsions: List,
@@ -104,7 +87,12 @@ class TestSampler(unittest.TestCase):
         """
         Test if the TorsionalSampler object with `no_greedy` as `True` works normally.
         """
+        # On windows, SDMolSupplier keep the file open, resulting in
+        # permission error when trying to delete the temporary directory.
+        # Use ignore_cleanup_errors to avoid the irrelevant error to testing,
+        # but the feature is only available in Python 3.10+
         with TemporaryDirectory() as save_dir:
+
             self.sampler(
                 mol=self.mol,
                 id=0,
@@ -117,8 +105,8 @@ class TestSampler(unittest.TestCase):
 
             # Check results
             sdf_path = os.path.join(save_dir, "torsion_sampling_0/sampling_confs.sdf")
-            reader = Chem.SDMolSupplier(sdf_path, removeHs=False, sanitize=False)
-            self.assertEqual(len(reader), n_conformers)
+            confs = list(Chem.SDMolSupplier(sdf_path, removeHs=False, sanitize=False))
+            assert len(confs) == n_conformers
 
 
 if __name__ == "__main__":
