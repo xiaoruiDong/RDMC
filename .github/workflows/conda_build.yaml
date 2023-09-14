@@ -3,6 +3,7 @@ name: Build and Publish Conda Package
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   build:
