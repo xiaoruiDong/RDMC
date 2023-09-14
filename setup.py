@@ -26,7 +26,7 @@ setup(
                       'ase',
                       'matplotlib',
                       'cclib',
-                      'ipywidgets', # view molecules (not required to specify when using conda/mamba)
+                      'ipywidgets',  # view molecules (not required to specify when using conda/mamba)
                       ],
     classifiers=[
         "Programming Language :: Python :: 3",
