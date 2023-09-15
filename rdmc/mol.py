@@ -729,6 +729,13 @@ class RDKitMol(object):
         """
         return Chem.GetAdjacencyMatrix(self._mol)
 
+    def GetAtoms(self) -> list:
+        """
+        This is a rewrite of GetAtoms(), based on the findings of `RDKit issue <https://github.com/rdkit/rdkit/issues/6208>`_.
+        Although RDKit fixed this issue in version 2023.09, we still keep this function for backward compatibility.
+        """
+        return [self.GetAtomWithIdx(idx) for idx in range(self.GetNumAtoms())]
+
     def GetAtomicNumbers(self):
         """
         Get the Atomic numbers of the molecules. The atomic numbers are sorted by the atom indexes.

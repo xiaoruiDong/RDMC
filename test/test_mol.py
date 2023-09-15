@@ -80,7 +80,7 @@ class TestRDKitMol(unittest.TestCase):
             'Debug',
             'GetAromaticAtoms',
             'GetAtomWithIdx',
-            'GetAtoms',
+            # 'GetAtoms',
             'GetAtomsMatchingQuery',
             'GetBondBetweenAtoms',
             'GetBondWithIdx',
@@ -321,6 +321,25 @@ class TestRDKitMol(unittest.TestCase):
         assert new_bond is not None
         # The redundant bond has a bond order of 1.0
         assert new_bond.GetBondTypeAsDouble() == 1.0
+
+    def test_get_atoms(self):
+        smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
+        mol = RDKitMol.FromSmiles(smi)
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+
+        smi = '[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]'
+        mol = RDKitMol.FromSmiles(smi)
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
 
     def test_get_atomic_numbers(self):
         """
