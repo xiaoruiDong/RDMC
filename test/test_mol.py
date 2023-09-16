@@ -18,6 +18,7 @@ except ImportError:
 from rdmc import (generate_radical_resonance_structures,
                   get_unique_mols,
                   has_matched_mol,
+                  parse_xyz_or_smiles_list,
                   RDKitMol)
 import pytest
 
@@ -753,6 +754,29 @@ class TestRDKitMol:
             consider_atommap=False,
             kekulize=True,
         )) == 2
+
+
+def test_parse_xyz_or_smiles_list():
+    """
+    Test the function that parses a list of xyz or smiles strings.
+    """
+    mols = parse_xyz_or_smiles_list(
+        ['CCC', 'H 0 0 0', ('[CH2]', 1)],
+        header=False,
+        backend='jensen',
+    )
+    assert len(mols) == 3
+    assert mols[0].ToSmiles() == 'CCC'
+    assert mols[1].ToSmiles() == '[H]'
+    assert mols[2].ToSmiles() == '[CH2]'
+    assert mols[2].GetSpinMultiplicity() == 1
+
+    mols, is_3D = parse_xyz_or_smiles_list(
+        ['CCC', 'H 0 0 0', ('[CH2]', 1)],
+        header=False,
+        backend='jensen',
+        with_3d_info=True)
+    assert is_3D == [False, True, False]
 
 
 if __name__ == '__main__':
