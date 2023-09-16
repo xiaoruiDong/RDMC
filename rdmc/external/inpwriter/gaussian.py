@@ -5,12 +5,41 @@
 A module contains functions to write Gaussian input files.
 """
 
-from typing import Optional
-from rdmc.external.inpwriter.utils import _get_mult_and_chrg
+from typing import Optional, Union
+from rdmc.external.inpwriter.utils import (_avoid_empty_line,
+                                           _get_mult_and_chrg)
 from rdmc.external.xtb_tools.utils import XTB_GAUSSIAN_PL
 
 
-def write_gaussian_inp(memory: int,
+def write_gaussian_config(memory: Union[float, int],
+                          nprocs: int,
+                          scheme: str,
+                          extra_sys_settings: str = '',
+                          title: str = 'title',
+                          **kwargs,
+                          ) -> str:
+    """
+    Write the configuration section of Gaussian input file.
+    This is useful when a calculation program only needs the configuration section.
+
+    Args:
+        memory (float or int): The memory to be used in GB.
+        nprocs (int): The number of processors to be used.
+        scheme (str): The scheme to be used.
+        extra_sys_settings (str, optional): Extra system settings. Defaults to ``''``.
+        title (str, optional): The title of the calculation. Defaults to ``'title'``.
+
+    Returns:
+        str: The configuration section of Gaussian input file.
+    """
+    return (f"%mem={memory}gb\n"
+            f"%nprocshared={nprocs}\n"
+            f"{_avoid_empty_line(extra_sys_settings)}"
+            f"{scheme}\n\n"
+            f"{title}")
+
+
+def write_gaussian_inp(memory: Union[float, int],
                        nprocs: int,
                        scheme: str,
                        charge: int,
@@ -25,7 +54,7 @@ def write_gaussian_inp(memory: int,
     Write the base structure of Gaussian input file.
 
     Args:
-        memory (int): The memory to be used in GB.
+        memory (float or int): The memory to be used in GB.
         nprocs (int): The number of processors to be used.
         scheme (str): The scheme to be used.
         charge (int): The charge of the molecule.
@@ -38,16 +67,19 @@ def write_gaussian_inp(memory: int,
     Returns:
         str: The Gaussian input file.
     """
-    output = f"%mem={memory}gb\n%nprocshared={nprocs}\n"
-    if extra_sys_settings:
-        output += f"{extra_sys_settings.strip()}\n"
-    output += f"{scheme}\n\n{title}\n\n{charge} {mult}\n"
-    if coord:
-        output += coord.strip() + "\n"
+    output = write_gaussian_config(memory=memory,
+                                   nprocs=nprocs,
+                                   scheme=scheme,
+                                   extra_sys_settings=extra_sys_settings,
+                                   title=title,)
     if extra:
-        output += f"\n{extra.strip()}\n\n\n"
-    else:
-        output += "\n\n"
+        extra = "\n" + _avoid_empty_line(extra)
+    output += (f"\n\n"
+               f"{charge} {mult}\n"
+               f"{_avoid_empty_line(coord)}"
+               f"{extra}"
+               f"\n"
+               )
     return output
 
 
@@ -56,7 +88,7 @@ def write_gaussian_opt(mol,
                        ts: bool = False,
                        charge: Optional[int] = None,
                        mult: Optional[int] = None,
-                       memory: int = 1,
+                       memory: Union[float, int] = 1,
                        nprocs: int = 1,
                        method: str = "gfn2-xtb",
                        max_iter: int = 100,
@@ -77,7 +109,7 @@ def write_gaussian_opt(mol,
         ts (bool, optional): Whether the molecule is a TS. Defaults to ``False``.
         charge (int, optional): The charge of the molecule. Defaults to ``None``, to use the charge of mol.
         mult (int, optional): The multiplicity of the molecule. Defaults to ``None``, to use the multiplicity of mol.
-        memory (int, optional): The memory to be used in GB. Defaults to ``1``.
+        memory (float or int, optional): The memory to be used in GB. Defaults to ``1``.
         nprocs (int, optional): The number of processors to be used. Defaults to ``1``.
         method (str, optional): The method to be used. Defaults to ``"gfn2-xtb"``.
         max_iter (int, optional): The maximum number of iterations. Defaults to ``100``.
@@ -137,26 +169,26 @@ def write_gaussian_freq(mol,
                         conf_id: int = 0,
                         charge: Optional[int] = None,
                         mult: Optional[int] = None,
-                        memory: int = 1,
+                        memory: Union[float, int] = 1,
                         nprocs: int = 1,
                         method: str = "gfn2-xtb",
                         scf_level: str = "tight",
                         nosymm: bool = False,
                         **kwargs,
-                        ):
+                        ) -> str:
     """
     Write the input file for Gaussian frequency calculation.
 
     Args:
         mol (RDKitMol): The molecule to be run.
-        conf_id (int, optional): The conformer ID to be run. Defaults to 0.
-        charge (int, optional): The charge of the molecule. Defaults to None, to use the charge of mol.
-        mult (int, optional): The multiplicity of the molecule. Defaults to None, to use the multiplicity of mol.
-        memory (int, optional): The memory to be used in GB. Defaults to 1.
-        nprocs (int, optional): The number of processors to be used. Defaults to 1.
-        method (str, optional): The method to be used. Defaults to "gfn2-xtb".
-        scf_level (str, optional): The SCF level. Defaults to "tight".
-        nosymm (bool, optional): Whether to use nosymm. Defaults to False.
+        conf_id (int, optional): The conformer ID to be run. Defaults to ``0``.
+        charge (int, optional): The charge of the molecule. Defaults to ``None``, to use the charge of mol.
+        mult (int, optional): The multiplicity of the molecule. Defaults to ``None``, to use the multiplicity of mol.
+        memory (float or int, optional): The memory to be used in GB. Defaults to ``1``.
+        nprocs (int, optional): The number of processors to be used. Defaults to ``1``.
+        method (str, optional): The method to be used. Defaults to ``"gfn2-xtb"``.
+        scf_level (str, optional): The SCF level. Defaults to ``"tight"``.
+        nosymm (bool, optional): Whether to use nosymm. Defaults to ``False``.
 
     Returns:
         str: The input file for Gaussian frequency calculation.
@@ -189,7 +221,7 @@ def write_gaussian_irc(mol,
                        conf_id: int = 0,
                        charge: Optional[int] = None,
                        mult: Optional[int] = None,
-                       memory: int = 1,
+                       memory: Union[float, int] = 1,
                        nprocs: int = 1,
                        method: str = "gfn2-xtb",
                        direction: str = 'forward',
@@ -203,30 +235,30 @@ def write_gaussian_irc(mol,
                        scf_level: str = "tight",
                        nosymm: bool = False,
                        **kwargs,
-                       ):
+                       ) -> str:
     """
     Write the input file for Gaussian IRC calculation.
 
     Args:
         mol (RDKitMol): The molecule to be run.
-        conf_id (int, optional): The conformer ID to be run. Defaults to 0.
-        charge (int, optional): The charge of the molecule. Defaults to None, to use the charge of mol.
-        mult (int, optional): The multiplicity of the molecule. Defaults to None, to use the multiplicity of mol.
-        memory (int, optional): The memory to be used in GB. Defaults to 1.
-        nprocs (int, optional): The number of processors to be used. Defaults to 1.
-        method (str, optional): The method to be used. Defaults to "gfn2-xtb".
-        direction (str, optional): The direction of the IRC. Defaults to "forward". other options: "backward".
-        max_iter (int, optional): The maximum number of IRC steps. Defaults to 20, same as Gaussian's default.
-        max_points (int, optional): The maximum number of IRC points. Defaults to 100.
-        step_size (float, optional): The step size of IRC. Defaults to 7. Unit 0.01 bohr.
-        algorithm (str, optional): The IRC algorithm. Defaults to "hpc". Other options: "eulerpc", "lqc", "gs2".
-        coord_type (str, optional): The coordinate type. Defaults to "massweighted".
-        hess (str, optional): The Hessian calculation method. Defaults to "calcall".
-        scf_level (str, optional): The SCF level. Defaults to "tight".
-        nosymm (bool, optional): Whether to use nosymm. Defaults to False.
+        conf_id (int, optional): The conformer ID to be run. Defaults to ``0``.
+        charge (int, optional): The charge of the molecule. Defaults to ``None``, to use the charge of mol.
+        mult (int, optional): The multiplicity of the molecule. Defaults to ``None``, to use the multiplicity of mol.
+        memory (float or int, optional): The memory to be used in GB. Defaults to ``1``.
+        nprocs (int, optional): The number of processors to be used. Defaults to ``1``.
+        method (str, optional): The method to be used. Defaults to ``"gfn2-xtb"``.
+        direction (str, optional): The direction of the IRC. Defaults to ``"forward"``. other options: ``"backward"``.
+        max_iter (int, optional): The maximum number of IRC steps. Defaults to ``20``, same as Gaussian's default.
+        max_points (int, optional): The maximum number of IRC points. Defaults to ``100``.
+        step_size (float, optional): The step size of IRC. Defaults to ``7``. Unit 0.01 bohr.
+        algorithm (str, optional): The IRC algorithm. Defaults to ``"hpc"`` (g16 and g09 default). Other options: ``"eulerpc"``, ``"lqc"``, ``"gs2"``.
+        coord_type (str, optional): The coordinate type. Defaults to ``"massweighted"``.
+        hess (str, optional): The Hessian calculation method. Defaults to ``"calcall"``.
+        scf_level (str, optional): The SCF level. Defaults to ``"tight"``.
+        nosymm (bool, optional): Whether to use nosymm. Defaults to ``False``.
 
     Returns:
-        str: The input file for Gaussian IRC calculation
+        str: The input file for Gaussian IRC calculation.
     """
     mult, charge = _get_mult_and_chrg(mol, mult, charge)
 
@@ -253,7 +285,7 @@ def write_gaussian_irc(mol,
     scheme_str += f' scf=({scf_level})' if scf_level else ''
     scheme_str += ' nosymm' if nosymm else ''
 
-    if method in ['gfn2-xtb', 'gfn1-xtb']:
+    if method.lower() in ['gfn2-xtb', 'gfn1-xtb']:
         scheme_str += f'\nexternal="{XTB_GAUSSIAN_PL} --gfn {method[3]} -P"'
     else:
         scheme_str += f' {method}'
@@ -270,20 +302,33 @@ def write_gaussian_irc(mol,
                               )
 
 
-def write_gaussian_gsm(method="GFN2-xTB", memory=1, nprocs=1):
+def write_gaussian_gsm(method: str = "gfn2-xtb",
+                       memory: Union[float, int] = 1,
+                       nprocs: int = 1,
+                       extra_sys_settings: str = "",
+                       title: str = "title",
+                       ) -> str:
+    """
+    Write the computation setup section of the input file for GSM calculation using Gaussian.
 
-    if method == "GFN2-xTB":
-        title_section = (
-            f'#N NoSymmetry scf(xqc) force\n'
-            f'external="{XTB_GAUSSIAN_PL} --gfn 2 -P"'
-        )
+    Args:
+        method (str, optional): The method to be used. Defaults to ``"GFN2-xTB"``.
+        memory (int, optional): The memory to be used in GB. Defaults to ``1``.
+        nprocs (int, optional): The number of processors to be used. Defaults to ``1``.
+        extra_sys_settings (str, optional): Extra system settings. Defaults to ``''``.
+
+    Returns:
+        str: The computation setup section of the input file for GSM calculation using Gaussian.
+    """
+
+    scheme_str = '#N force scf=(xqc) nosymm'
+    if method.lower() in ['gfn2-xtb', 'gfn1-xtb']:
+        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PL} --gfn {method[3]} -P"'
     else:
-        title_section = f"#N NoSymmetry scf(xqc) force {method}"
+        scheme_str += f' {method}'
 
-    gaussian_gsm_input = (f'%mem={memory}gb\n'
-                          f'%nprocshared={nprocs}\n'
-                          f'{title_section}\n'
-                          f'\n'
-                          f'Title Card Required'
-                          )
-    return gaussian_gsm_input
+    return write_gaussian_config(memory=memory,
+                                 nprocs=nprocs,
+                                 extra_sys_settings=extra_sys_settings,
+                                 scheme=scheme_str,
+                                 title=title,)
