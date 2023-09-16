@@ -6,6 +6,7 @@ A module contains functions to write Gaussian input files.
 """
 
 from typing import Optional, Union
+from rdmc.external.inpwriter._register import register_qm_writer
 from rdmc.external.inpwriter.utils import (_avoid_empty_line,
                                            _get_mult_and_chrg)
 from rdmc.external.xtb_tools.utils import XTB_GAUSSIAN_PL
@@ -332,3 +333,9 @@ def write_gaussian_gsm(method: str = "gfn2-xtb",
                                  extra_sys_settings=extra_sys_settings,
                                  scheme=scheme_str,
                                  title=title,)
+
+
+register_qm_writer("gaussian", "opt", write_gaussian_opt)
+register_qm_writer("gaussian", "freq", write_gaussian_freq)
+register_qm_writer("gaussian", "irc", write_gaussian_irc)
+register_qm_writer("gaussian", "gsm", write_gaussian_gsm)
