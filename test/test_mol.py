@@ -427,14 +427,16 @@ class TestRDKitMol:
         # Single molecule
         smi = '[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]'
         mol = RDKitMol.FromSmiles(smi)
-        self.assertCountEqual(mol.GetBondsAsTuples(),
-                              [(0, 1), (1, 2), (1, 5), (1, 6), (2, 3), (2, 4)])
+        bonds = mol.GetBondsAsTuples()
+        assert len(bonds) == 6
+        assert set(bonds) == {(0, 1), (1, 2), (1, 5), (1, 6), (2, 3), (2, 4)}
 
         # Mol fragments
         smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
         mol = RDKitMol.FromSmiles(smi)
-        self.assertCountEqual(mol.GetBondsAsTuples(),
-                              [(1, 2), (1, 3), (1, 4), (1, 5)])
+        bonds = mol.GetBondsAsTuples()
+        assert len(bonds) == 4
+        assert set(bonds) == {(1, 2), (1, 3), (1, 4), (1, 5)}
 
     def test_get_torsion_tops(self):
         """
@@ -443,14 +445,16 @@ class TestRDKitMol:
         smi1 = '[C:1]([C:2]([H:6])([H:7])[H:8])([H:3])([H:4])[H:5]'
         mol = RDKitMol.FromSmiles(smi1)
         tops = mol.GetTorsionTops([2, 0, 1, 5])
-        self.assertCountEqual(tops, ((0, 2, 3, 4), (1, 5, 6, 7)))
+        assert len(tops) == 2
+        assert set(tops) == {(0, 2, 3, 4), (1, 5, 6, 7)}
 
         smi2 = '[C:1]([C:2]#[C:3][C:4]([H:8])([H:9])[H:10])([H:5])([H:6])[H:7]'
         mol = RDKitMol.FromSmiles(smi2)
         with pytest.raises(ValueError):
             mol.GetTorsionTops([4, 0, 3, 7])
         tops = mol.GetTorsionTops([4, 0, 3, 7], allowNonbondPivots=True)
-        self.assertCountEqual(tops, ((0, 4, 5, 6), (3, 7, 8, 9)))
+        assert len(tops) == 2
+        assert set(tops) == {(0, 4, 5, 6), (3, 7, 8, 9)}
 
         smi3 = '[C:1]([H:3])([H:4])([H:5])[H:6].[O:2][H:7]'
         mol = RDKitMol.FromSmiles(smi3)
@@ -458,7 +462,8 @@ class TestRDKitMol:
         with pytest.raises(ValueError):
             mol.GetTorsionTops([3, 0, 1, 6])
         tops = mol.GetTorsionTops([3, 0, 1, 6], allowNonbondPivots=True)
-        self.assertCountEqual(tops, ((0, 3, 4, 5), (1, 6)))
+        assert len(tops) == 2
+        assert set(tops) == {(0, 3, 4, 5), (1, 6)}
 
     def test_combined_mol(self):
         """
