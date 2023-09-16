@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.DEBUG)
 ################################################################################
 
 
-class TestRDKitMol(unittest.TestCase):
+class TestRDKitMol:
     """
     A class used to test basic operations for the RDKitMol Class.
     """
@@ -322,7 +322,37 @@ class TestRDKitMol(unittest.TestCase):
         # The redundant bond has a bond order of 1.0
         assert new_bond.GetBondTypeAsDouble() == 1.0
 
+    def test_add_null_conformer(self):
+        """
+        Test adding null conformers to a molecule.
+        """
+        smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
+        mol = RDKitMol.FromSmiles(smi)
+        assert mol.GetNumConformers() == 0
+
+        # Test adding 1 null conformer with default arguments
+        mol.AddNullConformer()
+        assert mol.GetNumConformers() == 1
+        conf = mol.GetConformer(id=0)
+        coords = conf.GetPositions()
+        assert coords.shape == (6, 3)
+        # Test all atom coordinates are non-zero
+        assert np.all(np.all(coords != np.zeros((6, 3)), axis=1))
+
+        # Test adding a conformer with a specific id and all zero
+        mol.AddNullConformer(confId=10, random=False)
+        assert mol.GetNumConformers() == 2
+        with pytest.raises(ValueError):
+            mol.GetConformer(id=1)
+        conf = mol.GetConformer(id=10)
+        coords = conf.GetPositions()
+        assert coords.shape == (6, 3)
+        assert np.all(np.equal(coords, np.zeros((6, 3))))
+
     def test_get_atoms(self):
+        """
+        Test the rewrite version of GetAtoms returns the same results as Mol.GetAtoms.
+        """
         smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
         mol = RDKitMol.FromSmiles(smi)
         assert np.all([atom1.GetIdx() == atom2.GetIdx()
