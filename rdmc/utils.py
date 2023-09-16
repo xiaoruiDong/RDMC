@@ -631,7 +631,13 @@ def parse_xyz_by_jensen(xyz: str,
                                         )
 
     # Version >= 2022.09.1
-    mol = Chem.MolFromXYZBlock(xyz)
+    try:
+        mol = Chem.Mol(Chem.MolFromXYZBlock(xyz))
+    except BaseException:
+        raise ValueError('Unable to parse the provided xyz.')
+    else:
+        if mol is None:
+            raise ValueError('Unable to parse the provided xyz.')
     rdDetermineBonds.DetermineConnectivity(mol,
                                            useHueckel=use_huckel,
                                            charge=charge,)
