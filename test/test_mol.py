@@ -297,6 +297,16 @@ class TestRDKitMol:
                       ]:
             assert inchi == RDKitMol.FromInchi(inchi).ToInchi()
 
+    def test_mol_to_xyz(self):
+        """
+        Test converting RDKitMol to XYZ strings.
+        """
+        xyz = """1\n\nH      0.000000    0.000000    0.000000\n"""
+        mol = RDKitMol.FromXYZ(xyz)
+        assert mol.ToXYZ(header=True) == xyz
+        assert mol.ToXYZ(header=False) == xyz[3:]  # Currently to XYZ without header has no line break at the end
+        assert mol.ToXYZ(header=True, comment='test') == """1\ntest\nH      0.000000    0.000000    0.000000\n"""
+
     def test_add_redundant_bonds(self):
         """
         Test adding redundant bond to a molecule.

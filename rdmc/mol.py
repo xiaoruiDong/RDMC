@@ -1370,9 +1370,9 @@ class RDKitMol(object):
         """
         xyz = Chem.MolToXYZBlock(self._mol, confId)
         if not header:
-            xyz = '\n'.join(xyz.splitlines()[2:])
+            xyz = '\n'.join(xyz.splitlines()[2:]) + '\n'
         elif comment:
-            xyz = f'{self.GetNumAtoms()}\n{comment}\n' + '\n'.join(xyz.splitlines()[2:])
+            xyz = f'{self.GetNumAtoms()}\n{comment}\n' + '\n'.join(xyz.splitlines()[2:]) + '\n'
         return xyz
 
     def ToMolBlock(self,
