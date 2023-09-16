@@ -760,6 +760,48 @@ class TestRDKitMol:
             kekulize=True,
         )) == 2
 
+    def test_saturate_biradical_site12(self):
+        """
+        Test the function that saturates the adjacent biradical sites.
+        """
+        smi = '[CH2][CH2]'
+        mol = RDKitMol.FromSmiles(smi)
+
+        assert mol.GetSpinMultiplicity() == 3
+        # Test the case where no action is needed
+        mol.SaturateBiradicalSites12(multiplicity=3, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+        mol.SaturateBiradicalSites12(multiplicity=4, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+        # Test the case where molecule cannot be saturated to the given multiplicity
+        mol.SaturateBiradicalSites12(multiplicity=2, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+
+        # Test the case where molecule can be saturated to the given multiplicity
+        mol.SaturateBiradicalSites12(multiplicity=1, verbose=True)
+        assert mol.GetSpinMultiplicity() == 1
+
+    def test_saturate_biradical_sites_conjugated_double_bond(self):
+        """
+        Test the function that saturates the biradicals that have conjugated double bond.
+        """
+        smi = '[CH2]C=C[CH2]'
+        mol = RDKitMol.FromSmiles(smi)
+
+        assert mol.GetSpinMultiplicity() == 3
+        # Test the case where no action is needed
+        mol.SaturateBiradicalSitesCDB(multiplicity=3, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+        mol.SaturateBiradicalSitesCDB(multiplicity=4, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+        # Test the case where molecule cannot be saturated to the given multiplicity
+        mol.SaturateBiradicalSitesCDB(multiplicity=2, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+
+        # Test the case where molecule can be saturated to the given multiplicity
+        mol.SaturateBiradicalSitesCDB(multiplicity=1, verbose=True)
+        assert mol.GetSpinMultiplicity() == 1
+
 
 def test_parse_xyz_or_smiles_list():
     """
