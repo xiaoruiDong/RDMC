@@ -638,6 +638,17 @@ def parse_xyz_by_jensen(xyz: str,
     else:
         if mol is None:
             raise ValueError('Unable to parse the provided xyz.')
+    if mol.GetNumAtoms() == 1:
+        atom = mol.GetAtomWithIdx(0)
+        # No implicit Hs for single atom molecule
+        atom.SetNoImplicit(True)
+        # Get the valence of the atom
+        valence = PERIODIC_TABLE.GetDefaultValence(atom.GetAtomicNum())
+        # Set the charge of the atom
+        atom.SetFormalCharge(charge)
+        # Set the num radical electrons
+        atom.SetNumRadicalElectrons(valence - atom.GetFormalCharge())
+        return mol
     rdDetermineBonds.DetermineConnectivity(mol,
                                            useHueckel=use_huckel,
                                            charge=charge,)
