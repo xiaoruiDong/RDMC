@@ -4,6 +4,20 @@
 from typing import Optional, Tuple
 
 
+def _avoid_empty_line(str_block: str,
+                      ) -> str:
+    """
+    A helper function to avoid introducing empty line in the input file.
+
+    Args:
+        str_block (str): The string block to be written.
+
+    Return:
+        str: The string block to be written.
+    """
+    return str_block.strip() + '\n' if str_block else ''
+
+
 def _get_mult_and_chrg(mol: 'RDKitMol',
                        multiplicity: Optional[int] = None,
                        charge: Optional[int] = None,

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from ._register import get_qm_writer
 from .gaussian import (write_gaussian_opt,
                        write_gaussian_freq,
                        write_gaussian_irc,

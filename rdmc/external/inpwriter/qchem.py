@@ -11,6 +11,7 @@ A module contains functions to write QChem input files.
 from typing import Optional
 from packaging import version
 
+from rdmc.external.inpwriter._register import register_qm_writer
 from rdmc.external.inpwriter.utils import _get_mult_and_chrg
 
 
@@ -365,3 +366,8 @@ def write_qchem_irc(mol,
                         '@@@',
                         read_mol_block,
                         irc_block])
+
+
+register_qm_writer(software='qchem', job_type='opt', writer=write_qchem_opt)
+register_qm_writer(software='qchem', job_type='freq', writer=write_qchem_freq)
+register_qm_writer(software='qchem', job_type='irc', writer=write_qchem_irc)

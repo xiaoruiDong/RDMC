@@ -18,6 +18,7 @@ except ImportError:
 from rdmc import (generate_radical_resonance_structures,
                   get_unique_mols,
                   has_matched_mol,
+                  parse_xyz_or_smiles_list,
                   RDKitMol)
 import pytest
 
@@ -26,7 +27,7 @@ logging.basicConfig(level=logging.DEBUG)
 ################################################################################
 
 
-class TestRDKitMol(unittest.TestCase):
+class TestRDKitMol:
     """
     A class used to test basic operations for the RDKitMol Class.
     """
@@ -80,7 +81,7 @@ class TestRDKitMol(unittest.TestCase):
             'Debug',
             'GetAromaticAtoms',
             'GetAtomWithIdx',
-            'GetAtoms',
+            # 'GetAtoms',
             'GetAtomsMatchingQuery',
             'GetBondBetweenAtoms',
             'GetBondWithIdx',
@@ -296,6 +297,16 @@ class TestRDKitMol(unittest.TestCase):
                       ]:
             assert inchi == RDKitMol.FromInchi(inchi).ToInchi()
 
+    def test_mol_to_xyz(self):
+        """
+        Test converting RDKitMol to XYZ strings.
+        """
+        xyz = """1\n\nH      0.000000    0.000000    0.000000\n"""
+        mol = RDKitMol.FromXYZ(xyz)
+        assert mol.ToXYZ(header=True) == xyz
+        assert mol.ToXYZ(header=False) == xyz[3:]  # Currently to XYZ without header has no line break at the end
+        assert mol.ToXYZ(header=True, comment='test') == """1\ntest\nH      0.000000    0.000000    0.000000\n"""
+
     def test_add_redundant_bonds(self):
         """
         Test adding redundant bond to a molecule.
@@ -321,6 +332,55 @@ class TestRDKitMol(unittest.TestCase):
         assert new_bond is not None
         # The redundant bond has a bond order of 1.0
         assert new_bond.GetBondTypeAsDouble() == 1.0
+
+    def test_add_null_conformer(self):
+        """
+        Test adding null conformers to a molecule.
+        """
+        smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
+        mol = RDKitMol.FromSmiles(smi)
+        assert mol.GetNumConformers() == 0
+
+        # Test adding 1 null conformer with default arguments
+        mol.AddNullConformer()
+        assert mol.GetNumConformers() == 1
+        conf = mol.GetConformer(id=0)
+        coords = conf.GetPositions()
+        assert coords.shape == (6, 3)
+        # Test all atom coordinates are non-zero
+        assert np.all(np.all(coords != np.zeros((6, 3)), axis=1))
+
+        # Test adding a conformer with a specific id and all zero
+        mol.AddNullConformer(confId=10, random=False)
+        assert mol.GetNumConformers() == 2
+        with pytest.raises(ValueError):
+            mol.GetConformer(id=1)
+        conf = mol.GetConformer(id=10)
+        coords = conf.GetPositions()
+        assert coords.shape == (6, 3)
+        assert np.all(np.equal(coords, np.zeros((6, 3))))
+
+    def test_get_atoms(self):
+        """
+        Test the rewrite version of GetAtoms returns the same results as Mol.GetAtoms.
+        """
+        smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
+        mol = RDKitMol.FromSmiles(smi)
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+
+        smi = '[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]'
+        mol = RDKitMol.FromSmiles(smi)
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
+        assert np.all([atom1.GetIdx() == atom2.GetIdx()
+                       for atom1, atom2 in zip(mol.GetAtoms(), mol._mol.GetAtoms())])
 
     def test_get_atomic_numbers(self):
         """
@@ -377,14 +437,16 @@ class TestRDKitMol(unittest.TestCase):
         # Single molecule
         smi = '[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]'
         mol = RDKitMol.FromSmiles(smi)
-        self.assertCountEqual(mol.GetBondsAsTuples(),
-                              [(0, 1), (1, 2), (1, 5), (1, 6), (2, 3), (2, 4)])
+        bonds = mol.GetBondsAsTuples()
+        assert len(bonds) == 6
+        assert set(bonds) == {(0, 1), (1, 2), (1, 5), (1, 6), (2, 3), (2, 4)}
 
         # Mol fragments
         smi = '[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]'
         mol = RDKitMol.FromSmiles(smi)
-        self.assertCountEqual(mol.GetBondsAsTuples(),
-                              [(1, 2), (1, 3), (1, 4), (1, 5)])
+        bonds = mol.GetBondsAsTuples()
+        assert len(bonds) == 4
+        assert set(bonds) == {(1, 2), (1, 3), (1, 4), (1, 5)}
 
     def test_get_torsion_tops(self):
         """
@@ -393,14 +455,16 @@ class TestRDKitMol(unittest.TestCase):
         smi1 = '[C:1]([C:2]([H:6])([H:7])[H:8])([H:3])([H:4])[H:5]'
         mol = RDKitMol.FromSmiles(smi1)
         tops = mol.GetTorsionTops([2, 0, 1, 5])
-        self.assertCountEqual(tops, ((0, 2, 3, 4), (1, 5, 6, 7)))
+        assert len(tops) == 2
+        assert set(tops) == {(0, 2, 3, 4), (1, 5, 6, 7)}
 
         smi2 = '[C:1]([C:2]#[C:3][C:4]([H:8])([H:9])[H:10])([H:5])([H:6])[H:7]'
         mol = RDKitMol.FromSmiles(smi2)
         with pytest.raises(ValueError):
             mol.GetTorsionTops([4, 0, 3, 7])
         tops = mol.GetTorsionTops([4, 0, 3, 7], allowNonbondPivots=True)
-        self.assertCountEqual(tops, ((0, 4, 5, 6), (3, 7, 8, 9)))
+        assert len(tops) == 2
+        assert set(tops) == {(0, 4, 5, 6), (3, 7, 8, 9)}
 
         smi3 = '[C:1]([H:3])([H:4])([H:5])[H:6].[O:2][H:7]'
         mol = RDKitMol.FromSmiles(smi3)
@@ -408,7 +472,8 @@ class TestRDKitMol(unittest.TestCase):
         with pytest.raises(ValueError):
             mol.GetTorsionTops([3, 0, 1, 6])
         tops = mol.GetTorsionTops([3, 0, 1, 6], allowNonbondPivots=True)
-        self.assertCountEqual(tops, ((0, 3, 4, 5), (1, 6)))
+        assert len(tops) == 2
+        assert set(tops) == {(0, 3, 4, 5), (1, 6)}
 
     def test_combined_mol(self):
         """
@@ -704,6 +769,71 @@ class TestRDKitMol(unittest.TestCase):
             consider_atommap=False,
             kekulize=True,
         )) == 2
+
+    def test_saturate_biradical_site12(self):
+        """
+        Test the function that saturates the adjacent biradical sites.
+        """
+        smi = '[CH2][CH2]'
+        mol = RDKitMol.FromSmiles(smi)
+
+        assert mol.GetSpinMultiplicity() == 3
+        # Test the case where no action is needed
+        mol.SaturateBiradicalSites12(multiplicity=3, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+        mol.SaturateBiradicalSites12(multiplicity=4, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+        # Test the case where molecule cannot be saturated to the given multiplicity
+        mol.SaturateBiradicalSites12(multiplicity=2, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+
+        # Test the case where molecule can be saturated to the given multiplicity
+        mol.SaturateBiradicalSites12(multiplicity=1, verbose=True)
+        assert mol.GetSpinMultiplicity() == 1
+
+    def test_saturate_biradical_sites_conjugated_double_bond(self):
+        """
+        Test the function that saturates the biradicals that have conjugated double bond.
+        """
+        smi = '[CH2]C=C[CH2]'
+        mol = RDKitMol.FromSmiles(smi)
+
+        assert mol.GetSpinMultiplicity() == 3
+        # Test the case where no action is needed
+        mol.SaturateBiradicalSitesCDB(multiplicity=3, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+        mol.SaturateBiradicalSitesCDB(multiplicity=4, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+        # Test the case where molecule cannot be saturated to the given multiplicity
+        mol.SaturateBiradicalSitesCDB(multiplicity=2, verbose=True)
+        assert mol.GetSpinMultiplicity() == 3
+
+        # Test the case where molecule can be saturated to the given multiplicity
+        mol.SaturateBiradicalSitesCDB(multiplicity=1, verbose=True)
+        assert mol.GetSpinMultiplicity() == 1
+
+
+def test_parse_xyz_or_smiles_list():
+    """
+    Test the function that parses a list of xyz or smiles strings.
+    """
+    mols = parse_xyz_or_smiles_list(
+        ['CCC', 'H 0 0 0', ('[CH2]', 1)],
+        header=False,
+        backend='jensen',
+    )
+    assert len(mols) == 3
+    assert mols[0].ToSmiles() == 'CCC'
+    assert mols[1].ToSmiles() == '[H]'
+    assert mols[2].ToSmiles() == '[CH2]'
+    assert mols[2].GetSpinMultiplicity() == 1
+
+    mols, is_3D = parse_xyz_or_smiles_list(
+        ['CCC', 'H 0 0 0', ('[CH2]', 1)],
+        header=False,
+        backend='jensen',
+        with_3d_info=True)
+    assert is_3D == [False, True, False]
 
 
 if __name__ == '__main__':

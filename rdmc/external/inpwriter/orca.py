@@ -6,6 +6,7 @@ A module contains functions to write ORCA input files.
 """
 
 from typing import Optional
+from rdmc.external.inpwriter._register import register_qm_writer
 from rdmc.external.inpwriter.utils import _get_mult_and_chrg
 
 # To use Orca with xtb
@@ -222,3 +223,9 @@ maxiter 350
 end
 """
     return orca_gsm_input
+
+
+register_qm_writer("orca", "opt", write_orca_opt)
+register_qm_writer("orca", "freq", write_orca_freq)
+register_qm_writer("orca", "irc", write_orca_irc)
+register_qm_writer("orca", "gsm", write_orca_gsm)

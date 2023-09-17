@@ -12,11 +12,11 @@ Implementation by Jan H. Jensen based on the following paper and compiled by Xia
     Bull. Korean Chem. Soc. 2015, Vol. 36, 1769-1777
     DOI: 10.1002/bkcs.10334
 
-Last update: 2023/03/02 at commit: f512673
+Last update: 2023/09/15 at commit: b9929e6
 
 MIT License
 
-Copyright (c) 2018 Jensen Group
+Copyright (c) 2018-2023 Jensen Group
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -369,7 +369,7 @@ def set_atomic_charges(mol, atoms, atomic_valence_electrons,
     return mol
 
 
-def set_atomic_radicals(mol, atoms, atomic_valence_electrons, BO_valences):
+def set_atomic_radicals(mol, atoms, atomic_valence_electrons, BO_valences, use_atom_maps):
     """
 
     The number of radical electrons = absolute atomic charge
@@ -377,6 +377,8 @@ def set_atomic_radicals(mol, atoms, atomic_valence_electrons, BO_valences):
     """
     for i, atom in enumerate(atoms):
         a = mol.GetAtomWithIdx(i)
+        if use_atom_maps:
+            a.SetAtomMaps(i + 1)
         charge = get_atomic_charge(
             atom,
             atomic_valence_electrons[atom],
