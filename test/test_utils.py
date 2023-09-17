@@ -20,8 +20,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 ################################################################################
 
+
 @pytest.fixture(params=[
-    ('[C-]#[O+]',"""2
+    ('[C-]#[O+]', """2
 
 C      0.559061    0.000000    0.000000
 O     -0.559061    0.000000    0.000000"""),
@@ -173,9 +174,9 @@ class TestUtils:
         """
         smi, xyz, charge = smi_xyz_charge
         mol_xyz = parse_xyz_by_jensen(xyz=xyz,
-                                charge=charge,
-                                allow_charged_fragments=(charge != 0),
-                                force_rdmc=True)
+                                      charge=charge,
+                                      allow_charged_fragments=(charge != 0),
+                                      force_rdmc=True)
         assert mol_xyz.GetNumAtoms() == len(xyz.splitlines()) - 2
         assert smi == Chem.MolToSmiles(Chem.RemoveAllHs(mol_xyz),
                                        canonical=True)
