@@ -3,11 +3,13 @@
 
 from rdmc.utils import PERIODIC_TABLE
 
+
 electronegativity = {1: 2.20, 3: 0.98, 4: 1.57, 5: 2.04, 6: 2.55, 7: 3.04, 8: 3.44, 9: 3.98,
                      11: 0.93, 12: 1.31, 13: 1.61, 14: 1.90, 15: 2.19, 16: 2.58, 17: 3.16,
                      19: 0.82, 20: 1.00, 21: 1.36, 22: 1.54, 23: 1.63, 24: 1.66, 25: 1.55,
                      26: 1.83, 27: 1.91, 29: 1.90, 30: 1.65, 31: 1.81, 32: 2.01, 33: 2.18,
                      34: 2.55, 35: 2.96, 53: 2.66}
+
 
 def get_electronegativity(atom):
     return electronegativity.get(atom.GetAtomicNum(), 1.0)
@@ -38,6 +40,7 @@ def get_charge_span(mol):
     sum_of_abs_charges = sum([abs(atom.GetFormalCharge()) for atom in mol.GetAtoms()])
     return (sum_of_abs_charges - abs_net_charge) / 2
 
+
 def is_reactive(mol):
     try:
         return mol.reactive
@@ -45,10 +48,12 @@ def is_reactive(mol):
         set_reactive(mol, True)  # by default, assume it is reactive
     return mol.reactive
 
+
 def is_aromatic(mol):
     for bond in mol.GetBonds():
         if bond.GetIsAromatic():
             return True
+
 
 def set_reactive(mol, reactive):
     mol.reactive = reactive
@@ -68,6 +73,7 @@ def get_order_str(bond):
         return 'Q'
     else:
         return '?'
+
 
 def get_sorting_label(atom):
     return -1

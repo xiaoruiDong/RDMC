@@ -155,10 +155,10 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
                     # [O.]OSS[O.] <=> [O.]OS#S[O.] <=> [O.]OS#[S.]=O; N#[N+]SS[O-] <=> N#[N+]C#S[O-]
         # Penalize birad sites only if they theoretically substitute a lone pair.
         # E.g., O=[:S..] is penalized, but [C..]=C=O isn't.
-        if (atom.GetNumRadicalElectrons() >= 2 and
-                ((atom.GetAtomicNum() == 7 and get_lone_pair(atom) == 0)
-                 or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [0, 1, 2])
-                 or (atom.GetAtomicNum() == 16 and get_lone_pair(atom) in [0, 1, 2]))):
+        if (atom.GetNumRadicalElectrons() >= 2
+                and ((atom.GetAtomicNum() == 7 and get_lone_pair(atom) == 0)
+                     or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [0, 1, 2])
+                     or (atom.GetAtomicNum() == 16 and get_lone_pair(atom) in [0, 1, 2]))):
             octet_deviation += 3
 
     return octet_deviation
