@@ -19,6 +19,7 @@ from rdkit.Chem.rdchem import Mol, RWMol, Conformer
 from rdkit.Geometry.rdGeometry import Point3D
 
 from rdmc.conf import RDKitConf
+from rdmc.featurizer import get_fingerprint
 from rdmc.utils import *
 
 from ase import Atoms
@@ -903,6 +904,29 @@ class RDKitMol(object):
             np.ndarray: A square distance matrix of the molecule.
         """
         return Chem.rdmolops.Get3DDistanceMatrix(self._mol, confId=id)
+
+    def GetFingerprint(self,
+                       fpType: str = 'morgan',
+                       numBits: int = 2048,
+                       count: bool = False,
+                       **kwargs,
+                       ) -> np.ndarray:
+        """
+        Get the fingerprint of the molecule.
+
+        Args:
+            fpType (str, optional): The type of the fingerprint. Defaults to ``'morgan'``.
+            numBits (int, optional): The number of bits of the fingerprint. Defaults to ``2048``.
+            count (bool, optional): Whether to count the number of occurrences of each bit. Defaults to ``False``.
+
+        Returns:
+            np.ndarray: A fingerprint of the molecule.
+        """
+        return get_fingerprint(self,
+                               fp_type=fpType,
+                               num_bits=numBits,
+                               count=count,
+                               **kwargs)
 
     def GetPositions(self, id: int = 0) -> np.ndarray:
         """
