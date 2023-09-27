@@ -35,11 +35,8 @@ The paths generally consist of alternating atoms and bonds.
 import itertools
 from queue import Queue
 
-# from rmgpy.molecule.molecule import Atom
-from rmgpy.molecule.graph import Vertex, Edge
-
 from rdkit import Chem
-from rdkit.Chem import Atom, Bond
+from rdkit.Chem import Atom
 
 from rdmc.utils import PERIODIC_TABLE
 
@@ -52,7 +49,6 @@ def find_butadiene(start, end):
     Returns a list with atom and bond elements from start to end, or
     None if nothing was found.
     """
-
     q = Queue()  # FIFO queue of paths that need to be analyzed
     q.put([start])
 
@@ -63,7 +59,7 @@ def find_butadiene(start, end):
         assert isinstance(terminal, Atom)
         for bond34 in terminal.GetBonds():
             atom4 = bond34.GetOtherAtom(terminal)
-            if atom4 == end and bond34.GetBondType() != 1:  # we have found the path we are looking for
+            if atom4.GetIdx() == end.GetIdx() and bond34.GetBondType() != 1:  # we have found the path we are looking for
                 # add the final bond and atom and return
                 path.append(bond34)
                 path.append(atom4)
@@ -96,7 +92,7 @@ def find_butadiene_end_with_charge(start):
         assert isinstance(terminal, Atom)
         for bond34 in terminal.GetBonds():
             atom4 = bond34.GetOtherAtom(terminal)
-            if atom4.GetFormalCharge() != 0 and bond34.GetBondType() != 1 and atom4 not in path:
+            if atom4.GetFormalCharge() != 0 and bond34.GetBondType() != 1 and not in_path(atom4, path):
                 # we have found the path we are looking for
                 # add the final bond and atom and return
                 path.append(bond34)
@@ -138,7 +134,7 @@ def find_allyl_end_with_charge(start):
         path_copy = path[:]
         for bond23 in terminal.GetBonds():
             atom3 = bond23.GetOtherAtom(terminal)
-            if atom3.GetFormalCharge() != 0 and atom3 not in path_copy:  # we have found the path we are looking for
+            if atom3.GetFormalCharge() != 0 and not in_path(atom3, path_copy):  # we have found the path we are looking for
                 # add the final bond and atom and return
                 path_copy_copy = path_copy[:]
                 path_copy_copy.extend([bond23, atom3])
@@ -152,20 +148,20 @@ def find_allyl_end_with_charge(start):
     return paths
 
 
-def find_shortest_path(start, end, path=None):
-    path = path if path else []
-    path = path + [start]
-    if start == end:
-        return path
+# def find_shortest_path(start, end, path=None):
+#     path = path if path else []
+#     path = path + [start]
+#     if start == end:
+#         return path
 
-    shortest = None
-    for node in start.edges.keys():
-        if node not in path:
-            newpath = find_shortest_path(node, end, path)
-            if newpath:
-                if not shortest or len(newpath) < len(shortest):
-                    shortest = newpath
-    return shortest
+#     shortest = None
+#     for node in start.edges.keys():
+#         if node not in path:
+#             newpath = find_shortest_path(node, end, path)
+#             if newpath:
+#                 if not shortest or len(newpath) < len(shortest):
+#                     shortest = newpath
+#     return shortest
 
 
 def add_unsaturated_bonds(path):
@@ -181,7 +177,7 @@ def add_unsaturated_bonds(path):
 
     for bond12 in start.GetBonds():
         atom2 = bond12.GetOtherAtom(start)
-        if bond12.GetBondType() != 1 and atom2 not in path and atom2.GetAtomicNum() != 1:
+        if bond12.GetBondType() != 1 and not in_path(atom2, path) and atom2.GetAtomicNum() != 1:
             new_path = path[:]
             new_path.extend((bond12, atom2))
             paths.append(new_path)
@@ -202,10 +198,10 @@ def add_allyls(path):
 
     for bond12 in start.GetBonds():
         atom2 = bond12.GetOtherAtom(start)
-        if bond12.GetBondType() != 1 and atom2 not in path:
+        if bond12.GetBondType() != 1 and not in_path(atom2, path):
             for bond23 in atom2.GetBonds():
                 atom3 = bond23.GetOtherAtom(atom2)
-                if start is not atom3 and atom3.GetAtomicNum() != 1:
+                if start.GetIdx() != atom3.GetIdx() and atom3.GetAtomicNum() != 1:
                     new_path = path[:]
                     new_path.extend((bond12, atom2, bond23, atom3))
                     paths.append(new_path)
@@ -225,10 +221,10 @@ def add_inverse_allyls(path):
 
     for bond12 in start.GetBonds():
         atom2 = bond12.GetOtherAtom(start)
-        if atom2 not in path:
+        if not in_path(atom2, path):
             for bond23 in atom2.GetBonds():
                 atom3 = bond23.GetOtherAtom(atom2)
-                if atom3 not in path and atom3.GetAtomicNum() != 1 and bond23.GetBondType() != 1:
+                if not in_path(atom3, path) and atom3.GetAtomicNum() != 1 and bond23.GetBondType() != 1:
                     new_path = path[:]
                     new_path.extend((bond12, atom2, bond23, atom3))
                     paths.append(new_path)
@@ -278,7 +274,7 @@ def find_allyl_delocalization_paths(atom1):
             for bond23 in atom2.GetBonds():
                 atom3 = bond23.GetOtherAtom(atom2)
                 # Allyl bond must be capable of losing an order without breaking
-                if atom1 is not atom3 and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3):
+                if atom1.GetIdx() != atom3.GetIdx() and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3):
                     paths.append([atom1, atom2, atom3, bond12, bond23])
     return paths
 
@@ -308,7 +304,7 @@ def find_lone_pair_multiple_bond_paths(atom1):
             for bond23 in atom2.GetBonds():
                 atom3 = bond23.GetOtherAtom(atom2)
                 # Bond must be capable of losing an order without breaking, atom3 must be able to gain a lone pair
-                if atom1 is not atom3 and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3) \
+                if atom1.GetIdx() != atom3.GetIdx() and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3) \
                         and (atom3.GetAtomicNum() == 6 or is_atom_able_to_gain_lone_pair(atom3)):
                     paths.append([atom1, atom2, atom3, bond12, bond23])
     return paths
@@ -466,7 +462,7 @@ def find_N5dc_radical_delocalization_paths(atom1):
         if atom2.GetNumRadicalElectrons() and bond12.GetBondType() == 1 and not atom2.GetFormalCharge() and is_atom_able_to_lose_lone_pair(atom2):
             for bond13 in atom1.GetBonds():
                 atom3 = bond13.GetOtherAtom(atom1)
-                if (atom2 is not atom3 and bond13.GetBondType() == 1 and atom3.GetFormalCharge() < 0
+                if (atom2.GetIdx() != atom3.GetIdx() and bond13.GetBondType() == 1 and atom3.GetFormalCharge() < 0
                         and is_atom_able_to_lose_lone_pair(atom3)):
                     path.append([atom2, atom3])
                     return path  # there could only be one such path per atom1, return if found
@@ -505,3 +501,7 @@ def get_lone_pair(atom):
         return 0
     order = int(sum([b.GetBondTypeAsDouble() for b in atom.GetBonds()]))
     return (PERIODIC_TABLE.GetNOuterElecs(atomic_num) - atom.GetNumRadicalElectrons() - atom.GetFormalCharge() - order) / 2
+
+
+def in_path(atom, path):
+    return atom.GetIdx() in [a.GetIdx() for a in path]
