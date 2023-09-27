@@ -45,11 +45,18 @@ which is quite like http://www.chem.ucla.edu/~harding/IGOC/R/resonance_contribut
 
 import logging
 
-from rmgpy.exceptions import ResonanceError
-from rmgpy.molecule.element import PeriodicSystem
-from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.fragment import CuttingLabel, Fragment
-from rmgpy.molecule.pathfinder import find_shortest_path
+from rdmc.resonance.exceptions import ResonanceError
+from rdmc.resonance.utils import (get_order_str,
+                                  get_charge_span,
+                                  get_electronegativity,
+                                  get_lone_pair,
+                                  get_sorting_label,
+                                  get_total_bond_order,
+                                  is_aromatic,
+                                  is_reactive,
+                                  set_reactive)
+
+from rdkit.Chem.rdmolops import GetShortestPath
 
 
 def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True, features=None, save_order=False):
@@ -58,10 +65,7 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
     lone pairs. This function filters them out by minimizing the number of C/N/O/S atoms without a full octet.
     If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
     """
-    if isinstance(mol_list[0], Fragment):
-        for mol in mol_list:
-            mol.update()
-    if not all([(mol.multiplicity == mol_list[0].multiplicity) for mol in mol_list]):
+    if not all([(mol.GetSpinMultiplicity() == mol_list[0].GetSpinMultiplicity()) for mol in mol_list]):
         raise ValueError("Cannot filter structures with different multiplicities!")
 
     # Get an octet deviation list
@@ -79,7 +83,7 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
 
     if not filtered_list:
         raise ResonanceError(f'Could not determine representative localized structures for species '
-                             f'{mol_list[0].to_smiles()}')
+                             f'{mol_list[0].ToSmiles()}')
 
     if mark_unreactive:
         # Mark selected unreactive structures if OS and/or adjacent birad unidirectional transitions were used
@@ -108,17 +112,15 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
     if `allow_expanded_octet` is ``True`` (by default), then the function also considers dectet for
     third row elements (currently sulfur is the only hypervalance third row element in RMG)
     """
-    if not isinstance(mol, (Molecule, Fragment)):
-        raise TypeError("Octet deviation could only be determined for Molecule or Fragment objects.")
 
     octet_deviation = 0  # This is the overall "score" for the molecule, summed across all non-H atoms
-    for atom in mol.vertices:
-        if isinstance(atom, CuttingLabel) or atom.is_hydrogen():
+    for atom in mol.GetAtoms():
+        if atom.GetAtomicNum() == 1:
             continue
-        val_electrons = 2 * (int(atom.get_total_bond_order()) + atom.lone_pairs) + atom.radical_electrons
-        if atom.is_carbon() or atom.is_nitrogen() or atom.is_oxygen():
+        val_electrons = 2 * (int(get_total_bond_order(atom)) + get_lone_pair(atom)) + atom.GetNumRadicalElectrons()
+        if atom.GetAtomicNum() in [6, 7, 8]:
             octet_deviation += abs(8 - val_electrons)  # expecting C/N/O to be near octet
-        elif atom.is_sulfur():
+        elif atom.GetAtomicNum() == 16:
             if not allow_expanded_octet:
                 # If allow_expanded_octet is False, then adhere to the octet rule for sulfur as well.
                 # This is in accordance with J. Chem. Educ., 1995, 72 (7), p 583, DOI: 10.1021/ed072p583
@@ -135,14 +137,15 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
                 # -  J. Chem. Educ., 1999, 76 (7), p 1013, DOI: 10.1021/ed076p1013
                 # This results in O=S=O as a representative structure for SO2 rather than O=[:S+][:::O-],
                 # and in CS(=O)C as a representative structure for DMSO rather than C[:S+]([:::O-])C.
-                if atom.lone_pairs <= 1:
+                if get_lone_pair(atom) <= 1:
                     octet_deviation += min(abs(8 - val_electrons), abs(10 - val_electrons), abs(12 - val_electrons))  # octet/dectet on S p[0,1]
                     # eg [O-][S+]=O, O[S]=O, OS([O])=O, O=S(=O)(O)O
-                elif atom.lone_pairs >= 2:
+                elif get_lone_pair(atom) >= 2:
                     octet_deviation += abs(8 - val_electrons)  # octet on S p[2,3]
                     # eg [S][S], OS[O], [NH+]#[N+][S-][O-], O[S-](O)[N+]#N, S=[O+][O-]
-            for atom2, bond in atom.bonds.items():
-                if atom2.is_sulfur() and bond.is_triple():
+            for bond in atom.GetBonds():
+                atom2 = bond.GetOtherAtom(atom)
+                if atom2.GetAtomicNum() == 16 and bond.GetBondType() == 3:
                     octet_deviation += 0.5  # penalty for S#S substructures. Often times sulfur can have a triple
                     # bond to another sulfur in a structure that obeys the octet rule, but probably shouldn't be a
                     # correct resonance structure. This adds to the combinatorial effect of resonance structures
@@ -152,10 +155,10 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
                     # [O.]OSS[O.] <=> [O.]OS#S[O.] <=> [O.]OS#[S.]=O; N#[N+]SS[O-] <=> N#[N+]C#S[O-]
         # Penalize birad sites only if they theoretically substitute a lone pair.
         # E.g., O=[:S..] is penalized, but [C..]=C=O isn't.
-        if (atom.radical_electrons >= 2 and
-                ((atom.is_nitrogen() and atom.lone_pairs == 0)
-                 or (atom.is_oxygen() and atom.lone_pairs in [0, 1, 2])
-                 or (atom.is_sulfur() and atom.lone_pairs in [0, 1, 2]))):
+        if (atom.GetNumRadicalElectrons() >= 2 and
+                ((atom.GetAtomicNum() == 7 and get_lone_pair(atom) == 0)
+                 or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [0, 1, 2])
+                 or (atom.GetAtomicNum() == 16 and get_lone_pair(atom) in [0, 1, 2]))):
             octet_deviation += 3
 
     return octet_deviation
@@ -173,7 +176,7 @@ def octet_filtration(mol_list, octet_deviation_list):
     for index, mol in enumerate(mol_list):
         if octet_deviation_list[index] == min(octet_deviation_list):
             filtered_list.append(mol)
-            charge_span_list.append(mol.get_charge_span())
+            charge_span_list.append(get_charge_span(mol))
 
     return filtered_list, charge_span_list
 
@@ -185,7 +188,7 @@ def get_charge_span_list(mol_list):
     """
     charge_span_list = []
     for mol in mol_list:
-        charge_span_list.append(mol.get_charge_span())
+        charge_span_list.append(get_charge_span(mol))
 
     return charge_span_list
 
@@ -222,13 +225,14 @@ def charge_filtration(filtered_list, charge_span_list):
         rad_sorting_list = []  # sortingLabels for radical sites
         mul_bond_sorting_list = []  # sortingLabels for multiple bind sites in the form of (atom1,atom2) tuples
         for mol in filtered_list:
-            for atom in mol.vertices:
-                if atom.radical_electrons and int(atom.sorting_label) not in rad_sorting_list:
-                    rad_sorting_list.append(int(atom.sorting_label))
-                for atom2, bond in atom.bonds.items():
+            for atom in mol.GetAtoms():
+                if atom.GetNumRadicalElectrons() and int(get_sorting_label(atom)) not in rad_sorting_list:
+                    rad_sorting_list.append(int(get_sorting_label(atom)))
+                for bond in atom.GetBonds():
+                    atom2 = bond.GetOtherAtom(atom)
                     # check if bond is multiple, store only from one side (atom1 < atom2) for consistency
-                    if atom2.sorting_label > atom.sorting_label and bond.is_double() or bond.is_triple():
-                        mul_bond_sorting_list.append((int(atom.sorting_label), int(atom2.sorting_label)))
+                    if get_sorting_label(atom2) > get_sorting_label(atom) and bond.GetBondType() in [2, 3]:
+                        mul_bond_sorting_list.append((int(get_sorting_label(atom)), int(get_sorting_label(atom2))))
         # Find unique radical and multiple bond sites in charged_list and append to unique_charged_list:
         unique_charged_list = []
         for mol in charged_list:
@@ -257,13 +261,14 @@ def find_unique_sites_in_charged_list(mol, rad_sorting_list, mul_bond_sorting_li
     """
     A helper function for reactive site discovery in charged species
     """
-    for atom in mol.vertices:
-        if atom.radical_electrons and int(atom.sorting_label) not in rad_sorting_list:
+    for atom in mol.GetAtoms():
+        if atom.GetNumRadicalElectrons() and int(get_sorting_label(atom)) not in rad_sorting_list:
             return [mol]
-        for atom2, bond in atom.bonds.items():
-            if (atom2.sorting_label > atom.sorting_label and (bond.is_double() or bond.is_triple())
-                    and (int(atom.sorting_label), int(atom2.sorting_label)) not in mul_bond_sorting_list
-                    and not (atom.is_sulfur() and atom2.is_sulfur())):
+        for bond in atom.GetBonds():
+            atom2 = bond.GetOtherAtom(atom)
+            if (get_sorting_label(atom2) > get_sorting_label(atom) and (bond.GetBondType() in [2, 3])
+                    and (int(get_sorting_label(atom)), int(get_sorting_label(atom2))) not in mul_bond_sorting_list
+                    and not (atom.GetAtomicNum() == 16 and atom2.GetAtomicNum() == 16)):
                 # We check that both atoms aren't S, otherwise we get [S.-]=[S.+] as a structure of S2 triplet
                 return [mol]
     return []
@@ -281,20 +286,20 @@ def stabilize_charges_by_electronegativity(mol_list, allow_empty_list=False):
     mol_list_copy = list(mol_list)
     for i, mol in enumerate(mol_list):
         electroneg_positively_charged_atoms = electroneg_negatively_charged_atoms = 0
-        for atom in mol.vertices:
-            if atom.charge > 0:
-                electroneg_positively_charged_atoms += PeriodicSystem.electronegativity[atom.symbol] * abs(atom.charge)
-                if atom.is_oxygen():
-                    for atom2 in atom.edges.keys():
-                        if atom2.is_fluorine() and atom2.charge < 0:
+        for atom in mol.GetAtoms():
+            if atom.GetFormalCharge() > 0:
+                electroneg_positively_charged_atoms += get_electronegativity(atom) * abs(atom.GetFormalCharge())
+                if atom.GetAtomicNum() == 8:
+                    for atom2 in atom.GetNeighbors():
+                        if atom2.GetAtomicNum() == 9 and atom2.GetFormalCharge() < 0:
                             break
                     else:
                         electroneg_positively_charged_atoms += 1  # penalty for positively charged O not adjacent to F-,
                     # as in [N-2][N+]#[O+], [O-]S#[O+], OS(S)([O-])#[O+], [OH+]=S(O)(=O)[O-], [OH.+][S-]=O.
                     # [C-]#[O+] and [O-][O+]=O, which are correct structures, also get penalized here, but that's OK
                     # since they are still eventually selected as representative structures according to the rules here.
-            elif atom.charge < 0:
-                electroneg_negatively_charged_atoms += PeriodicSystem.electronegativity[atom.symbol] * abs(atom.charge)
+            elif atom.GetFormalCharge() < 0:
+                electroneg_negatively_charged_atoms += get_electronegativity(atom) * abs(atom.GetFormalCharge())
         if electroneg_positively_charged_atoms > electroneg_negatively_charged_atoms:
             # Filter structures in which more electronegative atoms are positively charged.
             # This condition is NOT hermetic: It is possible to think of a situation where one structure has
@@ -321,17 +326,21 @@ def stabilize_charges_by_proximity(mol_list):
         # Try finding well-defined pairs of formally-charged atoms to apply the proximity principle
         # (opposite charges will be as close as possible to one another, and vice versa)
         cumulative_opposite_charge_distance = cumulative_similar_charge_distance = 0
-        for atom1 in mol.vertices:
-            if atom1.charge:
-                for atom2 in mol.vertices:
-                    if atom2.charge and atom2.sorting_label > atom1.sorting_label:
+        for atom1 in mol.GetAtoms():
+            if atom1.GetFormalCharge():
+                for atom2 in mol.GetAtoms():
+                    if atom2.GetFormalCharge() and get_sorting_label(atom2) > get_sorting_label(atom1):
                         # found two charged atoms
-                        if (atom1.charge > 0) ^ (atom2.charge > 0):  # xor
+                        if (atom1.GetFormalCharge() > 0) ^ (atom2.GetFormalCharge() > 0):  # xor
                             # they have opposing signs when ONLY one is positive
-                            cumulative_opposite_charge_distance += len(find_shortest_path(atom1, atom2))
+                            cumulative_opposite_charge_distance += len(GetShortestPath(mol.ToRWMol,
+                                                                                       atom1.GetIdx(),
+                                                                                       atom2.GetIdx()))
                         else:
                             # they have similar signs
-                            cumulative_similar_charge_distance += len(find_shortest_path(atom1, atom2))
+                            cumulative_similar_charge_distance += len(find_shortest_path(mol.ToRWMol(),
+                                                                                         atom1.GetIdx(),
+                                                                                         atom2.GetIdx(),))
         charge_distance_list.append([cumulative_opposite_charge_distance,
                                      cumulative_similar_charge_distance])
     min_cumulative_opposite_charge_distance = min([distances[0] for distances in charge_distance_list]
@@ -374,7 +383,7 @@ def aromaticity_filtration(mol_list, features):
     filtered_list = []
     other_list = []
     for mol in mol_list:
-        if mol.is_aromatic():
+        if is_aromatic(mol):
             filtered_list.append(mol)
         else:
             other_list.append(mol)
@@ -383,10 +392,15 @@ def aromaticity_filtration(mol_list, features):
         # Look for structures that don't have standard SDSDSD bond orders
         for mol in other_list:
             # Check all 6 membered rings
-            rings = [ring for ring in mol.get_relevant_cycles() if len(ring) == 6]
-            for ring in rings:
-                bond_list = mol.get_edges_in_cycle(ring)
-                bond_orders = ''.join([bond.get_order_str() for bond in bond_list])
+            # rings = [ring for ring in mol.get_relevant_cycles() if len(ring) == 6]
+            # RDKit doesn't have a support to get all relevant cycles...
+            # Temporarily use the BondRings as a rough fix
+            # TODO: Implement pyrdl to get all relevant cycles which doesn't have full support
+            # for different python versions and different OS
+            # Another workaround maybe temporarily ignore polycyclic aromatics
+            bond_lists = [ring for ring in mol.GetRingInfo().BondRings() if len(ring) == 6]
+            for bond_list in bond_lists:
+                bond_orders = ''.join([get_order_str(bond) for bond in bond_list])
                 if bond_orders == 'SDSDSD' or bond_orders == 'DSDSDS':
                     break
             else:
@@ -402,13 +416,13 @@ def mark_unreactive_structures(filtered_list, mol_list, save_order=False):
     If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
     """
     # sort all structures in filtered_list so that the reactive ones are first
-    filtered_list.sort(key=lambda mol: mol.reactive, reverse=True)
+    filtered_list.sort(key=lambda mol: is_reactive(mol), reverse=True)
 
     # Make sure that the (first) original structure is always first in the list (unless it was filtered out).
     # Important whenever Species.molecule[0] is expected to be used (e.g., training reactions) after generating
     # resonance structures. However, if it was filtered out, it should be appended to the end of the list.
     for index, filtered in enumerate(filtered_list):
-        if filtered.copy(deep=True).is_isomorphic(mol_list[0].copy(deep=True), save_order=save_order):
+        if filtered.GetSubStructureMatch(mol_list[0]):
             filtered_list.insert(0, filtered_list.pop(index))
             break
     else:
@@ -417,7 +431,7 @@ def mark_unreactive_structures(filtered_list, mol_list, save_order=False):
         # been filtered out. However, for processing reactions (e.g., degeneracy calculations) it should be kept
         # (e.g., [::N]O <=> [::N][::O.] + [H.], where [::N][::O.] should be recognized as [:N.]=[::O]).
         mol = mol_list[0]
-        mol.reactive = False
+        set_reactive(mol, False)
         filtered_list.append(mol)
 
 
@@ -426,11 +440,11 @@ def check_reactive(filtered_list):
     Check that there's at least one reactive structure in the returned list.
     If not, raise an error (does not return anything)
     """
-    if not any([mol.reactive for mol in filtered_list]):
+    if not any([is_reactive(mol) for mol in filtered_list]):
         logging.info('\n\n')
-        logging.error(f'No reactive structures were attributed to species {filtered_list[0].to_smiles()}')
+        logging.error(f'No reactive structures were attributed to species {filtered_list[0].ToSmiles()}')
         for mol in filtered_list:
-            logging.info(f'Structure: {mol.to_smiles()}\n{mol.to_adjacency_list()}Reactive: {mol.reactive}')
+            logging.info(f'Structure: {mol.ToSmiles(removeHs=False, removeAtomMap=False)}\nReactive: {is_reactive(mol)}')
         logging.info('\n')
         raise ResonanceError(f'Each species must have at least one reactive structure. Something probably went wrong '
-                             f'when exploring resonance structures for species {filtered_list[0].to_smiles()}')
+                             f'when exploring resonance structures for species {filtered_list[0].ToSmiles()}')
