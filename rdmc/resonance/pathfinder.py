@@ -252,8 +252,8 @@ def compute_atom_distance(atom_indices, mol):
     combos = [sorted(tup) for tup in itertools.combinations(atom_indices, 2)]
 
     for i1, i2 in combos:
-        start, end = mol.GetAtomWithIdx(i1 - 1), mol.GetAtomWithIdx(i2 - 1)
-        path = Chem.rdmolops.GetShortestPath(mol, start, end)
+        start, end = i1 - 1, i2 - 1
+        path = Chem.rdmolops.GetShortestPath(mol.ToRWMol(), start, end)
         distances[(i1, i2)] = len(path) - 1
 
     return distances
