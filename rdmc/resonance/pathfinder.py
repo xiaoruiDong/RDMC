@@ -38,7 +38,7 @@ from queue import Queue
 from rdkit import Chem
 from rdkit.Chem import Atom
 
-from rdmc.utils import PERIODIC_TABLE
+from rdmc.resonance.utils import get_lone_pair, in_path
 
 
 def find_butadiene(start, end):
@@ -489,19 +489,3 @@ def is_atom_able_to_lose_lone_pair(atom):
     return (((atom.GetAtomicNum() == 7 or atom.GetAtomicNum() == 16) and get_lone_pair(atom) in [1, 2, 3])
             or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [2, 3])
             or atom.GetAtomicNum() == 6 and get_lone_pair(atom) == 1)
-
-
-def get_lone_pair(atom):
-    """
-    Helper function
-    Returns the lone pair of an atom
-    """
-    atomic_num = atom.GetAtomicNum()
-    if atomic_num == 1:
-        return 0
-    order = int(sum([b.GetBondTypeAsDouble() for b in atom.GetBonds()]))
-    return (PERIODIC_TABLE.GetNOuterElecs(atomic_num) - atom.GetNumRadicalElectrons() - atom.GetFormalCharge() - order) / 2
-
-
-def in_path(atom, path):
-    return atom.GetIdx() in [a.GetIdx() for a in path]
