@@ -812,6 +812,20 @@ class TestRDKitMol:
         mol.SaturateBiradicalSitesCDB(multiplicity=1, verbose=True)
         assert mol.GetSpinMultiplicity() == 1
 
+    def test_get_finger_print(self):
+        """
+        Test the function that generates molecular finger prints.
+        """
+        # We only test one case here to check the functionality of the function
+        # other cases are covered by test_fingerprints
+        smi = 'O=C(Nc1cc2c(cn1)CCCC2)N1CCCC1c1ccc(O)cc1'
+        fp = RDKitMol.FromSmiles(smi, addHs=False).GetFingerprint(fpType='morgan', numBits=2048, count=True, radius=3)
+        fp_expect \
+            = Chem.rdFingerprintGenerator \
+            .GetMorganGenerator(radius=3, fpSize=2048)\
+            .GetCountFingerprintAsNumPy(Chem.MolFromSmiles(smi))
+        assert np.isclose(fp, fp_expect).all()
+
 
 def test_parse_xyz_or_smiles_list():
     """
