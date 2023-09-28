@@ -352,7 +352,7 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
                     or (atom2.GetAtomicNum() == 7 and get_lone_pair(atom2) in [1, 2])
                     or (atom2.GetAtomicNum() == 8 and get_lone_pair(atom2) in [2, 3] and atom1.GetAtomicNum() != 6)
                     or (atom2.GetAtomicNum() == 16 and get_lone_pair(atom2) in [1, 2, 3])):
-                paths.append([atom1, atom2])
+                paths.append([atom1.GetIdx(), atom2.GetIdx()])
     return paths
 
 
