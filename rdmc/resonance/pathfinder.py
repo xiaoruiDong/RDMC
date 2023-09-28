@@ -274,8 +274,8 @@ def find_allyl_delocalization_paths(atom1):
             for bond23 in atom2.GetBonds():
                 atom3 = bond23.GetOtherAtom(atom2)
                 # Allyl bond must be capable of losing an order without breaking
-                if atom1.GetIdx() != atom3.GetIdx() and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3):
-                    paths.append([atom1, atom2, atom3, bond12, bond23])
+                if atom1.GetIdx() != atom3.GetIdx() and (bond23.GetBondType() in [2, 3]):
+                    paths.append([atom1.GetIdx(), atom2.GetIdx(), atom3.GetIdx(), bond12.GetIdx(), bond23.GetIdx()])
     return paths
 
 
