@@ -306,7 +306,7 @@ def find_lone_pair_multiple_bond_paths(atom1):
                 # Bond must be capable of losing an order without breaking, atom3 must be able to gain a lone pair
                 if atom1.GetIdx() != atom3.GetIdx() and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3) \
                         and (atom3.GetAtomicNum() == 6 or is_atom_able_to_gain_lone_pair(atom3)):
-                    paths.append([atom1, atom2, atom3, bond12, bond23])
+                    paths.append([atom1.GetIdx(), atom2.GetIdx(), atom3.GetIdx(), bond12.GetIdx(), bond23.GetIdx()])
     return paths
 
 
