@@ -226,13 +226,13 @@ def charge_filtration(filtered_list, charge_span_list):
         mul_bond_sorting_list = []  # sortingLabels for multiple bind sites in the form of (atom1,atom2) tuples
         for mol in filtered_list:
             for atom in mol.GetAtoms():
-                if atom.GetNumRadicalElectrons() and int(get_sorting_label(atom)) not in rad_sorting_list:
-                    rad_sorting_list.append(int(get_sorting_label(atom)))
+                if atom.GetNumRadicalElectrons() and atom.GetIdx() not in rad_sorting_list:
+                    rad_sorting_list.append(atom.GetIdx())
                 for bond in atom.GetBonds():
                     atom2 = bond.GetOtherAtom(atom)
                     # check if bond is multiple, store only from one side (atom1 < atom2) for consistency
-                    if get_sorting_label(atom2) > get_sorting_label(atom) and bond.GetBondType() in [2, 3]:
-                        mul_bond_sorting_list.append((int(get_sorting_label(atom)), int(get_sorting_label(atom2))))
+                    if atom2.GetIdx() > atom.GetIdx() and bond.GetBondType() in [2, 3]:
+                        mul_bond_sorting_list.append((atom.GetIdx(), atom2.GetIdx()))
         # Find unique radical and multiple bond sites in charged_list and append to unique_charged_list:
         unique_charged_list = []
         for mol in charged_list:
@@ -262,12 +262,12 @@ def find_unique_sites_in_charged_list(mol, rad_sorting_list, mul_bond_sorting_li
     A helper function for reactive site discovery in charged species
     """
     for atom in mol.GetAtoms():
-        if atom.GetNumRadicalElectrons() and int(get_sorting_label(atom)) not in rad_sorting_list:
+        if atom.GetNumRadicalElectrons() and atom.GetIdx() not in rad_sorting_list:
             return [mol]
         for bond in atom.GetBonds():
             atom2 = bond.GetOtherAtom(atom)
-            if (get_sorting_label(atom2) > get_sorting_label(atom) and (bond.GetBondType() in [2, 3])
-                    and (int(get_sorting_label(atom)), int(get_sorting_label(atom2))) not in mul_bond_sorting_list
+            if (atom2.GetIdx() > atom.GetIdx() and (bond.GetBondType() in [2, 3])
+                    and (atom.GetIdx(), atom2.GetIdx()) not in mul_bond_sorting_list
                     and not (atom.GetAtomicNum() == 16 and atom2.GetAtomicNum() == 16)):
                 # We check that both atoms aren't S, otherwise we get [S.-]=[S.+] as a structure of S2 triplet
                 return [mol]
@@ -329,11 +329,11 @@ def stabilize_charges_by_proximity(mol_list):
         for atom1 in mol.GetAtoms():
             if atom1.GetFormalCharge():
                 for atom2 in mol.GetAtoms():
-                    if atom2.GetFormalCharge() and get_sorting_label(atom2) > get_sorting_label(atom1):
+                    if atom2.GetFormalCharge() and atom2.GetIdx() > atom1.GetIdx():
                         # found two charged atoms
                         if (atom1.GetFormalCharge() > 0) ^ (atom2.GetFormalCharge() > 0):  # xor
                             # they have opposing signs when ONLY one is positive
-                            cumulative_opposite_charge_distance += len(GetShortestPath(mol.ToRWMol,
+                            cumulative_opposite_charge_distance += len(GetShortestPath(mol.ToRWMol(),
                                                                                        atom1.GetIdx(),
                                                                                        atom2.GetIdx()))
                         else:
@@ -422,7 +422,7 @@ def mark_unreactive_structures(filtered_list, mol_list, save_order=False):
     # Important whenever Species.molecule[0] is expected to be used (e.g., training reactions) after generating
     # resonance structures. However, if it was filtered out, it should be appended to the end of the list.
     for index, filtered in enumerate(filtered_list):
-        if filtered.GetSubStructureMatch(mol_list[0]):
+        if filtered.GetSubstructMatch(mol_list[0]):
             filtered_list.insert(0, filtered_list.pop(index))
             break
     else:
