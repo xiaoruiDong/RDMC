@@ -50,7 +50,6 @@ from rdmc.resonance.utils import (get_order_str,
                                   get_charge_span,
                                   get_electronegativity,
                                   get_lone_pair,
-                                  get_sorting_label,
                                   get_total_bond_order,
                                   is_aromatic,
                                   is_reactive,
@@ -65,8 +64,12 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
     lone pairs. This function filters them out by minimizing the number of C/N/O/S atoms without a full octet.
     If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
     """
-    if not all([(mol.GetSpinMultiplicity() == mol_list[0].GetSpinMultiplicity()) for mol in mol_list]):
-        raise ValueError("Cannot filter structures with different multiplicities!")
+    mol_list = [mol for mol in mol_list if mol.GetSpinMultiplicity() == mol_list[0].GetSpinMultiplicity()]
+    # Remove structures with different multiplicities generated
+    # One identified issue is that Sanitize will make a N+ with two bond and 1 pair of electrons to
+    # 2 radical electrons
+    # if not all([(mol.GetSpinMultiplicity() == mol_list[0].GetSpinMultiplicity()) for mol in mol_list]):
+    #     raise ValueError("Cannot filter structures with different multiplicities!")
 
     # Get an octet deviation list
     octet_deviation_list = get_octet_deviation_list(mol_list, allow_expanded_octet=allow_expanded_octet)
@@ -400,7 +403,7 @@ def aromaticity_filtration(mol_list, features):
             # Another workaround maybe temporarily ignore polycyclic aromatics
             bond_lists = [ring for ring in mol.GetRingInfo().BondRings() if len(ring) == 6]
             for bond_list in bond_lists:
-                bond_orders = ''.join([get_order_str(bond) for bond in bond_list])
+                bond_orders = ''.join([get_order_str(mol.GetBondWithIdx(bond)) for bond in bond_list])
                 if bond_orders == 'SDSDSD' or bond_orders == 'DSDSDS':
                     break
             else:
