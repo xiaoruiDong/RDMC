@@ -387,17 +387,17 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
             # Find paths in the direction <increasing> the bond order,
             # atom1 must posses at least one lone pair to loose it
             # the final clause of this prevents S#S from forming by this resonance pathway
-            if ((bond12.GetBondType() == 1 or bond12.GetBondType() == 2)
+            if ((bond12.GetBondType() in [1, 2])
                     and is_atom_able_to_lose_lone_pair(atom1)) \
                     and not (atom1.GetAtomicNum() == 16
                              and atom2.GetAtomicNum() == 16
                              and bond12.GetBondType() == 2):
-                paths.append([atom1, atom2, bond12, 1])  # direction = 1
+                paths.append([atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 1])  # direction = 1
             # Find paths in the direction <decreasing> the bond order,
             # atom1 gains a lone pair, hence cannot already have more than two lone pairs
-            if ((bond12.GetBondType() == 2 or bond12.GetBondType() == 3)
+            if ((bond12.GetBondType() in [2, 3])
                     and is_atom_able_to_gain_lone_pair(atom1)):
-                paths.append([atom1, atom2, bond12, 2])  # direction = 2
+                paths.append([atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 2])  # direction = 2
     return paths
 
 
@@ -432,12 +432,12 @@ def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
         # atom1 must posses at least one lone pair to loose it, atom2 must be a radical
         if (atom2.GetNumRadicalElectrons() and (bond12.GetBondType() == 1 or bond12.GetBondType() == 2)
                 and is_atom_able_to_lose_lone_pair(atom1)):
-            paths.append([atom1, atom2, bond12, 1])  # direction = 1
+            paths.append([atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 1])  # direction = 1
         # Find paths in the direction <decreasing> the bond order
         # atom1 gains a lone pair, hence cannot already have more than two lone pairs, and is also a radical
         if (atom1.GetNumRadicalElectrons() and (bond12.GetBondType() == 2 or bond12.GetBondType() == 3)
                 and is_atom_able_to_gain_lone_pair(atom1)):
-            paths.append([atom1, atom2, bond12, 2])  # direction = 2
+            paths.append([atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 2])  # direction = 2
     return paths
 
 
@@ -464,7 +464,7 @@ def find_N5dc_radical_delocalization_paths(atom1):
                 atom3 = bond13.GetOtherAtom(atom1)
                 if (atom2.GetIdx() != atom3.GetIdx() and bond13.GetBondType() == 1 and atom3.GetFormalCharge() < 0
                         and is_atom_able_to_lose_lone_pair(atom3)):
-                    path.append([atom2, atom3])
+                    path.append([atom2.GetIdx(), atom3.GetIdx()])
                     return path  # there could only be one such path per atom1, return if found
     return path
 
