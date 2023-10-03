@@ -53,19 +53,26 @@ Currently supported resonance types:
 
 import logging
 
+from rdkit import Chem
+
 import rdmc.resonance.filtration as filtration
 import rdmc.resonance.pathfinder as pathfinder
 from rdmc.resonance.utils import (decrement_radical,
                                   decrement_order,
                                   increment_radical,
                                   increment_order,
+                                  is_aromatic,
                                   is_cyclic,
                                   is_identical,
                                   is_radical,
                                   is_aryl_radical,
                                   get_aromatic_rings,
+                                  get_charge_span,
                                   get_lone_pair,
+                                  get_order_str,
+                                  get_relevant_cycles,
                                   update_charge)
+from rdmc.resonance.resonance import _unset_aromatic_flags
 
 # from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError, ResonanceError
 # from rmgpy.molecule.adjlist import Saturator
@@ -147,7 +154,7 @@ def analyze_molecule(mol):
         if features['is_radical'] and features['is_aromatic']:
             features['is_aryl_radical'] = is_aryl_radical(mol, aromatic_rings)
     for atom in mol.GetAtoms():
-        if atom.GetAtomicNum() == 7 and get_lone_pair(mol) == 0:
+        if atom.GetAtomicNum() == 7 and get_lone_pair(atom) == 0:
             features['hasNitrogenVal5'] = True
         if get_lone_pair(atom) > 0:
             features['hasLonePairs'] = True
@@ -183,7 +190,7 @@ def generate_resonance_structures(mol, clar_structures=False, keep_isomorphic=Fa
 
     # Check that mol is a valid structure in terms of atomTypes and net charge. Since SMILES with hypervalance
     # heteroatoms are not always read correctly, print a suggestion to input the structure using an adjList.
-    if mol.get_net_charge() != 0:
+    if mol.GetFormalCharge() != 0:
         # logging.info("Got the following structure:\nSMILES: {0}\nAdjacencyList:\n{1}\nNet charge: {2}\n\n"
         #                  "Currently RMG cannot process charged species correctly."
         #                  "\nIf this structure was entered in SMILES, try using the adjacencyList format for an"
@@ -195,7 +202,6 @@ def generate_resonance_structures(mol, clar_structures=False, keep_isomorphic=Fa
 
     # Analyze molecule
     features = analyze_molecule(mol)
-
     # Use generate_optimal_aromatic_resonance_structures to check for false positives and negatives
     if features['is_aromatic'] or (features['is_cyclic'] and features['is_radical'] and not features['is_aryl_radical']):
         new_mol_list = generate_optimal_aromatic_resonance_structures(mol, features)
@@ -273,7 +279,7 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         # structures with a +1 higher charge span compared to the minimum, e.g., [O-]S#S[N+]#N
         # Filtration is always called.
         octet_deviation = filtration.get_octet_deviation(molecule)
-        charge_span = molecule.get_charge_span()
+        charge_span = get_charge_span(molecule)
         if octet_deviation <= min_octet_deviation + 2 and charge_span <= min_charge_span + 1:
             for method in method_list:
                 new_mol_list.extend(method(molecule))
@@ -326,7 +332,6 @@ def generate_allyl_delocalization_resonance_structures(mol):
     # Iterate over radicals in structure
     for atom in mol.GetAtoms():
         paths = pathfinder.find_allyl_delocalization_paths(atom)
-        print(paths)
         for atom1_idx, _, atom3_idx, bond12_idx, bond23_idx in paths:
             try:
                 # Make a copy of structure
@@ -336,7 +341,7 @@ def generate_allyl_delocalization_resonance_structures(mol):
                 increment_radical(structure.GetAtomWithIdx(atom3_idx))
                 increment_order(structure.GetBondWithIdx(bond12_idx))
                 decrement_order(structure.GetBondWithIdx(bond23_idx))
-                structure.Sanitize()
+                structure.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
             except BaseException as e:  # cannot make the change
                 pass
             else:
@@ -360,16 +365,16 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
                     structure = mol.Copy(quickCopy=True)
                     # Adjust to (potentially) new resonance structure
                     atom1 = structure.GetAtomWithIdx(atom1_idx)
-                    atom3 = structure.GetAtomWithIdx(atom3_idx)
                     lone_pair1 = get_lone_pair(atom1)
-                    lone_pair3 = get_lone_pair(atom3)
                     if lone_pair1 <= 0:  # cannot decrease lone pair on atom1
                         continue
+                    atom3 = structure.GetAtomWithIdx(atom3_idx)
+                    lone_pair3 = get_lone_pair(atom3)
                     increment_order(structure.GetBondWithIdx(bond12_idx))
                     decrement_order(structure.GetBondWithIdx(bond23_idx))
                     update_charge(atom1, lone_pair1 - 1)
                     update_charge(atom3, lone_pair3 + 1)
-                    structure.Sanitize()
+                    structure.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
                 except BaseException as e:
                     pass # Don't append resonance structure if it creates an undefined atomtype
                 else:
