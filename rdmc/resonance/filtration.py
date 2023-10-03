@@ -54,6 +54,7 @@ from rdmc.resonance.utils import (get_order_str,
                                   is_aromatic,
                                   is_reactive,
                                   set_reactive)
+from rdmc.resonance.resonance import _unset_aromatic_flags
 
 from rdkit.Chem.rdmolops import GetShortestPath
 
@@ -341,9 +342,9 @@ def stabilize_charges_by_proximity(mol_list):
                                                                                        atom2.GetIdx()))
                         else:
                             # they have similar signs
-                            cumulative_similar_charge_distance += len(find_shortest_path(mol.ToRWMol(),
-                                                                                         atom1.GetIdx(),
-                                                                                         atom2.GetIdx(),))
+                            cumulative_similar_charge_distance += len(GetShortestPath(mol.ToRWMol(),
+                                                                                      atom1.GetIdx(),
+                                                                                      atom2.GetIdx(),))
         charge_distance_list.append([cumulative_opposite_charge_distance,
                                      cumulative_similar_charge_distance])
     min_cumulative_opposite_charge_distance = min([distances[0] for distances in charge_distance_list]
@@ -382,6 +383,7 @@ def aromaticity_filtration(mol_list, features):
     true, it helps reduce the number of representative structures by focusing
     on the most important ones.
     """
+    mol_list = [_unset_aromatic_flags(mol) for mol in mol_list]
     # Start by selecting all aromatic resonance structures
     filtered_list = []
     other_list = []
