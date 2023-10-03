@@ -28,6 +28,7 @@
 ###############################################################################
 
 
+from rdmc import RDKitMol
 from rdmc.resonance.filtration import (
     get_octet_deviation_list,
     get_octet_deviation,
@@ -36,11 +37,8 @@ from rdmc.resonance.filtration import (
     get_charge_span_list,
     aromaticity_filtration,
 )
-
+from rdmc.resonance.resonance_rmg import generate_resonance_structures, analyze_molecule
 from rdmc.resonance.utils import get_charge_span
-
-from rdmc import RDKitMol
-# from rmgpy.molecule.resonance import generate_resonance_structures, analyze_molecule
 
 
 class TestFiltration:
@@ -68,12 +66,11 @@ class TestFiltration:
         octet_deviation = get_octet_deviation(mol)
         assert octet_deviation == 0
         assert mol.GetBondBetweenAtoms(0, 2).GetBondTypeAsDouble() == 3
-        # mol_list = generate_resonance_structures(mol)
-        # assert len(mol_list) == 2
-        # for mol in mol_list:
-        #     if mol.reactive:
-        #         for atom in mol.vertices:
-        #             assert atom.charge == 0
+        mol_list = generate_resonance_structures(mol)
+        assert len(mol_list) == 2
+        for mol in mol_list[:1]:  # RDMC doesn't set reactive flag, only check the first one (the most representative structure)
+            for atom in mol.GetAtoms():
+                assert atom.GetFormalCharge() == 0
 
     def test_penalty_birads_replacing_lone_pairs(self):
         """Test that birads on `S u2 p0` are penalized"""
@@ -86,14 +83,12 @@ class TestFiltration:
         mol = RDKitMol.FromSmiles('[S:1](=[O:2])=[O:3]')
         mol.GetAtomWithIdx(0).SetNumRadicalElectrons(2)
 
-        # mol_list = generate_resonance_structures(mol, keep_isomorphic=False, filter_structures=True)
-        # for mol in mol_list:
-        #     if mol.reactive:
-        #         for atom in mol.vertices:
-        #             if atom.is_sulfur():
-        #                 assert atom.radical_electrons != 2
-        # assert len(mol_list) == 3
-        # assert sum([1 for mol in mol_list if mol.reactive]) == 2
+        mol_list = generate_resonance_structures(mol, keep_isomorphic=False, filter_structures=True)
+        for mol in mol_list[:2]:
+            for atom in mol.GetAtoms():
+                if atom.GetAtomicNum() == 16:
+                    assert atom.GetNumRadicalElectrons() != 2
+        assert len(mol_list) == 3
 
     def test_penalty_for_s_triple_s(self):
         """Test that an S#S substructure in a molecule gets penalized in the octet deviation score"""
@@ -173,6 +168,7 @@ class TestFiltration:
             RDKitMol.FromSmiles(smi3),
             RDKitMol.FromSmiles(smi4),
         ]
+        mol_list[0].Kekulize()  # RDKit reads in the first SMILES as aromatic, while RMG reads it as Kekulized
 
-        # filtered_list = aromaticity_filtration(mol_list, analyze_molecule(mol_list[0]))
-        # assert len(filtered_list) == 3
+        filtered_list = aromaticity_filtration(mol_list, analyze_molecule(mol_list[0]))
+        assert len(filtered_list) == 3
