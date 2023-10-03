@@ -117,7 +117,7 @@ def get_sorting_label(atom):
 def get_relevant_cycles(mol):
     # TODO: improve this function with the actual relevant cycle algorithm
     # This is a temporary solution works for simple cases
-    return mol.GetRingInfo().AtomRings()
+    return mol.GetRingInfo().BondRings()
 
 
 def get_aromatic_rings(mol):
@@ -170,16 +170,13 @@ def get_aromatic_rings(mol):
     for ring0 in rings:
         aromatic_bonds_in_ring = []
         # Figure out which atoms and bonds are aromatic and reassign appropriately:
-        for i, idx1 in enumerate(ring0):
-            if not mol.GetAtomWithIdx(idx1).GetAtomicNum() == 6:
-                # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                break
-            for idx2 in ring0[i + 1:]:
-                bond = mol.GetBondBetweenAtoms(idx1, idx2)
-                if bond and bond.GetBondType() is AROMATIC:
-                    # Check for aromaticity using the bond type rather than GetIsAromatic because
-                    # aryne triple bonds return True for GetIsAromatic but are not aromatic bonds
+        for idx in ring0:
+            bond = mol.GetBondWithIdx(idx)
+            if bond.GetBeginAtom().GetAtomicNum() == bond.GetEndAtom().GetAtomicNum() == 6:
+                if bond.GetBondType() is AROMATIC:
                     aromatic_bonds_in_ring.append(bond)
+                else:
+                    break
         else:  # didn't break so all atoms are carbon
             if len(aromatic_bonds_in_ring) == 6:
                 aromatic_rings.append(ring0)
