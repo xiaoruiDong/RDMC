@@ -464,73 +464,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="module-rdmc.conformer_generation.metrics">
-<span id="rdmc-conformer-generation-metrics"></span><h1>rdmc.conformer_generation.metrics<a class="headerlink" href="#module-rdmc.conformer_generation.metrics" title="Link to this heading">#</a></h1>
-<p>Modules for computing metrics to decide when to stop generating conformers</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="rdmc.conformer_generation.metrics.SCGMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdmc.conformer_generation.metrics.</span></span><span class="sig-name descname"><span class="pre">SCGMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'entropy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">298</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conformer_generation.metrics.SCGMetric" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A class to calculate and track the given metric (“entropy”, “partition function”, or “total conformers”) for a molecule over time.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>metric</strong> (<em>str</em><em>, </em><em>optional</em>) – Metric to be calculated. Options are <code class="docutils literal notranslate"><span class="pre">&quot;entropy&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;partition</span> <span class="pre">function&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;total</span> <span class="pre">conformers&quot;</span></code>.
-Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;entropy&quot;</span></code>.</p></li>
-<li><p><strong>window</strong> (<em>int</em><em>, </em><em>optional</em>) – Window size to compute the change in metric (doesn’t work when the metric is “total conformers”).
-Defaults to <code class="docutils literal notranslate"><span class="pre">5</span></code>.</p></li>
-<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Threshold for the change in metric to decide when to stop generating conformers.
-Defaults to <code class="docutils literal notranslate"><span class="pre">0.01</span></code>.</p></li>
-<li><p><strong>T</strong> (<em>float</em><em>, </em><em>optional</em>) – Temperature for entropy or partition function calculations. Defaults to <code class="docutils literal notranslate"><span class="pre">298</span></code> K.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="rdmc.conformer_generation.metrics.SCGMetric.calculate_entropy">
-<span class="sig-name descname"><span class="pre">calculate_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conformer_generation.metrics.SCGMetric.calculate_entropy" title="Link to this definition">#</a></dt>
-<dd><p>Calculate the entropy of a molecule.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mol_data</strong> (<em>List</em><em>[</em><em>dict</em><em>]</em>) – A list of dictionaries with molecule conformers.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rdmc.conformer_generation.metrics.SCGMetric.calculate_metric">
-<span class="sig-name descname"><span class="pre">calculate_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conformer_generation.metrics.SCGMetric.calculate_metric" title="Link to this definition">#</a></dt>
-<dd><p>Calculate the metric for a given molecule. The calculated value will be appended to the <code class="docutils literal notranslate"><span class="pre">metric_history</span></code> list.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mol_data</strong> (<em>List</em><em>[</em><em>dict</em><em>]</em>) – A list of dictionaries with molecule conformers.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rdmc.conformer_generation.metrics.SCGMetric.calculate_partition_function">
-<span class="sig-name descname"><span class="pre">calculate_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conformer_generation.metrics.SCGMetric.calculate_partition_function" title="Link to this definition">#</a></dt>
-<dd><p>Calculate the partition function of a molecule.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mol_data</strong> (<em>List</em><em>[</em><em>dict</em><em>]</em>) – A list of dictionaries with molecule conformers.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rdmc.conformer_generation.metrics.SCGMetric.check_metric">
-<span class="sig-name descname"><span class="pre">check_metric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conformer_generation.metrics.SCGMetric.check_metric" title="Link to this definition">#</a></dt>
-<dd><p>Check if the change in metric is below the threshold.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>bool</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the change in metric is below the threshold, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+  <section id="rdmc-conformer-generation-metrics">
+<h1>rdmc.conformer_generation.metrics<a class="headerlink" href="#rdmc-conformer-generation-metrics" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -569,22 +504,6 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">0.01</s
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.metrics.SCGMetric"><code class="docutils literal notranslate"><span class="pre">SCGMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.metrics.SCGMetric.calculate_entropy"><code class="docutils literal notranslate"><span class="pre">SCGMetric.calculate_entropy()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.metrics.SCGMetric.calculate_metric"><code class="docutils literal notranslate"><span class="pre">SCGMetric.calculate_metric()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.metrics.SCGMetric.calculate_partition_function"><code class="docutils literal notranslate"><span class="pre">SCGMetric.calculate_partition_function()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conformer_generation.metrics.SCGMetric.check_metric"><code class="docutils literal notranslate"><span class="pre">SCGMetric.check_metric()</span></code></a></li>
-</ul>
-</li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
   <div class="tocsection sourcelink">

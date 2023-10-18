@@ -459,103 +459,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="module-rdmc.mathlib.greedymin">
-<span id="rdmc-mathlib-greedymin"></span><h1>rdmc.mathlib.greedymin<a class="headerlink" href="#module-rdmc.mathlib.greedymin" title="Link to this heading">#</a></h1>
-<p>Modules for finding local minima on the scanned potential energy surface
-by a greedy algorithm. Need to parallelize this.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.greedymin.compare_to_adjacent_point">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.greedymin.</span></span><span class="sig-name descname"><span class="pre">compare_to_adjacent_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unchecked_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span></span></span><a class="headerlink" href="#rdmc.mathlib.greedymin.compare_to_adjacent_point" title="Link to this definition">#</a></dt>
-<dd><p>Compare the energy of current point and those of other points.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coord</strong> (<em>list</em><em> of </em><em>tuples</em>) – The coordinate of the current point.</p></li>
-<li><p><strong>energies</strong> (<em>np.ndarray</em>) – The energies of all points.</p></li>
-<li><p><strong>unchecked_points</strong> (<em>list</em><em> of </em><em>tuples</em>) – The points that have not been checked.</p></li>
-<li><p><strong>filters</strong> (<em>list</em><em> of </em><em>tuples</em>) – The filters for searching adjacent points.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>The coordinate of the adjacent point with the lowest energy.</strong></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.greedymin.get_energy">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.greedymin.</span></span><span class="sig-name descname"><span class="pre">get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdmc.mathlib.greedymin.get_energy" title="Link to this definition">#</a></dt>
-<dd><p>Get the energies of adjacent points considering periodic boundary condition.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coord</strong> – The coordinate of a point.</p></li>
-<li><p><strong>energies</strong> – The energies of all points.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>float</strong> – The energy of the point.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.greedymin.get_step_to_adjacent_points">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.greedymin.</span></span><span class="sig-name descname"><span class="pre">get_step_to_adjacent_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">generator</span></span></span><a class="headerlink" href="#rdmc.mathlib.greedymin.get_step_to_adjacent_points" title="Link to this definition">#</a></dt>
-<dd><p>Get a generator containing the adjacent points.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fsize</strong> – The filter size as positive integer.</p></li>
-<li><p><strong>dim</strong> – The dimension of the PES. Default is 2.</p></li>
-<li><p><strong>cutoff</strong> – The cutoff distance. only consider steps with
-distance smaller than the cutoff. Default is
-infinity, meaning no cutoff is applied.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>A generator containing the adjacent coordinates.</strong></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.greedymin.search_for_a_minimum">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.greedymin.</span></span><span class="sig-name descname"><span class="pre">search_for_a_minimum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unchecked_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span></span></span><a class="headerlink" href="#rdmc.mathlib.greedymin.search_for_a_minimum" title="Link to this definition">#</a></dt>
-<dd><p>Search a local minimum on a given PES.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coord</strong> (<em>tuple</em>) – The coordinate of the current point.</p></li>
-<li><p><strong>energies</strong> (<em>np.ndarray</em>) – The energies of all points.</p></li>
-<li><p><strong>unchecked_points</strong> (<em>list</em><em> of </em><em>tuples</em>) – The points that have not been checked.</p></li>
-<li><p><strong>filters</strong> (<em>list</em><em> of </em><em>tuples</em>) – The filters for searching adjacent points.</p></li>
-<li><p><strong>minimum.</strong> (<em>The coordinate</em><em> of </em><em>a local</em>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.greedymin.search_minimum">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.greedymin.</span></span><span class="sig-name descname"><span class="pre">search_minimum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.mathlib.greedymin.search_minimum" title="Link to this definition">#</a></dt>
-<dd><p>Search all the minimums on a given PES.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>energies</strong> (<em>np.ndarray</em>) – The energies of all points.</p></li>
-<li><p><strong>fsize</strong> (<em>int</em>) – The filter size as positive integer.</p></li>
-<li><p><strong>cutoff</strong> (<em>float</em>) – The cutoff distance. only consider steps with
-distance smaller than the cutoff. Default is
-infinity, meaning no cutoff is applied.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>A list of coordinates of the minimums.</strong></p>
-</dd>
-</dl>
-</dd></dl>
-
+  <section id="rdmc-mathlib-greedymin">
+<h1>rdmc.mathlib.greedymin<a class="headerlink" href="#rdmc-mathlib-greedymin" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -594,20 +499,6 @@ infinity, meaning no cutoff is applied.</p></li>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.greedymin.compare_to_adjacent_point"><code class="docutils literal notranslate"><span class="pre">compare_to_adjacent_point()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.greedymin.get_energy"><code class="docutils literal notranslate"><span class="pre">get_energy()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.greedymin.get_step_to_adjacent_points"><code class="docutils literal notranslate"><span class="pre">get_step_to_adjacent_points()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.greedymin.search_for_a_minimum"><code class="docutils literal notranslate"><span class="pre">search_for_a_minimum()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.greedymin.search_minimum"><code class="docutils literal notranslate"><span class="pre">search_minimum()</span></code></a></li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
   <div class="tocsection sourcelink">

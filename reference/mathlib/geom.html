@@ -39,7 +39,6 @@
     <script src="../../_static/documentation_options.js?v=1b390748"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/mathlib/geom';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -460,156 +459,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="module-rdmc.mathlib.geom">
-<span id="rdmc-mathlib-geom"></span><h1>rdmc.mathlib.geom<a class="headerlink" href="#module-rdmc.mathlib.geom" title="Link to this heading">#</a></h1>
-<p>This module provides class and methods for dealing with 3D geometry operations.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.geom.get_centroid">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.geom.</span></span><span class="sig-name descname"><span class="pre">get_centroid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#rdmc.mathlib.geom.get_centroid" title="Link to this definition">#</a></dt>
-<dd><p>Get the centroid given the coords of each item.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coords</strong> (<em>np.array</em>) – The 3D coordinates in numpy array with a size of N x 3.</p></li>
-<li><p><strong>keepdims</strong> (<em>bool</em>) – Defaults to False (export 1D array); otherwise output an array of a size of 1 x 3.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>np.array</strong> – 1D array indicate the coordinates of the centroid.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.geom.get_distances_from_a_point">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.geom.</span></span><span class="sig-name descname"><span class="pre">get_distances_from_a_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mathlib.geom.get_distances_from_a_point" title="Link to this definition">#</a></dt>
-<dd><p>Get the Euclidiean distance to a point for all elements.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coords</strong> (<em>np.array</em>) – The 3D coordinates in numpy array with a size of N x 3.</p></li>
-<li><p><strong>pos</strong> (<em>np.array</em>) – The coordinates of the point.</p></li>
-<li><p><strong>keepdims</strong> (<em>bool</em>) – Defaults to False (export 1D array); otherwise output an array of a size of 1 x 3.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>np.array</strong> – 1D array indicate the distances.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.geom.get_mass_center">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.geom.</span></span><span class="sig-name descname"><span class="pre">get_mass_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atommasses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#rdmc.mathlib.geom.get_mass_center" title="Link to this definition">#</a></dt>
-<dd><p>Get the mass center given the coords of each item and its corresponding mass.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coords</strong> (<em>np.array</em>) – The 3D coordinates in numpy array with a size of N x 3.</p></li>
-<li><p><strong>atommasses</strong> (<em>Iterable</em>) – A list or an array of mass values.</p></li>
-<li><p><strong>keepdims</strong> (<em>bool</em>) – Defaults to False (export 1D array); otherwise output an array of a size of 1 x 3.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>np.array</strong> – 1D array indicate the coordinates of the mass center.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.geom.get_max_distance_from_center">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.geom.</span></span><span class="sig-name descname"><span class="pre">get_max_distance_from_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdmc.mathlib.geom.get_max_distance_from_center" title="Link to this definition">#</a></dt>
-<dd><p>Get the maximum distance from the center of a set of coordinates</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>coords</strong> (<em>np.array</em>) – The 3D coordinates in numpy array with a size of N x 3.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>float</strong> – The distance between the center and the farthest item.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.geom.get_weighted_center">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.geom.</span></span><span class="sig-name descname"><span class="pre">get_weighted_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#rdmc.mathlib.geom.get_weighted_center" title="Link to this definition">#</a></dt>
-<dd><p>Get the mass center given the coords of each item and its corresponding weight.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coords</strong> (<em>np.array</em>) – The 3D coordinates in numpy array with a size of N x 3.</p></li>
-<li><p><strong>weights</strong> (<em>Iterable</em>) – A list or an array of weights corresponding to each element.</p></li>
-<li><p><strong>keepdims</strong> (<em>bool</em>) – Defaults to False (export 1D array); otherwise output an array of a size of 1 x 3.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>np.array</strong> – 1D array indicate the coordinates of the mass center.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.geom.rotate">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.geom.</span></span><span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">about_center</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">about</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mathlib.geom.rotate" title="Link to this definition">#</a></dt>
-<dd><p>Rotate the coordinates according to the angles about the x, y, and z axes. The rotation is
-about the origin, but there are a few options about choosing the <code class="docutils literal notranslate"><span class="pre">about</span></code> location.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coords</strong> (<em>np.array</em>) – The 3D coordinates in numpy array with a size of <span class="math notranslate nohighlight">\(N \times 3\)</span>.</p></li>
-<li><p><strong>angles</strong> (<em>np.array</em>) – An array with a size of <code class="docutils literal notranslate"><span class="pre">(1,3)</span></code> indicates the rotation angles about the
-x, y, and z axes, respectively.</p></li>
-<li><p><strong>degrees</strong> (<em>bool</em>) – If the angles are defined as degrees. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-<li><p><strong>about_center</strong> (<em>bool</em>) – Whether to rotate the coordinates about their center.
-Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>. Note <code class="docutils literal notranslate"><span class="pre">about_center</span></code> cannot be assigned simultaneously with <code class="docutils literal notranslate"><span class="pre">about</span></code>.</p></li>
-<li><p><strong>about</strong> (<em>np.array</em>) – The coordinate that the rotation is about. Should be a vector with a length of 3.
-It is defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>, rotating about the origin.
-<code class="docutils literal notranslate"><span class="pre">about</span></code> cannot be specified along with <code class="docutils literal notranslate"><span class="pre">about_center</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>np.array</strong> – coordinates after the rotation.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.geom.translate">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.geom.</span></span><span class="sig-name descname"><span class="pre">translate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tran_vec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#rdmc.mathlib.geom.translate" title="Link to this definition">#</a></dt>
-<dd><p>Translate the coordinates according to the <cite>tran_vec</cite> vector.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coords</strong> (<em>np.array</em>) – The 3D coordinates in numpy array with a size of N x 3.</p></li>
-<li><p><strong>tran_vec</strong> (<em>np.array</em>) – A vector indicate the direction and the magnitude of the translational operation.
-It should be a numpy array with a size of (3,) or (1,3).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>np.array</strong> – An numpy array with the same size as the original coords.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mathlib.geom.translate_centroid">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.geom.</span></span><span class="sig-name descname"><span class="pre">translate_centroid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_ctr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([0.,</span> <span class="pre">0.,</span> <span class="pre">0.])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mathlib.geom.translate_centroid" title="Link to this definition">#</a></dt>
-<dd><p>Translate the coordinates according to the <cite>tran_vec</cite> vector.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coords</strong> (<em>np.array</em>) – The 3D coordinates in numpy array with a size of N x 3.</p></li>
-<li><p><strong>new_ctr</strong> (<em>np.array</em>) – A vector indicate the new position of the centroid.
-It should be a numpy array with a size of (3,) or (1,3).
-By defaults, the centroid will be moved to the origin.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>np.array</strong> – An numpy array with the same size as the original coords.</p>
-</dd>
-</dl>
-</dd></dl>
-
+  <section id="rdmc-mathlib-geom">
+<h1>rdmc.mathlib.geom<a class="headerlink" href="#rdmc-mathlib-geom" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -648,23 +499,6 @@ By defaults, the centroid will be moved to the origin.</p></li>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.geom.get_centroid"><code class="docutils literal notranslate"><span class="pre">get_centroid()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.geom.get_distances_from_a_point"><code class="docutils literal notranslate"><span class="pre">get_distances_from_a_point()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.geom.get_mass_center"><code class="docutils literal notranslate"><span class="pre">get_mass_center()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.geom.get_max_distance_from_center"><code class="docutils literal notranslate"><span class="pre">get_max_distance_from_center()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.geom.get_weighted_center"><code class="docutils literal notranslate"><span class="pre">get_weighted_center()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.geom.rotate"><code class="docutils literal notranslate"><span class="pre">rotate()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.geom.translate"><code class="docutils literal notranslate"><span class="pre">translate()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.geom.translate_centroid"><code class="docutils literal notranslate"><span class="pre">translate_centroid()</span></code></a></li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
   <div class="tocsection sourcelink">

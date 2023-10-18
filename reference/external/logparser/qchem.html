@@ -464,70 +464,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="module-rdmc.external.logparser.qchem">
-<span id="rdmc-external-logparser-qchem"></span><h1>rdmc.external.logparser.qchem<a class="headerlink" href="#module-rdmc.external.logparser.qchem" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="rdmc.external.logparser.qchem.QChemLog">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdmc.external.logparser.qchem.</span></span><span class="sig-name descname"><span class="pre">QChemLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.external.logparser.qchem.QChemLog" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="base.html#rdmc.external.logparser.base.CclibLog" title="rdmc.external.logparser.base.CclibLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">CclibLog</span></code></a></p>
-<p>A class helps to parse the Gaussian log files and provides information
-helpful to analyze the calculation.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="rdmc.external.logparser.qchem.QChemLog.get_mol">
-<span class="sig-name descname"><span class="pre">get_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_conformers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neglect_spin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openbabel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></span><a class="headerlink" href="#rdmc.external.logparser.qchem.QChemLog.get_mol" title="Link to this definition">#</a></dt>
-<dd><p>Perceive the xyzs in the file and turn the geometries to conformers.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>refid</strong> (<em>int</em>) – The conformer ID in the log file to be used as the reference for mol perception.
-Defaults to -1, meaning it is determined by the following criteria:
-- For opt, it is the last geometry if succeeded; otherwise, the initial geometry;
-- For freq, it is the geometry input;
-- For scan, it is the geometry input;
-- For IRC, uses the initial geometry.</p></li>
-<li><p><strong>embed_confs</strong> (<em>bool</em>) – Whether to embed intermediate conformers in the file to the mol.
-Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>. To clear, at least one conformer will be included in
-obtained mol, and its geometry is determined by <cite>refid</cite>.</p></li>
-<li><p><strong>neglect_spin</strong> (<em>bool</em>) – Whether to neglect the error when spin multiplicity are different
-between the generated mol and the value in the output file. This
-can be useful for calculations involves TS. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>backend</strong> (<em>str</em>) – The backend engine for parsing XYZ. Defaults to <code class="docutils literal notranslate"><span class="pre">'openbabel'</span></code>.</p></li>
-<li><p><strong>sanitize</strong> (<em>bool</em>) – Whether to sanitize the generated mol. Defaults to <cite>True</cite>.
-If a TS involved in the job, better to set it <cite>False</cite></p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>RDKitMol</strong> – a molecule generated from the output file.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rdmc.external.logparser.qchem.QChemLog.get_scf_energies">
-<span class="sig-name descname"><span class="pre">get_scf_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relative</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.external.logparser.qchem.QChemLog.get_scf_energies" title="Link to this definition">#</a></dt>
-<dd><p>Get SCF energies in kcal/mol.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>relative</strong> (<em>bool</em>) – Only return the value relative to the minimum. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>np.array</strong> – The SCF energies.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rdmc.external.logparser.qchem.QChemLog.opt_critieria">
-<span class="sig-name descname"><span class="pre">opt_critieria</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Gradient',</span> <span class="pre">'Displacement',</span> <span class="pre">'Energy</span> <span class="pre">change']</span></em><a class="headerlink" href="#rdmc.external.logparser.qchem.QChemLog.opt_critieria" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rdmc.external.logparser.qchem.QChemLog.time_regex">
-<span class="sig-name descname"><span class="pre">time_regex</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'[a-zA-Z]+\\s+\\d+\\s+\\d{2}\\:\\d{2}\\:\\d{2}\\s+\\d{4}'</span></em><a class="headerlink" href="#rdmc.external.logparser.qchem.QChemLog.time_regex" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <section id="rdmc-external-logparser-qchem">
+<h1>rdmc.external.logparser.qchem<a class="headerlink" href="#rdmc-external-logparser-qchem" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -566,22 +504,6 @@ If a TS involved in the job, better to set it <cite>False</cite></p></li>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.qchem.QChemLog"><code class="docutils literal notranslate"><span class="pre">QChemLog</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.qchem.QChemLog.get_mol"><code class="docutils literal notranslate"><span class="pre">QChemLog.get_mol()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.qchem.QChemLog.get_scf_energies"><code class="docutils literal notranslate"><span class="pre">QChemLog.get_scf_energies()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.qchem.QChemLog.opt_critieria"><code class="docutils literal notranslate"><span class="pre">QChemLog.opt_critieria</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.qchem.QChemLog.time_regex"><code class="docutils literal notranslate"><span class="pre">QChemLog.time_regex</span></code></a></li>
-</ul>
-</li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
   <div class="tocsection sourcelink">

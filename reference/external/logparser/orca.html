@@ -464,35 +464,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="module-rdmc.external.logparser.orca">
-<span id="rdmc-external-logparser-orca"></span><h1>rdmc.external.logparser.orca<a class="headerlink" href="#module-rdmc.external.logparser.orca" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="rdmc.external.logparser.orca.ORCALog">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdmc.external.logparser.orca.</span></span><span class="sig-name descname"><span class="pre">ORCALog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.external.logparser.orca.ORCALog" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="base.html#rdmc.external.logparser.base.CclibLog" title="rdmc.external.logparser.base.CclibLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">CclibLog</span></code></a></p>
-<p>A class helps to parse the Gaussian log files and provides information
-helpful to analyze the calculation.</p>
-<p># Todo:
-Test this class. most implementation hasn’t been tested yet.</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="rdmc.external.logparser.orca.ORCALog.multiplicity">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">multiplicity</span></span><a class="headerlink" href="#rdmc.external.logparser.orca.ORCALog.multiplicity" title="Link to this definition">#</a></dt>
-<dd><p>Get the multiplicity of the molecule.</p>
-<p># For unknown reason sometimes multiplicity is not parsed correctly by cclib</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rdmc.external.logparser.orca.ORCALog.opt_criteria">
-<span class="sig-name descname"><span class="pre">opt_criteria</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['TolE',</span> <span class="pre">'TolRMSG',</span> <span class="pre">'TolMaxG',</span> <span class="pre">'TolRMSD',</span> <span class="pre">'TolMaxD']</span></em><a class="headerlink" href="#rdmc.external.logparser.orca.ORCALog.opt_criteria" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rdmc.external.logparser.orca.ORCALog.time_regex">
-<span class="sig-name descname"><span class="pre">time_regex</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#rdmc.external.logparser.orca.ORCALog.time_regex" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <section id="rdmc-external-logparser-orca">
+<h1>rdmc.external.logparser.orca<a class="headerlink" href="#rdmc-external-logparser-orca" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -531,21 +504,6 @@ Test this class. most implementation hasn’t been tested yet.</p>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.orca.ORCALog"><code class="docutils literal notranslate"><span class="pre">ORCALog</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.orca.ORCALog.multiplicity"><code class="docutils literal notranslate"><span class="pre">ORCALog.multiplicity</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.orca.ORCALog.opt_criteria"><code class="docutils literal notranslate"><span class="pre">ORCALog.opt_criteria</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.external.logparser.orca.ORCALog.time_regex"><code class="docutils literal notranslate"><span class="pre">ORCALog.time_regex</span></code></a></li>
-</ul>
-</li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
   <div class="tocsection sourcelink">

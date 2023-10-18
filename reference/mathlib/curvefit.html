@@ -39,7 +39,6 @@
     <script src="../../_static/documentation_options.js?v=1b390748"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/mathlib/curvefit';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -460,51 +459,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="module-rdmc.mathlib.curvefit">
-<span id="rdmc-mathlib-curvefit"></span><h1>rdmc.mathlib.curvefit<a class="headerlink" href="#module-rdmc.mathlib.curvefit" title="Link to this heading">#</a></h1>
-<p>A module used to fit curves or surfaces. Potentially useful in characterize PES.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="rdmc.mathlib.curvefit.FourierSeries1D">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdmc.mathlib.curvefit.</span></span><span class="sig-name descname"><span class="pre">FourierSeries1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_num_term</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mathlib.curvefit.FourierSeries1D" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>FourierSeries1D helps to fit the potential energy surface to a 1D
-Fourier Series, and evaluate the values using the fitted curve.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="rdmc.mathlib.curvefit.FourierSeries1D.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mathlib.curvefit.FourierSeries1D.fit" title="Link to this definition">#</a></dt>
-<dd><p>Fit the 1D Fourier series.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<em>np.ndarray</em>) – _description_</p></li>
-<li><p><strong>y</strong> (<em>np.ndarray</em>) – 1D array. It is assumed to be a periodic function of <cite>x</cite> with
-a periodicity of <span class="math notranslate nohighlight">\(2 \pi\)</span>.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rdmc.mathlib.curvefit.FourierSeries1D.max_num_term">
-<span class="sig-name descname"><span class="pre">max_num_term</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rdmc.mathlib.curvefit.FourierSeries1D.max_num_term" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rdmc.mathlib.curvefit.FourierSeries1D.predict">
-<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mathlib.curvefit.FourierSeries1D.predict" title="Link to this definition">#</a></dt>
-<dd><p>Predict the value using Fourier Series. This function forces y=0 at the origin.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>X</strong> (<em>np.ndarray</em>) – The X variable that should be a 1D array.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>_type_</strong> – _description_</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+  <section id="rdmc-mathlib-curvefit">
+<h1>rdmc.mathlib.curvefit<a class="headerlink" href="#rdmc-mathlib-curvefit" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -543,21 +499,6 @@ a periodicity of <span class="math notranslate nohighlight">\(2 \pi\)</span>.</p
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.curvefit.FourierSeries1D"><code class="docutils literal notranslate"><span class="pre">FourierSeries1D</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.curvefit.FourierSeries1D.fit"><code class="docutils literal notranslate"><span class="pre">FourierSeries1D.fit()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.curvefit.FourierSeries1D.max_num_term"><code class="docutils literal notranslate"><span class="pre">FourierSeries1D.max_num_term</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mathlib.curvefit.FourierSeries1D.predict"><code class="docutils literal notranslate"><span class="pre">FourierSeries1D.predict()</span></code></a></li>
-</ul>
-</li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
   <div class="tocsection sourcelink">
