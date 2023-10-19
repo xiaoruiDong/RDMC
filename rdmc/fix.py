@@ -13,24 +13,42 @@ from rdkit.Chem import rdChemReactions, rdmolops
 
 
 DEFAULT_REMEDIES = [
+    # Remedy 1 - Carbon monoxide: [C]=O to [C-]#[O+]
+    rdChemReactions.ReactionFromSmarts(
+        "[O+0-0v2X1:1]=[C+0-0v2X1:2]>>[O+1v3X1:1]#[C-1v3X1:2]"
+    ),
+    # Remedy 2 - Oxygen Molecule: O=O to [O]-[O]
+    rdChemReactions.ReactionFromSmarts(
+        "[O+0-0v2X1:1]=[O+0-0v2X1:2]>>[O+0-0v1X1:1]-[O+0-0v1X1:2]"
+    ),
+    # Remedy 3 - isocyanide: R[N]#[C] to R[N+]#[C-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X2:1]#[C+0-0v3X1:2]>>[N+v4X2:1]#[C-v3X1:2]"
-    ),  # R1N#[C.] to R1[N+]#[C-]
+    ),
+    # Remedy 4 - amine radical: RC(R)-N(R)(R)R to R[C-](R)-[N+](R)(R)R
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X3:1]=[C+0-0v4X3:2]>>[N+0-0v3X3:1]-[C+0-0v3X3:2]"
-    ),  # R1N(R2)=C(R3)R4 to R1N(R2)-[C.](R3)R4
+    ),
+    # Remedy 5 - amine radical: RN(R)=C to RN(R)-[C]
+    rdChemReactions.ReactionFromSmarts(
+        "[N+0-0v4X3:1]=[C+0-0v4X3:2]>>[N+0-0v3X3:1]-[C+0-0v3X3:2]"
+    ),
+    # Remedy 5 - quintuple C bond, usually due to RC(=O)=O: R=C(R)=O to R=[C+](R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[C+0-0v5X3:1]=[O+0-0v2X1:2]>>[C+0-0v4X3:1]-[O+0-0v1X1:2]"
-    ),  # R1=C(R2)=O to R1=C(R2)-[O.]
-    rdChemReactions.ReactionFromSmarts(
-        "[C+0-0v3X3:1]-[N+0-0v4X4:2]-[C+0-0v4X3:3]=[O+0-0v2X1:4]>>[C-1v3X3:1]-[N+1v4X4:2]-[C+0-0v4X3:3]=[O+0-0v2X1:4]"
-    ),  # R1C(R2)N(R3)(R4)C(R5)=O to R1[C-](R2)[N+](R3)(R4)C(R5)=O
+    ),
+    # Remedy 6 - amine oxide: RN(R)(R)-O to R[N+](R)(R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X4:1]-[O+0-0v1X1:2]>>[N+1v4X4:1]-[O-1v1X1:2]"
-    ),  # R1N(R2)(R3)[O.] to R1[N+](R2)(R3)[O-]
+    ),
+    # Remedy 7 - criegee like molecule: RN(R)(R)-C(R)(R)=O to R[N+](R)(R)-[C](R)(R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X4:1]-[C+0-0v4X3:2]=[O+0-0v2X1:3]>>[N+1v4X4:1]-[C+0-0v3X3:2]-[O-1v1X1:3]"
-    ),  # R1N(R2)(R3)C(R4)=O to R1[N+](R2)(R3)[C.](R4)[O-]
+    ),
+    # Remedy 8 - criegee like molecule: RN(R)(R)-C(R)(R)=O to R[N+](R)(R)-[C](R)(R)-[O-]
+    rdChemReactions.ReactionFromSmarts(
+        "[N+0-0v4X4:1]-[C+0-0v3X3:2]-[O+0-0v1X1:3]>>[N+1v4X4:1]-[C+0-0v3X3:2]-[O-1v1X1:3]"
+    ),
 ]
 
 
@@ -163,7 +181,7 @@ def fix_mol_by_remedies(
 
 
 def fix_mol_spin_multiplicity(
-    mol: 'RDKitMol',
+    mol: "RDKitMol",
     mult: int,
 ):
     """
