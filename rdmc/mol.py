@@ -2047,6 +2047,10 @@ def generate_radical_resonance_structures(mol: RDKitMol,
             # https://github.com/rdkit/rdkit/blob/9249ca5cc840fc72ea3bb73c2ff1d71a1fbd3f47/rdkit/Chem/Draw/IPythonConsole.py#L152
             # highlight info is stored in __sssAtoms
             mol._mol.__setattr__('__sssAtoms', [])
+
+    if not cleaned_mols:
+        return [mol]  # At least return the original molecule if no resonance structure is found
+
     return cleaned_mols
 
 
@@ -2103,7 +2107,7 @@ def get_unique_mols(mols: List[RDKitMol],
         consider_atommap (bool, optional): If treat chemically equivalent molecules with
                                            different atommap numbers as different molecules.
                                            Defaults to ``False``.
-        same_formula (bool, opional): If the mols has the same formula you may set it to True
+        same_formula (bool, opional): If the mols has the same formula you may set it to ``True``
                                       to save computational time. Defaults to ``False``.
 
     Returns:
