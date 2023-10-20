@@ -27,7 +27,7 @@ DEFAULT_REMEDIES = [
     ),
     # Remedy 4 - amine radical: RC(R)-N(R)(R)R to R[C-](R)-[N+](R)(R)R
     rdChemReactions.ReactionFromSmarts(
-        "[N+0-0v4X3:1]=[C+0-0v4X3:2]>>[N+0-0v3X3:1]-[C+0-0v3X3:2]"
+        "[N+0-0v4X4:1]-[C+0-0v3X3:2]>>[N+1v4X4:1]-[C-1v3X3:2]"
     ),
     # Remedy 5 - amine radical: RN(R)=C to RN(R)-[C]
     rdChemReactions.ReactionFromSmarts(
@@ -201,7 +201,7 @@ def fix_mol(
     remedies: List["ChemicalReaction"] = DEFAULT_REMEDIES,
     max_attempts: int = 10,
     sanitize: bool = True,
-    fix_spin_multiplicity: bool = True,
+    fix_spin_multiplicity: bool = False,
     mult: int = 1,
 ) -> "RDKitMol":
     """
@@ -216,7 +216,7 @@ def fix_mol(
                                         Defaults to ``10``.
         sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
         fix_spin_multiplicity (bool, optional): Whether to fix the spin multiplicity of the molecule.
-                                                 Defaults to ``True``.
+                                                 Defaults to ``False``.
         mult (int, optional): The desired spin multiplicity. Defaults to ``1``.
                               Only used when ``fix_spin_multiplicity`` is ``True``.
 
