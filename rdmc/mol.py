@@ -10,7 +10,7 @@ import copy
 from itertools import combinations
 from itertools import product as cartesian_product
 import traceback
-from typing import Dict, Iterable, List, Optional, Sequence, Union
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 import pathlib
 
 import numpy as np
@@ -2155,3 +2155,57 @@ def get_resonance_structure_match(mol1_res: List['RDKitMol'],
                 return match
     return tuple()
 
+
+def is_same_complex(complex1: Union['RDKitMol', Union[List['RDKitMol'], Tuple['RDKitMol']]],
+                    complex2: Union['RDKitMol', Union[List['RDKitMol'], Tuple['RDKitMol']]],
+                    resonance: bool = False,
+                    ) -> bool:
+    """
+    Check if two complexes are the same regardless of the sequence of the molecules
+    and the atom mapping.
+
+    Args:
+        complex1 (Union['RDKitMol', list['RDKitMol']]): The first complex.
+        complex2 (Union['RDKitMol', list['RDKitMol']]): The second complex.
+        resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
+
+    Returns:
+        bool: Whether the two complexes are the same.
+    """
+    if not isinstance(complex1, (list, tuple)):
+        complex1 = list(complex1.GetMolFrags(asMols=True))
+    if not isinstance(complex2, (list, tuple)):
+        complex2 = list(complex2.GetMolFrags(asMols=True))
+
+    if len(complex1) != len(complex2):
+        return False
+
+    mol1s = sorted([(m, m.GetNumAtoms()) for m in complex1],
+                   key=lambda x: x[1])
+    mol2s = sorted([(m, m.GetNumAtoms()) for m in complex2],
+                   key=lambda x: x[1])
+
+    matched = []
+    mol2_res_dict = {}
+
+    for mol1 in mol1s:
+        mol1_res = generate_radical_resonance_structures(mol1[0], kekulize=True) if resonance else [mol1[0]]
+        for i, mol2 in enumerate(mol2s):
+            if mol1[1] > mol2[1] or i in matched:
+                continue
+            if mol1[1] < mol2[1]:
+                return False
+
+            mol2_res = mol2_res_dict.get(i)
+            if mol2_res is None:
+                mol2_res = generate_radical_resonance_structures(mol2[0], kekulize=True) if resonance else [mol2[0]]
+                mol2_res_dict[i] = mol2_res
+
+            match = get_resonance_structure_match(mol1_res, mol2_res)
+
+            if match:
+                matched.append(i)
+                break
+        else:
+            return False
+    return True
