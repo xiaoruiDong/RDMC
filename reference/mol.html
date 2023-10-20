@@ -1035,6 +1035,17 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">0</span
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rdmc.mol.RDKitMol.GetElementCounts">
+<span class="sig-name descname"><span class="pre">GetElementCounts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.GetElementCounts" title="Link to this definition">#</a></dt>
+<dd><p>Get the element counts of the molecules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dict</strong> – A dictionary of element counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rdmc.mol.RDKitMol.GetElementSymbols">
 <span class="sig-name descname"><span class="pre">GetElementSymbols</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.GetElementSymbols" title="Link to this definition">#</a></dt>
 <dd><p>Get the element symbols of the molecules. The element symbols are sorted by the atom indexes.</p>
@@ -1655,35 +1666,6 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">True</s
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mol.generate_radical_resonance_structures">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mol.</span></span><span class="sig-name descname"><span class="pre">generate_radical_resonance_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consider_atommap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kekulize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mol.generate_radical_resonance_structures" title="Link to this definition">#</a></dt>
-<dd><p>Generate resonance structures for a radical molecule.  RDKit by design doesn’t work
-for radical resonance. The approach is a temporary workaround by replacing radical electrons by positive
-charges and generating resonance structures by RDKit ResonanceMolSupplier.
-Currently, this function only works for neutral radicals.</p>
-<p>Known issues:</p>
-<ul class="simple">
-<li><p>Phenyl radical only generate one resonance structure when <code class="docutils literal notranslate"><span class="pre">kekulize=True</span></code>, expecting 2.</p></li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mol</strong> (<a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a>) – A radical molecule.</p></li>
-<li><p><strong>unique</strong> (<em>bool</em><em>, </em><em>optional</em>) – Filter out duplicate resonance structures from the list. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>consider_atommap</strong> (<em>bool</em><em>, </em><em>atommap</em>) – If consider atom map numbers in filtration duplicates.
-Only effective when <code class="docutils literal notranslate"><span class="pre">unique=True</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-<li><p><strong>kekulize</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to kekulize the molecule. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>. As an example,
-benzene have one resonance structure if not kekulized (<code class="docutils literal notranslate"><span class="pre">False</span></code>) and
-two resonance structures if kekulized (<code class="docutils literal notranslate"><span class="pre">True</span></code>).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>list</strong> – a list of molecules with resonance structures.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="rdmc.mol.generate_vdw_mat">
 <span class="sig-prename descclassname"><span class="pre">rdmc.mol.</span></span><span class="sig-name descname"><span class="pre">generate_vdw_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rd_mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vdw_radii</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{1:</span> <span class="pre">1.2,</span> <span class="pre">2:</span> <span class="pre">1.4,</span> <span class="pre">3:</span> <span class="pre">2.2,</span> <span class="pre">4:</span> <span class="pre">1.9,</span> <span class="pre">5:</span> <span class="pre">1.8,</span> <span class="pre">6:</span> <span class="pre">1.7,</span> <span class="pre">7:</span> <span class="pre">1.6,</span> <span class="pre">8:</span> <span class="pre">1.55,</span> <span class="pre">9:</span> <span class="pre">1.5,</span> <span class="pre">10:</span> <span class="pre">1.54,</span> <span class="pre">11:</span> <span class="pre">2.4,</span> <span class="pre">12:</span> <span class="pre">2.2,</span> <span class="pre">13:</span> <span class="pre">2.1,</span> <span class="pre">14:</span> <span class="pre">2.1,</span> <span class="pre">15:</span> <span class="pre">1.95,</span> <span class="pre">16:</span> <span class="pre">1.8,</span> <span class="pre">17:</span> <span class="pre">1.8,</span> <span class="pre">18:</span> <span class="pre">1.88,</span> <span class="pre">19:</span> <span class="pre">2.8,</span> <span class="pre">20:</span> <span class="pre">2.4,</span> <span class="pre">21:</span> <span class="pre">2.3,</span> <span class="pre">22:</span> <span class="pre">2.15,</span> <span class="pre">23:</span> <span class="pre">2.05,</span> <span class="pre">24:</span> <span class="pre">2.05,</span> <span class="pre">25:</span> <span class="pre">2.05,</span> <span class="pre">26:</span> <span class="pre">2.05,</span> <span class="pre">27:</span> <span class="pre">2.0,</span> <span class="pre">28:</span> <span class="pre">2.0,</span> <span class="pre">29:</span> <span class="pre">2.0,</span> <span class="pre">30:</span> <span class="pre">2.1,</span> <span class="pre">31:</span> <span class="pre">2.1,</span> <span class="pre">32:</span> <span class="pre">2.1,</span> <span class="pre">33:</span> <span class="pre">2.05,</span> <span class="pre">34:</span> <span class="pre">1.9,</span> <span class="pre">35:</span> <span class="pre">1.9}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mol.generate_vdw_mat" title="Link to this definition">#</a></dt>
 <dd><p>Generate a derived Van der Waals matrix, which is an upper triangle matrix
@@ -1704,47 +1686,6 @@ overlapping between atoms. The default value is <code class="docutils literal no
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Invalid threshold is supplied.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mol.get_unique_mols">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mol.</span></span><span class="sig-name descname"><span class="pre">get_unique_mols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consider_atommap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">same_formula</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mol.get_unique_mols" title="Link to this definition">#</a></dt>
-<dd><p>Find the unique molecules from a list of molecules.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mols</strong> (<em>list</em>) – The molecules to be processed.</p></li>
-<li><p><strong>consider_atommap</strong> (<em>bool</em><em>, </em><em>optional</em>) – If treat chemically equivalent molecules with
-different atommap numbers as different molecules.
-Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-<li><p><strong>same_formula</strong> (<em>bool</em><em>, </em><em>opional</em>) – If the mols has the same formula you may set it to True
-to save computational time. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>list</strong> – A list of unique molecules.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="rdmc.mol.has_matched_mol">
-<span class="sig-prename descclassname"><span class="pre">rdmc.mol.</span></span><span class="sig-name descname"><span class="pre">has_matched_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consider_atommap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mol.has_matched_mol" title="Link to this definition">#</a></dt>
-<dd><p>Check if a molecule has a structure match in a list of molecules.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mol</strong> (<a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a>) – The target molecule.</p></li>
-<li><p><strong>mols</strong> (<em>List</em><em>[</em><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a><em>]</em>) – The list of molecules to be processed.</p></li>
-<li><p><strong>consider_atommap</strong> (<em>bool</em><em>, </em><em>optional</em>) – If treat chemically equivalent molecules with
-different atommap numbers as different molecules.
-Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>bool</strong> – if a matched molecules if found.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1847,6 +1788,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetConformer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetConformers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetConformers()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetDistanceMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetDistanceMatrix()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetElementCounts"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetElementCounts()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetElementSymbols"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetElementSymbols()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetFingerprint"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetFingerprint()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetFormalCharge"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetFormalCharge()</span></code></a></li>
@@ -1886,10 +1828,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.ToXYZ"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToXYZ()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.generate_radical_resonance_structures"><code class="docutils literal notranslate"><span class="pre">generate_radical_resonance_structures()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.generate_vdw_mat"><code class="docutils literal notranslate"><span class="pre">generate_vdw_mat()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.get_unique_mols"><code class="docutils literal notranslate"><span class="pre">get_unique_mols()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.has_matched_mol"><code class="docutils literal notranslate"><span class="pre">has_matched_mol()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.parse_xyz_or_smiles_list"><code class="docutils literal notranslate"><span class="pre">parse_xyz_or_smiles_list()</span></code></a></li>
 </ul>
   </nav></div>
