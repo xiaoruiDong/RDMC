@@ -2133,3 +2133,25 @@ def get_unique_mols(mols: List[RDKitMol],
             unique_formula_mol[form] = [mol]
 
     return sum(unique_formula_mol.values(), [])
+
+
+def get_resonance_structure_match(mol1_res: List['RDKitMol'],
+                                  mol2_res: List['RDKitMol'],
+                                  ) -> tuple:
+    """
+    Get the match between two lists of resonance structures.
+
+    Args:
+        mol1_res (List['RDKitMol']): The first list of resonance structures.
+        mol2_res (List['RDKitMol']): The second list of resonance structures.
+
+    Returns:
+        tuple: The match between the two lists of resonance structures. Empty tuple if no match is found.
+    """
+    for m1 in mol1_res:
+        for m2 in mol2_res:
+            match = m1.GetSubstructMatch(m2)
+            if match:
+                return match
+    return tuple()
+
