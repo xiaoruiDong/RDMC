@@ -14,7 +14,8 @@ from rdkit.Chem import rdChemReactions, rdFMCS
 from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
-from rdmc.mol import generate_radical_resonance_structures
+from rdmc.mol_compare import is_same_complex
+from rdmc.resonance import generate_radical_resonance_structures
 from rdmc.ts import get_all_changing_bonds
 
 
@@ -24,11 +25,12 @@ class Reaction:
     The Reaction class that stores the reactant, product, and transition state information.
     """
 
-    def __init__(self,
-                 reactant: Union[List[RDKitMol], RDKitMol],
-                 product: Union[List[RDKitMol], RDKitMol],
-                 ts: Optional['RDKitMol'] = None,
-                 ):
+    def __init__(
+        self,
+        reactant: Union[List[RDKitMol], RDKitMol],
+        product: Union[List[RDKitMol], RDKitMol],
+        ts: Optional["RDKitMol"] = None,
+    ):
         """
         Initialize the Reaction class.
 
@@ -56,9 +58,9 @@ class Reaction:
         return self.draw_2d()
 
     @classmethod
-    def from_reactant_and_product_smiles(cls,
-                                         rsmi: Union[List[str], str],
-                                         psmi: Union[List[str], str]):
+    def from_reactant_and_product_smiles(
+        cls, rsmi: Union[List[str], str], psmi: Union[List[str], str]
+    ):
         """
         Initialize the Reaction class from reactant and product smile(s).
 
@@ -66,31 +68,26 @@ class Reaction:
 
         """
         if isinstance(rsmi, list):
-            rsmi = '.'.join(rsmi)
+            rsmi = ".".join(rsmi)
         if isinstance(psmi, list):
-            psmi = '.'.join(psmi)
+            psmi = ".".join(psmi)
         try:
-            reactant = RDKitMol.FromSmiles(rsmi,
-                                           removeHs=False,
-                                           addHs=True,
-                                           sanitize=True,
-                                           keepAtomMap=True)
+            reactant = RDKitMol.FromSmiles(
+                rsmi, removeHs=False, addHs=True, sanitize=True, keepAtomMap=True
+            )
         except Exception as exc:
-            raise ValueError(f'Got invalid reactant smiles ({rsmi})') from exc
+            raise ValueError(f"Got invalid reactant smiles ({rsmi})") from exc
         try:
-            product = RDKitMol.FromSmiles(psmi,
-                                          removeHs=False,
-                                          addHs=True,
-                                          sanitize=True,
-                                          keepAtomMap=True)
+            product = RDKitMol.FromSmiles(
+                psmi, removeHs=False, addHs=True, sanitize=True, keepAtomMap=True
+            )
         except Exception as exc:
-            raise ValueError(f'Got invalid product smiles ({psmi})') from exc
+            raise ValueError(f"Got invalid product smiles ({psmi})") from exc
 
         return cls(reactant=reactant, product=product)
 
     @classmethod
-    def from_reaction_smiles(cls,
-                             smiles: str):
+    def from_reaction_smiles(cls, smiles: str):
         """
         Initialize the Reaction class from reaction SMILES.
 
@@ -101,16 +98,17 @@ class Reaction:
             Reaction: The Reaction class.
         """
         try:
-            rsmi, psmi = smiles.split('>>')
+            rsmi, psmi = smiles.split(">>")
         except ValueError as exc:
             raise ValueError('Not a valid reaction smiles, missing ">>".') from exc
         return cls.from_reactant_and_product_smiles(rsmi=rsmi, psmi=psmi)
 
-    def init_reactant_product(self,
-                              reactant: Union[List[RDKitMol], RDKitMol],
-                              product: Union[List[RDKitMol], RDKitMol]):
-        """
-        """
+    def init_reactant_product(
+        self,
+        reactant: Union[List[RDKitMol], RDKitMol],
+        product: Union[List[RDKitMol], RDKitMol],
+    ):
+        """ """
         if isinstance(reactant, list):
             self.reactant = reactant
             self.reactant_complex = self._combine_multiple_mols(reactant)
@@ -142,13 +140,28 @@ class Reaction:
         return self.reactant_complex.GetNumAtoms() == self.product_complex.GetNumAtoms()
 
     @property
+    def reactant_element_count(self) -> dict:
+        """
+        The element count in the reactant(s) and product(s).
+        """
+        return dict(Counter(self.reactant_complex.GetElementSymbols()))
+
+    @property
+    def product_element_count(self) -> dict:
+        """
+        The element count in the reactant(s) and product(s).
+        """
+        return dict(Counter(self.product_complex.GetElementSymbols()))
+
+    @property
     def is_element_balanced(self) -> bool:
         """
         Whether the elements in the reactant(s) and product(s) are balanced.
         """
         if self.is_num_atoms_balanced:
-            return Counter(self.reactant_complex.GetElementSymbols()) == \
-                Counter(self.product_complex.GetElementSymbols())
+            return Counter(self.reactant_complex.GetElementSymbols()) == Counter(
+                self.product_complex.GetElementSymbols()
+            )
         return False
 
     @property
@@ -156,23 +169,29 @@ class Reaction:
         """
         Whether the charge in the reactant(s) and product(s) are balanced.
         """
-        return self.reactant_complex.GetFormalCharge() == \
-            self.product_complex.GetFormalCharge()
+        return (
+            self.reactant_complex.GetFormalCharge()
+            == self.product_complex.GetFormalCharge()
+        )
 
     @property
     def is_mult_equal(self) -> bool:
         """
         Whether the spin multiplicity in the reactant(s) and product(s) are equal.
         """
-        return self.reactant_complex.GetSpinMultiplicity() == \
-            self.product_complex.GetSpinMultiplicity()
+        return (
+            self.reactant_complex.GetSpinMultiplicity()
+            == self.product_complex.GetSpinMultiplicity()
+        )
 
     @property
     def num_atoms(self) -> bool:
         """
         The number of atoms involved in the reactant(s) and product(s).
         """
-        assert self.is_num_atoms_balanced, "The number of atoms in the reactant(s) and product(s) are not balanced."
+        assert (
+            self.is_num_atoms_balanced
+        ), "The number of atoms in the reactant(s) and product(s) are not balanced."
         return self.reactant_complex.GetNumAtoms()
 
     @property
@@ -205,18 +224,27 @@ class Reaction:
             try:
                 return func(self, *args, **kwargs)
             except AttributeError:
-                self._formed_bonds, self._broken_bonds, self._changed_bonds = get_all_changing_bonds(
+                (
+                    self._formed_bonds,
+                    self._broken_bonds,
+                    self._changed_bonds,
+                ) = get_all_changing_bonds(
                     r_mol=self.reactant_complex,
                     p_mol=self.product_complex,
                 )
                 return func(self, *args, **kwargs)
+
         return wrapper
 
     def bond_analysis(self):
         """
         Perform bond analysis on the reaction.
         """
-        self._formed_bonds, self._broken_bonds, self._changed_bonds = get_all_changing_bonds(
+        (
+            self._formed_bonds,
+            self._broken_bonds,
+            self._changed_bonds,
+        ) = get_all_changing_bonds(
             r_mol=self.reactant_complex,
             p_mol=self.product_complex,
         )
@@ -301,19 +329,24 @@ class Reaction:
         """
         return list(set(chain(*self.involved_bonds)))
 
-    def apply_resonance_correction(self,
-                                   inplace: bool = True,
-                                   kekulize: bool = True,
-                                   ) -> 'Reaction':
+    def apply_resonance_correction(
+        self,
+        inplace: bool = True,
+        kekulize: bool = True,
+    ) -> "Reaction":
         """
         Apply resonance correction to the reactant and product complexes.
         """
         try:
-            rcps = generate_radical_resonance_structures(self.reactant_complex, kekulize=kekulize)
+            rcps = generate_radical_resonance_structures(
+                self.reactant_complex, kekulize=kekulize
+            )
         except BaseException:
             rcps = [self.reactant_complex]
         try:
-            pcps = generate_radical_resonance_structures(self.product_complex, kekulize=kekulize)
+            pcps = generate_radical_resonance_structures(
+                self.product_complex, kekulize=kekulize
+            )
         except BaseException:
             pcps = [self.product_complex]
 
@@ -343,25 +376,24 @@ class Reaction:
         """
         Get the reverse reaction.
         """
-        return Reaction(self.product_complex,
-                        self.reactant_complex,
-                        ts=self.ts)
+        return Reaction(self.product_complex, self.reactant_complex, ts=self.ts)
 
-    def to_smiles(self,
-                  remove_hs: bool = False,
-                  remove_atom_map: bool = False,
-                  **kwargs,
-                  ) -> str:
+    def to_smiles(
+        self,
+        remove_hs: bool = False,
+        remove_atom_map: bool = False,
+        **kwargs,
+    ) -> str:
         """
         Convert the reaction to reaction SMILES.
         """
-        rsmi = self.reactant_complex.ToSmiles(removeAtomMap=remove_atom_map,
-                                              removeHs=remove_hs,
-                                              **kwargs)
-        psmi = self.product_complex.ToSmiles(removeAtomMap=remove_atom_map,
-                                             removeHs=remove_hs,
-                                             **kwargs)
-        return f'{rsmi}>>{psmi}'
+        rsmi = self.reactant_complex.ToSmiles(
+            removeAtomMap=remove_atom_map, removeHs=remove_hs, **kwargs
+        )
+        psmi = self.product_complex.ToSmiles(
+            removeAtomMap=remove_atom_map, removeHs=remove_hs, **kwargs
+        )
+        return f"{rsmi}>>{psmi}"
 
     def make_ts(self):
         """
@@ -377,11 +409,11 @@ class Reaction:
         Update the transition state of the reaction. Assign reaction, reactant,
         and product attributes to the transition state based on the reaction.
         """
-        if not hasattr(self._ts, 'reaction'):
+        if not hasattr(self._ts, "reaction"):
             self._ts.reaction = self
-        if not hasattr(self._ts, 'reactant'):
+        if not hasattr(self._ts, "reactant"):
             self._ts.reactant = self.reactant_complex
-        if not hasattr(self._ts, 'product'):
+        if not hasattr(self._ts, "product"):
             self._ts.product = self.product_complex
 
     @property
@@ -389,14 +421,13 @@ class Reaction:
         """
         The transition state of the reaction.
         """
-        if not hasattr(self, '_ts'):
+        if not hasattr(self, "_ts"):
             self.make_ts()
         self._update_ts()
         return self._ts
 
     @ts.setter
-    def ts(self,
-           mol: 'RDKitMol'):
+    def ts(self, mol: "RDKitMol"):
         """
         Set the transition state of the reaction.
         """
@@ -407,13 +438,13 @@ class Reaction:
         """
         Convert the reaction to RDKit ChemicalReaction.
         """
-        return rdChemReactions.ReactionFromSmarts(self.to_smiles(),
-                                                  useSmiles=True)
+        return rdChemReactions.ReactionFromSmarts(self.to_smiles(), useSmiles=True)
 
-    def draw_2d(self,
-                font_scale: float = 1.0,
-                highlight_by_reactant: bool = True,
-                ) -> str:
+    def draw_2d(
+        self,
+        font_scale: float = 1.0,
+        highlight_by_reactant: bool = True,
+    ) -> str:
         """
         This is a modified version of the drawReaction2D function in RDKit.
 
@@ -424,6 +455,7 @@ class Reaction:
         Returns:
             str: The SVG string. To display the SVG, use IPython.display.SVG(svg_string).
         """
+
         def move_atommaps_to_notes(mol):
             for atom in mol.GetAtoms():
                 if atom.GetAtomMapNum():
@@ -439,9 +471,74 @@ class Reaction:
 
         d2d = rdMolDraw2D.MolDraw2DSVG(800, 300)
         d2d.drawOptions().annotationFontScale = font_scale
-        d2d.DrawReaction(rxn,
-                         highlightByReactant=highlight_by_reactant)
+        d2d.DrawReaction(rxn, highlightByReactant=highlight_by_reactant)
 
         d2d.FinishDrawing()
 
         return d2d.GetDrawingText()
+
+    def has_same_reactants(
+        self,
+        other: "Reaction",
+        resonance: bool = False,
+    ) -> bool:
+        """
+        Check if the reaction has the same reactants as the other reaction.
+
+        Args:
+            other (Reaction): The other reaction to compare.
+
+        Returns:
+            bool: Whether the reaction has the same reactants as the other reaction.
+        """
+        return self.is_same_reactants(other.reactant_complex, resonance=resonance)
+
+    def is_same_reactants(
+        self,
+        reactants: Union[List[RDKitMol], RDKitMol],
+        resonance: bool = False,
+    ) -> bool:
+        """
+        Check if the reaction has the same reactants as the given reactants or reactant complex.
+
+        Args:
+            reactant (Union[List[RDKitMol], RDKitMol]): The reactants or reactant complex to compare.
+            resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
+
+        Returns:
+            bool: Whether the reaction has the same reactants as the given reactants or reactant complex.
+        """
+        return is_same_complex(self.reactant_complex, reactants, resonance=resonance)
+
+    def has_same_products(
+        self,
+        other: "Reaction",
+        resonance: bool = False,
+    ) -> bool:
+        """
+        Check if the reaction has the same products as the other reaction.
+
+        Args:
+            other (Reaction): The other reaction to compare.
+
+        Returns:
+            bool: Whether the reaction has the same products as the other reaction.
+        """
+        return self.is_same_products(other.product_complex, resonance=resonance)
+
+    def is_same_products(
+        self,
+        products: Union[List[RDKitMol], RDKitMol],
+        resonance: bool = False,
+    ):
+        """
+        Check if the reaction has the same products as the given products or product complex.
+
+        Args:
+            product (Union[List[RDKitMol], RDKitMol]): The products or product complex to compare.
+            resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
+
+        Returns:
+            bool: Whether the reaction has the same products as the given products or product complex.
+        """
+        return is_same_complex(self.product_complex, products, resonance=resonance)

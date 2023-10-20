@@ -102,7 +102,7 @@ H       1.58563500   -2.86115500    0.28392800""",
         "C=CC(=O)OCC.[C-]#[N+][C](C)C",
     )
 ])
-def test_fix_mol_1(xyz, smiles):
+def test_fix_mol_from_xyz(xyz, smiles):
 
     mol = RDKitMol.FromXYZ(xyz, backend="openbabel", sanitize=False)
 
@@ -111,3 +111,15 @@ def test_fix_mol_1(xyz, smiles):
 
     assert set(fix_mol(mol).ToSmiles().split(".")) \
         == set(smiles.split("."))
+
+
+def test_fix_o2():
+
+    mol = RDKitMol.FromSmiles("O=O")
+    assert fix_mol(mol).ToSmiles() == "[O][O]"
+
+
+def test_fix_co():
+
+    mol = RDKitMol.FromSmiles("[C]=O")
+    assert fix_mol(mol).ToSmiles() == "[C-]#[O+]"

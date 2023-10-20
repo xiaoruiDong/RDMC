@@ -15,11 +15,10 @@ try:
 except ImportError:
     import pybel
 
-from rdmc import (generate_radical_resonance_structures,
-                  get_unique_mols,
-                  has_matched_mol,
-                  parse_xyz_or_smiles_list,
-                  RDKitMol)
+from rdmc.mol import RDKitMol, parse_xyz_or_smiles_list
+from rdmc.mol_compare import get_unique_mols, has_matched_mol
+from rdmc.resonance import generate_radical_resonance_structures
+
 import pytest
 
 logging.basicConfig(level=logging.DEBUG)
