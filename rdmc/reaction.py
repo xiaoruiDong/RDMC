@@ -140,6 +140,20 @@ class Reaction:
         return self.reactant_complex.GetNumAtoms() == self.product_complex.GetNumAtoms()
 
     @property
+    def reactant_element_count(self) -> dict:
+        """
+        The element count in the reactant(s) and product(s).
+        """
+        return dict(Counter(self.reactant_complex.GetElementSymbols()))
+
+    @property
+    def product_element_count(self) -> dict:
+        """
+        The element count in the reactant(s) and product(s).
+        """
+        return dict(Counter(self.product_complex.GetElementSymbols()))
+
+    @property
     def is_element_balanced(self) -> bool:
         """
         Whether the elements in the reactant(s) and product(s) are balanced.
@@ -477,8 +491,7 @@ class Reaction:
         Returns:
             bool: Whether the reaction has the same reactants as the other reaction.
         """
-        return self.is_same_reactants(other.reactant_complex,
-                                      resonance=resonance)
+        return self.is_same_reactants(other.reactant_complex, resonance=resonance)
 
     def is_same_reactants(
         self,
@@ -495,9 +508,7 @@ class Reaction:
         Returns:
             bool: Whether the reaction has the same reactants as the given reactants or reactant complex.
         """
-        return is_same_complex(self.reactant_complex,
-                               reactants,
-                               resonance=resonance)
+        return is_same_complex(self.reactant_complex, reactants, resonance=resonance)
 
     def has_same_products(
         self,
@@ -513,8 +524,7 @@ class Reaction:
         Returns:
             bool: Whether the reaction has the same products as the other reaction.
         """
-        return self.is_same_products(other.product_complex,
-                                     resonance=resonance)
+        return self.is_same_products(other.product_complex, resonance=resonance)
 
     def is_same_products(
         self,
@@ -531,6 +541,4 @@ class Reaction:
         Returns:
             bool: Whether the reaction has the same products as the given products or product complex.
         """
-        return is_same_complex(self.product_complex,
-                               products,
-                               resonance=resonance)
+        return is_same_complex(self.product_complex, products, resonance=resonance)
