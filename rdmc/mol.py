@@ -5,11 +5,12 @@
 This module provides class and methods for dealing with RDKit RWMol, Mol.
 """
 
+from collections import Counter
 import copy
 from itertools import combinations
 from itertools import product as cartesian_product
 import traceback
-from typing import Iterable, List, Optional, Sequence, Union
+from typing import Dict, Iterable, List, Optional, Sequence, Union
 import pathlib
 
 import numpy as np
@@ -824,6 +825,15 @@ class RDKitMol(object):
             list: A list of element symbols.
         """
         return get_element_symbols(self.GetAtomicNumbers())
+
+    def GetElementCounts(self) -> Dict[str, int]:
+        """
+        Get the element counts of the molecules.
+
+        Returns:
+            dict: A dictionary of element counts.
+        """
+        return dict(Counter(self.GetElementSymbols()))
 
     def GetAtomMasses(self) -> List[float]:
         """
