@@ -462,3 +462,75 @@ class Reaction:
         d2d.FinishDrawing()
 
         return d2d.GetDrawingText()
+
+    def has_same_reactants(
+        self,
+        other: "Reaction",
+        resonance: bool = False,
+    ) -> bool:
+        """
+        Check if the reaction has the same reactants as the other reaction.
+
+        Args:
+            other (Reaction): The other reaction to compare.
+
+        Returns:
+            bool: Whether the reaction has the same reactants as the other reaction.
+        """
+        return self.is_same_reactants(other.reactant_complex,
+                                      resonance=resonance)
+
+    def is_same_reactants(
+        self,
+        reactants: Union[List[RDKitMol], RDKitMol],
+        resonance: bool = False,
+    ) -> bool:
+        """
+        Check if the reaction has the same reactants as the given reactants or reactant complex.
+
+        Args:
+            reactant (Union[List[RDKitMol], RDKitMol]): The reactants or reactant complex to compare.
+            resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
+
+        Returns:
+            bool: Whether the reaction has the same reactants as the given reactants or reactant complex.
+        """
+        return is_same_complex(self.reactant_complex,
+                               reactants,
+                               resonance=resonance)
+
+    def has_same_products(
+        self,
+        other: "Reaction",
+        resonance: bool = False,
+    ) -> bool:
+        """
+        Check if the reaction has the same products as the other reaction.
+
+        Args:
+            other (Reaction): The other reaction to compare.
+
+        Returns:
+            bool: Whether the reaction has the same products as the other reaction.
+        """
+        return self.is_same_products(other.product_complex,
+                                     resonance=resonance)
+
+    def is_same_products(
+        self,
+        products: Union[List[RDKitMol], RDKitMol],
+        resonance: bool = False,
+    ):
+        """
+        Check if the reaction has the same products as the given products or product complex.
+
+        Args:
+            product (Union[List[RDKitMol], RDKitMol]): The products or product complex to compare.
+            resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
+
+        Returns:
+            bool: Whether the reaction has the same products as the given products or product complex.
+        """
+        return is_same_complex(self.product_complex,
+                               products,
+                               resonance=resonance)
