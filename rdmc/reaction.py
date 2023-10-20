@@ -14,7 +14,7 @@ from rdkit.Chem import rdChemReactions, rdFMCS
 from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
-from rdmc.mol import generate_radical_resonance_structures
+from rdmc.resonance import generate_radical_resonance_structures
 from rdmc.ts import get_all_changing_bonds
 
 
