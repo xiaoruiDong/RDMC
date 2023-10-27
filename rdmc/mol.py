@@ -1840,7 +1840,8 @@ class RDKitMol(object):
                                        chain_length=chain_length,
                                        verbose=verbose)
         self.SaturateCarbene(multiplicity=multiplicity, verbose=verbose)
-        if self.GetSpinMultiplicity() != multiplicity:
+        if verbose and self.GetSpinMultiplicity() != multiplicity:
+            # TODO: make print a log
             print('SaturateMol fails after trying all methods and you need to be cautious about the generated mol.')
 
     def SetVdwMatrix(self,

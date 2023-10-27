@@ -166,8 +166,8 @@ def fix_mol_by_remedy(
     fix_flag = False
 
     for _ in range(max_attempts):
-        tmp_mol.UpdatePropertyCache(False)
-        rdmolops.GetSymmSSSR(tmp_mol)
+        tmp_mol.UpdatePropertyCache(False)  # Update connectivity
+        rdmolops.GetSymmSSSR(tmp_mol)  # Update ring information
         try:
             # Remedy are designed to be unimolecular (group transformation), so the product will be unimolecular as well
             # If no match, RunReactants will return an empty tuple and thus cause an IndexError.
@@ -266,7 +266,7 @@ def fix_mol(
     max_attempts: int = 10,
     sanitize: bool = True,
     fix_spin_multiplicity: bool = False,
-    mult: int = 1,
+    mult: int = 0,
     renumber_atoms: bool = True,
 ) -> "RDKitMol":
     """
@@ -282,9 +282,11 @@ def fix_mol(
         sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
         fix_spin_multiplicity (bool, optional): Whether to fix the spin multiplicity of the molecule.
                                                  Defaults to ``False``.
-        mult (int, optional): The desired spin multiplicity. Defaults to ``1``.
+        mult (int, optional): The desired spin multiplicity. Defaults to ``0``, which means the lowest possible
+                                spin multiplicity will be inferred from the number of unpaired electrons.
                               Only used when ``fix_spin_multiplicity`` is ``True``.
         renumber_atoms (bool, optional): Whether to renumber the atoms after the fix. Defaults to ``True``.
+                                         Turn this off when the atom map number is not important.
 
     Returns:
         RDKitMol: The fixed molecule.
@@ -297,6 +299,9 @@ def fix_mol(
     )
 
     if fix_spin_multiplicity:
+        if mult == 0:
+            # Infer the possible lowest spin multiplicity from the number of unpaired electrons
+            mult = 1 if mol.GetSpinMultiplicity() % 2 else 2
         mol = fix_mol_spin_multiplicity(mol, mult)
 
     if renumber_atoms:
