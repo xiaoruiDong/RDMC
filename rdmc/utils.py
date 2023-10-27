@@ -701,6 +701,43 @@ def parse_xyz_by_jensen(
     return mol
 
 
+def get_closed_shell_cheap(mol: "RWMol") -> "RWMol":
+    """
+    Get the closed shell molecule of a radical molecule. This is a cheap version
+    where no new atom is actually added to the molecule and all operation is inplace.
+
+    Args:
+        mol (RWMol): The radical molecule.
+
+    Returns:
+        RWMol: The closed shell molecule.
+    """
+    for atom in mol.GetAtoms():
+        if atom.GetNumRadicalElectrons():
+            atom.SetNumRadicalElectrons(0)
+            atom.SetNoImplicit(False)
+    return mol
+
+
+def get_closed_shell_by_add_hs(
+    mol: "RWMol",
+) -> "RWMol":
+    """
+    Get the closed shell molecule of a radical molecule by explicitly adding
+    hydrogen atoms to the molecule.
+    """
+    atom_idx = mol.GetNumAtoms()
+    for atom in mol.GetAtoms():
+        num_rad_elecs = atom.GetNumRadicalElectrons()
+        if num_rad_elecs:
+            for _ in range(num_rad_elecs):
+                mol.AddAtom(Chem.rdchem.Atom(1))
+                mol.AddBond(atom_idx, atom.GetIdx(), Chem.rdchem.BondType.SINGLE)
+                atom_idx += 1
+            atom.SetNumRadicalElectrons(0)
+    return mol
+
+
 # CPK (Corey-Pauling-Koltun) color scheme, Generated using ChatGPT
 CPK_COLOR_PALETTE = {
     "H": (1.00, 1.00, 1.00),
