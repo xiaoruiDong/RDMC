@@ -12,7 +12,7 @@ from rdmc import RDKitMol
 from rdkit.Chem import rdChemReactions, rdmolops
 
 
-DEFAULT_REMEDIES = [
+RECOMMEND_REMEDIES = [
     # Remedy 1 - Carbon monoxide: [C]=O to [C-]#[O+]
     rdChemReactions.ReactionFromSmarts(
         "[O+0-0v2X1:1]=[C+0-0v2X1:2]>>[O+1v3X1:1]#[C-1v3X1:2]"
@@ -25,31 +25,94 @@ DEFAULT_REMEDIES = [
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X2:1]#[C+0-0v3X1:2]>>[N+v4X2:1]#[C-v3X1:2]"
     ),
-    # Remedy 4 - amine radical: RC(R)-N(R)(R)R to R[C-](R)-[N+](R)(R)R
+    # Remedy 4 - azide: RN=N=[N] to RN=[N+]=[N-]
     rdChemReactions.ReactionFromSmarts(
-        "[N+0-0v4X4:1]-[C+0-0v3X3:2]>>[N+1v4X4:1]-[C-1v3X3:2]"
+        "[N+0-0v3X2:1]=[N+0-0v4X2:2]=[N+0-0v2X1:3]>>[N+0-0v3X2:1]=[N+1v4X2:2]=[N-1v2X1:3]"
     ),
-    # Remedy 5 - amine radical: RN(R)=C to RN(R)-[C]
-    rdChemReactions.ReactionFromSmarts(
-        "[N+0-0v4X3:1]=[C+0-0v4X3:2]>>[N+0-0v3X3:1]-[C+0-0v3X3:2]"
-    ),
-    # Remedy 5 - quintuple C bond, usually due to RC(=O)=O: R=C(R)=O to R=[C+](R)-[O-]
-    rdChemReactions.ReactionFromSmarts(
-        "[C+0-0v5X3:1]=[O+0-0v2X1:2]>>[C+0-0v4X3:1]-[O+0-0v1X1:2]"
-    ),
-    # Remedy 6 - amine oxide: RN(R)(R)-O to R[N+](R)(R)-[O-]
+    # Remedy 5 - amine oxide: RN(R)(R)-O to R[N+](R)(R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X4:1]-[O+0-0v1X1:2]>>[N+1v4X4:1]-[O-1v1X1:2]"
     ),
-    # Remedy 7 - criegee like molecule: RN(R)(R)-C(R)(R)=O to R[N+](R)(R)-[C](R)(R)-[O-]
+    # Remedy 6 - amine radical: RC(R)-N(R)(R)R to R[C-](R)-[N+](R)(R)R
+    rdChemReactions.ReactionFromSmarts(
+        "[N+0-0v4X4:1]-[C+0-0v3X3:2]>>[N+1v4X4:1]-[C-1v3X3:2]"
+    ),
+    # Remedy 7 - amine radical: RN(R)=C to RN(R)-[C]
+    rdChemReactions.ReactionFromSmarts(
+        "[N+0-0v4X3:1]=[C+0-0v4X3:2]>>[N+0-0v3X3:1]-[C+0-0v3X3:2]"
+    ),
+    # Remedy 8 - quintuple C bond, usually due to RC(=O)=O: R=C(R)=O to R=[C+](R)-[O-]
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v5X3:1]=[O+0-0v2X1:2]>>[C+0-0v4X3:1]-[O+0-0v1X1:2]"
+    ),
+    # Remedy 9 - sulphuric bi-radicals: R[S](R)(-[O])-[O] to R[S](R)(=O)(=O)
+    rdChemReactions.ReactionFromSmarts(
+        "[S+0-0v4X4:1](-[O+0-0v1X1:2])-[O+0-0v1X1:3]>>[S+0-0v6X4:1](=[O+0-0v2X1:2])=[O+0-0v2X1:3]"
+    ),
+    # Remedy 10 - Triazinane: C1=N=C=N=C=N=1 to c1ncncn1
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v5X3:1]1=[N+0-0v4X2:2]=[C+0-0v5X3:3]=[N+0-0v4X2:4]=[C+0-0v5X3:5]=[N+0-0v4X2:6]=1"
+        ">>[C+0-0v5X3:1]1[N+0-0v4X2:2]=[C+0-0v5X3:3][N+0-0v4X2:4]=[C+0-0v5X3:5][N+0-0v4X2:6]=1"
+    ),
+]
+
+
+ZWITTERION_REMEDIES = [
+    # Remedy 1 - criegee like molecule: RN(R)(R)-C(R)(R)=O to R[N+](R)(R)-[C](R)(R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X4:1]-[C+0-0v4X3:2]=[O+0-0v2X1:3]>>[N+1v4X4:1]-[C+0-0v3X3:2]-[O-1v1X1:3]"
     ),
-    # Remedy 8 - criegee like molecule: RN(R)(R)-C(R)(R)=O to R[N+](R)(R)-[C](R)(R)-[O-]
+    # Remedy 2 - criegee like molecule: RN(R)(R)-[C](R)(R)[O] to R[N+](R)(R)-[C](R)(R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X4:1]-[C+0-0v3X3:2]-[O+0-0v1X1:3]>>[N+1v4X4:1]-[C+0-0v3X3:2]-[O-1v1X1:3]"
     ),
+    # Remedy 3 - ammonium + carboxylic: ([N]R4.C(=O)[O]) to ([N+]R4.C(=O)[O-])
+    rdChemReactions.ReactionFromSmarts(
+        "([N+0-0v4X4:1].[O+0-0v2X1:2]=[C+0-0v4X3:3]-[O+0-0v1X1:4])>>([N+1v4X4:1].[O+0-0v2X1:2]=[C+0-0v4X3:3]-[O-1v1X1:4])"
+    ),
+    # Remedy 4 - ammonium + phosphoric: ([N]R4.P(=O)[O]) to ([N+]R4.P(=O)[O-])
+    rdChemReactions.ReactionFromSmarts(
+        "([N+0-0v4X4:1].[P+0-0v5X4:2]-[O+0-0v1X1:3])>>([N+1v4X4:1].[P+0-0v5X4:2]-[O-1v1X1:3])"
+    ),
+    # Remedy 5 - ammonium + sulphuric: ([N]R4.S(=O)(=O)[O]) to ([N+]R4.S(=O)(=O)[O-])
+    rdChemReactions.ReactionFromSmarts(
+        "([N+0-0v4X4:1].[S+0-0v6X4:2]-[O+0-0v1X1:3])>>([N+1v4X4:1].[S+0-0v6X4:2]-[O-1v1X1:3])"
+    ),
+    # Remedy 6 - ammonium + carbonyl in ring: ([N]R4.C=O) to ([N+]R4.[C.]-[O-])
+    rdChemReactions.ReactionFromSmarts(
+        "([N+0-0v4X4:1].[C+0-0v4X3R:2]=[O+0-0v2X1:3])>>([N+1v4X4:1].[C+0-0v3X3R:2]-[O-1v1X1:3])"
+    ),
 ]
+
+
+RING_REMEDIES = [
+    # The first four elements' sequence matters
+    # TODO: Find a better solution to avoid the impact of sequence
+    # Remedy 1 - quintuple C in ring: R1=C(R)=N-R1 to R1=C(R)[N]-R1
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v5X3R:1]=[N+0-0v3X2R:2]>>[C+0-0v4X3R:1]-[N+0-0v2X2R:2]"
+    ),
+    # Remedy 2 - quadruple N in ring: R1=N=C(R)R1 to R1=N-[C](R)R1
+    rdChemReactions.ReactionFromSmarts(
+        "[N+0-0v4X2R:1]=[C+0-0v4X3R:2]>>[N+0-0v3X2R:1]-[C+0-0v3X3R:2]"
+    ),
+    # Remedy 3 - ring =C(R)=N-[C]: R1=C(R)=N-[C](R)R1 to R1=C(R)-N=C(R)R1
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v5X3R:1]=[N+0-0v3X2R:2]-[C+0-0v3X3:3]>>[C+0-0v4X3R:1]-[N+0-0v3X2R:2]=[C+0-0v4X3:3]"
+    ),
+    # Remedy 4 - ring -N-N-: R1-N-N-R1 to R1-N=N-R1
+    rdChemReactions.ReactionFromSmarts(
+        "[N+0-0v2X2R:1]-[N+0-0v2X2R:2]>>[N+0-0v3X2R:1]=[N+0-0v3X2R:2]"
+    ),
+    # Remedy 5 - bicyclic radical
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v4:1]1[C+0-0v4X4:2]23[C+0-0v4:3][N+0-0v4X4:4]12[C+0-0v4:5]3>>[C+0-0v4:1]1[C+0-0v3X3:2]2[C+0-0v4:3][N+0-0v3X3:4]1[C+0-0v4:5]2"
+    ),
+]
+
+
+DEFAULT_REMEDIES = RECOMMEND_REMEDIES
+ALL_REMEDIES = RECOMMEND_REMEDIES + ZWITTERION_REMEDIES + RING_REMEDIES
 
 
 def update_product_atom_map_after_reaction(
@@ -104,6 +167,7 @@ def fix_mol_by_remedy(
 
     for _ in range(max_attempts):
         tmp_mol.UpdatePropertyCache(False)
+        rdmolops.GetSymmSSSR(tmp_mol)
         try:
             # Remedy are designed to be unimolecular (group transformation), so the product will be unimolecular as well
             # If no match, RunReactants will return an empty tuple and thus cause an IndexError.
@@ -203,6 +267,7 @@ def fix_mol(
     sanitize: bool = True,
     fix_spin_multiplicity: bool = False,
     mult: int = 1,
+    renumber_atoms: bool = True,
 ) -> "RDKitMol":
     """
     Fix the molecule by applying the given remedies and saturating the radical sites to full fill the desired spin multiplicity.
@@ -219,6 +284,7 @@ def fix_mol(
                                                  Defaults to ``False``.
         mult (int, optional): The desired spin multiplicity. Defaults to ``1``.
                               Only used when ``fix_spin_multiplicity`` is ``True``.
+        renumber_atoms (bool, optional): Whether to renumber the atoms after the fix. Defaults to ``True``.
 
     Returns:
         RDKitMol: The fixed molecule.
@@ -232,5 +298,8 @@ def fix_mol(
 
     if fix_spin_multiplicity:
         mol = fix_mol_spin_multiplicity(mol, mult)
+
+    if renumber_atoms:
+        mol = mol.RenumberAtoms()
 
     return mol
