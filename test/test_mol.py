@@ -825,6 +825,33 @@ class TestRDKitMol:
             .GetCountFingerprintAsNumPy(Chem.MolFromSmiles(smi))
         assert np.isclose(fp, fp_expect).all()
 
+    @pytest.mark.parametrize(
+        'rad_smi, expect_smi',
+        [
+            ('[CH3]', 'C'),
+            ('c1[c]cccc1', 'c1ccccc1'),
+            ('C[NH2]', 'CN'),
+            ('[CH2]C[CH2]', 'CCC')
+        ])
+    @pytest.mark.parametrize('cheap', [(True,), (False,)])
+    def test_get_closed_shell_mol(self, rad_smi, expect_smi, cheap):
+
+        rad_mol = RDKitMol.FromSmiles(rad_smi)
+        assert rad_mol.GetClosedShellMol(cheap=cheap).ToSmiles() == expect_smi
+
+    @pytest.mark.parametrize(
+        'smi1, smi2, expect_match',
+        [
+            ('[CH3]', 'C', False),
+            ('[O:1]([H:2])[H:3]', '[O:1]([H:2])[H:3]', True),
+            ('[O:1]([H:2])[H:3]', '[O:2]([H:1])[H:3]', False),
+            ('[H:1][C:2](=[O:3])[O:4]', '[H:1][C:2]([O:3])=[O:4]', True)
+        ])
+    def test_has_same_connectivity(self, smi1, smi2, expect_match):
+        mo1 = RDKitMol.FromSmiles(smi1)
+        mol2 = RDKitMol.FromSmiles(smi2)
+        assert mo1.HasSameConnectivity(mol2) == expect_match
+
 
 def test_parse_xyz_or_smiles_list():
     """
