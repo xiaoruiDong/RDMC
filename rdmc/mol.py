@@ -1098,11 +1098,27 @@ class RDKitMol(object):
         # if the distance is smaller than a threshold, the atom has a high chance of colliding
         return not np.all(self.GetVdwMatrix(threshold=threshold) <= dist_mat)
 
-    def HasSameConnectivity(self,
-                            confId: int = 0,
-                            backend: str = 'openbabel',
-                            **kwargs,
-                            ) -> bool:
+    def HasSameConnectivity(
+        self,
+        refmol: "RDKitMol",
+    ) -> bool:
+        """
+        Check wheter the molecule has the same connectivity as the reference molecule.
+
+        Args:
+            refmol (RDKitMol): The reference molecule.
+
+        Returns:
+            bool: Whether the molecule has the same connectivity as the reference molecule.
+        """
+        return np.array_equal(self.GetAdjacencyMatrix(), refmol.GetAdjacencyMatrix())
+
+    def HasSameConnectivityConformer(
+        self,
+        confId: int = 0,
+        backend: str = "openbabel",
+        **kwargs,
+    ) -> bool:
         """
         Check whether the conformer of the molecule (defined by its spacial coordinates)
         as the same connectivity as the molecule.
@@ -1123,20 +1139,18 @@ class RDKitMol(object):
             # Sanitization is not applied to account for
             # special cases like zwitterionic molecules
             # or molecule complexes
-            new_mol = RDKitMol.FromXYZ(xyz_str,
-                                       header=True,
-                                       backend=backend,
-                                       sanitize=False,
-                                       **kwargs)
+            new_mol = RDKitMol.FromXYZ(
+                xyz_str, header=True, backend=backend, sanitize=False, **kwargs
+            )
         except Exception as exc:
             # Error in preserving the molecule
-            print(f'Error in preserving the molecule: {exc}')
+            print(f"Error in preserving the molecule: {exc}")
             traceback.print_exc()
             return False
         else:
             conf_adj_mat = new_mol.GetAdjacencyMatrix()
 
-        return (mol_adj_mat == conf_adj_mat).all()
+        return np.array_equal(mol_adj_mat, conf_adj_mat)
 
     def Kekulize(self,
                  clearAromaticFlags: bool = False):
@@ -1843,6 +1857,37 @@ class RDKitMol(object):
         if verbose and self.GetSpinMultiplicity() != multiplicity:
             # TODO: make print a log
             print('SaturateMol fails after trying all methods and you need to be cautious about the generated mol.')
+
+    def GetClosedShellMol(self,
+                          cheap: bool = False,
+                          sanitize: bool = True,
+                          ) -> 'RDKitMol':
+        """
+        Get a closed shell molecule by removing all radical electrons and adding
+        H atoms to these radical sites. This method currently only work for radicals
+        and will not work properly for singlet radicals.
+
+        Args:
+            cheap (bool): Whether to use a cheap method where H atoms are only implicitly added.
+                          Defaults to ``False``. Setting it to ``False`` only when the molecule
+                          is immediately used for generating SMILES/InChI and other representations,
+                          and no further manipulation is needed. Otherwise, it may be confusing as
+                          the hydrogen atoms will not appear in the list of atoms, not display in the
+                          2D graph, etc.
+            sanitize (bool): Whether to sanitize the molecule. Defaults to ``True``.
+
+        Returns:
+            RDKitMol: A closed shell molecule.
+        """
+        mol_copy = self.Copy(quickCopy=True)
+        if cheap:
+            mol_copy = get_closed_shell_cheap(mol_copy)
+        else:
+            mol_copy = get_closed_shell_by_add_hs(mol_copy)
+            mol_copy.SetAtomMapNumbers()
+        if sanitize:
+            mol_copy.Sanitize()
+        return mol_copy
 
     def SetVdwMatrix(self,
                      threshold: float = 0.4,
