@@ -13,6 +13,7 @@ from rdkit import Chem
 from rdkit import RDLogger
 from rdkit.Chem import AllChem
 from rdkit.Chem.rdchem import BondType, Mol, RWMol
+
 # Since 2022.09.1, RDKit added built-in XYZ parser using xyz2mol approach
 try:
     from rdkit.Chem import rdDetermineBonds
@@ -35,32 +36,43 @@ except ImportError:
     import openbabel as ob
 
 # Bond order dictionary for RDKit, numbers are the bond order.
-ORDERS = {1: BondType.SINGLE, 2: BondType.DOUBLE, 3: BondType.TRIPLE, 1.5: BondType.AROMATIC,
-          4: BondType.QUADRUPLE,
-          'S': BondType.SINGLE, 'D': BondType.DOUBLE, 'T': BondType.TRIPLE, 'B': BondType.AROMATIC,
-          'Q': BondType.QUADRUPLE}
+ORDERS = {
+    1: BondType.SINGLE,
+    2: BondType.DOUBLE,
+    3: BondType.TRIPLE,
+    1.5: BondType.AROMATIC,
+    4: BondType.QUADRUPLE,
+    "S": BondType.SINGLE,
+    "D": BondType.DOUBLE,
+    "T": BondType.TRIPLE,
+    "B": BondType.AROMATIC,
+    "Q": BondType.QUADRUPLE,
+}
 
 # The rotational bond definition in RDkit
 # It is the same as rdkit.Chem.Lipinski import RotatableBondSmarts
-ROTATABLE_BOND_SMARTS = Chem.MolFromSmarts('[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]')
-ROTATABLE_BOND_SMARTS_WO_METHYL = Chem.MolFromSmarts('[!$(*#*)&!D1!H3]-&!@[!$(*#*)&!D1&!H3]')
+ROTATABLE_BOND_SMARTS = Chem.MolFromSmarts("[!$(*#*)&!D1]-&!@[!$(*#*)&!D1]")
+ROTATABLE_BOND_SMARTS_WO_METHYL = Chem.MolFromSmarts(
+    "[!$(*#*)&!D1!H3]-&!@[!$(*#*)&!D1&!H3]"
+)
 
 # When perceiving molecules, openbabel will always perceive carbon monoxide as [C]=O
 # Needs to correct it by [C-]#[O+]
 CO_OPENBABEL_PATTERN = ob.OBSmartsPattern()
-CO_OPENBABEL_PATTERN.Init('[Cv2X1]=[OX1]')
+CO_OPENBABEL_PATTERN.Init("[Cv2X1]=[OX1]")
 
 # Carbene, nitrene, and atomic oxygen templates. RDKit and Openbabel have difficulty
 # distinguish their multiplicity when input as SMILES or XYZ
-CARBENE_PATTERN = Chem.MolFromSmarts('[Cv0,Cv1,Cv2,Nv0,Nv1,Ov0]')
+CARBENE_PATTERN = Chem.MolFromSmarts("[Cv0,Cv1,Cv2,Nv0,Nv1,Ov0]")
 
 PERIODIC_TABLE = Chem.GetPeriodicTable()
 VDW_RADII = {i: PERIODIC_TABLE.GetRvdw(i) for i in range(1, 36)}
 
 
-def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
-                                             atom2: 'rdkit.Chem.rdchem.Atom',
-                                             ) -> int:
+def determine_smallest_atom_index_in_torsion(
+    atom1: "rdkit.Chem.rdchem.Atom",
+    atom2: "rdkit.Chem.rdchem.Atom",
+) -> int:
     """
     Determine the smallest atom index in mol connected to ``atom1`` which is not ``atom2``.
     Returns a heavy atom if available, otherwise a hydrogen atom.
@@ -74,8 +86,7 @@ def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
     Returns:
         int: The smallest atom index (1-indexed) connected to ``atom1`` which is not ``atom2``.
     """
-    neighbor = [a for a in atom1.GetNeighbors() if a.GetIdx()
-                != atom2.GetIdx()]
+    neighbor = [a for a in atom1.GetNeighbors() if a.GetIdx() != atom2.GetIdx()]
     atomic_num_list = sorted([nb.GetAtomicNum() for nb in neighbor])
     min_atomic, max_atomic = atomic_num_list[0], atomic_num_list[-1]
     if min_atomic == max_atomic or min_atomic > 1:
@@ -84,9 +95,10 @@ def determine_smallest_atom_index_in_torsion(atom1: 'rdkit.Chem.rdchem.Atom',
         return min([nb.GetIdx() for nb in neighbor if nb.GetAtomicNum() != 1])
 
 
-def find_internal_torsions(mol: Union['Mol', 'RWMol'],
-                           exclude_methyl: bool = False,
-                           ) -> list:
+def find_internal_torsions(
+    mol: Union["Mol", "RWMol"],
+    exclude_methyl: bool = False,
+) -> list:
     """
     Find the internal torsions from RDkit molecule.
 
@@ -98,8 +110,9 @@ def find_internal_torsions(mol: Union['Mol', 'RWMol'],
         list: A list of internal torsions.
     """
     torsions = list()
-    smarts = ROTATABLE_BOND_SMARTS if not exclude_methyl \
-        else ROTATABLE_BOND_SMARTS_WO_METHYL
+    smarts = (
+        ROTATABLE_BOND_SMARTS if not exclude_methyl else ROTATABLE_BOND_SMARTS_WO_METHYL
+    )
     rot_atom_pairs = mol.GetSubstructMatches(smarts)
 
     for atoms_ind in rot_atom_pairs:
@@ -111,7 +124,7 @@ def find_internal_torsions(mol: Union['Mol', 'RWMol'],
     return torsions
 
 
-def find_ring_torsions(mol: Union['Mol', 'RWMol']) -> list:
+def find_ring_torsions(mol: Union["Mol", "RWMol"]) -> list:
     """
     Find the ring from RDkit molecule.
 
@@ -130,11 +143,12 @@ def find_ring_torsions(mol: Union['Mol', 'RWMol']) -> list:
     return ring_torsions
 
 
-def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
-                               remove_hs: bool = False,
-                               sanitize: bool = True,
-                               embed: bool = True,
-                               ) -> 'RWMol':
+def openbabel_mol_to_rdkit_mol(
+    obmol: "openbabel.OBMol",
+    remove_hs: bool = False,
+    sanitize: bool = True,
+    embed: bool = True,
+) -> "RWMol":
     """
     Convert a OpenBabel molecular structure to a Chem.rdchem.RWMol object.
     Args:
@@ -185,15 +199,18 @@ def openbabel_mol_to_rdkit_mol(obmol: 'openbabel.OBMol',
     # If OBMol has 3D information, it can be embed to the RDKit Mol
     if embed and (obmol.HasNonZeroCoords() or obmol.NumAtoms() == 1):
         coords = get_obmol_coords(obmol)
-        conf = Chem.rdchem.Conformer(coords.shape[0])  # Create a conformer that has number of atoms specified
+        conf = Chem.rdchem.Conformer(
+            coords.shape[0]
+        )  # Create a conformer that has number of atoms specified
         set_rdconf_coordinates(conf, coords)
         rw_mol.AddConformer(conf, assignId=True)
     return rw_mol
 
 
-def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
-                               embed: bool = True,
-                               ) -> 'openbabel.OBMol':
+def rdkit_mol_to_openbabel_mol(
+    rdmol: Union["Mol", "RWMol"],
+    embed: bool = True,
+) -> "openbabel.OBMol":
     """
     Convert a Mol/RWMol to a Openbabel mol. This a temporary replace of
     ``rdkit_mol_to_openbabel_mol_manual``.
@@ -212,7 +229,7 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
         # RDKit Mol or RWMol
         sdf_str = Chem.MolToMolBlock(rdmol)
     obconv = ob.OBConversion()
-    obconv.SetInFormat('sdf')
+    obconv.SetInFormat("sdf")
     obmol = ob.OBMol()
     obconv.ReadString(obmol, sdf_str)
 
@@ -239,9 +256,10 @@ def rdkit_mol_to_openbabel_mol(rdmol: Union['Mol', 'RWMol'],
     return obmol
 
 
-def rdkit_mol_to_openbabel_mol_manual(rdmol: Union['Mol', 'RWMol'],
-                                      embed: bool = True,
-                                      ) -> 'openbabel.OBMol':
+def rdkit_mol_to_openbabel_mol_manual(
+    rdmol: Union["Mol", "RWMol"],
+    embed: bool = True,
+) -> "openbabel.OBMol":
     """
     Convert a Mol/RWMol to a Openbabel mol. This function has a problem converting
     aromatic molecules. Example: 'c1nc[nH]n1'. Currently use a workaround, converting an
@@ -262,11 +280,13 @@ def rdkit_mol_to_openbabel_mol_manual(rdmol: Union['Mol', 'RWMol'],
         if isotope != 0:
             obatom.SetIsotope(isotope)
         obatom.SetFormalCharge(rdatom.GetFormalCharge())
-    bond_type_dict = {BondType.SINGLE: 1,
-                      BondType.DOUBLE: 2,
-                      BondType.TRIPLE: 3,
-                      BondType.QUADRUPLE: 4,
-                      BondType.AROMATIC: 5}
+    bond_type_dict = {
+        BondType.SINGLE: 1,
+        BondType.DOUBLE: 2,
+        BondType.TRIPLE: 3,
+        BondType.QUADRUPLE: 4,
+        BondType.AROMATIC: 5,
+    }
     for bond in rdmol.GetBonds():
         atom1_idx = bond.GetBeginAtomIdx() + 1
         atom2_idx = bond.GetEndAtomIdx() + 1
@@ -292,10 +312,11 @@ def rdkit_mol_to_openbabel_mol_manual(rdmol: Union['Mol', 'RWMol'],
     return obmol
 
 
-def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
-                         remove_hs: bool = False,
-                         sanitize: bool = True,
-                         ) -> 'RWMol':
+def rmg_mol_to_rdkit_mol(
+    rmgmol: "rmgpy.molecule.Molecule",
+    remove_hs: bool = False,
+    sanitize: bool = True,
+) -> "RWMol":
     """
     Convert a RMG molecular structure to an RDKit Mol object. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
@@ -331,8 +352,11 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
             # Avoid `SanitizeMol` adding undesired hydrogens
             rd_atom.SetNoImplicit(True)
         else:
-            explicit_Hs = [True for a, b in rmg_atom.edges.items()
-                           if a.is_hydrogen() and b.is_single()]
+            explicit_Hs = [
+                True
+                for a, b in rmg_atom.edges.items()
+                if a.is_hydrogen() and b.is_single()
+            ]
             rd_atom.SetNumExplicitHs(sum(explicit_Hs))
             rd_atom.SetNoImplicit(True)
         rd_atom.SetNumRadicalElectrons(rmg_atom.radical_electrons)
@@ -343,11 +367,13 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
         # For other atoms, to be added once encountered
         if rmg_atom.is_carbon() and rmg_atom.lone_pairs >= 1 and not rmg_atom.charge:
             reset_num_electron[i] = rmg_atom.radical_electrons
-        elif rmg_atom.is_nitrogen() and rmg_atom.lone_pairs >= 2 and not rmg_atom.charge:
+        elif (
+            rmg_atom.is_nitrogen() and rmg_atom.lone_pairs >= 2 and not rmg_atom.charge
+        ):
             reset_num_electron[i] = rmg_atom.radical_electrons
         elif rmg_atom.is_oxygen and rmg_atom.lone_pairs >= 3 and not rmg_atom.charge:
             reset_num_electron[i] = rmg_atom.radical_electrons
-        if not (remove_hs and rmg_atom.symbol == 'H'):
+        if not (remove_hs and rmg_atom.symbol == "H"):
             rwmol.AddAtom(rd_atom)
 
     # Add the bonds
@@ -363,7 +389,8 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
                 rwmol.AddBond(
                     atom_id_map[atom1.id],
                     atom_id_map[atom2.id],
-                    ORDERS[bond12.get_order_str()])
+                    ORDERS[bond12.get_order_str()],
+                )
 
     # Rectify the molecule
     if remove_hs:
@@ -377,8 +404,9 @@ def rmg_mol_to_rdkit_mol(rmgmol: 'rmgpy.molecule.Molecule',
     return rwmol
 
 
-def set_rdconf_coordinates(conf: Union['Conformer', 'RDKitConf'],
-                           coords: Union[tuple, list, np.ndarray]):
+def set_rdconf_coordinates(
+    conf: Union["Conformer", "RDKitConf"], coords: Union[tuple, list, np.ndarray]
+):
     """
     Set the Positions of atoms of the conformer.
 
@@ -416,8 +444,7 @@ def get_obmol_coords(obmol: ob.OBMol):
     return np.array(coords)
 
 
-def set_obmol_coords(obmol: ob.OBMol,
-                     coords: np.array):
+def set_obmol_coords(obmol: ob.OBMol, coords: np.array):
     """
     Get the atom coordinates from an openbabel molecule. If all coordinates are zero,
     It will return None
@@ -430,8 +457,7 @@ def set_obmol_coords(obmol: ob.OBMol,
         atom.SetVector(ob.vector3(*coords[atom_idx].tolist()))
 
 
-def fix_CO_openbabel(obmol: 'Openbabel.OBMol',
-                     correct_CO: bool = True):
+def fix_CO_openbabel(obmol: "Openbabel.OBMol", correct_CO: bool = True):
     """
     Fix the CO perception issue for openbabel molecule.
 
@@ -454,8 +480,7 @@ def fix_CO_openbabel(obmol: 'Openbabel.OBMol',
                 atom.SetFormalCharge(+1)
 
 
-def parse_xyz_by_openbabel(xyz: str,
-                           correct_CO: bool = True):
+def parse_xyz_by_openbabel(xyz: str, correct_CO: bool = True):
     """
     Perceive a xyz str using openbabel and generate the corresponding OBMol.
 
@@ -469,11 +494,11 @@ def parse_xyz_by_openbabel(xyz: str,
         ob.OBMol: An openbabel molecule from the xyz
     """
     obconversion = ob.OBConversion()
-    obconversion.SetInFormat('xyz')
+    obconversion.SetInFormat("xyz")
     obmol = ob.OBMol()
     success = obconversion.ReadString(obmol, xyz)
     if not success:
-        raise ValueError('Unable to parse the provided xyz.')
+        raise ValueError("Unable to parse the provided xyz.")
 
     # Temporary Fix for Issue # 1
     # This function works okay with openbabel 2.4.1 but not 3.1.1
@@ -491,7 +516,10 @@ def parse_xyz_by_openbabel(xyz: str,
         elif obatom.GetAtomicNum() == 8 and obatom.GetTotalValence() < 2:
             obatom.SetSpinMultiplicity(3 - obatom.GetTotalValence())
         # Find the unsaturated nitrogen and halogen
-        elif obatom.GetAtomicNum() in [1, 9, 17, 35, 53] and obatom.GetTotalValence() == 0:
+        elif (
+            obatom.GetAtomicNum() in [1, 9, 17, 35, 53]
+            and obatom.GetTotalValence() == 0
+        ):
             obatom.SetSpinMultiplicity(2)
 
     # Correct [C]=O to [C-]#[O+]
@@ -524,9 +552,10 @@ def get_atom_masses(atom_nums: Iterable):
     return [PERIODIC_TABLE.GetAtomicWeight(int(atom_num)) for atom_num in atom_nums]
 
 
-def get_internal_coords(obmol,
-                        nonredundant: bool = True,
-                        ) -> list:
+def get_internal_coords(
+    obmol,
+    nonredundant: bool = True,
+) -> list:
     """
     Generate a non_redundant_internal coordinate.
 
@@ -535,9 +564,9 @@ def get_internal_coords(obmol,
         nonredundant (bool): whether non-redundant. Defaults to ``True``.
     """
     obconv = ob.OBConversion()
-    obconv.SetOutFormat('gzmat')
+    obconv.SetOutFormat("gzmat")
     gzmat_str = obconv.WriteString(obmol)
-    lines = gzmat_str.split('Variables:')[0].splitlines()[6:]
+    lines = gzmat_str.split("Variables:")[0].splitlines()[6:]
     bonds = []
     angles = []
     torsions = []
@@ -562,8 +591,7 @@ def get_internal_coords(obmol,
     return bonds, angles, torsions
 
 
-def reverse_map(map: Iterable,
-                as_list: bool = True):
+def reverse_map(map: Iterable, as_list: bool = True):
     """
     Inverse-transform the index and value relationship in a mapping.
     E.g., when doing a subgraph match, RDKit will returns a list
@@ -586,16 +614,17 @@ def reverse_map(map: Iterable,
         return np.argsort(map)
 
 
-def parse_xyz_by_jensen(xyz: str,
-                        charge: int = 0,
-                        allow_charged_fragments: bool = False,
-                        use_huckel: bool = False,
-                        embed_chiral: bool = True,
-                        correct_CO: bool = True,
-                        use_atom_maps: bool = False,
-                        force_rdmc: bool = False,
-                        **kwargs,
-                        ) -> 'Mol':
+def parse_xyz_by_jensen(
+    xyz: str,
+    charge: int = 0,
+    allow_charged_fragments: bool = False,
+    use_huckel: bool = False,
+    embed_chiral: bool = True,
+    correct_CO: bool = True,
+    use_atom_maps: bool = False,
+    force_rdmc: bool = False,
+    **kwargs,
+) -> "Mol":
     """
     Perceive a xyz str using `xyz2mol` by Jensen et al. and generate the corresponding RDKit Mol.
     The implementation refers the following blog: https://greglandrum.github.io/rdkit-blog/posts/2022-12-18-introducing-rdDetermineBonds.html
@@ -620,24 +649,25 @@ def parse_xyz_by_jensen(xyz: str,
     """
     # Version < 2022.09.1
     if rdDetermineBonds is None or force_rdmc:
-        return parse_xyz_by_jensen_rdmc(xyz=xyz,
-                                        charge=charge,
-                                        allow_charged_fragments=allow_charged_fragments,
-                                        use_graph=True,
-                                        use_huckel=use_huckel,
-                                        embed_chiral=embed_chiral,
-                                        use_atom_maps=use_atom_maps,
-                                        correct_CO=correct_CO,
-                                        )
+        return parse_xyz_by_jensen_rdmc(
+            xyz=xyz,
+            charge=charge,
+            allow_charged_fragments=allow_charged_fragments,
+            use_graph=True,
+            use_huckel=use_huckel,
+            embed_chiral=embed_chiral,
+            use_atom_maps=use_atom_maps,
+            correct_CO=correct_CO,
+        )
 
     # Version >= 2022.09.1
     try:
         mol = Chem.Mol(Chem.MolFromXYZBlock(xyz))
     except BaseException:
-        raise ValueError('Unable to parse the provided xyz.')
+        raise ValueError("Unable to parse the provided xyz.")
     else:
         if mol is None:
-            raise ValueError('Unable to parse the provided xyz.')
+            raise ValueError("Unable to parse the provided xyz.")
     if mol.GetNumAtoms() == 1:
         atom = mol.GetAtomWithIdx(0)
         # No implicit Hs for single atom molecule
@@ -649,20 +679,25 @@ def parse_xyz_by_jensen(xyz: str,
         # Set the num radical electrons
         atom.SetNumRadicalElectrons(valence - atom.GetFormalCharge())
         return mol
-    rdDetermineBonds.DetermineConnectivity(mol,
-                                           useHueckel=use_huckel,
-                                           charge=charge,)
+    rdDetermineBonds.DetermineConnectivity(
+        mol,
+        useHueckel=use_huckel,
+        charge=charge,
+    )
     # A force correction for CO
-    if correct_CO \
-            and mol.GetNumAtoms() == 2 \
-            and {atom.GetAtomicNum() for atom in mol.GetAtoms()} == {6, 8}:
+    if (
+        correct_CO
+        and mol.GetNumAtoms() == 2
+        and {atom.GetAtomicNum() for atom in mol.GetAtoms()} == {6, 8}
+    ):
         allow_charged_fragments = True
-    rdDetermineBonds.DetermineBondOrders(mol,
-                                         charge=charge,
-                                         allowChargedFragments=allow_charged_fragments,
-                                         embedChiral=embed_chiral,
-                                         useAtomMap=use_atom_maps,
-                                         )
+    rdDetermineBonds.DetermineBondOrders(
+        mol,
+        charge=charge,
+        allowChargedFragments=allow_charged_fragments,
+        embedChiral=embed_chiral,
+        useAtomMap=use_atom_maps,
+    )
     return mol
 
 
@@ -779,5 +814,5 @@ CPK_COLOR_PALETTE = {
     "Mc": (1.00, 0.02, 0.00),
     "Lv": (1.00, 0.06, 0.00),
     "Ts": (1.00, 0.10, 0.00),
-    "Og": (1.00, 0.16, 0.00)
+    "Og": (1.00, 0.16, 0.00),
 }
