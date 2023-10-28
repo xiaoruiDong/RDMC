@@ -76,6 +76,7 @@ def generate_radical_resonance_structures(
     # Post-processing resonance structures
     cleaned_mols = []
     for res_mol in res_mols:
+        discard_flag = False
         for atom in res_mol.GetAtoms():
             # Convert positively charged species back to radical species
             charge = atom.GetFormalCharge()
@@ -83,10 +84,12 @@ def generate_radical_resonance_structures(
                 recipe[atom.GetIdx()] = radical_electrons
                 atom.SetFormalCharge(0)
                 atom.SetNumRadicalElectrons(charge)
-            elif charge < 0:  # Shouldn't appear, just for bug detection
-                raise RuntimeError(
-                    "Encounter charge separation during resonance structure generation."
-                )
+            elif charge < 0:
+                # Known case: O=CC=C -> [O-]C=C[C+]
+                # Discard such resonance structures
+                discard_flag = True
+        if discard_flag:
+            continue
 
         # If a structure cannot be sanitized, removed it
         try:
