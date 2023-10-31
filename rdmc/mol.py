@@ -1260,18 +1260,25 @@ class RDKitMol(object):
 
     def RenumberAtoms(
         self,
-        newOrder: Optional[list] = None,
+        newOrder: Optional[Union[dict, list]] = None,
         updateAtomMap: bool = True,
     ) -> "RDKitMol":
         """
         Return a new copy of RDKitMol that has atom (index) reordered.
 
         Args:
-            newOrder (list, optional): the new ordering the atoms (should be numAtoms long). E.g,
-                                       if newOrder is ``[3,2,0,1]``, then atom ``3`` in the original molecule
-                                       will be atom ``0`` in the new one. If no value provided, then the molecule
-                                       will be renumbered based on the current atom map numbers. The latter is helpful
-                                       when the sequence of atom map numbers and atom indexes are inconsistent.
+            newOrder (list or dict, optional): The new ordering the atoms (should be numAtoms long).
+                                               - If provided as a list, it should a list of atom indexes.
+                                               E.g., if newOrder is ``[3,2,0,1]``, then atom ``3``
+                                               in the original molecule will be atom ``0`` in the new one.
+                                               - If provided as a dict, it should be a mapping between atoms. E.g.,
+                                               if newOrder is ``{0: 3, 1: 2, 2: 0, 3: 1}``, then atom ``0`` in the
+                                               original molecule will be atom ``3`` in the new one. Unlike the list case,
+                                               the newOrder can be a partial mapping, but one should make sure all the pairs
+                                               are included. E.g., ``{0: 3, 3: 0}``.
+                                               - If no value provided (default), then the molecule
+                                               will be renumbered based on the current atom map numbers. The latter is helpful
+                                               when the sequence of atom map numbers and atom indexes are inconsistent.
             updateAtomMap (bool): Whether to update the atom map number based on the
                                   new order. Defaults to ``True``.
 
@@ -1281,6 +1288,12 @@ class RDKitMol(object):
         if newOrder is None:
             newOrder = reverse_map(self.GetAtomMapNumbers())
         try:
+            if isinstance(newOrder, dict):
+                newOrder_ = list(range(self.GetNumAtoms()))
+                for pair in newOrder.items():
+                    newOrder_[pair[1]] = pair[0]
+                newOrder = newOrder_
+
             rwmol = Chem.rdmolops.RenumberAtoms(self._mol, newOrder)
         except RuntimeError:
             raise ValueError(

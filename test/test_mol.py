@@ -573,6 +573,13 @@ class TestRDKitMol:
         assert renumbered.GetAtomMapNumbers() == (1, 2, 3, 4, 5)
         assert renumbered.GetAtomicNumbers() == [1, 1, 1, 1, 6]
 
+        '[C:1]([H:2])([H:3])([H:4])[H:5]'
+        ref_mol = RDKitMol.FromSmiles(smi)
+        # Renumber molecule with a dict
+        renumbered = ref_mol.RenumberAtoms({0: 4, 4: 0}, updateAtomMap=True)
+        assert renumbered.GetAtomMapNumbers() == (1, 2, 3, 4, 5)
+        assert renumbered.GetAtomicNumbers() == [1, 1, 1, 1, 6]
+
     def test_copy(self):
         """
         Test copy molecule functionality.
