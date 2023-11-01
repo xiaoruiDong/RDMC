@@ -541,7 +541,7 @@ class TestRDKitMol:
         mol1 = RDKitMol.FromSmiles(smi1)
         mol2 = RDKitMol.FromSmiles(smi2)
 
-        match, recipe = mol1.GetSubStructMatchAndRecipe(mol2)
+        match, recipe = mol1.GetSubstructMatchAndRecipe(mol2)
         assert match == (1, 0, 2, 3, 4)
         assert recipe == {0: 1, 1: 0}
 
@@ -550,7 +550,7 @@ class TestRDKitMol:
         mol1 = RDKitMol.FromSmiles(smi1)
         mol2 = RDKitMol.FromSmiles(smi2)
 
-        match, recipe = mol1.GetSubStructMatchAndRecipe(mol2)
+        match, recipe = mol1.GetSubstructMatchAndRecipe(mol2)
         assert match == (1, 0, 2, 4, 3)
         assert recipe == {0: 1, 1: 0, 3: 4, 4: 3}
 

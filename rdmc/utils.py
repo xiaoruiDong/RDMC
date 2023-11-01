@@ -787,6 +787,7 @@ def get_substruct_match_and_recover_recipe(
 
     # Clean up the recipe based on the equivalent hydrogens
     # E.g. {2: 13, 12: 2, 13: 12} -> {2: 13, 12: 13}
+    match = list(match)
     for group in equivalent_hs:
         for i in group:
             j = recipe.get(i)
@@ -795,7 +796,7 @@ def get_substruct_match_and_recover_recipe(
                 match[i], match[j] = match[j], j
                 del recipe[j]
 
-    return match, recipe
+    return tuple(match), recipe
 
 
 # CPK (Corey-Pauling-Koltun) color scheme, Generated using ChatGPT

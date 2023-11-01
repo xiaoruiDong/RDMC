@@ -1061,14 +1061,15 @@ class RDKitMol(object):
                 query, uniquify, useChirality, useQueryQueryMatches, maxMatches
             )
 
-    def GetSubStructMatchAndRecipe(
+    def GetSubstructMatchAndRecipe(
         self,
         mol: 'RDKitMol'
     ) -> Tuple[tuple, dict]:
         """
-        Get the substructure match between two molecules and the recipe to recover
-        the pattern `mol`. If swapping the atom indices in mol according to the recipe,
-        mol2 should be the same as mol1.
+        Get the substructure match between two molecules and a recipe to recover
+        the provide `mol` to the current mol. If swapping the atom indices in `mol` according to the recipe,
+        the `mol` should have the same connectivity as the current molecule. Note, if no match is found,
+        the returned match and recipe will be empty.
 
         Args:
             mol (RDKitMol): The molecule to compare with.
