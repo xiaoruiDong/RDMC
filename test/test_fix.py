@@ -28,6 +28,7 @@ def test_fix_sanitize_ok(smi, exp_smi):
 @pytest.mark.parametrize(
     "smi, exp_smi",
     [
+        ("[C]#[O]", "[C-]#[O+]"),
         ("[NH3][O]", "[NH3+][O-]"),
         ("[CH2][NH3]", "[CH2-][NH3+]"),
         ("[C]#[NH]", "[C-]#[NH+]"),

@@ -17,48 +17,52 @@ RECOMMEND_REMEDIES = [
     rdChemReactions.ReactionFromSmarts(
         "[O+0-0v2X1:1]=[C+0-0v2X1:2]>>[O+1v3X1:1]#[C-1v3X1:2]"
     ),
-    # Remedy 2 - Oxygen Molecule: O=O to [O]-[O]
+    # Remedy 2 - Carbon monoxide: [C]=O to [C-]#[O+]
+    rdChemReactions.ReactionFromSmarts(
+        "[O+0-0v3X1:1]#[C+0-0v3X1:2]>>[O+1v3X1:1]#[C-1v3X1:2]"
+    ),
+    # Remedy 3 - Oxygen Molecule: O=O to [O]-[O]
     rdChemReactions.ReactionFromSmarts(
         "[O+0-0v2X1:1]=[O+0-0v2X1:2]>>[O+0-0v1X1:1]-[O+0-0v1X1:2]"
     ),
-    # Remedy 3 - isocyanide: R[N]#[C] to R[N+]#[C-]
+    # Remedy 4 - isocyanide: R[N]#[C] to R[N+]#[C-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X2:1]#[C+0-0v3X1:2]>>[N+v4X2:1]#[C-v3X1:2]"
     ),
-    # Remedy 4 - azide: RN=N=[N] to RN=[N+]=[N-]
+    # Remedy 5 - azide: RN=N=[N] to RN=[N+]=[N-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v3X2:1]=[N+0-0v4X2:2]=[N+0-0v2X1:3]>>[N+0-0v3X2:1]=[N+1v4X2:2]=[N-1v2X1:3]"
     ),
-    # Remedy 5 - amine oxide: RN(R)(R)-O to R[N+](R)(R)-[O-]
+    # Remedy 6 - amine oxide: RN(R)(R)-O to R[N+](R)(R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X4:1]-[O+0-0v1X1:2]>>[N+1v4X4:1]-[O-1v1X1:2]"
     ),
-    # Remedy 6 - amine radical: R[C](R)-N(R)(R)R to R[C-](R)-[N+](R)(R)R
+    # Remedy 7 - amine radical: R[C](R)-N(R)(R)R to R[C-](R)-[N+](R)(R)R
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X4:1]-[C+0-0v3X3:2]>>[N+1v4X4:1]-[C-1v3X3:2]"
     ),
-    # Remedy 7 - amine radical: RN(R)=C to RN(R)-[C]
+    # Remedy 8 - amine radical: RN(R)=C to RN(R)-[C]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X3:1]=[C+0-0v4X3:2]>>[N+0-0v3X3:1]-[C+0-0v3X3:2]"
     ),
-    # Remedy 8 - quintuple C bond, usually due to RC(=O)=O: R=C(R)=O to R=C(R)-[O]
+    # Remedy 9 - quintuple C bond, usually due to RC(=O)=O: R=C(R)=O to R=C(R)-[O]
     rdChemReactions.ReactionFromSmarts(
         "[C+0-0v5X3:1]=[O+0-0v2X1:2]>>[C+0-0v4X3:1]-[O+0-0v1X1:2]"
     ),
-    # Remedy 9 - sulphuric bi-radicals: R[S](R)(-[O])-[O] to R[S](R)(=O)(=O)
+    # Remedy 10 - sulphuric bi-radicals: R[S](R)(-[O])-[O] to R[S](R)(=O)(=O)
     rdChemReactions.ReactionFromSmarts(
         "[S+0-0v4X4:1](-[O+0-0v1X1:2])-[O+0-0v1X1:3]>>[S+0-0v6X4:1](=[O+0-0v2X1:2])=[O+0-0v2X1:3]"
     ),
-    # Remedy 10 - Triazinane: C1=N=C=N=C=N=1 to c1ncncn1
+    # Remedy 11 - Triazinane: C1=N=C=N=C=N=1 to c1ncncn1
     rdChemReactions.ReactionFromSmarts(
         "[C+0-0v5X3:1]1=[N+0-0v4X2:2]=[C+0-0v5X3:3]=[N+0-0v4X2:4]=[C+0-0v5X3:5]=[N+0-0v4X2:6]=1"
         ">>[C+0-0v5X3:1]1[N+0-0v4X2:2]=[C+0-0v5X3:3][N+0-0v4X2:4]=[C+0-0v5X3:5][N+0-0v4X2:6]=1"
     ),
-    # Remedy 11 - peroxide biradical: R[C](R)O[O] to R[C+](R)O[O-]
+    # Remedy 12 - peroxide biradical: R[C](R)O[O] to R[C+](R)O[O-]
     rdChemReactions.ReactionFromSmarts(
         "[C+0-0v3X3:1]-[O+0-0v2X2:2]-[O+0-0v1X1:3]>>[C+1v3X3:1]-[O+0-0v2X2:2]-[O-1v1X1:3]"
     ),
-    # Remedy 12 - conjugate peroxide biradical: [C]-C=C(R)O[O] to C=C-[C+](R)O[O-]
+    # Remedy 13 - conjugate peroxide biradical: [C]-C=C(R)O[O] to C=C-[C+](R)O[O-]
     rdChemReactions.ReactionFromSmarts(
         "[C+0-0v3X3:1]-[C:2]=[C+0-0v4X3:3]-[O+0-0v2X2:4]-[O+0-0v1X1:5]>>[C+0-0v4X3:1]=[C:2]-[C+1v3X3:3]-[O+0-0v2X2:4]-[O-1v1X1:5]"
     ),

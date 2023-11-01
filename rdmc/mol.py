@@ -605,7 +605,6 @@ class RDKitMol(object):
         xyz: str,
         backend: str = "openbabel",
         header: bool = True,
-        correctCO: bool = True,
         sanitize: bool = True,
         embed_chiral: bool = False,
         **kwargs,
@@ -619,7 +618,6 @@ class RDKitMol(object):
                            Currently, we only support ``'openbabel'`` and ``'jensen'``.
             header (bool, optional): If lines of the number of atoms and title are included.
                                      Defaults to ``True.``
-            correctCO (bool, optional): Whether to correct the CO bond as "[C-]#[O+]". Defaults to ``True``.
             sanitize (bool): Sanitize the RDKit molecule during conversion. Helpful to set it to ``False``
                              when reading in TSs. Defaults to ``True``.
             embed_chiral: ``True`` to embed chiral information. Defaults to ``True``.
@@ -642,7 +640,7 @@ class RDKitMol(object):
 
         # Openbabel support read xyz and perceive atom connectivities
         if backend.lower() == "openbabel":
-            obmol = parse_xyz_by_openbabel(xyz, correct_CO=correctCO)
+            obmol = parse_xyz_by_openbabel(xyz)
             rdmol = cls.FromOBMol(obmol, sanitize=sanitize)
             if embed_chiral:
                 rdmol.AssignStereochemistryFrom3D()
@@ -652,7 +650,7 @@ class RDKitMol(object):
         # provides an approach to convert xyz to mol
         elif backend.lower() == "jensen":
             mol = parse_xyz_by_jensen(
-                xyz, correct_CO=correctCO, embed_chiral=embed_chiral, **kwargs
+                xyz, embed_chiral=embed_chiral, **kwargs
             )
             return cls(mol)
 
@@ -690,7 +688,6 @@ class RDKitMol(object):
         path: str,
         backend: str = "openbabel",
         header: bool = True,
-        correctCO: bool = True,
         removeHs: bool = False,
         sanitize: bool = True,
         sameMol: bool = False,
@@ -723,7 +720,6 @@ class RDKitMol(object):
                 xyz,
                 backend=backend,
                 header=header,
-                correctCO=correctCO,
                 sanitize=sanitize,
                 **kwargs,
             )

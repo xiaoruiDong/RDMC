@@ -56,11 +56,6 @@ ROTATABLE_BOND_SMARTS_WO_METHYL = Chem.MolFromSmarts(
     "[!$(*#*)&!D1!H3]-&!@[!$(*#*)&!D1&!H3]"
 )
 
-# When perceiving molecules, openbabel will always perceive carbon monoxide as [C]=O
-# Needs to correct it by [C-]#[O+]
-CO_OPENBABEL_PATTERN = ob.OBSmartsPattern()
-CO_OPENBABEL_PATTERN.Init("[Cv2X1]=[OX1]")
-
 # Carbene, nitrene, and atomic oxygen templates. RDKit and Openbabel have difficulty
 # distinguish their multiplicity when input as SMILES or XYZ
 CARBENE_PATTERN = Chem.MolFromSmarts("[Cv0,Cv1,Cv2,Nv0,Nv1,Ov0]")
@@ -457,38 +452,12 @@ def set_obmol_coords(obmol: ob.OBMol, coords: np.array):
         atom.SetVector(ob.vector3(*coords[atom_idx].tolist()))
 
 
-def fix_CO_openbabel(obmol: "Openbabel.OBMol", correct_CO: bool = True):
-    """
-    Fix the CO perception issue for openbabel molecule.
-
-    Args:
-        obmol (Openbabel.OBMol): The Openbabel molecule instance.
-        correct_CO (bool, optional): Whether to fix this issue. Defaults to True.
-    """
-    if not correct_CO:
-        return
-    CO_OPENBABEL_PATTERN.Match(obmol)
-    for pair in CO_OPENBABEL_PATTERN.GetUMapList():
-        obmol.GetBond(*pair).SetBondOrder(3)
-        for idx in pair:
-            atom = obmol.GetAtom(idx)
-            if atom.GetAtomicNum() == 6:
-                atom.SetSpinMultiplicity(0)
-                atom.SetFormalCharge(-1)
-            elif atom.GetAtomicNum() == 8:
-                atom.SetSpinMultiplicity(0)
-                atom.SetFormalCharge(+1)
-
-
-def parse_xyz_by_openbabel(xyz: str, correct_CO: bool = True):
+def parse_xyz_by_openbabel(xyz: str):
     """
     Perceive a xyz str using openbabel and generate the corresponding OBMol.
 
     Args:
         xyz (str): A str in xyz format containing atom positions.
-        correctCO (bool, optional): It is known that openbabel will parse carbon monoxide
-                                    as [C]=O instead of [C-]#[O+]. This function contains
-                                    a patch to correct that. Defaults to ``True``.
 
     Returns:
         ob.OBMol: An openbabel molecule from the xyz
@@ -521,9 +490,6 @@ def parse_xyz_by_openbabel(xyz: str, correct_CO: bool = True):
             and obatom.GetTotalValence() == 0
         ):
             obatom.SetSpinMultiplicity(2)
-
-    # Correct [C]=O to [C-]#[O+]
-    fix_CO_openbabel(obmol, correct_CO=correct_CO)
 
     return obmol
 
@@ -620,7 +586,6 @@ def parse_xyz_by_jensen(
     allow_charged_fragments: bool = False,
     use_huckel: bool = False,
     embed_chiral: bool = True,
-    correct_CO: bool = True,
     use_atom_maps: bool = False,
     force_rdmc: bool = False,
     **kwargs,
@@ -634,10 +599,6 @@ def parse_xyz_by_jensen(
         allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to False.
         use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
         embed_chiral: ``True`` to embed chiral information. Defaults to True.
-        correctCO (bool, optional): Defaults to ``True``.
-                                    In order to get correct RDKit molecule for carbon monoxide
-                                    ([C-]#[O+]), allow_charged_fragments should be forced to ``True``.
-                                    This function contains a patch to correct that.
         use_atom_maps(bool, optional): ``True`` to set atom map numbers to the molecule. Defaults to ``False``.
         force_rdmc (bool, optional): Defaults to ``False``. In rare case, we may hope to use a tailored
                                      version of the Jensen XYZ parser, other than the one available in RDKit.
@@ -657,7 +618,6 @@ def parse_xyz_by_jensen(
             use_huckel=use_huckel,
             embed_chiral=embed_chiral,
             use_atom_maps=use_atom_maps,
-            correct_CO=correct_CO,
         )
 
     # Version >= 2022.09.1
@@ -684,13 +644,6 @@ def parse_xyz_by_jensen(
         useHueckel=use_huckel,
         charge=charge,
     )
-    # A force correction for CO
-    if (
-        correct_CO
-        and mol.GetNumAtoms() == 2
-        and {atom.GetAtomicNum() for atom in mol.GetAtoms()} == {6, 8}
-    ):
-        allow_charged_fragments = True
     rdDetermineBonds.DetermineBondOrders(
         mol,
         charge=charge,
