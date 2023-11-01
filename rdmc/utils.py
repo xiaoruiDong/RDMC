@@ -738,6 +738,66 @@ def get_closed_shell_by_add_hs(
     return mol
 
 
+def get_substruct_match_and_recover_recipe(
+    mol1: "RWMol",
+    mol2: "RWMol",
+) -> tuple[tuple, dict]:
+    """
+    Get the substructure match between two molecules and the recipe to recover
+    mol2 to mol1. If swapping the atom indices in mol2 according to the recipe,
+    mol2 should be the same as mol1.
+
+    Args:
+        mol1 (RWMol): The first molecule.
+        mol2 (RWMol): The second molecule.
+
+    Returns:
+        tuple: The substructure match.
+        dict: A truncated atom mapping of mol2 to mol1.
+    """
+    match = mol1.GetSubstructMatch(mol2)
+    recipe = {i: j for i, j in enumerate(match) if i != j}
+
+    if len(recipe) == 0:
+        # Either mol1 and mol2 has identical graph or no match at all
+        return match, recipe
+
+    # The default GetSubstructMatch may not always return the simplest mapping
+    # The following implements a naive algorithm fixing the issue caused by equivalent
+    # hydrogens. The idea is that if two hydrogens are equivalent, they are able to
+    # be mapped to the same atom in mol1.
+
+    # Find equivalent hydrogens
+    hs = [i for i in recipe.keys() if mol1.GetAtomWithIdx(i).GetAtomicNum() == 1]
+    equivalent_hs = []
+    checked_hs = set()
+
+    for i in range(len(hs)):
+        if i in checked_hs:
+            continue
+        equivalent_hs.append([hs[i]])
+        checked_hs.add(i)
+        for j in range(i + 1, len(hs)):
+            if j in checked_hs:
+                continue
+            path = Chem.rdmolops.GetShortestPath(mol2, hs[i], hs[j])
+            if len(path) == 3:  # H1-X2-H3
+                equivalent_hs[-1].append(hs[j])
+                checked_hs.add(j)
+
+    # Clean up the recipe based on the equivalent hydrogens
+    # E.g. {2: 13, 12: 2, 13: 12} -> {2: 13, 12: 13}
+    for group in equivalent_hs:
+        for i in group:
+            j = recipe.get(i)
+            if j is not None and j in group:
+                recipe[i] = recipe[j]
+                match[i], match[j] = match[j], j
+                del recipe[j]
+
+    return match, recipe
+
+
 # CPK (Corey-Pauling-Koltun) color scheme, Generated using ChatGPT
 CPK_COLOR_PALETTE = {
     "H": (1.00, 1.00, 1.00),

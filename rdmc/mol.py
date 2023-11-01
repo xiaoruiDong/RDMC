@@ -1061,6 +1061,24 @@ class RDKitMol(object):
                 query, uniquify, useChirality, useQueryQueryMatches, maxMatches
             )
 
+    def GetSubStructMatchAndRecipe(
+        self,
+        mol: 'RDKitMol'
+    ) -> Tuple[tuple, dict]:
+        """
+        Get the substructure match between two molecules and the recipe to recover
+        the pattern `mol`. If swapping the atom indices in mol according to the recipe,
+        mol2 should be the same as mol1.
+
+        Args:
+            mol (RDKitMol): The molecule to compare with.
+
+        Returns:
+            tuple: The substructure match.
+            dict: A truncated atom mapping of mol2 to mol1.
+        """
+        return get_substruct_match_and_recover_recipe(self._mol, mol._mol)
+
     def GetMolFrags(
         self,
         asMols: bool = False,

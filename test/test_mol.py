@@ -531,6 +531,29 @@ class TestRDKitMol:
         assert 200 == m1.CombineMol(m2, c_product=True).GetNumConformers()
         assert 200 == m2.CombineMol(m1, c_product=True).GetNumConformers()
 
+    def test_get_substruct_match_and_recipe(self):
+        """
+        Test GetSubstructMatchAndRecipe
+        """
+        smi1 = '[C:1]([H:2])([H:3])([H:4])[H:5]'
+        smi2 = '[H:1][C:2]([H:3])([H:4])[H:5]'
+
+        mol1 = RDKitMol.FromSmiles(smi1)
+        mol2 = RDKitMol.FromSmiles(smi2)
+
+        match, recipe = mol1.GetSubStructMatchAndRecipe(mol2)
+        assert match == (1, 0, 2, 3, 4)
+        assert recipe == {0: 1, 1: 0}
+
+        smi1 = '[C:1]([H:2])([H:3])[H:4].[H:5]'
+        smi2 = '[H:1][C:2]([H:3])[H:5].[H:4]'
+        mol1 = RDKitMol.FromSmiles(smi1)
+        mol2 = RDKitMol.FromSmiles(smi2)
+
+        match, recipe = mol1.GetSubStructMatchAndRecipe(mol2)
+        assert match == (1, 0, 2, 4, 3)
+        assert recipe == {0: 1, 1: 0, 3: 4, 4: 3}
+
     def test_renumber_atoms(self):
         """
         Test the functionality of renumber atoms of a molecule.
