@@ -184,6 +184,13 @@ def is_equivalent_reaction(
     Returns:
         bool: Whether the two reactions are equivalent.
     """
+    equiv = (rxn1.num_formed_bonds == rxn2.num_formed_bonds) \
+        and (rxn1.num_broken_bonds == rxn2.num_broken_bonds) \
+        and (rxn1.num_changed_bonds == rxn2.num_changed_bonds)
+
+    if not equiv:
+        return False
+
     match_r, recipe_r = rxn1.reactant_complex.GetSubstructMatchAndRecipe(
         rxn2.reactant_complex
     )
