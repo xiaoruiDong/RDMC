@@ -54,6 +54,14 @@ RECOMMEND_REMEDIES = [
         "[C+0-0v5X3:1]1=[N+0-0v4X2:2]=[C+0-0v5X3:3]=[N+0-0v4X2:4]=[C+0-0v5X3:5]=[N+0-0v4X2:6]=1"
         ">>[C+0-0v5X3:1]1[N+0-0v4X2:2]=[C+0-0v5X3:3][N+0-0v4X2:4]=[C+0-0v5X3:5][N+0-0v4X2:6]=1"
     ),
+    # Remedy 11 - peroxide biradical: R[C](R)O[O] to R[C+](R)O[O-]
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v3X3:1]-[O+0-0v2X2:2]-[O+0-0v1X1:3]>>[C+1v3X3:1]-[O+0-0v2X2:2]-[O-1v1X1:3]"
+    ),
+    # Remedy 12 - conjugate peroxide biradical: [C]-C=C(R)O[O] to C=C-[C+](R)O[O-]
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v3X3:1]-[C:2]=[C+0-0v4X3:3]-[O+0-0v2X2:4]-[O+0-0v1X1:5]>>[C+0-0v4X3:1]=[C:2]-[C+1v3X3:3]-[O+0-0v2X2:4]-[O-1v1X1:5]"
+    ),
 ]
 
 
