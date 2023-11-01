@@ -536,7 +536,6 @@ def AC2mol(mol, AC, atoms, charge, allow_charged_fragments=True,
     if not mols:
         mols = [mol]  # For some cases, resonance structure supplier creates Nones
 
-
     return mols
 
 
