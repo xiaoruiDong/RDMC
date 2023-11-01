@@ -5,7 +5,7 @@
 This module provides methods that can directly apply to RDKit Mol/RWMol.
 """
 
-from typing import Iterable, Union
+from typing import Iterable, Tuple, Union
 
 import numpy as np
 
@@ -741,7 +741,7 @@ def get_closed_shell_by_add_hs(
 def get_substruct_match_and_recover_recipe(
     mol1: "RWMol",
     mol2: "RWMol",
-) -> tuple[tuple, dict]:
+) -> Tuple[tuple, dict]:
     """
     Get the substructure match between two molecules and the recipe to recover
     mol2 to mol1. If swapping the atom indices in mol2 according to the recipe,
