@@ -41,14 +41,18 @@ class TestReaction:
         rxn = Reaction(reactant=reactant, product=product)
         assert len(rxn.reactant) == 1
         assert len(rxn.product) == 1
-        assert rxn.reactant[0].ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.reactant_complex.ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.product[0].ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.product_complex.ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.reactant[0].ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.reactant_complex.ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.product[0].ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.product_complex.ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
 
         # Test the initialization of the Reaction class with RDKitMol
         reactant = self.rmol1
@@ -56,14 +60,18 @@ class TestReaction:
         rxn = Reaction(reactant=reactant, product=product)
         assert len(rxn.reactant) == 1
         assert len(rxn.product) == 1
-        assert rxn.reactant[0].ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.reactant_complex.ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.product[0].ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.product_complex.ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.reactant[0].ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.reactant_complex.ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.product[0].ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.product_complex.ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
 
     def test_from_reaction_smiles_1_to_1(self):
         """
@@ -73,30 +81,40 @@ class TestReaction:
         rxn = Reaction.from_reaction_smiles(rxn_smiles)
         assert len(rxn.reactant) == 1
         assert len(rxn.product) == 1
-        assert rxn.reactant[0].ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.reactant_complex.ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.product[0].ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.product_complex.ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.reactant[0].ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.reactant_complex.ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.product[0].ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.product_complex.ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
 
     def test_from_reactant_product_smiles_1_to_1(self):
         """
         Test the initialization of the Reaction class from reactant and product smiles.
         """
-        rxn = Reaction.from_reactant_and_product_smiles(rsmi=self.rsmi1, psmi=self.psmi1)
+        rxn = Reaction.from_reactant_and_product_smiles(
+            rsmi=self.rsmi1, psmi=self.psmi1
+        )
         assert len(rxn.reactant) == 1
         assert len(rxn.product) == 1
-        assert rxn.reactant[0].ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.reactant_complex.ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.product[0].ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
-        assert rxn.product_complex.ToSmiles(removeAtomMap=False, removeHs=False) \
-            == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.reactant[0].ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.reactant_complex.ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.rmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.product[0].ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
+        assert rxn.product_complex.ToSmiles(
+            removeAtomMap=False, removeHs=False
+        ) == self.pmol1.ToSmiles(removeAtomMap=False, removeHs=False)
 
     def test_is_num_atoms_balanced(self):
         """
@@ -195,5 +213,5 @@ class TestReaction:
         assert rxn1.is_equivalent(rxn2, both_directions=True) == expected_both
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
