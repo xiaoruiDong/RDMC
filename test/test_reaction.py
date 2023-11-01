@@ -14,7 +14,7 @@ from rdmc import Reaction, RDKitMol
 logging.basicConfig(level=logging.DEBUG)
 
 
-class TestReaction(unittest.TestCase):
+class TestReaction:
     """
     A class used to test basic operations for the RDKitMol Class.
     """
@@ -151,6 +151,48 @@ class TestReaction(unittest.TestCase):
         """
         # Reaction 1
         assert self.rxn1.num_broken_bonds == 1
+
+    @pytest.mark.parametrize(
+        "rxn_smi1, rxn_smi2, expected_forward, expected_both",
+        [
+            # Case 1: the difference is right after the >> sign
+            (
+                "[O:1]([C:2]([C:3]([C:4]([C:5]([C:6]([C:7]([H:18])([H:19])[H:20])([H:16])[H:17])([H:14])[H:15])([H:12])"
+                "[H:13])[H:11])([H:9])[H:10])[H:8]>>[H:18].[O:1]([C:2]([C:3]1([H:11])[C:4]([H:12])([H:13])[C:5]([H:14])"
+                "([H:15])[C:6]([H:16])([H:17])[C:7]1([H:19])[H:20])([H:9])[H:10])[H:8]",
+                "[O:1]([C:2]([C:3]([C:4]([C:5]([C:6]([C:7]([H:18])([H:19])[H:20])([H:16])[H:17])([H:14])[H:15])([H:12])"
+                "[H:13])[H:11])([H:9])[H:10])[H:8]>>[H:20].[O:1]([C:2]([C:3]1([H:11])[C:4]([H:12])([H:13])[C:5]([H:14])"
+                "([H:15])[C:6]([H:16])([H:17])[C:7]1([H:18])[H:19])([H:9])[H:10])[H:8]",
+                True,
+                True,
+            ),
+            # Case 2: the first is H abstraction, the second is H transfer; pay attention to the indexes of O-C=O group
+            (
+                "[H:3][O:8][C:7]([C:5]([C:4]([H:10])([H:11])[H:12])=[C:6]([H:13])[H:14])=[O:9].[O:1]([O:2])[H:15]>>[C:4]([C:5]"
+                "(=[C:6]([H:13])[H:14])[C:7](=[O:8])[O:9][H:15])([H:10])([H:11])[H:12].[O:1]([O:2])[H:3]",
+                "[C:4]([C:5](=[C:6]([H:13])[H:14])[C:7](=[O:8])[O:9][H:15])([H:10])([H:11])[H:12].[O:1]([O:2])[H:3]>>[H:3]"
+                "[O:9][C:7]([C:5]([C:4]([H:10])([H:11])[H:12])=[C:6]([H:13])[H:14])=[O:8].[O:1][O:2][H:15]",
+                False,
+                False,
+            ),
+            # Case 3: The reverse of the second reaction is equivalent to the first reaction
+            (
+                "[C:1]([C:2]([H:5])([H:6])[O:7][O:8][H:9])([H:3])([H:4])[O:10]>>[C:1]([C:2]([H:5])([H:6])[O:7][O:8][H:9])([H:3])=[O:10].[H:4]",
+                "[C:1]([C:2]([H:5])([H:6])[O:7][O:8][H:9])([H:4])=[O:10].[H:3]>>[C:1]([C:2]([H:5])([H:6])[O:7][O:8][H:9])([H:3])([H:4])[O:10]",
+                False,
+                True,
+            ),
+        ],
+    )
+    def test_is_equivalent(self, rxn_smi1, rxn_smi2, expected_forward, expected_both):
+        """
+        Test the is_equivalent method.
+        """
+        rxn1 = Reaction.from_reaction_smiles(rxn_smi1)
+        rxn2 = Reaction.from_reaction_smiles(rxn_smi2)
+
+        assert rxn1.is_equivalent(rxn2, both_directions=False) == expected_forward
+        assert rxn1.is_equivalent(rxn2, both_directions=True) == expected_both
 
 
 if __name__ == '__main__':
