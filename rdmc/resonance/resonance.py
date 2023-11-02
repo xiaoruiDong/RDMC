@@ -71,7 +71,7 @@ def generate_radical_resonance_structures(
     if kekulize:
         flags |= Chem.KEKULE_ALL
     suppl = Chem.ResonanceMolSupplier(mol_copy._mol, flags=flags)
-    res_mols = [RDKitMol(RWMol(mol)) for mol in suppl]
+    res_mols = [RDKitMol(RWMol(mol)) for mol in suppl if mol is not None]
 
     # Post-processing resonance structures
     cleaned_mols = []
