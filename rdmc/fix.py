@@ -294,6 +294,7 @@ def fix_mol(
         max_attempts (int, optional): The maximum number of attempts to fix the molecule.
                                         Defaults to ``10``.
         sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
+                                   Using ``False`` is only recommended for debugging and testing.
         fix_spin_multiplicity (bool, optional): Whether to fix the spin multiplicity of the molecule.
                                                  Defaults to ``False``.
         mult (int, optional): The desired spin multiplicity. Defaults to ``0``, which means the lowest possible
@@ -324,12 +325,16 @@ def fix_mol(
     return mol
 
 
-def find_oxonium_bonds(mol: "RDKitMol") -> List[tuple]:
+def find_oxonium_bonds(
+    mol: "RDKitMol",
+    threshold: float = 1.65,
+) -> List[tuple]:
     """
     Find the potential oxonium atom.
 
     Args:
         mol (RDKitMol): The molecule to be fixed.
+        threshold (float, optional): The threshold to determine if two atoms are connected.
 
     Returns:
         List[tuple]: a list of (oxygen atom index, the other atom index).
@@ -345,7 +350,9 @@ def find_oxonium_bonds(mol: "RDKitMol") -> List[tuple]:
     dist_mat = mol.GetDistanceMatrix()
     dist_mat[oxygen_idxs, oxygen_idxs] = 100  # Set the self distance to a large number
 
-    infer_conn_mat = (dist_mat[oxygen_idxs][:, heavy_idxs] <= 1.8).astype(int)
+    # A detailed check may be done by element type
+    # for now we will use the threshold based on the longest C-O bond 1.65 A
+    infer_conn_mat = (dist_mat[oxygen_idxs][:, heavy_idxs] <= threshold).astype(int)
     actual_conn_mat = mol.GetAdjacencyMatrix()[oxygen_idxs][:, heavy_idxs]
 
     # Find potentially missing bonds
@@ -358,12 +365,25 @@ def find_oxonium_bonds(mol: "RDKitMol") -> List[tuple]:
     ]
 
 
-def fix_oxonium_bonds(mol: "RDKitMol"):
+def fix_oxonium_bonds(
+    mol: "RDKitMol",
+    threshold: float = 1.65,
+    sanitize: bool = True,
+) -> 'RDKitMol':
     """
     Fix the oxonium atom. Openbabel and Jensen perception algorithm do not perceive the oxonium atom correctly.
     This is a fix to detect if the molecule contains oxonium atom and fix it.
+
+    Args:
+        mol (RDKitMol): The molecule to be fixed.
+        threshold (float, optional): The threshold to determine if two atoms are connected.
+        sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
+                                   Using ``False`` is only recommended for debugging and testing.
+
+    Returns:
+        RDKitMol: The fixed molecule.
     """
-    oxonium_bonds = find_oxonium_bonds(mol)
+    oxonium_bonds = find_oxonium_bonds(mol, threshold=threshold)
 
     if len(oxonium_bonds) == 0:
         return mol
@@ -380,9 +400,16 @@ def fix_oxonium_bonds(mol: "RDKitMol"):
 
     # This remedy is only used for oxonium
     remedies = [
+        # Remedy 1 - R[O](R)[O] to R[O+](R)[O-]
+        # This is a case combining two radicals R-O-[O] and [R]
         rdChemReactions.ReactionFromSmarts(
             "[O+0-0v3X3:1]-[O+0-0v1X1:2]>>[O+1v3X3:1]-[O-1v1X1:2]"
         ),
+        # Remedy 2 - R[O](R)C(R)=O to R[O+](R)[C](R)[O-]
+        # This is a case combining a closed shell ROR with a radical R[C]=O
+        rdChemReactions.ReactionFromSmarts(
+            "[O+0-0v3X3:1]-[C+0-0v4X3:2]=[O+0-0v2X1:3]>>[O+1v3X3:1]-[C+0-0v3X3:2]-[O-1v1X1:3]"
+        ),
     ]
 
-    return fix_mol(mol, remedies=remedies)
+    return fix_mol(mol, remedies=remedies, sanitize=sanitize)
