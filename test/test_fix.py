@@ -16,8 +16,8 @@ from rdmc.fix import ALL_REMEDIES, fix_mol
         ("O=O", "[O][O]"),
         ("[C]=O", "[C-]#[O+]"),
         ("CS(C)([O])[O]", "CS(C)(=O)=O"),
-        ("[CH2]O[O]", "[CH2+]O[O-]"),
-        ("[CH2]C=CO[O]", "C=C[CH+]O[O-]"),
+        ("[CH2]O[O]", "C=[O+][O-]"),
+        ("[CH2]C=CO[O]", "C=CC=[O+][O-]"),
     ],
 )
 def test_fix_sanitize_ok(smi, exp_smi):

@@ -58,39 +58,39 @@ RECOMMEND_REMEDIES = [
         "[C+0-0v5X3:1]1=[N+0-0v4X2:2]=[C+0-0v5X3:3]=[N+0-0v4X2:4]=[C+0-0v5X3:5]=[N+0-0v4X2:6]=1"
         ">>[C+0-0v5X3:1]1[N+0-0v4X2:2]=[C+0-0v5X3:3][N+0-0v4X2:4]=[C+0-0v5X3:5][N+0-0v4X2:6]=1"
     ),
-    # Remedy 12 - peroxide biradical: R[C](R)O[O] to R[C+](R)O[O-]
-    rdChemReactions.ReactionFromSmarts(
-        "[C+0-0v3X3:1]-[O+0-0v2X2:2]-[O+0-0v1X1:3]>>[C+1v3X3:1]-[O+0-0v2X2:2]-[O-1v1X1:3]"
-    ),
-    # Remedy 13 - conjugate peroxide biradical: [C]-C=C(R)O[O] to C=C-[C+](R)O[O-]
-    rdChemReactions.ReactionFromSmarts(
-        "[C+0-0v3X3:1]-[C:2]=[C+0-0v4X3:3]-[O+0-0v2X2:4]-[O+0-0v1X1:5]>>[C+0-0v4X3:1]=[C:2]-[C+1v3X3:3]-[O+0-0v2X2:4]-[O-1v1X1:5]"
-    ),
 ]
 
 
 ZWITTERION_REMEDIES = [
-    # Remedy 1 - criegee like molecule: RN(R)(R)-C(R)(R)=O to R[N+](R)(R)-[C](R)(R)-[O-]
+    # Remedy 1 - criegee Intermediate: R[C](R)O[O] to RC=(R)[O+][O-]
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v3X3:1]-[O+0-0v2X2:2]-[O+0-0v1X1:3]>>[C+0-0v4X3:1]=[O+1v3X2:2]-[O-1v1X1:3]"
+    ),
+    # Remedy 2 - criegee Intermediate: [C]-C=C(R)O[O] to C=C-C=(R)[O+][O-]
+    rdChemReactions.ReactionFromSmarts(
+        "[C+0-0v3X3:1]-[C:2]=[C+0-0v4X3:3]-[O+0-0v2X2:4]-[O+0-0v1X1:5]>>[C+0-0v4X3:1]=[C:2]-[C+0-0v4X3:3]=[O+1v3X2:4]-[O-1v1X1:5]"
+    ),
+    # Remedy 3 - criegee like molecule: RN(R)(R)-C(R)(R)=O to R[N+](R)(R)-[C](R)(R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[N+0-0v4X4:1]-[C+0-0v4X3:2]=[O+0-0v2X1:3]>>[N+1v4X4:1]-[C+0-0v3X3:2]-[O-1v1X1:3]"
     ),
-    # Remedy 2 - criegee like molecule: R[N+](R)(R)-[C-](R)(R)[O] to R[N+](R)(R)-[C](R)(R)-[O-]
+    # Remedy 4 - criegee like molecule: R[N+](R)(R)-[C-](R)(R)[O] to R[N+](R)(R)-[C](R)(R)-[O-]
     rdChemReactions.ReactionFromSmarts(
         "[N+1v4X4:1]-[C-1v3X3:2]-[O+0-0v1X1:3]>>[N+1v4X4:1]-[C+0-0v3X3:2]-[O-1v1X1:3]"
     ),
-    # Remedy 3 - ammonium + carboxylic: ([N]R4.C(=O)[O]) to ([N+]R4.C(=O)[O-])
+    # Remedy 5 - ammonium + carboxylic: ([N]R4.C(=O)[O]) to ([N+]R4.C(=O)[O-])
     rdChemReactions.ReactionFromSmarts(
         "([N+0-0v4X4:1].[O+0-0v2X1:2]=[C+0-0v4X3:3]-[O+0-0v1X1:4])>>([N+1v4X4:1].[O+0-0v2X1:2]=[C+0-0v4X3:3]-[O-1v1X1:4])"
     ),
-    # Remedy 4 - ammonium + phosphoric: ([N]R4.P(=O)[O]) to ([N+]R4.P(=O)[O-])
+    # Remedy 6 - ammonium + phosphoric: ([N]R4.P(=O)[O]) to ([N+]R4.P(=O)[O-])
     rdChemReactions.ReactionFromSmarts(
         "([N+0-0v4X4:1].[P+0-0v5X4:2]-[O+0-0v1X1:3])>>([N+1v4X4:1].[P+0-0v5X4:2]-[O-1v1X1:3])"
     ),
-    # Remedy 5 - ammonium + sulphuric: ([N]R4.S(=O)(=O)[O]) to ([N+]R4.S(=O)(=O)[O-])
+    # Remedy 7 - ammonium + sulphuric: ([N]R4.S(=O)(=O)[O]) to ([N+]R4.S(=O)(=O)[O-])
     rdChemReactions.ReactionFromSmarts(
         "([N+0-0v4X4:1].[S+0-0v6X4:2]-[O+0-0v1X1:3])>>([N+1v4X4:1].[S+0-0v6X4:2]-[O-1v1X1:3])"
     ),
-    # Remedy 6 - ammonium + carbonyl in ring: ([N]R4.C=O) to ([N+]R4.[C.]-[O-])
+    # Remedy 8 - ammonium + carbonyl in ring: ([N]R4.C=O) to ([N+]R4.[C.]-[O-])
     rdChemReactions.ReactionFromSmarts(
         "([N+0-0v4X4:1].[C+0-0v4X3R:2]=[O+0-0v2X1:3])>>([N+1v4X4:1].[C+0-0v3X3R:2]-[O-1v1X1:3])"
     ),
