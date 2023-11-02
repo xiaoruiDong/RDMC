@@ -761,6 +761,15 @@ class RDKitMol(object):
         """
         return [self.GetAtomWithIdx(idx) for idx in range(self.GetNumAtoms())]
 
+    def GetHeavyAtoms(self) -> list:
+        """
+        Get heavy atoms of the molecule with the order consistent with the atom indexes.
+
+        Returns:
+            list: A list of heavy atoms.
+        """
+        return [atom for atom in self.GetAtoms() if atom.GetAtomicNum() != 1]
+
     def GetAtomicNumbers(self):
         """
         Get the Atomic numbers of the molecules. The atomic numbers are sorted by the atom indexes.
