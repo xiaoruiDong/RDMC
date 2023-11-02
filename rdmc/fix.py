@@ -369,7 +369,7 @@ def fix_oxonium_bonds(
     mol: "RDKitMol",
     threshold: float = 1.65,
     sanitize: bool = True,
-) -> 'RDKitMol':
+) -> "RDKitMol":
     """
     Fix the oxonium atom. Openbabel and Jensen perception algorithm do not perceive the oxonium atom correctly.
     This is a fix to detect if the molecule contains oxonium atom and fix it.
@@ -413,6 +413,11 @@ def fix_oxonium_bonds(
         # This is a case combining a closed shell ROR with a radical R[C]=O
         rdChemReactions.ReactionFromSmarts(
             "[O+0-0v3X3:1]-[C+0-0v4X3:2]=[O+0-0v2X1:3]>>[O+1v3X3:1]-[C+0-0v3X3:2]-[O-1v1X1:3]"
+        ),
+        # Remedy 3 - R[O](R)[C](R)R to R[O+](R)[C-](R)R
+        # This is a case combining a radical R[C](R)(R) with a radical R[O]
+        rdChemReactions.ReactionFromSmarts(
+            "[O+0-0v3X3:1]-[C+0-0v3X3:2]>>[O+1v3X3:1]-[C-1v3X3:2]"
         ),
     ]
 
