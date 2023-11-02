@@ -8,8 +8,10 @@ This module contains the helper functions for fixing parsed molecules.
 from functools import reduce
 from typing import List
 
+import numpy as np
+
 from rdmc import RDKitMol
-from rdkit.Chem import rdChemReactions, rdmolops
+from rdkit.Chem import BondType, rdChemReactions, rdmolops
 
 
 RECOMMEND_REMEDIES = [
@@ -320,3 +322,67 @@ def fix_mol(
         mol = mol.RenumberAtoms()
 
     return mol
+
+
+def find_oxonium_bonds(mol: "RDKitMol") -> List[tuple]:
+    """
+    Find the potential oxonium atom.
+
+    Args:
+        mol (RDKitMol): The molecule to be fixed.
+
+    Returns:
+        List[tuple]: a list of (oxygen atom index, the other atom index).
+    """
+    heavy_idxs = [atom.GetIdx() for atom in mol.GetHeavyAtoms()]
+    oxygen_idxs = [
+        atom.GetIdx() for atom in mol.GetHeavyAtoms() if atom.GetAtomicNum() == 8
+    ]
+
+    if len(oxygen_idxs) == 0:
+        return []
+
+    dist_mat = mol.GetDistanceMatrix()
+    dist_mat[oxygen_idxs, oxygen_idxs] = 100  # Set the self distance to a large number
+
+    infer_conn_mat = (dist_mat[oxygen_idxs][:, heavy_idxs] <= 1.8).astype(int)
+    actual_conn_mat = mol.GetAdjacencyMatrix()[oxygen_idxs][:, heavy_idxs]
+
+    # Find potentially missing bonds
+    raw_miss_bonds = np.transpose(np.where((infer_conn_mat - actual_conn_mat) == 1))
+    miss_bonds = np.unique(raw_miss_bonds, axis=0).tolist()
+
+    return [
+        (oxygen_idxs[miss_bond[0]], heavy_idxs[miss_bond[1]])
+        for miss_bond in miss_bonds
+    ]
+
+
+def fix_oxonium_bonds(mol: "RDKitMol"):
+    """
+    Fix the oxonium atom. Openbabel and Jensen perception algorithm do not perceive the oxonium atom correctly.
+    This is a fix to detect if the molecule contains oxonium atom and fix it.
+    """
+    oxonium_bonds = find_oxonium_bonds(mol)
+
+    if len(oxonium_bonds) == 0:
+        return mol
+
+    mol = mol.Copy()
+    for miss_bond in oxonium_bonds:
+        mol.AddBond(*miss_bond, order=BondType.SINGLE)
+
+        # Usually the connected atom is a radical site
+        # So, update the number of radical electrons afterward
+        rad_atom = mol.GetAtomWithIdx(miss_bond[1])
+        if rad_atom.GetNumRadicalElectrons() > 0:
+            rad_atom.SetNumRadicalElectrons(rad_atom.GetNumRadicalElectrons() - 1)
+
+    # This remedy is only used for oxonium
+    remedies = [
+        rdChemReactions.ReactionFromSmarts(
+            "[O+0-0v3X3:1]-[O+0-0v1X1:2]>>[O+1v3X3:1]-[O-1v1X1:2]"
+        ),
+    ]
+
+    return fix_mol(mol, remedies=remedies)
