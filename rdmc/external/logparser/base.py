@@ -995,7 +995,9 @@ class CclibLog(BaseLog):
                      sanitize: bool = False,
                      converged: bool = True,
                      backend: str = 'openbabel',
+                     bothway: bool = False,
                      continuous_update: bool = False,
+                     **kwargs,
                      ) -> interact:
         """
         Create a IPython interactive widget to investigate the IRC results.
@@ -1009,7 +1011,7 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
-        mol = self._process_irc_mol(sanitize=sanitize, converged=converged, backend=backend)
+        mol = self._process_irc_mol(sanitize=sanitize, converged=converged, backend=backend, bothway=bothway)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         xyzs = self.get_xyzs(converged=converged)
         y_params = self.get_scf_energies(converged=converged)
@@ -1024,7 +1026,7 @@ class CclibLog(BaseLog):
         ylabel = 'E(SCF) [kcal/mol]'
 
         def visual(idx):
-            mol_viewer(sdfs[idx - 1], 'sdf').update()
+            mol_viewer(sdfs[idx - 1], 'sdf', **kwargs).update()
             ax = plt.axes()
             ax.plot(x_params, y_params)
             ax.set(xlabel=xlabel, ylabel=ylabel)
