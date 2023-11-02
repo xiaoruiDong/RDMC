@@ -390,7 +390,11 @@ def fix_oxonium_bonds(
 
     mol = mol.Copy()
     for miss_bond in oxonium_bonds:
-        mol.AddBond(*miss_bond, order=BondType.SINGLE)
+        try:
+            mol.AddBond(*miss_bond, order=BondType.SINGLE)
+        except RuntimeError:
+            # Oxygen may get double counted
+            continue
 
         # Usually the connected atom is a radical site
         # So, update the number of radical electrons afterward
