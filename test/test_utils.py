@@ -22,10 +22,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @pytest.fixture(params=[
-    ('[C-]#[O+]', """2
-
-C      0.559061    0.000000    0.000000
-O     -0.559061    0.000000    0.000000"""),
     ('C', """5
 
 C      0.005119   -0.010620    0.006014

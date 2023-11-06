@@ -531,6 +531,29 @@ class TestRDKitMol:
         assert 200 == m1.CombineMol(m2, c_product=True).GetNumConformers()
         assert 200 == m2.CombineMol(m1, c_product=True).GetNumConformers()
 
+    def test_get_substruct_match_and_recipe(self):
+        """
+        Test GetSubstructMatchAndRecipe
+        """
+        smi1 = '[C:1]([H:2])([H:3])([H:4])[H:5]'
+        smi2 = '[H:1][C:2]([H:3])([H:4])[H:5]'
+
+        mol1 = RDKitMol.FromSmiles(smi1)
+        mol2 = RDKitMol.FromSmiles(smi2)
+
+        match, recipe = mol1.GetSubstructMatchAndRecipe(mol2)
+        assert match == (1, 0, 2, 3, 4)
+        assert recipe == {0: 1, 1: 0}
+
+        smi1 = '[C:1]([H:2])([H:3])[H:4].[H:5]'
+        smi2 = '[H:1][C:2]([H:3])[H:5].[H:4]'
+        mol1 = RDKitMol.FromSmiles(smi1)
+        mol2 = RDKitMol.FromSmiles(smi2)
+
+        match, recipe = mol1.GetSubstructMatchAndRecipe(mol2)
+        assert match == (1, 0, 2, 4, 3)
+        assert recipe == {0: 1, 1: 0, 3: 4, 4: 3}
+
     def test_renumber_atoms(self):
         """
         Test the functionality of renumber atoms of a molecule.
@@ -570,6 +593,13 @@ class TestRDKitMol:
         assert renumbered.GetAtomicNumbers() == [1, 1, 1, 1, 6]
         # Renumber molecule but also update the atom map after renumbering
         renumbered = ref_mol.RenumberAtoms([1, 2, 3, 4, 0], updateAtomMap=True)
+        assert renumbered.GetAtomMapNumbers() == (1, 2, 3, 4, 5)
+        assert renumbered.GetAtomicNumbers() == [1, 1, 1, 1, 6]
+
+        '[C:1]([H:2])([H:3])([H:4])[H:5]'
+        ref_mol = RDKitMol.FromSmiles(smi)
+        # Renumber molecule with a dict
+        renumbered = ref_mol.RenumberAtoms({0: 4, 4: 0}, updateAtomMap=True)
         assert renumbered.GetAtomMapNumbers() == (1, 2, 3, 4, 5)
         assert renumbered.GetAtomicNumbers() == [1, 1, 1, 1, 6]
 
@@ -824,6 +854,33 @@ class TestRDKitMol:
             .GetMorganGenerator(radius=3, fpSize=2048)\
             .GetCountFingerprintAsNumPy(Chem.MolFromSmiles(smi))
         assert np.isclose(fp, fp_expect).all()
+
+    @pytest.mark.parametrize(
+        'rad_smi, expect_smi',
+        [
+            ('[CH3]', 'C'),
+            ('c1[c]cccc1', 'c1ccccc1'),
+            ('C[NH2]', 'CN'),
+            ('[CH2]C[CH2]', 'CCC')
+        ])
+    @pytest.mark.parametrize('cheap', [(True,), (False,)])
+    def test_get_closed_shell_mol(self, rad_smi, expect_smi, cheap):
+
+        rad_mol = RDKitMol.FromSmiles(rad_smi)
+        assert rad_mol.GetClosedShellMol(cheap=cheap).ToSmiles() == expect_smi
+
+    @pytest.mark.parametrize(
+        'smi1, smi2, expect_match',
+        [
+            ('[CH3]', 'C', False),
+            ('[O:1]([H:2])[H:3]', '[O:1]([H:2])[H:3]', True),
+            ('[O:1]([H:2])[H:3]', '[O:2]([H:1])[H:3]', False),
+            ('[H:1][C:2](=[O:3])[O:4]', '[H:1][C:2]([O:3])=[O:4]', True)
+        ])
+    def test_has_same_connectivity(self, smi1, smi2, expect_match):
+        mo1 = RDKitMol.FromSmiles(smi1)
+        mol2 = RDKitMol.FromSmiles(smi2)
+        assert mo1.HasSameConnectivity(mol2) == expect_match
 
 
 def test_parse_xyz_or_smiles_list():

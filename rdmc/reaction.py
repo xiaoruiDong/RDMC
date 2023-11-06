@@ -14,7 +14,7 @@ from rdkit.Chem import rdChemReactions, rdFMCS
 from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
-from rdmc.mol_compare import is_same_complex
+from rdmc.mol_compare import is_same_complex, is_equivalent_reaction
 from rdmc.resonance import generate_radical_resonance_structures
 from rdmc.ts import get_all_changing_bonds
 
@@ -329,6 +329,13 @@ class Reaction:
         """
         return list(set(chain(*self.involved_bonds)))
 
+    @property
+    def is_resonance_corrected(self) -> bool:
+        """
+        Whether the reaction is resonance corrected.
+        """
+        return getattr(self, '_is_resonance_corrected', False)
+
     def apply_resonance_correction(
         self,
         inplace: bool = True,
@@ -337,6 +344,11 @@ class Reaction:
         """
         Apply resonance correction to the reactant and product complexes.
         """
+        if self.is_resonance_corrected:
+            # Avoid applying resonance correction multiple times
+            # TODO: add a auto-clean somewhere to update this flag
+            # TODO: when the reactant and product are changed
+            return self
         try:
             rcps = generate_radical_resonance_structures(
                 self.reactant_complex, kekulize=kekulize
@@ -366,10 +378,15 @@ class Reaction:
             if inplace:
                 self.init_reactant_product(rmol, pmol)
                 self.bond_analysis()
+                self._is_resonance_corrected = True
                 return self
             else:
                 # todo: check if ts has 3d coordinates
-                return Reaction(rmol, pmol, ts=self.ts)
+                new_rxn = Reaction(rmol, pmol, ts=self.ts)
+                new_rxn._is_resonance_corrected = True
+                return new_rxn
+
+        self._is_resonance_corrected = True
         return self
 
     def get_reverse_reaction(self):
@@ -542,3 +559,26 @@ class Reaction:
             bool: Whether the reaction has the same products as the given products or product complex.
         """
         return is_same_complex(self.product_complex, products, resonance=resonance)
+
+    def is_equivalent(
+        self,
+        reaction: "Reaction",
+        both_directions: bool = False,
+    ) -> bool:
+        """
+        Check if the reaction is equivalent to the given reaction.
+
+        Args:
+            reaction (Reaction): The reaction to compare.
+            both_directions (bool, optional): Whether to check both directions. Defaults to ``False``.
+
+        Returns:
+            bool: Whether the reaction is equivalent to the given reaction.
+        """
+        equiv = is_equivalent_reaction(self, reaction)
+
+        if both_directions and not equiv:
+            tmp_reaction = self.get_reverse_reaction()
+            equiv = is_equivalent_reaction(tmp_reaction, reaction)
+
+        return equiv

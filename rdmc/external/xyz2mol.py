@@ -528,8 +528,13 @@ def AC2mol(mol, AC, atoms, charge, allow_charged_fragments=True,
         return []
 
     # BO2mol returns an arbitrary resonance form. Let's make the rest
-    mols = rdchem.ResonanceMolSupplier(mol, Chem.UNCONSTRAINED_CATIONS, Chem.UNCONSTRAINED_ANIONS)
-    mols = [mol for mol in mols]
+    mols = [mol for mol in rdchem.ResonanceMolSupplier(
+        mol,
+        Chem.ALLOW_INCOMPLETE_OCTETS | Chem.UNCONSTRAINED_CATIONS | Chem.UNCONSTRAINED_ANIONS,
+    ) if mol is not None]
+
+    if not mols:
+        mols = [mol]  # For some cases, resonance structure supplier creates Nones
 
     return mols
 
