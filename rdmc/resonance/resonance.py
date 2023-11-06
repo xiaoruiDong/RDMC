@@ -2,19 +2,21 @@
 # -*- coding: utf-8 -*-
 
 """
-A module for generating resonance structures.
+This module contains the function generating resonance structures.
 """
 
+from rdmc.mol import RDKitMol
+from rdmc.mol_compare import get_unique_mols
 from rdkit import Chem
-
-from rdmc import RDKitMol
-from rdmc.mol import get_unique_mols
+from rdkit.Chem import RWMol
 
 
-def generate_radical_resonance_structures(mol: RDKitMol,
-                                          unique: bool = True,
-                                          consider_atommap: bool = False,
-                                          kekulize: bool = False):
+def generate_radical_resonance_structures(
+    mol: RDKitMol,
+    unique: bool = True,
+    consider_atommap: bool = False,
+    kekulize: bool = False,
+):
     """
     Generate resonance structures for a radical molecule.  RDKit by design doesn't work
     for radical resonance. The approach is a temporary workaround by replacing radical electrons by positive
@@ -66,11 +68,12 @@ def generate_radical_resonance_structures(mol: RDKitMol,
     if kekulize:
         flags |= Chem.KEKULE_ALL
     suppl = Chem.ResonanceMolSupplier(mol_copy._mol, flags=flags)
-    res_mols = [RDKitMol(Chem.RWMol(mol)) for mol in suppl]
+    res_mols = [RDKitMol(RWMol(mol)) for mol in suppl if mol is not None]
 
     # Post-processing resonance structures
     cleaned_mols = []
     for res_mol in res_mols:
+        discard_flag = False
         for atom in res_mol.GetAtoms():
             # Convert positively charged species back to radical species
             charge = atom.GetFormalCharge()
@@ -78,8 +81,12 @@ def generate_radical_resonance_structures(mol: RDKitMol,
                 recipe[atom.GetIdx()] = radical_electrons
                 atom.SetFormalCharge(0)
                 atom.SetNumRadicalElectrons(charge)
-            elif charge < 0:  # Shouldn't appear, just for bug detection
-                raise RuntimeError('Encounter charge separation during resonance structure generation.')
+            elif charge < 0:
+                # Known case: O=CC=C -> [O-]C=C[C+]
+                # Discard such resonance structures
+                discard_flag = True
+        if discard_flag:
+            continue
 
         # If a structure cannot be sanitized, removed it
         try:
@@ -87,7 +94,10 @@ def generate_radical_resonance_structures(mol: RDKitMol,
             # https://github.com/rdkit/rdkit/discussions/6358
             flags = Chem.SanitizeFlags.SANITIZE_ALL
             if kekulize:
-                flags ^= (Chem.SanitizeFlags.SANITIZE_KEKULIZE | Chem.SanitizeFlags.SANITIZE_SETAROMATICITY)
+                flags ^= (
+                    Chem.SanitizeFlags.SANITIZE_KEKULIZE
+                    | Chem.SanitizeFlags.SANITIZE_SETAROMATICITY
+                )
             res_mol.Sanitize(sanitizeOps=flags)
         except BaseException as e:
             print(e)
@@ -99,13 +109,18 @@ def generate_radical_resonance_structures(mol: RDKitMol,
 
     # To remove duplicate resonance structures
     if unique:
-        cleaned_mols = get_unique_mols(cleaned_mols,
-                                       consider_atommap=consider_atommap)
+        cleaned_mols = get_unique_mols(cleaned_mols, consider_atommap=consider_atommap)
         for mol in cleaned_mols:
             # According to
             # https://github.com/rdkit/rdkit/blob/9249ca5cc840fc72ea3bb73c2ff1d71a1fbd3f47/rdkit/Chem/Draw/IPythonConsole.py#L152
             # highlight info is stored in __sssAtoms
-            mol._mol.__setattr__('__sssAtoms', [])
+            mol._mol.__setattr__("__sssAtoms", [])
+
+    if not cleaned_mols:
+        return [
+            mol
+        ]  # At least return the original molecule if no resonance structure is found
+
     return cleaned_mols
 
 
