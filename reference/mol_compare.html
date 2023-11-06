@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
     <link rel="icon" sizes="240x240" href="../_static/RDMC_icon_simple_240x240.png" type="image/png">
-    <title>rdmc.view &#8212; RDMC 0.1 documentation</title>
+    <title>rdmc.mol_compare &#8212; RDMC 0.1 documentation</title>
   
   
   
@@ -39,11 +39,11 @@
     <script src="../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/view';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/mol_compare';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="rdmc.conf" href="conf.html" />
-    <link rel="prev" title="rdmc.ts" href="ts.html" />
+    <link rel="next" title="rdmc.fix" href="fix.html" />
+    <link rel="prev" title="rdmc.mol" href="mol.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -394,11 +394,11 @@ document.write(`
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="mol.html">rdmc.mol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mol_compare.html">rdmc.mol_compare</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">rdmc.mol_compare</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fix.html">rdmc.fix</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reaction.html">rdmc.reaction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ts.html">rdmc.ts</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">rdmc.view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="view.html">rdmc.view</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conf.html">rdmc.conf</a></li>
 <li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">rdmc.utils</a></li>
@@ -442,7 +442,7 @@ document.write(`
     
     <li class="breadcrumb-item"><a href="rdmc.html" class="nav-link">RDMC APIs</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">rdmc.view</li>
+    <li class="breadcrumb-item active" aria-current="page">rdmc.mol_compare</li>
   </ul>
 </nav>
 </div>
@@ -459,8 +459,104 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="rdmc-view">
-<h1>rdmc.view<a class="headerlink" href="#rdmc-view" title="Link to this heading">#</a></h1>
+  <section id="module-rdmc.mol_compare">
+<span id="rdmc-mol-compare"></span><h1>rdmc.mol_compare<a class="headerlink" href="#module-rdmc.mol_compare" title="Link to this heading">#</a></h1>
+<p>This module provides methods for comparing molecules.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.mol_compare.get_resonance_structure_match">
+<span class="sig-prename descclassname"><span class="pre">rdmc.mol_compare.</span></span><span class="sig-name descname"><span class="pre">get_resonance_structure_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol1_res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mol2_res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#rdmc.mol_compare.get_resonance_structure_match" title="Link to this definition">#</a></dt>
+<dd><p>Get the match between two lists of resonance structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol1_res</strong> (<em>List</em><em>[</em><em>'RDKitMol'</em><em>]</em>) – The first list of resonance structures.</p></li>
+<li><p><strong>mol2_res</strong> (<em>List</em><em>[</em><em>'RDKitMol'</em><em>]</em>) – The second list of resonance structures.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tuple</strong> – The match between the two lists of resonance structures. Empty tuple if no match is found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.mol_compare.get_unique_mols">
+<span class="sig-prename descclassname"><span class="pre">rdmc.mol_compare.</span></span><span class="sig-name descname"><span class="pre">get_unique_mols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consider_atommap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">same_formula</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mol_compare.get_unique_mols" title="Link to this definition">#</a></dt>
+<dd><p>Find the unique molecules from a list of molecules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mols</strong> (<em>list</em>) – The molecules to be processed.</p></li>
+<li><p><strong>consider_atommap</strong> (<em>bool</em><em>, </em><em>optional</em>) – If treat chemically equivalent molecules with
+different atommap numbers as different molecules.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>same_formula</strong> (<em>bool</em><em>, </em><em>opional</em>) – If the mols has the same formula you may set it to <code class="docutils literal notranslate"><span class="pre">True</span></code>
+to save computational time. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list</strong> – A list of unique molecules.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.mol_compare.has_matched_mol">
+<span class="sig-prename descclassname"><span class="pre">rdmc.mol_compare.</span></span><span class="sig-name descname"><span class="pre">has_matched_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consider_atommap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdmc.mol_compare.has_matched_mol" title="Link to this definition">#</a></dt>
+<dd><p>Check if a molecule has a structure match in a list of molecules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a>) – The target molecule.</p></li>
+<li><p><strong>mols</strong> (<em>List</em><em>[</em><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a><em>]</em>) – The list of molecules to be processed.</p></li>
+<li><p><strong>consider_atommap</strong> (<em>bool</em><em>, </em><em>optional</em>) – If treat chemically equivalent molecules with
+different atommap numbers as different molecules.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – if a matched molecules if found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.mol_compare.is_equivalent_reaction">
+<span class="sig-prename descclassname"><span class="pre">rdmc.mol_compare.</span></span><span class="sig-name descname"><span class="pre">is_equivalent_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rxn2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Reaction</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdmc.mol_compare.is_equivalent_reaction" title="Link to this definition">#</a></dt>
+<dd><p>If two reactions has equivalent transformation regardless of atom mapping. This can be useful when filtering
+out duplicate reactions that are generated from different atom mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rxn1</strong> (<em>Reaction</em>) – The first reaction.</p></li>
+<li><p><strong>rxn2</strong> (<em>Reaction</em>) – The second reaction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – Whether the two reactions are equivalent.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.mol_compare.is_same_complex">
+<span class="sig-prename descclassname"><span class="pre">rdmc.mol_compare.</span></span><span class="sig-name descname"><span class="pre">is_same_complex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">complex1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complex2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdmc.mol_compare.is_same_complex" title="Link to this definition">#</a></dt>
+<dd><p>Check if two complexes are the same regardless of the sequence of the molecules
+and the atom mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>complex1</strong> (<em>Union</em><em>[</em><em>'RDKitMol'</em><em>, </em><em>list</em><em>[</em><em>'RDKitMol'</em><em>]</em><em>]</em>) – The first complex.</p></li>
+<li><p><strong>complex2</strong> (<em>Union</em><em>[</em><em>'RDKitMol'</em><em>, </em><em>list</em><em>[</em><em>'RDKitMol'</em><em>]</em><em>]</em>) – The second complex.</p></li>
+<li><p><strong>resonance</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to consider resonance structures. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – Whether the two complexes are the same.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -474,20 +570,20 @@ document.write(`
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ts.html"
+       href="mol.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">rdmc.ts</p>
+        <p class="prev-next-title">rdmc.mol</p>
       </div>
     </a>
     <a class="right-next"
-       href="conf.html"
+       href="fix.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">rdmc.conf</p>
+        <p class="prev-next-title">rdmc.fix</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -501,8 +597,22 @@ document.write(`
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
   <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol_compare.get_resonance_structure_match"><code class="docutils literal notranslate"><span class="pre">get_resonance_structure_match()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol_compare.get_unique_mols"><code class="docutils literal notranslate"><span class="pre">get_unique_mols()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol_compare.has_matched_mol"><code class="docutils literal notranslate"><span class="pre">has_matched_mol()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol_compare.is_equivalent_reaction"><code class="docutils literal notranslate"><span class="pre">is_equivalent_reaction()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol_compare.is_same_complex"><code class="docutils literal notranslate"><span class="pre">is_same_complex()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
   <div class="tocsection sourcelink">
-    <a href="../_sources/reference/view.rst.txt">
+    <a href="../_sources/reference/mol_compare.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

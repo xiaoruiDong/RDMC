@@ -17,12 +17,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -31,11 +31,11 @@
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=188e8da4" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
-    <script src="_static/documentation_options.js?v=1b390748"></script>
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
@@ -111,13 +111,14 @@
   
   
   
+  
     
     
       
     
     
-    <img src="_static/RDMC_icon.svg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="_static/RDMC_icon.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <script>document.write(`<img src="_static/RDMC_icon.svg" class="logo__image only-dark" alt="RDMC 0.1 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -468,8 +469,6 @@ document.write(`
         <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.fix_atom">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/utils.html#rdmc.utils.fix_CO_openbabel">fix_CO_openbabel() (in module rdmc.utils)</a>
-</li>
       <li><a href="reference/external/rmg.html#rdmc.external.rmg.from_rdkit_mol">from_rdkit_mol() (in module rdmc.external.rmg)</a>
 </li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromFile">FromFile() (rdmc.mol.RDKitMol class method)</a>
@@ -504,6 +503,10 @@ document.write(`
 </li>
       <li><a href="reference/utils.html#rdmc.utils.get_atom_masses">get_atom_masses() (in module rdmc.utils)</a>
 </li>
+      <li><a href="reference/utils.html#rdmc.utils.get_closed_shell_by_add_hs">get_closed_shell_by_add_hs() (in module rdmc.utils)</a>
+</li>
+      <li><a href="reference/utils.html#rdmc.utils.get_closed_shell_cheap">get_closed_shell_cheap() (in module rdmc.utils)</a>
+</li>
       <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.get_conformer_energies">get_conformer_energies() (rdmc.forcefield.RDKitFF method)</a>
 </li>
       <li><a href="reference/utils.html#rdmc.utils.get_element_symbols">get_element_symbols() (in module rdmc.utils)</a>
@@ -520,7 +523,13 @@ document.write(`
         <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.get_optimized_mol">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/mol_compare.html#rdmc.mol_compare.get_resonance_structure_match">get_resonance_structure_match() (in module rdmc.mol_compare)</a>
+</li>
       <li><a href="reference/forcefield.html#rdmc.forcefield.get_roo_radical_atoms">get_roo_radical_atoms() (in module rdmc.forcefield)</a>
+</li>
+      <li><a href="reference/utils.html#rdmc.utils.get_substruct_match_and_recover_recipe">get_substruct_match_and_recover_recipe() (in module rdmc.utils)</a>
+</li>
+      <li><a href="reference/mol_compare.html#rdmc.mol_compare.get_unique_mols">get_unique_mols() (in module rdmc.mol_compare)</a>
 </li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetAdjacencyMatrix">GetAdjacencyMatrix() (rdmc.mol.RDKitMol method)</a>
 </li>
@@ -534,11 +543,13 @@ document.write(`
 </li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetAtoms">GetAtoms() (rdmc.mol.RDKitMol method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetBestAlign">GetBestAlign() (rdmc.mol.RDKitMol method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetBestAlign">GetBestAlign() (rdmc.mol.RDKitMol method)</a>
+</li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetBondsAsTuples">GetBondsAsTuples() (rdmc.mol.RDKitMol method)</a>
+</li>
+      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetClosedShellMol">GetClosedShellMol() (rdmc.mol.RDKitMol method)</a>
 </li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetConformer">GetConformer() (rdmc.mol.RDKitMol method)</a>
 </li>
@@ -554,6 +565,8 @@ document.write(`
 </li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetFormalCharge">GetFormalCharge() (rdmc.mol.RDKitMol method)</a>
 </li>
+      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetHeavyAtoms">GetHeavyAtoms() (rdmc.mol.RDKitMol method)</a>
+</li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetInternalCoordinates">GetInternalCoordinates() (rdmc.mol.RDKitMol method)</a>
 </li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetMolFrags">GetMolFrags() (rdmc.mol.RDKitMol method)</a>
@@ -563,6 +576,8 @@ document.write(`
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSpinMultiplicity">GetSpinMultiplicity() (rdmc.mol.RDKitMol method)</a>
 </li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSubstructMatch">GetSubstructMatch() (rdmc.mol.RDKitMol method)</a>
+</li>
+      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSubstructMatchAndRecipe">GetSubstructMatchAndRecipe() (rdmc.mol.RDKitMol method)</a>
 </li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSubstructMatches">GetSubstructMatches() (rdmc.mol.RDKitMol method)</a>
 </li>
@@ -580,11 +595,15 @@ document.write(`
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/mol_compare.html#rdmc.mol_compare.has_matched_mol">has_matched_mol() (in module rdmc.mol_compare)</a>
+</li>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.HasCollidingAtoms">HasCollidingAtoms() (rdmc.mol.RDKitMol method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/mol.html#rdmc.mol.RDKitMol.HasSameConnectivity">HasSameConnectivity() (rdmc.mol.RDKitMol method)</a>
+</li>
+      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.HasSameConnectivityConformer">HasSameConnectivityConformer() (rdmc.mol.RDKitMol method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -592,12 +611,18 @@ document.write(`
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/mol_compare.html#rdmc.mol_compare.is_equivalent_reaction">is_equivalent_reaction() (in module rdmc.mol_compare)</a>
+</li>
       <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.is_optimizable">is_optimizable() (rdmc.forcefield.OpenBabelFF method)</a>
 
       <ul>
         <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.is_optimizable">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/mol_compare.html#rdmc.mol_compare.is_same_complex">is_same_complex() (in module rdmc.mol_compare)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -647,6 +672,8 @@ document.write(`
         <li><a href="reference/forcefield.html#module-rdmc.forcefield">rdmc.forcefield</a>
 </li>
         <li><a href="reference/mol.html#module-rdmc.mol">rdmc.mol</a>
+</li>
+        <li><a href="reference/mol_compare.html#module-rdmc.mol_compare">rdmc.mol_compare</a>
 </li>
         <li><a href="reference/utils.html#module-rdmc.utils">rdmc.utils</a>
 </li>
@@ -774,6 +801,13 @@ document.write(`
 
       <ul>
         <li><a href="reference/mol.html#module-rdmc.mol">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.mol_compare
+
+      <ul>
+        <li><a href="reference/mol_compare.html#module-rdmc.mol_compare">module</a>
 </li>
       </ul></li>
       <li>
@@ -943,8 +977,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -974,7 +1008,7 @@ document.write(`
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
 </p></div>
       
     </div>

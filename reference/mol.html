@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -32,19 +32,19 @@
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=188e8da4" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
-    <script src="../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/mol';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="rdmc.reaction" href="reaction.html" />
-    <link rel="prev" title="rdmc.forcefield" href="forcefield.html" />
+    <link rel="next" title="rdmc.mol_compare" href="mol_compare.html" />
+    <link rel="prev" title="Utils" href="conformer_generation/utils.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -115,13 +115,14 @@
   
   
   
+  
     
     
       
     
     
-    <img src="../_static/RDMC_icon.svg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="../_static/RDMC_icon.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <script>document.write(`<img src="../_static/RDMC_icon.svg" class="logo__image only-dark" alt="RDMC 0.1 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -393,13 +394,15 @@ document.write(`
 </li>
 </ul>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="conf.html">rdmc.conf</a></li>
-<li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">rdmc.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mol_compare.html">rdmc.mol_compare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fix.html">rdmc.fix</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reaction.html">rdmc.reaction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ts.html">rdmc.ts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">rdmc.utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="view.html">rdmc.view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">rdmc.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">rdmc.utils</a></li>
 </ul>
 </div>
 </nav></div>
@@ -683,7 +686,7 @@ coordinates. Defaults to <code class="docutils literal notranslate"><span class=
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rdmc.mol.RDKitMol.FromFile">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FromFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openbabel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correctCO</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">removeHs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sameMol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.FromFile" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FromFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openbabel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">removeHs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sameMol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.FromFile" title="Link to this definition">#</a></dt>
 <dd><p>Read RDKitMol from a file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -841,7 +844,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">True</s
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rdmc.mol.RDKitMol.FromXYZ">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FromXYZ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openbabel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correctCO</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_chiral</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mol.RDKitMol.FromXYZ" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FromXYZ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openbabel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_chiral</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.mol.RDKitMol.FromXYZ" title="Link to this definition">#</a></dt>
 <dd><p>Convert xyz string to RDKitMol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -851,7 +854,6 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">True</s
 Currently, we only support <code class="docutils literal notranslate"><span class="pre">'openbabel'</span></code> and <code class="docutils literal notranslate"><span class="pre">'jensen'</span></code>.</p></li>
 <li><p><strong>header</strong> (<em>bool</em><em>, </em><em>optional</em>) – If lines of the number of atoms and title are included.
 Defaults to <code class="docutils literal notranslate"><span class="pre">True.</span></code></p></li>
-<li><p><strong>correctCO</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to correct the CO bond as “[C-]#[O+]”. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>sanitize</strong> (<em>bool</em>) – Sanitize the RDKit molecule during conversion. Helpful to set it to <code class="docutils literal notranslate"><span class="pre">False</span></code>
 when reading in TSs. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>embed_chiral</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> to embed chiral information. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
@@ -985,6 +987,30 @@ This is less helpful when you are comparing different atom mappings.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rdmc.mol.RDKitMol.GetClosedShellMol">
+<span class="sig-name descname"><span class="pre">GetClosedShellMol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cheap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.GetClosedShellMol" title="Link to this definition">#</a></dt>
+<dd><p>Get a closed shell molecule by removing all radical electrons and adding
+H atoms to these radical sites. This method currently only work for radicals
+and will not work properly for singlet radicals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cheap</strong> (<em>bool</em>) – Whether to use a cheap method where H atoms are only implicitly added.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>. Setting it to <code class="docutils literal notranslate"><span class="pre">False</span></code> only when the molecule
+is immediately used for generating SMILES/InChI and other representations,
+and no further manipulation is needed. Otherwise, it may be confusing as
+the hydrogen atoms will not appear in the list of atoms, not display in the
+2D graph, etc.</p></li>
+<li><p><strong>sanitize</strong> (<em>bool</em>) – Whether to sanitize the molecule. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RDKitMol</strong> – A closed shell molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rdmc.mol.RDKitMol.GetConformer">
 <span class="sig-name descname"><span class="pre">GetConformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RDKitConf</span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.GetConformer" title="Link to this definition">#</a></dt>
 <dd><p>Get the embedded conformer according to ID.</p>
@@ -1086,6 +1112,17 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">0</span
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rdmc.mol.RDKitMol.GetHeavyAtoms">
+<span class="sig-name descname"><span class="pre">GetHeavyAtoms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.GetHeavyAtoms" title="Link to this definition">#</a></dt>
+<dd><p>Get heavy atoms of the molecule with the order consistent with the atom indexes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>list</strong> – A list of heavy atoms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rdmc.mol.RDKitMol.GetInternalCoordinates">
 <span class="sig-name descname"><span class="pre">GetInternalCoordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nonredundant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.GetInternalCoordinates" title="Link to this definition">#</a></dt>
 <dd><p>Get internal coordinates of the molecule.</p>
@@ -1166,6 +1203,26 @@ using Hund’s rule of maximum multiplicity defined as 2S + 1.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>tuple</strong> – A tuple of matched indices.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.mol.RDKitMol.GetSubstructMatchAndRecipe">
+<span class="sig-name descname"><span class="pre">GetSubstructMatchAndRecipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.GetSubstructMatchAndRecipe" title="Link to this definition">#</a></dt>
+<dd><p>Get the substructure match between two molecules and a recipe to recover
+the provide <cite>mol</cite> to the current mol. If swapping the atom indices in <cite>mol</cite> according to the recipe,
+the <cite>mol</cite> should have the same connectivity as the current molecule. Note, if no match is found,
+the returned match and recipe will be empty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a>) – The molecule to compare with.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>tuple</strong> – The substructure match.</p></li>
+<li><p><strong>dict</strong> – A truncated atom mapping of mol2 to mol1.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1270,7 +1327,21 @@ the matrix exists, otherwise <code class="docutils literal notranslate"><span cl
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rdmc.mol.RDKitMol.HasSameConnectivity">
-<span class="sig-name descname"><span class="pre">HasSameConnectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openbabel'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.HasSameConnectivity" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">HasSameConnectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refmol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.HasSameConnectivity" title="Link to this definition">#</a></dt>
+<dd><p>Check wheter the molecule has the same connectivity as the reference molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>refmol</strong> (<a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><em>RDKitMol</em></a>) – The reference molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – Whether the molecule has the same connectivity as the reference molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.mol.RDKitMol.HasSameConnectivityConformer">
+<span class="sig-name descname"><span class="pre">HasSameConnectivityConformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openbabel'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.HasSameConnectivityConformer" title="Link to this definition">#</a></dt>
 <dd><p>Check whether the conformer of the molecule (defined by its spacial coordinates)
 as the same connectivity as the molecule.</p>
 <dl class="field-list simple">
@@ -1353,14 +1424,21 @@ Note, following Hs are not removed:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rdmc.mol.RDKitMol.RenumberAtoms">
-<span class="sig-name descname"><span class="pre">RenumberAtoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newOrder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updateAtomMap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.RenumberAtoms" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">RenumberAtoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newOrder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">updateAtomMap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rdmc.mol.RDKitMol" title="rdmc.mol.RDKitMol"><span class="pre">RDKitMol</span></a></span></span><a class="headerlink" href="#rdmc.mol.RDKitMol.RenumberAtoms" title="Link to this definition">#</a></dt>
 <dd><p>Return a new copy of RDKitMol that has atom (index) reordered.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>newOrder</strong> (<em>list</em><em>, </em><em>optional</em>) – the new ordering the atoms (should be numAtoms long). E.g,
-if newOrder is <code class="docutils literal notranslate"><span class="pre">[3,2,0,1]</span></code>, then atom <code class="docutils literal notranslate"><span class="pre">3</span></code> in the original molecule
-will be atom <code class="docutils literal notranslate"><span class="pre">0</span></code> in the new one. If no value provided, then the molecule
+<li><p><strong>newOrder</strong> (<em>list</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – The new ordering the atoms (should be numAtoms long).
+- If provided as a list, it should a list of atom indexes.
+E.g., if newOrder is <code class="docutils literal notranslate"><span class="pre">[3,2,0,1]</span></code>, then atom <code class="docutils literal notranslate"><span class="pre">3</span></code>
+in the original molecule will be atom <code class="docutils literal notranslate"><span class="pre">0</span></code> in the new one.
+- If provided as a dict, it should be a mapping between atoms. E.g.,
+if newOrder is <code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">1:</span> <span class="pre">2,</span> <span class="pre">2:</span> <span class="pre">0,</span> <span class="pre">3:</span> <span class="pre">1}</span></code>, then atom <code class="docutils literal notranslate"><span class="pre">0</span></code> in the
+original molecule will be atom <code class="docutils literal notranslate"><span class="pre">3</span></code> in the new one. Unlike the list case,
+the newOrder can be a partial mapping, but one should make sure all the pairs
+are included. E.g., <code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">3:</span> <span class="pre">0}</span></code>.
+- If no value provided (default), then the molecule
 will be renumbered based on the current atom map numbers. The latter is helpful
 when the sequence of atom map numbers and atom indexes are inconsistent.</p></li>
 <li><p><strong>updateAtomMap</strong> (<em>bool</em>) – Whether to update the atom map number based on the
@@ -1724,20 +1802,20 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="forcefield.html"
+       href="conformer_generation/utils.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">rdmc.forcefield</p>
+        <p class="prev-next-title">Utils</p>
       </div>
     </a>
     <a class="right-next"
-       href="reaction.html"
+       href="mol_compare.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">rdmc.reaction</p>
+        <p class="prev-next-title">rdmc.mol_compare</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1785,6 +1863,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtoms()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetBestAlign"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetBestAlign()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetBondsAsTuples"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetBondsAsTuples()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetClosedShellMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetClosedShellMol()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetConformer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetConformers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetConformers()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetDistanceMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetDistanceMatrix()</span></code></a></li>
@@ -1792,11 +1871,13 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetElementSymbols"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetElementSymbols()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetFingerprint"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetFingerprint()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetFormalCharge"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetFormalCharge()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetHeavyAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetHeavyAtoms()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetInternalCoordinates"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetInternalCoordinates()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetMolFrags"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetMolFrags()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetPositions"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetPositions()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetSpinMultiplicity"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSpinMultiplicity()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetSubstructMatch"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSubstructMatch()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetSubstructMatchAndRecipe"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSubstructMatchAndRecipe()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetSubstructMatches"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSubstructMatches()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetSymmSSSR"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSymmSSSR()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetTorsionTops"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetTorsionTops()</span></code></a></li>
@@ -1804,6 +1885,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.GetVdwMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetVdwMatrix()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.HasCollidingAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.HasCollidingAtoms()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.HasSameConnectivity"><code class="docutils literal notranslate"><span class="pre">RDKitMol.HasSameConnectivity()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.HasSameConnectivityConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.HasSameConnectivityConformer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.Kekulize"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Kekulize()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.PrepareOutputMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.PrepareOutputMol()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.mol.RDKitMol.Reflect"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Reflect()</span></code></a></li>
@@ -1854,8 +1936,8 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1885,7 +1967,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
 </p></div>
       
     </div>

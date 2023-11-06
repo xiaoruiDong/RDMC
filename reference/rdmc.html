@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -32,11 +32,11 @@
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=188e8da4" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
-    <script src="../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/rdmc';</script>
@@ -114,13 +114,14 @@
   
   
   
+  
     
     
       
     
     
-    <img src="../_static/RDMC_icon.svg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="../_static/RDMC_icon.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <script>document.write(`<img src="../_static/RDMC_icon.svg" class="logo__image only-dark" alt="RDMC 0.1 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -392,13 +393,15 @@ document.write(`
 </li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="conf.html">rdmc.conf</a></li>
-<li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mol.html">rdmc.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mol_compare.html">rdmc.mol_compare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fix.html">rdmc.fix</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reaction.html">rdmc.reaction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ts.html">rdmc.ts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">rdmc.utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="view.html">rdmc.view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">rdmc.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">rdmc.utils</a></li>
 </ul>
 </div>
 </nav></div>
@@ -542,6 +545,99 @@ document.write(`
 </div>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="mol.html">rdmc.mol</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.AddNullConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.AddNullConformer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.AddRedundantBonds"><code class="docutils literal notranslate"><span class="pre">RDKitMol.AddRedundantBonds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.AlignMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.AlignMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.AssignStereochemistryFrom3D"><code class="docutils literal notranslate"><span class="pre">RDKitMol.AssignStereochemistryFrom3D()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.CalcRMSD"><code class="docutils literal notranslate"><span class="pre">RDKitMol.CalcRMSD()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.CombineMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.CombineMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.Copy"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Copy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.EmbedConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.EmbedConformer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.EmbedMultipleConfs"><code class="docutils literal notranslate"><span class="pre">RDKitMol.EmbedMultipleConfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.EmbedMultipleNullConfs"><code class="docutils literal notranslate"><span class="pre">RDKitMol.EmbedMultipleNullConfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.EmbedNullConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.EmbedNullConformer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromFile"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromFile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromInchi"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromInchi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromOBMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromOBMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromRMGMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromRMGMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromSDF"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromSDF()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromSmarts"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromSmarts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromSmiles"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromSmiles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromXYZ"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromXYZ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAdjacencyMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAdjacencyMatrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAllConformers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAllConformers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAtomMapNumbers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtomMapNumbers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAtomMasses"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtomMasses()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAtomicNumbers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtomicNumbers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtoms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetBestAlign"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetBestAlign()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetBondsAsTuples"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetBondsAsTuples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetClosedShellMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetClosedShellMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetConformer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetConformers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetConformers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetDistanceMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetDistanceMatrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetElementCounts"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetElementCounts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetElementSymbols"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetElementSymbols()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetFingerprint"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetFingerprint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetFormalCharge"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetFormalCharge()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetHeavyAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetHeavyAtoms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetInternalCoordinates"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetInternalCoordinates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetMolFrags"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetMolFrags()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetPositions"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetPositions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSpinMultiplicity"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSpinMultiplicity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSubstructMatch"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSubstructMatch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSubstructMatchAndRecipe"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSubstructMatchAndRecipe()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSubstructMatches"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSubstructMatches()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSymmSSSR"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSymmSSSR()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetTorsionTops"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetTorsionTops()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetTorsionalModes"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetTorsionalModes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetVdwMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetVdwMatrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.HasCollidingAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.HasCollidingAtoms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.HasSameConnectivity"><code class="docutils literal notranslate"><span class="pre">RDKitMol.HasSameConnectivity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.HasSameConnectivityConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.HasSameConnectivityConformer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.Kekulize"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Kekulize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.PrepareOutputMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.PrepareOutputMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.Reflect"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Reflect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.RemoveHs"><code class="docutils literal notranslate"><span class="pre">RDKitMol.RemoveHs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.RenumberAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.RenumberAtoms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.Sanitize"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Sanitize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SaturateBiradicalSites12"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SaturateBiradicalSites12()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SaturateBiradicalSitesCDB"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SaturateBiradicalSitesCDB()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SaturateCarbene"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SaturateCarbene()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SaturateMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SaturateMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SetAtomMapNumbers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SetAtomMapNumbers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SetPositions"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SetPositions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SetVdwMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SetVdwMatrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToAtoms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToGraph"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToGraph()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToInchi"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToInchi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToMolBlock"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToMolBlock()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToOBMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToOBMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToRWMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToRWMol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToSDFFile"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToSDFFile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToSmiles"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToSmiles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToXYZ"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToXYZ()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdmc.mol.generate_vdw_mat"><code class="docutils literal notranslate"><span class="pre">generate_vdw_mat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdmc.mol.parse_xyz_or_smiles_list"><code class="docutils literal notranslate"><span class="pre">parse_xyz_or_smiles_list()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mol_compare.html">rdmc.mol_compare</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mol_compare.html#rdmc.mol_compare.get_resonance_structure_match"><code class="docutils literal notranslate"><span class="pre">get_resonance_structure_match()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol_compare.html#rdmc.mol_compare.get_unique_mols"><code class="docutils literal notranslate"><span class="pre">get_unique_mols()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol_compare.html#rdmc.mol_compare.has_matched_mol"><code class="docutils literal notranslate"><span class="pre">has_matched_mol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol_compare.html#rdmc.mol_compare.is_equivalent_reaction"><code class="docutils literal notranslate"><span class="pre">is_equivalent_reaction()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol_compare.html#rdmc.mol_compare.is_same_complex"><code class="docutils literal notranslate"><span class="pre">is_same_complex()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fix.html">rdmc.fix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reaction.html">rdmc.reaction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ts.html">rdmc.ts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="view.html">rdmc.view</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conf.html">rdmc.conf</a></li>
 <li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="forcefield.html#rdmc.forcefield.OpenBabelFF"><code class="docutils literal notranslate"><span class="pre">OpenBabelFF</span></code></a><ul>
@@ -586,94 +682,17 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="forcefield.html#rdmc.forcefield.optimize_mol"><code class="docutils literal notranslate"><span class="pre">optimize_mol()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="mol.html">rdmc.mol</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.AddNullConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.AddNullConformer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.AddRedundantBonds"><code class="docutils literal notranslate"><span class="pre">RDKitMol.AddRedundantBonds()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.AlignMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.AlignMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.AssignStereochemistryFrom3D"><code class="docutils literal notranslate"><span class="pre">RDKitMol.AssignStereochemistryFrom3D()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.CalcRMSD"><code class="docutils literal notranslate"><span class="pre">RDKitMol.CalcRMSD()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.CombineMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.CombineMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.Copy"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Copy()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.EmbedConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.EmbedConformer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.EmbedMultipleConfs"><code class="docutils literal notranslate"><span class="pre">RDKitMol.EmbedMultipleConfs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.EmbedMultipleNullConfs"><code class="docutils literal notranslate"><span class="pre">RDKitMol.EmbedMultipleNullConfs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.EmbedNullConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.EmbedNullConformer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromFile"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromFile()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromInchi"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromInchi()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromOBMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromOBMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromRMGMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromRMGMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromSDF"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromSDF()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromSmarts"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromSmarts()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromSmiles"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromSmiles()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.FromXYZ"><code class="docutils literal notranslate"><span class="pre">RDKitMol.FromXYZ()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAdjacencyMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAdjacencyMatrix()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAllConformers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAllConformers()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAtomMapNumbers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtomMapNumbers()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAtomMasses"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtomMasses()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAtomicNumbers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtomicNumbers()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetAtoms()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetBestAlign"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetBestAlign()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetBondsAsTuples"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetBondsAsTuples()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetConformer"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetConformer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetConformers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetConformers()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetDistanceMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetDistanceMatrix()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetElementCounts"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetElementCounts()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetElementSymbols"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetElementSymbols()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetFingerprint"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetFingerprint()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetFormalCharge"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetFormalCharge()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetInternalCoordinates"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetInternalCoordinates()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetMolFrags"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetMolFrags()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetPositions"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetPositions()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSpinMultiplicity"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSpinMultiplicity()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSubstructMatch"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSubstructMatch()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSubstructMatches"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSubstructMatches()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetSymmSSSR"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetSymmSSSR()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetTorsionTops"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetTorsionTops()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetTorsionalModes"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetTorsionalModes()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.GetVdwMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.GetVdwMatrix()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.HasCollidingAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.HasCollidingAtoms()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.HasSameConnectivity"><code class="docutils literal notranslate"><span class="pre">RDKitMol.HasSameConnectivity()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.Kekulize"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Kekulize()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.PrepareOutputMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.PrepareOutputMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.Reflect"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Reflect()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.RemoveHs"><code class="docutils literal notranslate"><span class="pre">RDKitMol.RemoveHs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.RenumberAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.RenumberAtoms()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.Sanitize"><code class="docutils literal notranslate"><span class="pre">RDKitMol.Sanitize()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SaturateBiradicalSites12"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SaturateBiradicalSites12()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SaturateBiradicalSitesCDB"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SaturateBiradicalSitesCDB()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SaturateCarbene"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SaturateCarbene()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SaturateMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SaturateMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SetAtomMapNumbers"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SetAtomMapNumbers()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SetPositions"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SetPositions()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.SetVdwMatrix"><code class="docutils literal notranslate"><span class="pre">RDKitMol.SetVdwMatrix()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToAtoms"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToAtoms()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToGraph"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToGraph()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToInchi"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToInchi()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToMolBlock"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToMolBlock()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToOBMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToOBMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToRWMol"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToRWMol()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToSDFFile"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToSDFFile()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToSmiles"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToSmiles()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="mol.html#rdmc.mol.RDKitMol.ToXYZ"><code class="docutils literal notranslate"><span class="pre">RDKitMol.ToXYZ()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="mol.html#rdmc.mol.generate_vdw_mat"><code class="docutils literal notranslate"><span class="pre">generate_vdw_mat()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="mol.html#rdmc.mol.parse_xyz_or_smiles_list"><code class="docutils literal notranslate"><span class="pre">parse_xyz_or_smiles_list()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="reaction.html">rdmc.reaction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ts.html">rdmc.ts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">rdmc.utils</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.determine_smallest_atom_index_in_torsion"><code class="docutils literal notranslate"><span class="pre">determine_smallest_atom_index_in_torsion()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.find_internal_torsions"><code class="docutils literal notranslate"><span class="pre">find_internal_torsions()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.find_ring_torsions"><code class="docutils literal notranslate"><span class="pre">find_ring_torsions()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.fix_CO_openbabel"><code class="docutils literal notranslate"><span class="pre">fix_CO_openbabel()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.get_atom_masses"><code class="docutils literal notranslate"><span class="pre">get_atom_masses()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.get_closed_shell_by_add_hs"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_by_add_hs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.get_closed_shell_cheap"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_cheap()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.get_element_symbols"><code class="docutils literal notranslate"><span class="pre">get_element_symbols()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.get_internal_coords"><code class="docutils literal notranslate"><span class="pre">get_internal_coords()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.get_obmol_coords"><code class="docutils literal notranslate"><span class="pre">get_obmol_coords()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.get_substruct_match_and_recover_recipe"><code class="docutils literal notranslate"><span class="pre">get_substruct_match_and_recover_recipe()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.openbabel_mol_to_rdkit_mol"><code class="docutils literal notranslate"><span class="pre">openbabel_mol_to_rdkit_mol()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.parse_xyz_by_jensen"><code class="docutils literal notranslate"><span class="pre">parse_xyz_by_jensen()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.parse_xyz_by_openbabel"><code class="docutils literal notranslate"><span class="pre">parse_xyz_by_openbabel()</span></code></a></li>
@@ -685,7 +704,6 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="utils.html#rdmc.utils.set_rdconf_coordinates"><code class="docutils literal notranslate"><span class="pre">set_rdconf_coordinates()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="view.html">rdmc.view</a></li>
 </ul>
 </div>
 </section>
@@ -748,8 +766,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -779,7 +797,7 @@ document.write(`
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
 </p></div>
       
     </div>

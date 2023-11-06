@@ -18,10 +18,12 @@ RDMC APIs
 .. toctree::
    :maxdepth: 4
 
-   conf
-   forcefield
    mol
+   mol_compare
+   fix
    reaction
    ts
-   utils
    view
+   conf
+   forcefield
+   utils

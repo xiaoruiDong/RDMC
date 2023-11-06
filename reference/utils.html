@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -32,18 +32,18 @@
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=188e8da4" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
-    <script src="../_static/documentation_options.js?v=1b390748"></script>
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/utils';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="rdmc.view" href="view.html" />
-    <link rel="prev" title="rdmc.ts" href="ts.html" />
+    <link rel="next" title="Credits" href="credits.html" />
+    <link rel="prev" title="rdmc.forcefield" href="forcefield.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -114,13 +114,14 @@
   
   
   
+  
     
     
       
     
     
-    <img src="../_static/RDMC_icon.svg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="../_static/RDMC_icon.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <script>document.write(`<img src="../_static/RDMC_icon.svg" class="logo__image only-dark" alt="RDMC 0.1 documentation - Home"/>`);</script>
   
   
 </a></div>
@@ -392,13 +393,15 @@ document.write(`
 </li>
 </ul>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="conf.html">rdmc.conf</a></li>
-<li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mol.html">rdmc.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mol_compare.html">rdmc.mol_compare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fix.html">rdmc.fix</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reaction.html">rdmc.reaction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ts.html">rdmc.ts</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">rdmc.utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="view.html">rdmc.view</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">rdmc.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">rdmc.utils</a></li>
 </ul>
 </div>
 </nav></div>
@@ -511,20 +514,6 @@ This function assumes there ARE additional atoms connected to <code class="docut
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="rdmc.utils.fix_CO_openbabel">
-<span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">fix_CO_openbabel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obmol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Openbabel.OBMol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_CO</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.utils.fix_CO_openbabel" title="Link to this definition">#</a></dt>
-<dd><p>Fix the CO perception issue for openbabel molecule.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>obmol</strong> (<em>Openbabel.OBMol</em>) – The Openbabel molecule instance.</p></li>
-<li><p><strong>correct_CO</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to fix this issue. Defaults to True.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="rdmc.utils.get_atom_masses">
 <span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">get_atom_masses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom_nums</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.utils.get_atom_masses" title="Link to this definition">#</a></dt>
 <dd><p>Get the atom masses for a given atom index list.</p>
@@ -534,6 +523,28 @@ This function assumes there ARE additional atoms connected to <code class="docut
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>list</strong> – A list of element symbols.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.utils.get_closed_shell_by_add_hs">
+<span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">get_closed_shell_by_add_hs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RWMol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RWMol</span></span></span><a class="headerlink" href="#rdmc.utils.get_closed_shell_by_add_hs" title="Link to this definition">#</a></dt>
+<dd><p>Get the closed shell molecule of a radical molecule by explicitly adding
+hydrogen atoms to the molecule.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdmc.utils.get_closed_shell_cheap">
+<span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">get_closed_shell_cheap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RWMol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RWMol</span></span></span><a class="headerlink" href="#rdmc.utils.get_closed_shell_cheap" title="Link to this definition">#</a></dt>
+<dd><p>Get the closed shell molecule of a radical molecule. This is a cheap version
+where no new atom is actually added to the molecule and all operation is inplace.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>RWMol</em>) – The radical molecule.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RWMol</strong> – The closed shell molecule.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -582,6 +593,28 @@ None will be returned.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="rdmc.utils.get_substruct_match_and_recover_recipe">
+<span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">get_substruct_match_and_recover_recipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RWMol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mol2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RWMol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdmc.utils.get_substruct_match_and_recover_recipe" title="Link to this definition">#</a></dt>
+<dd><p>Get the substructure match between two molecules and the recipe to recover
+mol2 to mol1. If swapping the atom indices in mol2 according to the recipe,
+mol2 should be the same as mol1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol1</strong> (<em>RWMol</em>) – The first molecule.</p></li>
+<li><p><strong>mol2</strong> (<em>RWMol</em>) – The second molecule.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>tuple</strong> – The substructure match.</p></li>
+<li><p><strong>dict</strong> – A truncated atom mapping of mol2 to mol1.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="rdmc.utils.openbabel_mol_to_rdkit_mol">
 <span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">openbabel_mol_to_rdkit_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obmol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">openbabel.OBMol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_hs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RWMol</span></span></span><a class="headerlink" href="#rdmc.utils.openbabel_mol_to_rdkit_mol" title="Link to this definition">#</a></dt>
 <dd><p>Convert a OpenBabel molecular structure to a Chem.rdchem.RWMol object.
@@ -602,7 +635,7 @@ None will be returned.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rdmc.utils.parse_xyz_by_jensen">
-<span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">parse_xyz_by_jensen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_charged_fragments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_huckel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_chiral</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_CO</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_atom_maps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_rdmc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdmc.utils.parse_xyz_by_jensen" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">parse_xyz_by_jensen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_charged_fragments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_huckel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_chiral</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_atom_maps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_rdmc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdmc.utils.parse_xyz_by_jensen" title="Link to this definition">#</a></dt>
 <dd><p>Perceive a xyz str using <cite>xyz2mol</cite> by Jensen et al. and generate the corresponding RDKit Mol.
 The implementation refers the following blog: <a class="reference external" href="https://greglandrum.github.io/rdkit-blog/posts/2022-12-18-introducing-rdDetermineBonds.html">https://greglandrum.github.io/rdkit-blog/posts/2022-12-18-introducing-rdDetermineBonds.html</a></p>
 <dl class="field-list simple">
@@ -612,10 +645,6 @@ The implementation refers the following blog: <a class="reference external" href
 <li><p><strong>allow_charged_fragments</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> for charged fragment, <code class="docutils literal notranslate"><span class="pre">False</span></code> for radical. Defaults to False.</p></li>
 <li><p><strong>use_huckel</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> to use extended Huckel bond orders to locate bonds. Defaults to False.</p></li>
 <li><p><strong>embed_chiral</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> to embed chiral information. Defaults to True.</p></li>
-<li><p><strong>correctCO</strong> (<em>bool</em><em>, </em><em>optional</em>) – Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.
-In order to get correct RDKit molecule for carbon monoxide
-([C-]#[O+]), allow_charged_fragments should be forced to <code class="docutils literal notranslate"><span class="pre">True</span></code>.
-This function contains a patch to correct that.</p></li>
 <li><p><strong>use_atom_maps</strong> (<em>bool</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> to set atom map numbers to the molecule. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 <li><p><strong>force_rdmc</strong> (<em>bool</em><em>, </em><em>optional</em>) – Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>. In rare case, we may hope to use a tailored
 version of the Jensen XYZ parser, other than the one available in RDKit.
@@ -631,16 +660,11 @@ which user’s may have some flexibility to modify.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rdmc.utils.parse_xyz_by_openbabel">
-<span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">parse_xyz_by_openbabel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_CO</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.utils.parse_xyz_by_openbabel" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rdmc.utils.</span></span><span class="sig-name descname"><span class="pre">parse_xyz_by_openbabel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.utils.parse_xyz_by_openbabel" title="Link to this definition">#</a></dt>
 <dd><p>Perceive a xyz str using openbabel and generate the corresponding OBMol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>xyz</strong> (<em>str</em>) – A str in xyz format containing atom positions.</p></li>
-<li><p><strong>correctCO</strong> (<em>bool</em><em>, </em><em>optional</em>) – It is known that openbabel will parse carbon monoxide
-as [C]=O instead of [C-]#[O+]. This function contains
-a patch to correct that. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>xyz</strong> (<em>str</em>) – A str in xyz format containing atom positions.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ob.OBMol</strong> – An openbabel molecule from the xyz</p>
@@ -774,20 +798,20 @@ It will return None</p>
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ts.html"
+       href="forcefield.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">rdmc.ts</p>
+        <p class="prev-next-title">rdmc.forcefield</p>
       </div>
     </a>
     <a class="right-next"
-       href="view.html"
+       href="credits.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">rdmc.view</p>
+        <p class="prev-next-title">Credits</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -809,11 +833,13 @@ It will return None</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.determine_smallest_atom_index_in_torsion"><code class="docutils literal notranslate"><span class="pre">determine_smallest_atom_index_in_torsion()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.find_internal_torsions"><code class="docutils literal notranslate"><span class="pre">find_internal_torsions()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.find_ring_torsions"><code class="docutils literal notranslate"><span class="pre">find_ring_torsions()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.fix_CO_openbabel"><code class="docutils literal notranslate"><span class="pre">fix_CO_openbabel()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.get_atom_masses"><code class="docutils literal notranslate"><span class="pre">get_atom_masses()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.get_closed_shell_by_add_hs"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_by_add_hs()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.get_closed_shell_cheap"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_cheap()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.get_element_symbols"><code class="docutils literal notranslate"><span class="pre">get_element_symbols()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.get_internal_coords"><code class="docutils literal notranslate"><span class="pre">get_internal_coords()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.get_obmol_coords"><code class="docutils literal notranslate"><span class="pre">get_obmol_coords()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.get_substruct_match_and_recover_recipe"><code class="docutils literal notranslate"><span class="pre">get_substruct_match_and_recover_recipe()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.openbabel_mol_to_rdkit_mol"><code class="docutils literal notranslate"><span class="pre">openbabel_mol_to_rdkit_mol()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.parse_xyz_by_jensen"><code class="docutils literal notranslate"><span class="pre">parse_xyz_by_jensen()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.utils.parse_xyz_by_openbabel"><code class="docutils literal notranslate"><span class="pre">parse_xyz_by_openbabel()</span></code></a></li>
@@ -847,8 +873,8 @@ It will return None</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -878,7 +904,7 @@ It will return None</p>
     <div class="footer-items__end">
       
         <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.3.
 </p></div>
       
     </div>
