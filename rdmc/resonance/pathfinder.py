@@ -58,7 +58,9 @@ def find_butadiene(start, end):
         assert isinstance(terminal, Atom)
         for bond34 in terminal.GetBonds():
             atom4 = bond34.GetOtherAtom(terminal)
-            if atom4.GetIdx() == end.GetIdx() and bond34.GetBondType() != 1:  # we have found the path we are looking for
+            if (
+                atom4.GetIdx() == end.GetIdx() and bond34.GetBondType() != 1
+            ):  # we have found the path we are looking for
                 # add the final bond and atom and return
                 path.append(bond34)
                 path.append(atom4)
@@ -66,7 +68,7 @@ def find_butadiene(start, end):
         else:  # none of the neighbors is the end atom.
             # Add a new allyl path and try again:
             new_paths = add_allyls(path)
-            [q.put(p) if p else '' for p in new_paths]
+            [q.put(p) if p else "" for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
     return None
@@ -91,7 +93,11 @@ def find_butadiene_end_with_charge(start):
         assert isinstance(terminal, Atom)
         for bond34 in terminal.GetBonds():
             atom4 = bond34.GetOtherAtom(terminal)
-            if atom4.GetFormalCharge() != 0 and bond34.GetBondType() != 1 and not in_path(atom4, path):
+            if (
+                atom4.GetFormalCharge() != 0
+                and bond34.GetBondType() != 1
+                and not in_path(atom4, path)
+            ):
                 # we have found the path we are looking for
                 # add the final bond and atom and return
                 path.append(bond34)
@@ -100,7 +106,7 @@ def find_butadiene_end_with_charge(start):
         else:  # none of the neighbors is the end atom.
             # Add a new allyl path and try again:
             new_paths = add_allyls(path)
-            [q.put(p) if p else '' for p in new_paths]
+            [q.put(p) if p else "" for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
     return None
@@ -133,7 +139,9 @@ def find_allyl_end_with_charge(start):
         path_copy = path[:]
         for bond23 in terminal.GetBonds():
             atom3 = bond23.GetOtherAtom(terminal)
-            if atom3.GetFormalCharge() != 0 and not in_path(atom3, path_copy):  # we have found the path we are looking for
+            if atom3.GetFormalCharge() != 0 and not in_path(
+                atom3, path_copy
+            ):  # we have found the path we are looking for
                 # add the final bond and atom and return
                 path_copy_copy = path_copy[:]
                 path_copy_copy.extend([bond23, atom3])
@@ -141,7 +149,7 @@ def find_allyl_end_with_charge(start):
         else:  # none of the neighbors is the end atom.
             # Add a new inverse allyl path and try again:
             new_paths = add_inverse_allyls(path)
-            [q.put(p) if p else '' for p in new_paths]
+            [q.put(p) if p else "" for p in new_paths]
 
     # Could not find a resonance path from start atom to end atom
     return paths
@@ -160,7 +168,11 @@ def add_unsaturated_bonds(path):
 
     for bond12 in start.GetBonds():
         atom2 = bond12.GetOtherAtom(start)
-        if bond12.GetBondType() != 1 and not in_path(atom2, path) and atom2.GetAtomicNum() != 1:
+        if (
+            bond12.GetBondType() != 1
+            and not in_path(atom2, path)
+            and atom2.GetAtomicNum() != 1
+        ):
             new_path = path[:]
             new_path.extend((bond12, atom2))
             paths.append(new_path)
@@ -207,7 +219,11 @@ def add_inverse_allyls(path):
         if not in_path(atom2, path):
             for bond23 in atom2.GetBonds():
                 atom3 = bond23.GetOtherAtom(atom2)
-                if not in_path(atom3, path) and atom3.GetAtomicNum() != 1 and bond23.GetBondType() != 1:
+                if (
+                    not in_path(atom3, path)
+                    and atom3.GetAtomicNum() != 1
+                    and bond23.GetBondType() != 1
+                ):
                     new_path = path[:]
                     new_path.extend((bond12, atom2, bond23, atom3))
                     paths.append(new_path)
@@ -229,8 +245,18 @@ def find_allyl_delocalization_paths(atom1):
             for bond23 in atom2.GetBonds():
                 atom3 = bond23.GetOtherAtom(atom2)
                 # Allyl bond must be capable of losing an order without breaking
-                if atom1.GetIdx() != atom3.GetIdx() and (bond23.GetBondType() in [2, 3]):
-                    paths.append([atom1.GetIdx(), atom2.GetIdx(), atom3.GetIdx(), bond12.GetIdx(), bond23.GetIdx()])
+                if atom1.GetIdx() != atom3.GetIdx() and (
+                    bond23.GetBondType() in [2, 3]
+                ):
+                    paths.append(
+                        [
+                            atom1.GetIdx(),
+                            atom2.GetIdx(),
+                            atom3.GetIdx(),
+                            bond12.GetIdx(),
+                            bond23.GetIdx(),
+                        ]
+                    )
     return paths
 
 
@@ -248,20 +274,40 @@ def find_lone_pair_multiple_bond_paths(atom1):
       important for correct degeneracy calculations
     """
     # No paths if atom1 has no lone pairs, or cannot lose them, or is a carbon atom
-    if get_lone_pair(atom1) <= 0 or not is_atom_able_to_lose_lone_pair(atom1) or atom1.GetAtomicNum() == 6:
+    if (
+        get_lone_pair(atom1) <= 0
+        or not is_atom_able_to_lose_lone_pair(atom1)
+        or atom1.GetAtomicNum() == 6
+    ):
         return []
 
     paths = []
     for bond12 in atom1.GetBonds():
         atom2 = bond12.GetOtherAtom(atom1)
         # If both atom1 and atom2 are sulfur then don't do this type of resonance. Also, the bond must be capable of gaining an order.
-        if (atom1.GetAtomicNum() != 16 or atom2.GetAtomicNum() != 16) and (bond12.GetBondType() == 1 or bond12.GetBondType() == 2):
+        if (atom1.GetAtomicNum() != 16 or atom2.GetAtomicNum() != 16) and (
+            bond12.GetBondType() == 1 or bond12.GetBondType() == 2
+        ):
             for bond23 in atom2.GetBonds():
                 atom3 = bond23.GetOtherAtom(atom2)
                 # Bond must be capable of losing an order without breaking, atom3 must be able to gain a lone pair
-                if atom1.GetIdx() != atom3.GetIdx() and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3) \
-                        and (atom3.GetAtomicNum() == 6 or is_atom_able_to_gain_lone_pair(atom3)):
-                    paths.append([atom1.GetIdx(), atom2.GetIdx(), atom3.GetIdx(), bond12.GetIdx(), bond23.GetIdx()])
+                if (
+                    atom1.GetIdx() != atom3.GetIdx()
+                    and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3)
+                    and (
+                        atom3.GetAtomicNum() == 6
+                        or is_atom_able_to_gain_lone_pair(atom3)
+                    )
+                ):
+                    paths.append(
+                        [
+                            atom1.GetIdx(),
+                            atom2.GetIdx(),
+                            atom3.GetIdx(),
+                            bond12.GetIdx(),
+                            bond23.GetIdx(),
+                        ]
+                    )
     return paths
 
 
@@ -297,16 +343,23 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
     The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] <=> [::O]=[:N.]
     """
     paths = []
-    if (atom1.GetNumRadicalElectrons() >= 1) \
-            and ((atom1.GetAtomicNum() == 6 and get_lone_pair(atom1) == 0)
-                 or (atom1.GetAtomicNum() == 7 and get_lone_pair(atom1) in [0, 1])
-                 or (atom1.GetAtomicNum() == 8 and get_lone_pair(atom1) in [1, 2])
-                 or (atom1.GetAtomicNum() == 16 and get_lone_pair(atom1) in [0, 1, 2])):
+    if (atom1.GetNumRadicalElectrons() >= 1) and (
+        (atom1.GetAtomicNum() == 6 and get_lone_pair(atom1) == 0)
+        or (atom1.GetAtomicNum() == 7 and get_lone_pair(atom1) in [0, 1])
+        or (atom1.GetAtomicNum() == 8 and get_lone_pair(atom1) in [1, 2])
+        or (atom1.GetAtomicNum() == 16 and get_lone_pair(atom1) in [0, 1, 2])
+    ):
         for atom2 in atom1.GetNeighbors():
-            if ((atom2.GetAtomicNum() == 6 and get_lone_pair(atom2) == 1)
-                    or (atom2.GetAtomicNum() == 7 and get_lone_pair(atom2) in [1, 2])
-                    or (atom2.GetAtomicNum() == 8 and get_lone_pair(atom2) in [2, 3] and atom1.GetAtomicNum() != 6)
-                    or (atom2.GetAtomicNum() == 16 and get_lone_pair(atom2) in [1, 2, 3])):
+            if (
+                (atom2.GetAtomicNum() == 6 and get_lone_pair(atom2) == 1)
+                or (atom2.GetAtomicNum() == 7 and get_lone_pair(atom2) in [1, 2])
+                or (
+                    atom2.GetAtomicNum() == 8
+                    and get_lone_pair(atom2) in [2, 3]
+                    and atom1.GetAtomicNum() != 6
+                )
+                or (atom2.GetAtomicNum() == 16 and get_lone_pair(atom2) in [1, 2, 3])
+            ):
                 paths.append([atom1.GetIdx(), atom2.GetIdx()])
     return paths
 
@@ -342,17 +395,25 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
             # Find paths in the direction <increasing> the bond order,
             # atom1 must posses at least one lone pair to loose it
             # the final clause of this prevents S#S from forming by this resonance pathway
-            if ((bond12.GetBondType() in [1, 2])
-                    and is_atom_able_to_lose_lone_pair(atom1)) \
-                    and not (atom1.GetAtomicNum() == 16
-                             and atom2.GetAtomicNum() == 16
-                             and bond12.GetBondType() == 2):
-                paths.append([atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 1])  # direction = 1
+            if (
+                (bond12.GetBondType() in [1, 2])
+                and is_atom_able_to_lose_lone_pair(atom1)
+            ) and not (
+                atom1.GetAtomicNum() == 16
+                and atom2.GetAtomicNum() == 16
+                and bond12.GetBondType() == 2
+            ):
+                paths.append(
+                    [atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 1]
+                )  # direction = 1
             # Find paths in the direction <decreasing> the bond order,
             # atom1 gains a lone pair, hence cannot already have more than two lone pairs
-            if ((bond12.GetBondType() in [2, 3])
-                    and is_atom_able_to_gain_lone_pair(atom1)):
-                paths.append([atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 2])  # direction = 2
+            if (bond12.GetBondType() in [2, 3]) and is_atom_able_to_gain_lone_pair(
+                atom1
+            ):
+                paths.append(
+                    [atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 2]
+                )  # direction = 2
     return paths
 
 
@@ -385,14 +446,24 @@ def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
         atom2 = bond12.GetOtherAtom(atom1)
         # Find paths in the direction <increasing> the bond order
         # atom1 must posses at least one lone pair to loose it, atom2 must be a radical
-        if (atom2.GetNumRadicalElectrons() and (bond12.GetBondType() == 1 or bond12.GetBondType() == 2)
-                and is_atom_able_to_lose_lone_pair(atom1)):
-            paths.append([atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 1])  # direction = 1
+        if (
+            atom2.GetNumRadicalElectrons()
+            and (bond12.GetBondType() == 1 or bond12.GetBondType() == 2)
+            and is_atom_able_to_lose_lone_pair(atom1)
+        ):
+            paths.append(
+                [atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 1]
+            )  # direction = 1
         # Find paths in the direction <decreasing> the bond order
         # atom1 gains a lone pair, hence cannot already have more than two lone pairs, and is also a radical
-        if (atom1.GetNumRadicalElectrons() and (bond12.GetBondType() == 2 or bond12.GetBondType() == 3)
-                and is_atom_able_to_gain_lone_pair(atom1)):
-            paths.append([atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 2])  # direction = 2
+        if (
+            atom1.GetNumRadicalElectrons()
+            and (bond12.GetBondType() == 2 or bond12.GetBondType() == 3)
+            and is_atom_able_to_gain_lone_pair(atom1)
+        ):
+            paths.append(
+                [atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 2]
+            )  # direction = 2
     return paths
 
 
@@ -414,11 +485,20 @@ def find_N5dc_radical_delocalization_paths(atom1):
     for bond12 in atom1.GetBonds():
         atom2 = bond12.GetOtherAtom(atom1)
 
-        if atom2.GetNumRadicalElectrons() and bond12.GetBondType() == 1 and not atom2.GetFormalCharge() and is_atom_able_to_lose_lone_pair(atom2):
+        if (
+            atom2.GetNumRadicalElectrons()
+            and bond12.GetBondType() == 1
+            and not atom2.GetFormalCharge()
+            and is_atom_able_to_lose_lone_pair(atom2)
+        ):
             for bond13 in atom1.GetBonds():
                 atom3 = bond13.GetOtherAtom(atom1)
-                if (atom2.GetIdx() != atom3.GetIdx() and bond13.GetBondType() == 1 and atom3.GetFormalCharge() < 0
-                        and is_atom_able_to_lose_lone_pair(atom3)):
+                if (
+                    atom2.GetIdx() != atom3.GetIdx()
+                    and bond13.GetBondType() == 1
+                    and atom3.GetFormalCharge() < 0
+                    and is_atom_able_to_lose_lone_pair(atom3)
+                ):
                     path.append([atom2.GetIdx(), atom3.GetIdx()])
                     return path  # there could only be one such path per atom1, return if found
     return path
@@ -430,9 +510,15 @@ def is_atom_able_to_gain_lone_pair(atom):
     Returns True if atom is N/O/S and is able to <gain> an additional lone pair, False otherwise
     We don't allow O to remain with no lone pairs
     """
-    return (((atom.GetAtomicNum() == 7 or atom.GetAtomicNum() == 16) and get_lone_pair(atom) in [0, 1, 2])
-            or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [1, 2])
-            or atom.GetAtomicNum() == 6 and get_lone_pair(atom) == 0)
+    return (
+        (
+            (atom.GetAtomicNum() == 7 or atom.GetAtomicNum() == 16)
+            and get_lone_pair(atom) in [0, 1, 2]
+        )
+        or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [1, 2])
+        or atom.GetAtomicNum() == 6
+        and get_lone_pair(atom) == 0
+    )
 
 
 def is_atom_able_to_lose_lone_pair(atom):
@@ -441,6 +527,12 @@ def is_atom_able_to_lose_lone_pair(atom):
     Returns True if atom is N/O/S and is able to <loose> a lone pair, False otherwise
     We don't allow O to remain with no lone pairs
     """
-    return (((atom.GetAtomicNum() == 7 or atom.GetAtomicNum() == 16) and get_lone_pair(atom) in [1, 2, 3])
-            or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [2, 3])
-            or atom.GetAtomicNum() == 6 and get_lone_pair(atom) == 1)
+    return (
+        (
+            (atom.GetAtomicNum() == 7 or atom.GetAtomicNum() == 16)
+            and get_lone_pair(atom) in [1, 2, 3]
+        )
+        or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [2, 3])
+        or atom.GetAtomicNum() == 6
+        and get_lone_pair(atom) == 1
+    )
