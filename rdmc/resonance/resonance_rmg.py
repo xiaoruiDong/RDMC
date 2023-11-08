@@ -57,21 +57,23 @@ from rdkit import Chem
 
 import rdmc.resonance.filtration as filtration
 import rdmc.resonance.pathfinder as pathfinder
-from rdmc.resonance.utils import (decrement_radical,
-                                  decrement_order,
-                                  increment_radical,
-                                  increment_order,
-                                  is_aromatic,
-                                  is_cyclic,
-                                  is_identical,
-                                  is_radical,
-                                  is_aryl_radical,
-                                  get_aromatic_rings,
-                                  get_charge_span,
-                                  get_lone_pair,
-                                  get_order_str,
-                                  get_relevant_cycles,
-                                  update_charge)
+from rdmc.resonance.utils import (
+    decrement_radical,
+    decrement_order,
+    increment_radical,
+    increment_order,
+    is_aromatic,
+    is_cyclic,
+    is_identical,
+    is_radical,
+    is_aryl_radical,
+    get_aromatic_rings,
+    get_charge_span,
+    get_lone_pair,
+    get_order_str,
+    get_relevant_cycles,
+    update_charge,
+)
 from rdmc.resonance.resonance import _unset_aromatic_flags
 
 # from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError, ResonanceError
@@ -107,24 +109,34 @@ def populate_resonance_algorithms(features=None):
         # If the molecule is aromatic, then radical resonance has already been considered
         # If the molecule was falsely identified as aromatic, then is_aryl_radical will still accurately capture
         # cases where the radical is in an orbital that is orthogonal to the pi orbitals.
-        if features['is_radical'] and not features['is_aromatic'] and not features['is_aryl_radical']:
+        if (
+            features["is_radical"]
+            and not features["is_aromatic"]
+            and not features["is_aryl_radical"]
+        ):
             method_list.append(generate_allyl_delocalization_resonance_structures)
-        if features['is_cyclic']:
+        if features["is_cyclic"]:
             method_list.append(generate_aryne_resonance_structures)
-        if features['hasNitrogenVal5']:
+        if features["hasNitrogenVal5"]:
             method_list.append(generate_N5dc_radical_resonance_structures)
-        if features['hasLonePairs']:
+        if features["hasLonePairs"]:
             method_list.append(generate_adj_lone_pair_radical_resonance_structures)
-            method_list.append(generate_adj_lone_pair_multiple_bond_resonance_structures)
-            method_list.append(generate_adj_lone_pair_radical_multiple_bond_resonance_structures)
-            if not features['is_aromatic']:
+            method_list.append(
+                generate_adj_lone_pair_multiple_bond_resonance_structures
+            )
+            method_list.append(
+                generate_adj_lone_pair_radical_multiple_bond_resonance_structures
+            )
+            if not features["is_aromatic"]:
                 # The generate_lone_pair_multiple_bond_resonance_structures method may perturb the electronic
                 # configuration of a conjugated aromatic system, causing a major slow-down (two orders of magnitude
                 # slower in one observed case), and it doesn't necessarily result in new representative localized
                 # structures. Here we forbid it for all structures bearing at least one aromatic ring as a "good enough"
                 # solution. A more holistic approach would be to identify these cases in generate_resonance_structures,
                 # and pass a list of forbidden atom ID's to find_lone_pair_multiple_bond_paths.
-                method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
+                method_list.append(
+                    generate_lone_pair_multiple_bond_resonance_structures
+                )
 
     return method_list
 
@@ -136,34 +148,36 @@ def analyze_molecule(mol):
 
     Returns a dictionary of features.
     """
-    features = {'is_radical': is_radical(mol),
-                'is_cyclic': is_cyclic(mol),
-                'is_aromatic': False,
-                'isPolycyclicAromatic': False,
-                'is_aryl_radical': False,
-                'hasNitrogenVal5': False,
-                'hasLonePairs': False,
-                }
+    features = {
+        "is_radical": is_radical(mol),
+        "is_cyclic": is_cyclic(mol),
+        "is_aromatic": False,
+        "isPolycyclicAromatic": False,
+        "is_aryl_radical": False,
+        "hasNitrogenVal5": False,
+        "hasLonePairs": False,
+    }
 
-    if features['is_cyclic']:
+    if features["is_cyclic"]:
         aromatic_rings = get_aromatic_rings(mol)[0]
         if len(aromatic_rings) > 0:
-            features['is_aromatic'] = True
+            features["is_aromatic"] = True
         if len(aromatic_rings) > 1:
-            features['isPolycyclicAromatic'] = True
-        if features['is_radical'] and features['is_aromatic']:
-            features['is_aryl_radical'] = is_aryl_radical(mol, aromatic_rings)
+            features["isPolycyclicAromatic"] = True
+        if features["is_radical"] and features["is_aromatic"]:
+            features["is_aryl_radical"] = is_aryl_radical(mol, aromatic_rings)
     for atom in mol.GetAtoms():
         if atom.GetAtomicNum() == 7 and get_lone_pair(atom) == 0:
-            features['hasNitrogenVal5'] = True
+            features["hasNitrogenVal5"] = True
         if get_lone_pair(atom) > 0:
-            features['hasLonePairs'] = True
+            features["hasLonePairs"] = True
 
     return features
 
 
-def generate_resonance_structures(mol, clar_structures=False, keep_isomorphic=False,
-                                  filter_structures=True):
+def generate_resonance_structures(
+    mol, clar_structures=False, keep_isomorphic=False, filter_structures=True
+):
     """
     Generate and return all of the resonance structures for the input molecule.
 
@@ -203,16 +217,20 @@ def generate_resonance_structures(mol, clar_structures=False, keep_isomorphic=Fa
     # Analyze molecule
     features = analyze_molecule(mol)
     # Use generate_optimal_aromatic_resonance_structures to check for false positives and negatives
-    if features['is_aromatic'] or (features['is_cyclic'] and features['is_radical'] and not features['is_aryl_radical']):
+    if features["is_aromatic"] or (
+        features["is_cyclic"]
+        and features["is_radical"]
+        and not features["is_aryl_radical"]
+    ):
         new_mol_list = generate_optimal_aromatic_resonance_structures(mol, features)
         if len(new_mol_list) == 0:
             # Encountered false positive, ie. the molecule is not actually aromatic
-            features['is_aromatic'] = False
-            features['isPolycyclicAromatic'] = False
+            features["is_aromatic"] = False
+            features["isPolycyclicAromatic"] = False
         else:
-            features['is_aromatic'] = True
+            features["is_aromatic"] = True
             if len(get_aromatic_rings(new_mol_list[0])[0]) > 1:
-                features['isPolycyclicAromatic'] = True
+                features["isPolycyclicAromatic"] = True
             for new_mol in new_mol_list:
                 # Append to structure list if unique
                 if not keep_isomorphic and mol.GetSubstructMatch(new_mol):
@@ -225,22 +243,32 @@ def generate_resonance_structures(mol, clar_structures=False, keep_isomorphic=Fa
                     mol_list.append(new_mol)
 
     # Special handling for aromatic species
-    if features['is_aromatic']:
-        if features['is_radical'] and not features['is_aryl_radical']:
-            _generate_resonance_structures(mol_list, [generate_kekule_structure],
-                                           keep_isomorphic=keep_isomorphic)
-            _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
-                                           keep_isomorphic=keep_isomorphic)
-        if features['isPolycyclicAromatic'] and clar_structures:
-            _generate_resonance_structures(mol_list, [generate_clar_structures],
-                                           keep_isomorphic=keep_isomorphic)
+    if features["is_aromatic"]:
+        if features["is_radical"] and not features["is_aryl_radical"]:
+            _generate_resonance_structures(
+                mol_list, [generate_kekule_structure], keep_isomorphic=keep_isomorphic
+            )
+            _generate_resonance_structures(
+                mol_list,
+                [generate_allyl_delocalization_resonance_structures],
+                keep_isomorphic=keep_isomorphic,
+            )
+        if features["isPolycyclicAromatic"] and clar_structures:
+            _generate_resonance_structures(
+                mol_list, [generate_clar_structures], keep_isomorphic=keep_isomorphic
+            )
         else:
-            _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
-                                           keep_isomorphic=keep_isomorphic)
+            _generate_resonance_structures(
+                mol_list,
+                [generate_aromatic_resonance_structure],
+                keep_isomorphic=keep_isomorphic,
+            )
 
     # Generate remaining resonance structures
     method_list = populate_resonance_algorithms(features)
-    _generate_resonance_structures(mol_list, method_list, keep_isomorphic=keep_isomorphic)
+    _generate_resonance_structures(
+        mol_list, method_list, keep_isomorphic=keep_isomorphic
+    )
 
     if filter_structures:
         return filtration.filter_structures(mol_list, features=features)
@@ -248,7 +276,9 @@ def generate_resonance_structures(mol, clar_structures=False, keep_isomorphic=Fa
     return mol_list
 
 
-def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False, copy=False):
+def _generate_resonance_structures(
+    mol_list, method_list, keep_isomorphic=False, copy=False
+):
     """
     Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
 
@@ -280,7 +310,10 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         # Filtration is always called.
         octet_deviation = filtration.get_octet_deviation(molecule)
         charge_span = get_charge_span(molecule)
-        if octet_deviation <= min_octet_deviation + 2 and charge_span <= min_charge_span + 1:
+        if (
+            octet_deviation <= min_octet_deviation + 2
+            and charge_span <= min_charge_span + 1
+        ):
             for method in method_list:
                 new_mol_list.extend(method(molecule))
             if octet_deviation < min_octet_deviation:
@@ -311,10 +344,12 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
     for mol in mol_list[1:]:
         if mol.GetFormalCharge() != input_charge:
             mol_list.remove(mol)
-            logging.debug(f'Resonance generation created a molecule {mol.ToSmiles(removeHs=False, removeAtomMap=False)}'
-                          f'with a net charge of {mol.GetFormalCharge()} '
-                          f'which does not match the input mol charge of {input_charge}.\n'
-                          f'Removing it from resonance structures')
+            logging.debug(
+                f"Resonance generation created a molecule {mol.ToSmiles(removeHs=False, removeAtomMap=False)}"
+                f"with a net charge of {mol.GetFormalCharge()} "
+                f"which does not match the input mol charge of {input_charge}.\n"
+                f"Removing it from resonance structures"
+            )
 
     return mol_list
 
@@ -341,7 +376,10 @@ def generate_allyl_delocalization_resonance_structures(mol):
                 increment_radical(structure.GetAtomWithIdx(atom3_idx))
                 increment_order(structure.GetBondWithIdx(bond12_idx))
                 decrement_order(structure.GetBondWithIdx(bond23_idx))
-                structure.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+                structure.Sanitize(
+                    sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
+                    ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
+                )
             except BaseException as e:  # cannot make the change
                 pass
             else:
@@ -374,9 +412,12 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
                     decrement_order(structure.GetBondWithIdx(bond23_idx))
                     update_charge(atom1, lone_pair1 - 1)
                     update_charge(atom3, lone_pair3 + 1)
-                    structure.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+                    structure.Sanitize(
+                        sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
+                        ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
+                    )
                 except BaseException as e:
-                    pass # Don't append resonance structure if it creates an undefined atomtype
+                    pass  # Don't append resonance structure if it creates an undefined atomtype
                 else:
                     structures.append(structure)
     return structures
@@ -409,9 +450,14 @@ def generate_adj_lone_pair_radical_resonance_structures(mol):
                 increment_radical(atom2)
                 update_charge(atom1, lone_pair1 + 1)
                 update_charge(atom2, lone_pair2 - 1)
-                structure.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+                structure.Sanitize(
+                    sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
+                    ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
+                )
             except BaseException as e:
-                print(e) # Don't append resonance structure if it creates an undefined atomtype
+                print(
+                    e
+                )  # Don't append resonance structure if it creates an undefined atomtype
             else:
                 structures.append(structure)
     return structures
@@ -445,7 +491,10 @@ def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
                     update_charge(atom1, lone_pair1 + 1)
                 lone_pair2 = get_lone_pair(atom2)
                 atom2.update_charge(atom2, lone_pair2)
-                structure.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+                structure.Sanitize(
+                    sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
+                    ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
+                )
             except BaseException as e:
                 pass  # Don't append resonance structure if it creates an undefined atomtype
             else:
@@ -502,7 +551,12 @@ def generate_N5dc_radical_resonance_structures(mol):
     """
     structures = []
     for atom in mol.GetAtoms():
-        if atom.GetAtomicNum == 5 and atom.GetFormalCharge() == 1 and atom.radical_electrons == 0 and len(atom.GetNeighbors()) == 3:
+        if (
+            atom.GetAtomicNum == 5
+            and atom.GetFormalCharge() == 1
+            and atom.radical_electrons == 0
+            and len(atom.GetNeighbors()) == 3
+        ):
             paths = pathfinder.find_N5dc_radical_delocalization_paths(atom)
             for atom2_idx, atom3_idx in paths:
                 try:
@@ -534,7 +588,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
     if features is None:
         features = analyze_molecule(mol)
 
-    if not features['is_cyclic']:
+    if not features["is_cyclic"]:
         return []
 
     # Copy the molecule so we don't affect the original
@@ -543,7 +597,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
     # Attempt to rearrange electrons to obtain a structure with the most aromatic rings
     # Possible rearrangements include aryne resonance and allyl resonance
     res_list = [generate_aryne_resonance_structures]
-    if features['is_radical'] and not features['is_aryl_radical']:
+    if features["is_radical"] and not features["is_aryl_radical"]:
         res_list.append(generate_allyl_delocalization_resonance_structures)
 
     # if is_aromatic(molecule):
@@ -570,7 +624,9 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
         # Generate the aromatic resonance structure(s)
         for mol0, aromatic_bonds in mol_list:
             # Aromatize the molecule in place
-            result = generate_aromatic_resonance_structure(mol0, aromatic_bonds, copy=False)
+            result = generate_aromatic_resonance_structure(
+                mol0, aromatic_bonds, copy=False
+            )
             if not result:
                 # We failed to aromatize this molecule
                 # This could be due to incorrect aromaticity perception by RDKit
@@ -626,7 +682,10 @@ def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
             bond.SetBondType(Chem.rdchem.BondType.AROMATIC)
 
     try:
-        molecule.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+        molecule.Sanitize(
+            sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
+            ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
+        )
     except:
         return []
     # except AtomTypeError:
@@ -686,32 +745,34 @@ def generate_aryne_resonance_structures(mol):
     for ring in rings:
         # Get bond orders
         bond_list = ring
-        bond_orders = ''.join([get_order_str(mol.GetBondWithIdx(bond_idx)) for bond_idx in bond_list])
+        bond_orders = "".join(
+            [get_order_str(mol.GetBondWithIdx(bond_idx)) for bond_idx in bond_list]
+        )
         new_orders = None
         # Check for expected bond patterns
-        if bond_orders.count('T') == 1:
+        if bond_orders.count("T") == 1:
             # Reorder the list so the triple bond is first
-            ind = bond_orders.index('T')
+            ind = bond_orders.index("T")
             bond_orders = bond_orders[ind:] + bond_orders[:ind]
             bond_list = bond_list[ind:] + bond_list[:ind]
             # Check for patterns
-            if bond_orders == 'TSDSDS':
-                new_orders = 'DDSDSD'
-        elif bond_orders.count('D') == 4:
+            if bond_orders == "TSDSDS":
+                new_orders = "DDSDSD"
+        elif bond_orders.count("D") == 4:
             # Search for DDD and reorder the list so that it comes first
-            if 'DDD' in bond_orders:
-                ind = bond_orders.index('DDD')
+            if "DDD" in bond_orders:
+                ind = bond_orders.index("DDD")
                 bond_orders = bond_orders[ind:] + bond_orders[:ind]
                 bond_list = bond_list[ind:] + bond_list[:ind]
-            elif bond_orders.startswith('DD') and bond_orders.endswith('D'):
+            elif bond_orders.startswith("DD") and bond_orders.endswith("D"):
                 bond_orders = bond_orders[-1:] + bond_orders[:-1]
                 bond_list = bond_list[-1:] + bond_list[:-1]
-            elif bond_orders.startswith('D') and bond_orders.endswith('DD'):
+            elif bond_orders.startswith("D") and bond_orders.endswith("DD"):
                 bond_orders = bond_orders[-2:] + bond_orders[:-2]
                 bond_list = bond_list[-2:] + bond_list[:-2]
             # Check for patterns
-            if bond_orders == 'DDDSDS':
-                new_orders = 'STSDSD'
+            if bond_orders == "DDDSDS":
+                new_orders = "STSDSD"
 
         if new_orders is not None:
             # We matched one of our patterns, so we can now change the bonds
@@ -720,15 +781,18 @@ def generate_aryne_resonance_structures(mol):
 
             for i, bond in enumerate(bond_list):
                 bond = new_mol.GetBondWithIdx(bond)
-                if new_orders[i] == 'S':
+                if new_orders[i] == "S":
                     bond.SetBondType(Chem.rdchem.BondType.SINGLE)
-                elif new_orders[i] == 'D':
+                elif new_orders[i] == "D":
                     bond.SetBondType(Chem.rdchem.BondType.DOUBLE)
-                elif new_orders[i] == 'T':
+                elif new_orders[i] == "T":
                     bond.SetBondType(Chem.rdchem.BondType.TRIPLE)
 
             try:
-                new_mol.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+                new_mol.Sanitize(
+                    sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
+                    ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
+                )
             except BaseException:
                 pass  # Don't append resonance structure if it creates an undefined atomtype
             else:
@@ -781,7 +845,9 @@ def generate_isomorphic_resonance_structures(mol, saturate_h=False):
         # Saturator.saturate(mol.GetAtoms())
         Chem.AddHs(mol.ToRWMol())
 
-    isomorphic_isomers = [mol]  # resonance isomers that are isomorphic to the parameter isomer.
+    isomorphic_isomers = [
+        mol
+    ]  # resonance isomers that are isomorphic to the parameter isomer.
 
     isomers = [mol]
 
@@ -833,12 +899,11 @@ def generate_clar_structures(mol):
     mol_list = []
 
     for new_mol, aromatic_rings, bonds, solution in output:
-
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
-        y = solution[0:len(aromatic_rings)]
-        x = solution[len(aromatic_rings):]
+        y = solution[0 : len(aromatic_rings)]
+        x = solution[len(aromatic_rings) :]
 
         # Apply results to molecule - double bond locations first
         for index, bond in enumerate(bonds):
@@ -847,7 +912,11 @@ def generate_clar_structures(mol):
             elif x[index] == 1:
                 bond.order = 2  # double
             else:
-                raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
+                raise ValueError(
+                    "Unaccepted bond value {0} obtained from optimization.".format(
+                        x[index]
+                    )
+                )
 
         # Then apply locations of aromatic sextets by converting to benzene bonds
         for index, ring in enumerate(aromatic_rings):
@@ -903,7 +972,9 @@ def _clar_optimization(mol, constraints=None, max_num=None):
     # Get list of bonds involving the ring atoms, ignoring bonds to hydrogen
     bonds = set()
     for atom in atoms:
-        bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.is_non_hydrogen()])
+        bonds.update(
+            [atom.bonds[key] for key in atom.bonds.keys() if key.is_non_hydrogen()]
+        )
     bonds = sorted(bonds, key=lambda x: (x.atom1.id, x.atom2.id))
 
     # Identify exocyclic bonds, and save their bond orders
@@ -934,43 +1005,51 @@ def _clar_optimization(mol, constraints=None, max_num=None):
     objective = [1] * l + [0] * len(bonds)
 
     # Solve LP problem using lpsolve
-    lp = lpsolve('make_lp', m, n)               # initialize lp with constraint matrix with m rows and n columns
-    lpsolve('set_verbose', lp, 2)               # reduce messages from lpsolve
-    lpsolve('set_obj_fn', lp, objective)        # set objective function
-    lpsolve('set_maxim', lp)                    # set solver to maximize objective
-    lpsolve('set_mat', lp, a)                   # set left hand side to constraint matrix
-    lpsolve('set_rh_vec', lp, [1] * m)          # set right hand side to 1 for all constraints
-    for i in range(m):                          # set all constraints as equality constraints
-        lpsolve('set_constr_type', lp, i + 1, '=')
-    lpsolve('set_binary', lp, [True] * n)       # set all variables to be binary
+    lp = lpsolve(
+        "make_lp", m, n
+    )  # initialize lp with constraint matrix with m rows and n columns
+    lpsolve("set_verbose", lp, 2)  # reduce messages from lpsolve
+    lpsolve("set_obj_fn", lp, objective)  # set objective function
+    lpsolve("set_maxim", lp)  # set solver to maximize objective
+    lpsolve("set_mat", lp, a)  # set left hand side to constraint matrix
+    lpsolve("set_rh_vec", lp, [1] * m)  # set right hand side to 1 for all constraints
+    for i in range(m):  # set all constraints as equality constraints
+        lpsolve("set_constr_type", lp, i + 1, "=")
+    lpsolve("set_binary", lp, [True] * n)  # set all variables to be binary
 
     # Constrain values of exocyclic bonds, since we don't want to modify them
     for i in range(l, n):
         if exo[i - l] is not None:
             # NOTE: lpsolve indexes from 1, so the variable we're changing should be i + 1
-            lpsolve('set_bounds', lp, i + 1, exo[i - l], exo[i - l])
+            lpsolve("set_bounds", lp, i + 1, exo[i - l], exo[i - l])
 
     # Add constraints to problem if provided
     if constraints is not None:
         for constraint in constraints:
             try:
-                lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
+                lpsolve("add_constraint", lp, constraint[0], "<=", constraint[1])
             except Exception as e:
-                logging.debug('Unable to add constraint: {0} <= {1}'.format(constraint[0], constraint[1]))
+                logging.debug(
+                    "Unable to add constraint: {0} <= {1}".format(
+                        constraint[0], constraint[1]
+                    )
+                )
                 logging.debug(mol.to_adjacency_list())
-                if str(e) == 'invalid vector.':
-                    raise ILPSolutionError('Unable to add constraint, likely due to '
-                                           'inconsistent aromatic ring perception.')
+                if str(e) == "invalid vector.":
+                    raise ILPSolutionError(
+                        "Unable to add constraint, likely due to "
+                        "inconsistent aromatic ring perception."
+                    )
                 else:
                     raise
 
-    status = lpsolve('solve', lp)
-    obj_val, solution = lpsolve('get_solution', lp)[0:2]
-    lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
+    status = lpsolve("solve", lp)
+    obj_val, solution = lpsolve("get_solution", lp)[0:2]
+    lpsolve("delete_lp", lp)  # Delete the LP problem to clear up memory
 
     # Check that optimization was successful
     if status != 0:
-        raise ILPSolutionError('Optimization could not find a valid solution.')
+        raise ILPSolutionError("Optimization could not find a valid solution.")
 
     # Check that we the result contains at least one aromatic sextet
     if obj_val == 0:
@@ -980,10 +1059,10 @@ def _clar_optimization(mol, constraints=None, max_num=None):
     if max_num is None:
         max_num = obj_val  # This is the first solution, so the result should be an upper limit
     elif obj_val < max_num:
-        raise ILPSolutionError('Optimization obtained a sub-optimal solution.')
+        raise ILPSolutionError("Optimization obtained a sub-optimal solution.")
 
     if any([x != 1 and x != 0 for x in solution]):
-        raise ILPSolutionError('Optimization obtained a non-integer solution.')
+        raise ILPSolutionError("Optimization obtained a non-integer solution.")
 
     # Generate constraints based on the solution obtained
     y = solution[0:l]
@@ -996,7 +1075,9 @@ def _clar_optimization(mol, constraints=None, max_num=None):
 
     # Run optimization with additional constraints
     try:
-        inner_solutions = _clar_optimization(mol, constraints=constraints, max_num=max_num)
+        inner_solutions = _clar_optimization(
+            mol, constraints=constraints, max_num=max_num
+        )
     except ILPSolutionError:
         inner_solutions = []
 
