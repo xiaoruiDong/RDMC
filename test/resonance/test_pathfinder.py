@@ -30,7 +30,6 @@
 
 from rdmc import RDKitMol
 from rdmc.resonance.pathfinder import (
-    compute_atom_distance,
     find_adj_lone_pair_multiple_bond_delocalization_paths,
     find_adj_lone_pair_radical_delocalization_paths,
     find_adj_lone_pair_radical_multiple_bond_delocalization_paths,
@@ -224,30 +223,6 @@ class TestFindButadieneEndWithCharge:
 
         expected_idx_path = [3, 10]
         assert idx_path == expected_idx_path
-
-
-class TestDistanceComputing:
-    def test_2_atoms(self):
-        smi = "CCC"
-        mol = RDKitMol.FromSmiles(smi)
-        atom_indices = [1, 2]
-        distances = compute_atom_distance(atom_indices, mol)
-
-        expected = {(1, 2): 1}
-        assert distances == expected
-
-    def test_3_atoms(self):
-        smi = "CCC"
-        mol = RDKitMol.FromSmiles(smi)
-        atom_indices = [1, 2, 3]
-        distances = compute_atom_distance(atom_indices, mol)
-
-        expected = {
-            (1, 2): 1,
-            (1, 3): 2,
-            (2, 3): 1,
-        }
-        assert distances == expected
 
 
 class TestFindAllylDelocalizationPaths:

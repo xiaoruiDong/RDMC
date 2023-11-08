@@ -231,34 +231,6 @@ def add_inverse_allyls(path):
     return paths
 
 
-def compute_atom_distance(atom_indices, mol):
-    """
-    Compute the distances between each pair of atoms in the atom_indices.
-
-    The distance between two atoms is defined as the length of the shortest path
-    between the two atoms minus 1, because the start atom is part of the path.
-
-    The distance between multiple atoms is defined by generating all possible
-    combinations between two atoms and storing the distance between each combination
-    of atoms in a dictionary.
-
-    The parameter 'atom_indices' is a  list of 1-based atom indices.
-
-    """
-    if len(atom_indices) == 1:
-        return {(atom_indices[0],): 0}
-
-    distances = {}
-    combos = [sorted(tup) for tup in itertools.combinations(atom_indices, 2)]
-
-    for i1, i2 in combos:
-        start, end = i1 - 1, i2 - 1
-        path = Chem.rdmolops.GetShortestPath(mol.ToRWMol(), start, end)
-        distances[(i1, i2)] = len(path) - 1
-
-    return distances
-
-
 def find_allyl_delocalization_paths(atom1):
     """
     Find all the delocalization paths allyl to the radical center indicated by `atom1`.
