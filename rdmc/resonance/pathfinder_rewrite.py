@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+This module includes an RDKit-based rewrite of the RMG resonance pathfinder.
+"""
+
 from typing import List
 
 from rdkit import Chem
