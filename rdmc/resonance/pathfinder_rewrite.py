@@ -5,7 +5,7 @@
 This module includes an RDKit-based rewrite of the RMG resonance pathfinder.
 """
 
-from typing import List
+from typing import List, Union
 
 from rdkit import Chem
 
@@ -224,13 +224,22 @@ ADJ_LONE_PAIR_RADICAL_LOSE_BOND = Chem.MolFromSmarts(
 )
 
 
+# RDKit / RDMC compatible
 def find_paths_with_template(
-    mol: "RWMol",
-    template: "RWMol",
+    mol: Union["RWMol", "RDKitMol"],
+    template: Union["RWMol", "Mol"],
     max_matches: int = 1000,
 ) -> List[tuple]:
     """
     Find the delocalization paths for allyl radicals.
+
+    Args:
+        mol (RWMol or RDKitMol): The molecule to search.
+        template (Mol or RWMol): The template to search for.
+        max_matches (int): The maximum number of matches to return. Defaults to 1000.
+
+    Returns:
+        list: A list of tuples containing the atom indices of the delocalization paths.
     """
     return list(
         mol.GetSubstructMatches(
@@ -241,12 +250,20 @@ def find_paths_with_template(
     )
 
 
+# RDKit / RDMC compatible
 def find_allyl_delocalization_paths(
-    mol: "RWMol",
+    mol: Union["RWMol", "RDKitMol"],
     max_matches: int = 1000,
 ) -> List[tuple]:
     """
     Find all the delocalization paths allyl to the radical center.
+
+    Args:
+        mol (RWMol or RDKitMol): The molecule to search.
+        max_matches (int): The maximum number of matches to return. Defaults to 1000.
+
+    Returns:
+        list: A list of tuples containing the atom indices of the delocalization paths.
     """
     return find_paths_with_template(
         mol,
@@ -255,8 +272,9 @@ def find_allyl_delocalization_paths(
     )
 
 
+# RDKit / RDMC compatible
 def find_lone_pair_multiple_bond_paths(
-    mol: "RWMol",
+    mol: Union["RWMol", "RDKitMol"],
     max_matches: int = 1000,
 ) -> List[tuple]:
     """
@@ -269,6 +287,13 @@ def find_lone_pair_multiple_bond_paths(
     - N#N group on sulfur (O[S-](O)[N+]#N <-> OS(O)=[N+]=[N-] <-> O[S+](O)#[N+][N-2])
     - N[N+]([O-])=O <=> N[N+](=O)[O-], these structures are isomorphic but not identical, this transition is
       important for correct degeneracy calculations
+
+    Args:
+        mol (RWMol or RDKitMol): The molecule to search.
+        max_matches (int): The maximum number of matches to return. Defaults to 1000.
+
+    Returns:
+        list: A list of tuples containing the atom indices of the delocalization paths.
     """
     return find_paths_with_template(
         mol,
@@ -277,8 +302,9 @@ def find_lone_pair_multiple_bond_paths(
     )
 
 
+# RDKit / RDMC compatible
 def find_adj_lone_pair_radical_delocalization_paths(
-    mol: "RWMol",
+    mol: Union["RWMol", "RDKitMol"],
     max_matches: int = 1000,
 ) -> List[tuple]:
     """
@@ -308,6 +334,13 @@ def find_adj_lone_pair_radical_delocalization_paths(
 
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] <=> [::O]=[:N.]
+
+    Args:
+        mol (RWMol or RDKitMol): The molecule to search.
+        max_matches (int): The maximum number of matches to return. Defaults to 1000.
+
+    Returns:
+        list: A list of tuples containing the atom indices of the delocalization paths.
     """
     return find_paths_with_template(
         mol,
@@ -316,8 +349,9 @@ def find_adj_lone_pair_radical_delocalization_paths(
     )
 
 
+# RDKit / RDMC compatible
 def find_adj_lone_pair_multiple_bond_delocalization_paths(
-    mol: "RWMol",
+    mol: Union["RWMol", "RDKitMol"],
     max_matches: int = 1000,
 ) -> List[tuple]:
     """
@@ -336,6 +370,13 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(
     Direction "2" is the direction <decreasing> the bond order as in [:NH]=[CH2] <=> [::NH-]-[CH2+]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
+
+    Args:
+        mol (RWMol or RDKitMol): The molecule to search.
+        max_matches (int): The maximum number of matches to return. Defaults to 1000.
+
+    Returns:
+        list: A list of tuples containing the atom indices and direction of the delocalization paths.
     """
     return [
         (a1, a2, 1)  # the last bit is the direction
@@ -354,8 +395,9 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(
     ]
 
 
+# RDKit / RDMC compatible
 def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(
-    mol: "RWMol",
+    mol: Union["RWMol", "RDKitMol"],
     max_matches: int = 1000,
 ) -> List[tuple]:
     """
@@ -374,6 +416,13 @@ def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
     In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
+
+    Args:
+        mol (RWMol or RDKitMol): The molecule to search.
+        max_matches (int): The maximum number of matches to return. Defaults to 1000.
+
+    Returns:
+        list: A list of tuples containing the atom indices and direction of the delocalization paths.
     """
     return [
         (a1, a2, 1)  # the last bit is the direction
