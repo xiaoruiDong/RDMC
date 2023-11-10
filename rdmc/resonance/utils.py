@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import itertools
-
+import math
 from typing import List, Optional
 
 from rdkit import Chem
@@ -117,6 +117,7 @@ def get_lone_pair(atom: "Atom") -> int:
     ) // 2
 
 
+# Pure RDKit
 def get_charge_span(mol: "RDKitMol") -> float:
     """
     Get the charge span of a molecule.
@@ -127,8 +128,9 @@ def get_charge_span(mol: "RDKitMol") -> float:
     Returns:
         float: The charge span of the molecule.
     """
-    abs_net_charge = abs(mol.GetFormalCharge())
-    sum_of_abs_charges = sum([abs(atom.GetFormalCharge()) for atom in mol.GetAtoms()])
+    charges = [atom.GetFormalCharge() for atom in mol.GetAtoms()]
+    abs_net_charge = abs(sum(charges))
+    sum_of_abs_charges = sum([abs(charge) for charge in charges])
     return (sum_of_abs_charges - abs_net_charge) / 2
 
 
