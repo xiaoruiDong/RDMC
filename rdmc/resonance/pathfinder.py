@@ -37,7 +37,7 @@ from queue import Queue
 from rdkit import Chem
 from rdkit.Chem import Atom
 
-from rdmc.resonance.utils import get_lone_pair, in_path
+from rdmc.resonance.utils import get_lone_pair
 
 
 def find_allyl_delocalization_paths(atom1):
