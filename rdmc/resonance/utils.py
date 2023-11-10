@@ -148,6 +148,56 @@ def get_radical_count(mol) -> int:
     return sum([atom.GetNumRadicalElectrons() for atom in mol.GetAtoms()])
 
 
+# Pure RDKit
+def get_num_occupied_orbitals(atom: "Atom") -> int:
+    """
+    Get the number of occupied orbitals on an atom.
+
+    Args:
+        atom (Atom): The atom whose number of occupied orbitals is to be returned.
+
+    Returns:
+        int: The number of occupied orbitals on the atom.
+    """
+    order = get_total_bond_order(atom)
+    return math.ceil(
+        (
+            PERIODIC_TABLE.GetNOuterElecs(atom.GetAtomicNum())
+            - atom.GetFormalCharge()
+            + atom.GetNumRadicalElectrons()
+            + int(order)
+        )
+        / 2
+    )
+
+
+# Pure RDKit
+def has_empty_orbitals(atom: "Atom") -> bool:
+    """
+    Determine whether an atom has empty orbitals.
+
+    Args:
+        atom (Atom): The atom to be checked.
+
+    Returns:
+        bool: ``True`` if the atom has empty orbitals, ``False`` otherwise.
+    """
+    atomic_num = atom.GetAtomicNum()
+    num_occupied_orbitals = get_num_occupied_orbitals(atom)
+    if atomic_num == 1:
+        # s
+        return num_occupied_orbitals < 1
+    elif atomic_num <= 10:
+        # sp3
+        return num_occupied_orbitals < 4
+    elif atomic_num < 36:
+        # sp3d2
+        return num_occupied_orbitals < 6
+    else:
+        # sp3d3. IF7. But let's not worry about it for now
+        return num_occupied_orbitals < 7
+
+
 def get_sorting_label(atom) -> int:
     return -1
 
