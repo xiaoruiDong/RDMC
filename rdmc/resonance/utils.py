@@ -63,7 +63,7 @@ bond_order_dicts = {
 }
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def get_electronegativity(atom: "Atom") -> float:
     """
     Get the electronegativity of an atom. Currently only supports atom 1-35 and 53. Others will
@@ -78,7 +78,7 @@ def get_electronegativity(atom: "Atom") -> float:
     return electronegativity.get(atom.GetAtomicNum(), 1.0)
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def get_total_bond_order(atom: "Atom") -> float:
     """
     Get the total bond order of an atom.
@@ -97,7 +97,7 @@ def get_total_bond_order(atom: "Atom") -> float:
     )
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def get_lone_pair(atom: "Atom") -> int:
     """
     Get the number of lone pairs on an atom.
@@ -117,7 +117,7 @@ def get_lone_pair(atom: "Atom") -> int:
     ) // 2
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def get_charge_span(mol: "RDKitMol") -> float:
     """
     Get the charge span of a molecule.
@@ -134,7 +134,7 @@ def get_charge_span(mol: "RDKitMol") -> float:
     return (sum_of_abs_charges - abs_net_charge) / 2
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def get_radical_count(mol) -> int:
     """
     Return the total number of radical electrons on all atoms in the
@@ -150,7 +150,7 @@ def get_radical_count(mol) -> int:
     return sum([atom.GetNumRadicalElectrons() for atom in mol.GetAtoms()])
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def get_num_occupied_orbitals(atom: "Atom") -> int:
     """
     Get the number of occupied orbitals on an atom.
@@ -173,7 +173,7 @@ def get_num_occupied_orbitals(atom: "Atom") -> int:
     )
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def has_empty_orbitals(atom: "Atom") -> bool:
     """
     Determine whether an atom has empty orbitals.
@@ -200,23 +200,7 @@ def has_empty_orbitals(atom: "Atom") -> bool:
         return num_occupied_orbitals < 7
 
 
-def get_sorting_label(atom) -> int:
-    return -1
-
-
-def set_reactive(mol, reactive: bool):
-    mol.reactive = reactive
-
-
-def is_reactive(mol) -> bool:
-    try:
-        return mol.reactive
-    except AttributeError:
-        set_reactive(mol, True)  # by default, assume it is reactive
-    return mol.reactive
-
-
-# Pure RDKit
+# RDKit / RDMC compatible
 def is_radical(mol) -> bool:
     """
     Determine whether a molecule is a radical.
@@ -233,7 +217,7 @@ def is_radical(mol) -> bool:
     return False
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def is_aromatic(mol) -> bool:
     """
     Determine whether a molecule is aromatic.
@@ -250,7 +234,7 @@ def is_aromatic(mol) -> bool:
     return False
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def is_cyclic(mol) -> bool:
     """
     Determine whether a molecule is cyclic.
@@ -267,7 +251,7 @@ def is_cyclic(mol) -> bool:
     return False
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def get_order_str(bond: "Bond") -> str:
     """
     Get the string representation of the bond order.
@@ -293,7 +277,7 @@ def get_order_str(bond: "Bond") -> str:
         return "?"
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def get_relevant_cycles(mol) -> list:
     """
     Returns all relevant cycles as a list of bond indices.
@@ -417,7 +401,7 @@ def is_aryl_radical(
     return total == aryl
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def is_identical(mol1: "RDKitMol", mol2: "RDKitMol") -> bool:
     """
     Determine whether two molecules are identical. This method assumes two molecules have
@@ -443,7 +427,7 @@ def increment_radical(atom: "Atom"):
     atom.SetNumRadicalElectrons(atom.GetNumRadicalElectrons() + 1)
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def decrement_radical(atom: "Atom"):
     """
     Decrement the number of radical electrons on an atom by one.
@@ -457,7 +441,7 @@ def decrement_radical(atom: "Atom"):
     atom.SetNumRadicalElectrons(new_radical_count)
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def increment_order(bond: "Bond"):
     """
     Increment the bond order of a bond by one.
@@ -468,7 +452,7 @@ def increment_order(bond: "Bond"):
     bond.SetBondType(bond_order_dicts[bond.GetBondTypeAsDouble() + 1])
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def decrement_order(bond: "Bond"):
     """
     Decrement the bond order of a bond by one.
@@ -482,7 +466,7 @@ def decrement_order(bond: "Bond"):
     bond.SetBondType(bond_order_dicts[new_order])
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def update_charge(atom: "Atom", lone_pair: int = 0):
     """
     Update the formal charge of an atom based on its number of lone pairs and bond orders.
@@ -505,7 +489,7 @@ def update_charge(atom: "Atom", lone_pair: int = 0):
     atom.SetFormalCharge(int(charge))
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def unset_aromatic_flags(mol):
     """
     A helper function to unset aromatic flags in a molecule.
