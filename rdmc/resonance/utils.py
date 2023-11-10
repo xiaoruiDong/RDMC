@@ -281,10 +281,10 @@ def get_order_str(bond: "Bond") -> str:
     bond_type = bond.GetBondType()
     if bond_type == 1:
         return "S"
-    elif bond_type == 1.5:
-        return "B"
     elif bond_type == 2:
         return "D"
+    elif bond_type == 1.5:
+        return "B"
     elif bond_type == 3:
         return "T"
     elif bond_type == 4:
@@ -503,3 +503,18 @@ def update_charge(atom: "Atom", lone_pair: int = 0):
         - 2 * lone_pair
     )
     atom.SetFormalCharge(int(charge))
+
+
+# Pure RDKit
+def unset_aromatic_flags(mol):
+    """
+    A helper function to unset aromatic flags in a molecule.
+    This is useful when cleaning up the molecules from resonance structure generation.
+    In such case, a molecule may have single-double bonds but are marked as aromatic bonds.
+    """
+    for bond in mol.GetBonds():
+        if bond.GetBondType() != Chem.BondType.AROMATIC and bond.GetIsAromatic():
+            bond.SetIsAromatic(False)
+            bond.GetBeginAtom().SetIsAromatic(False)
+            bond.GetEndAtom().SetIsAromatic(False)
+    return mol

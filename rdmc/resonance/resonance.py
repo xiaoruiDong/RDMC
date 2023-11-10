@@ -7,6 +7,8 @@ This module contains the function generating resonance structures.
 
 from rdmc.mol import RDKitMol
 from rdmc.mol_compare import get_unique_mols
+from rdmc.resonance.utils import unset_aromatic_flags
+
 from rdkit import Chem
 from rdkit.Chem import RWMol
 
@@ -104,7 +106,7 @@ def generate_radical_resonance_structures(
             # todo: make error type more specific and add a warning message
             continue
         if kekulize:
-            _unset_aromatic_flags(res_mol)
+            unset_aromatic_flags(res_mol)
         cleaned_mols.append(res_mol)
 
     # To remove duplicate resonance structures
@@ -123,16 +125,3 @@ def generate_radical_resonance_structures(
 
     return cleaned_mols
 
-
-def _unset_aromatic_flags(mol):
-    """
-    A helper function to unset aromatic flags in a molecule.
-    This is useful when cleaning up the molecules from resonance structure generation.
-    In such case, a molecule may have single-double bonds but are marked as aromatic bonds.
-    """
-    for bond in mol.GetBonds():
-        if bond.GetBondType() != Chem.BondType.AROMATIC and bond.GetIsAromatic():
-            bond.SetIsAromatic(False)
-            bond.GetBeginAtom().SetIsAromatic(False)
-            bond.GetEndAtom().SetIsAromatic(False)
-    return mol
