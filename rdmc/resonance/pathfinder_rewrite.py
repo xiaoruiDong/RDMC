@@ -29,32 +29,32 @@ from rdkit import Chem
 # 11. lose radical gain bond
 
 query_radical = {
-    "C": "C+0v{1-3}",
-    "N": "N+0v{1-2}",
-    "O": "O+0v1",
-    "Si": "Si+0v{1-3}",
-    "P": "P+0v{1-2},P+0v4",
-    "S": "S+0v1,S+0v{3-5}",
+    "C": "Cv{1-3}",
+    "N": "Nv{1-2}",
+    "O": "Ov1",
+    "Si": "Siv{1-3}",
+    "P": "Pv{1-2},Pv4",
+    "S": "Sv1,Sv{3-5}",
 }
 
 query_lose_lone_pair_gain_charge_gain_bond = {
     # lose one electron of the pair (charge +1) and homolytically form a bond
     # # A few entries are excluded as trying to avoid atom with ++ or -- charge
-    "C": "C-v{1-3},C+0v{1-2}",
-    "N": "N-v{1-2},N+0v{1-3}",
-    "O": "O-v1,O+0v{1-2}",
-    "P": "P-v{1-4},P+0v{1-3}",
-    "S": "S-v{1-5},S+0v{1-4}",
+    "C": "C-v{1-3},Cv{1-2}",
+    "N": "N-v{1-2},Nv{1-3}",
+    "O": "O-v1,Ov{1-2}",
+    "P": "P-v{1-4},Pv{1-3}",
+    "S": "S-v{1-5},Sv{1-4}",
 }
 
 query_gain_lone_pair_lose_charge_lose_bond = {
     #  homolytically break a bond and gain one electron (charge -1) to form a lone pair
     # A few entries are excluded as trying to avoid atom with ++ or -- charge
-    "C": "C+v2X1,C+v3X{1-2},C+0v2X1,C+0v3X{1-2},C+0v4X{1-3}",
-    "N": "N+v2X1,N+v3X{1-2},N+v4X{1-3},N+0v2X1,N+0v3X{1-2}",
-    "O": "O+v2X1,O+v3X{1-2},O+0v2X1",
-    "P": "P+v2X1,P+v3X{1-2},P+v4X{1-3},P+0v2X1,P+0v3X{1-2},P+0v4X{1-3},P+0v5X{1-4}",
-    "S": "S+v2X1,S+v3X{1-2},S+v4X{1-3},S+v5X{1-4},S+0v2X1,S+0v3X{1-2},S+0v4X{1-3},S+0v5X{1-4},S+0v6X{1-5}",
+    "C": "C+v2X1,C+v3X{1-2},Cv2X1,Cv3X{1-2},Cv4X{1-3}",
+    "N": "N+v2X1,N+v3X{1-2},N+v4X{1-3},Nv2X1,Nv3X{1-2}",
+    "O": "O+v2X1,O+v3X{1-2},Ov2X1",
+    "P": "P+v2X1,P+v3X{1-2},P+v4X{1-3},Pv2X1,Pv3X{1-2},Pv4X{1-3},Pv5X{1-4}",
+    "S": "S+v2X1,S+v3X{1-2},S+v4X{1-3},S+v5X{1-4},Sv2X1,Sv3X{1-2},Sv4X{1-3},Sv5X{1-4},Sv6X{1-5}",
 }
 
 # The following is derived manually
@@ -63,11 +63,11 @@ query_gain_lone_pair_lose_charge_lose_bond = {
 # form a bond or leave as a radical electron
 # query_gain_radical_gain_charge_lose_lone_pair = {
 #     # lose one electron from a lone pair (charge + 1) and form a radical
-#     "C": "C-v{1-3},C+0v{1-2}",
-#     "N": "N-v{1-2},N+0v{1-3}",
-#     "O": "O-v1,O+0v{1-2}",
-#     "P": "P-v{1-4},P+0v{1-3}",
-#     "S": "S-v{1-5},S+0v{1-4}",
+#     "C": "C-v{1-3},Cv{1-2}",
+#     "N": "N-v{1-2},Nv{1-3}",
+#     "O": "O-v1,Ov{1-2}",
+#     "P": "P-v{1-4},Pv{1-3}",
+#     "S": "S-v{1-5},Sv{1-4}",
 # }
 query_lose_lone_pair_gain_charge_gain_radical = (
     query_lose_lone_pair_gain_charge_gain_bond
@@ -75,69 +75,69 @@ query_lose_lone_pair_gain_charge_gain_radical = (
 
 query_gain_lone_pair_lose_charge_lose_radical = {
     # gain an electron (charge - 1) and form a lone pair with one radical electron
-    "C": "C+v{1-2},C+0v{1-3}",
-    "N": "N+v{1-3},N+0v{1-2}",
-    "O": "O+v{1-2},O+0v1",
-    "P": "P+v{1-3},P+0v{1-4}",
-    "S": "S+v{1-4},S+0v{1-5}",
+    "C": "C+v{1-2},Cv{1-3}",
+    "N": "N+v{1-3},Nv{1-2}",
+    "O": "O+v{1-2},Ov1",
+    "P": "P+v{1-3},Pv{1-4}",
+    "S": "S+v{1-4},Sv{1-5}",
 }
 
 query_lose_lone_pair_gain_radical_gain_bond = {
-    "C": "C+v1,C-v1,C+0v{1-2}",
-    "N": "N+v{1-2},N+0v1",
+    "C": "C+v1,C-v1,Cv{1-2}",
+    "N": "N+v{1-2},Nv1",
     "O": "O+v1",
-    "P": "P+v{1-2},P-v{1-4},P+0v{1-3}",
-    "S": "S+v{1-3},S-v{1-3},S+0v{1-4}",
+    "P": "P+v{1-2},P-v{1-4},Pv{1-3}",
+    "S": "S+v{1-3},S-v{1-3},Sv{1-4}",
 }
 
 query_gain_lone_pair_lose_radical_lose_bond = {
-    "C": "C+v2X1,C-v2X1,C+0v2X1,C+0v3X{1-2}",
-    "N": "N+v2X1,N+v3X{1-2},N+0v2X1",
+    "C": "C+v2X1,C-v2X1,Cv2X1,Cv3X{1-2}",
+    "N": "N+v2X1,N+v3X{1-2},Nv2X1",
     "O": "O+v2X1",
-    "P": "P+v2X1,P+v3X{1-2},P-v2X1,P-v3X{1-2},P-v4X{1-3},P-v5X{1-4},P+0v2X1,P+0v3X{1-2},P+0v4X{1-3}",
-    "S": "S+v2X1,S+v3X{1-2},S+v4X{1-3},S-v2X1,S-v3X{1-2},S-v4X{1-3},S+0v2X1,S+0v3X{1-2},S+0v4X{1-3},S+0v5X{1-4}",
+    "P": "P+v2X1,P+v3X{1-2},P-v2X1,P-v3X{1-2},P-v4X{1-3},P-v5X{1-4},Pv2X1,Pv3X{1-2},Pv4X{1-3}",
+    "S": "S+v2X1,S+v3X{1-2},S+v4X{1-3},S-v2X1,S-v3X{1-2},S-v4X{1-3},Sv2X1,Sv3X{1-2},Sv4X{1-3},Sv5X{1-4}",
 }
 
 query_gain_charge_lose_bond = {
     # E.g., [:N]# -> [::N-]=
-    "C": "C-v2X1,C-v3X{1-2},C+0v2X1,C+0v3X{1-2},C+0v4X{1-3}",
-    "N": "N-v2X1,N+0v2X1,N+0v3X{1-2}",
-    "O": "O+0v2X1",
-    "P": "P-v2X1,P-v3X{1-2},P-v4X{1-3},P-v5X{1-4},P-v6X{1-5},P+0v2X1,P+0v3X{1-2},P+0v4X{1-3},P+0v5X{1-4}",
-    "S": "S-v2X1,S-v3X{1-2},S-v4X{1-3},S-v5X{1-4},S+0v2X1,S+0v3X{1-2},S+0v4X{1-3},S+0v5X{1-4},S+0v6X{1-5}",
+    "C": "C-v2X1,C-v3X{1-2},Cv2X1,Cv3X{1-2},Cv4X{1-3}",
+    "N": "N-v2X1,Nv2X1,Nv3X{1-2}",
+    "O": "Ov2X1",
+    "P": "P-v2X1,P-v3X{1-2},P-v4X{1-3},P-v5X{1-4},P-v6X{1-5},Pv2X1,Pv3X{1-2},Pv4X{1-3},Pv5X{1-4}",
+    "S": "S-v2X1,S-v3X{1-2},S-v4X{1-3},S-v5X{1-4},Sv2X1,Sv3X{1-2},Sv4X{1-3},Sv5X{1-4},Sv6X{1-5}",
 }
 
 query_lose_charge_gain_bond = {
     # E.g., [CH2+]- -> [CH2]=
-    "C": "C+v{1-3},C+0v{1-2}",
-    "N": "N+v{1-2},N+0v1",
+    "C": "C+v{1-3},Cv{1-2}",
+    "N": "N+v{1-2},Nv1",
     "O": "O+v1",
-    "P": "P+v{1-4},P+0v{1-5}",
-    "S": "S+v{1-5},S+0v{1-4}",
+    "P": "P+v{1-4},Pv{1-5}",
+    "S": "S+v{1-5},Sv{1-4}",
 }
 
 query_gain_radical_lose_bond = {
     # E.g., [CH2]= -> [CH2.]-
-    "C": "C+v2X1,C+v3X{1-2},C-v2X1,C-v3X{1-2},C+0v2X1,C+0v3X{1-2},C+0v4X{1-3}",
-    "N": "N+v2X1,N+v3X{1-2},N+v3X{1-3},N-v2X1,N+0v2X1,N+0v3X{1-2}",
-    "O": "O+v2X1,O+v3X{1-2},O+0v2X1",
+    "C": "C+v2X1,C+v3X{1-2},C-v2X1,C-v3X{1-2},Cv2X1,Cv3X{1-2},Cv4X{1-3}",
+    "N": "N+v2X1,N+v3X{1-2},N+v3X{1-3},N-v2X1,Nv2X1,Nv3X{1-2}",
+    "O": "O+v2X1,O+v3X{1-2},Ov2X1",
     "P": (
         "P+v2X1,P+v3X{1-2},P+v4X{1-3},P-v2X1,P-v3X{1-2},P-v4X{1-3},P-v5X{1-4},P-v6X{1-5},"
-        "P+0v2X1,P+0v3X{1-2},P+0v4X{1-3},P+0v5X{1-4}"
+        "Pv2X1,Pv3X{1-2},Pv4X{1-3},Pv5X{1-4}"
     ),
     "S": (
         "S+v2X1,S+v3X{1-2},S+v4X{1-3},S+v5X{1-4},S-v2X1,S-v3X{1-2},S-v4X{1-3},S-v5X{1-4},"
-        "S+0v2X1,S+0v3X{1-2},S+0v4X{1-3},S+0v5X{1-4},S+0v6X{1-5}"
+        "Sv2X1,Sv3X{1-2},Sv4X{1-3},Sv5X{1-4},Sv6X{1-5}"
     ),
 }
 
 query_lose_radical_gain_bond = {
     # E.g., [CH2.]- -> [CH2]=
-    "C": "C+v{1-2},C-v{1-2},C+0v{1-3}",
-    "N": "N+v{1-3},N-v1,N+0v{1-2}",
-    "O": "O+v{1-2},O+0v1",
-    "P": "P+v{1-3},P-v{1-5},P+0v{1-4}",
-    "S": "S+v{1-4},S-v{1-4},S+0v{1-5}",
+    "C": "C+v{1-2},C-v{1-2},Cv{1-3}",
+    "N": "N+v{1-3},N-v1,Nv{1-2}",
+    "O": "O+v{1-2},Ov1",
+    "P": "P+v{1-3},P-v{1-5},Pv{1-4}",
+    "S": "S+v{1-4},S-v{1-4},Sv{1-5}",
 }
 
 # More generic queries
