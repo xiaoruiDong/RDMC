@@ -34,7 +34,6 @@ from rdmc.resonance.filtration import (
     get_octet_deviation,
     filter_structures,
     charge_filtration,
-    get_charge_span_list,
     aromaticity_filtration,
 )
 from rdmc.resonance.resonance_rmg import generate_resonance_structures, analyze_molecule
@@ -68,23 +67,17 @@ class TestFiltration:
         assert mol.GetBondBetweenAtoms(0, 2).GetBondTypeAsDouble() == 3
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 2
-        for mol in mol_list[:1]:  # RDMC doesn't set reactive flag, only check the first one (the most representative structure)
-            for atom in mol.GetAtoms():
-                assert atom.GetFormalCharge() == 0
+        mol = mol_list[1]  # index 0 is the original one, 1 is the generated one
+        for atom in mol.GetAtoms():
+            assert atom.GetFormalCharge() == 0
 
     def test_penalty_birads_replacing_lone_pairs(self):
         """Test that birads on `S u2 p0` are penalized"""
-        adj = """
-        multiplicity 3
-        1 S u2 p0 c0 {2,D} {3,D}
-        2 O u0 p2 c0 {1,D}
-        3 O u0 p2 c0 {1,D}
-        """
         mol = RDKitMol.FromSmiles('[S:1](=[O:2])=[O:3]')
         mol.GetAtomWithIdx(0).SetNumRadicalElectrons(2)
 
         mol_list = generate_resonance_structures(mol, keep_isomorphic=False, filter_structures=True)
-        for mol in mol_list[:2]:
+        for mol in mol_list[1:]:
             for atom in mol.GetAtoms():
                 if atom.GetAtomicNum() == 16:
                     assert atom.GetNumRadicalElectrons() != 2
@@ -103,13 +96,13 @@ class TestFiltration:
         smi3 = '[O:1][N+:3][O-:2]'
 
         mol_list = [
-            RDKitMol.FromSmiles(smi1),
-            RDKitMol.FromSmiles(smi2),
-            RDKitMol.FromSmiles(smi3),
+            RDKitMol.FromSmiles(smi1).ToRWMol(),
+            RDKitMol.FromSmiles(smi2).ToRWMol(),
+            RDKitMol.FromSmiles(smi3).ToRWMol(),
         ]
         mol_list[2].GetAtomWithIdx(2).SetNumRadicalElectrons(0)
 
-        filtered_list = charge_filtration(mol_list, get_charge_span_list(mol_list))
+        filtered_list = charge_filtration(mol_list)
         assert len(filtered_list) == 2
         assert any([get_charge_span(mol) == 1 for mol in filtered_list])
         for mol in filtered_list:
@@ -137,16 +130,16 @@ class TestFiltration:
         smi7 = '[N+:1](=[N:2][H:4])[S:3][O-:5]'
 
         mol_list = [
-            RDKitMol.FromSmiles(smi1),
-            RDKitMol.FromSmiles(smi2),
-            RDKitMol.FromSmiles(smi3),
-            RDKitMol.FromSmiles(smi4),
-            RDKitMol.FromSmiles(smi5),
-            RDKitMol.FromSmiles(smi6),
-            RDKitMol.FromSmiles(smi7),
+            RDKitMol.FromSmiles(smi1).ToRWMol(),
+            RDKitMol.FromSmiles(smi2).ToRWMol(),
+            RDKitMol.FromSmiles(smi3).ToRWMol(),
+            RDKitMol.FromSmiles(smi4).ToRWMol(),
+            RDKitMol.FromSmiles(smi5).ToRWMol(),
+            RDKitMol.FromSmiles(smi6).ToRWMol(),
+            RDKitMol.FromSmiles(smi7).ToRWMol(),
         ]
 
-        filtered_list = charge_filtration(mol_list, get_charge_span_list(mol_list))
+        filtered_list = charge_filtration(mol_list)
         assert len(filtered_list) == 4
         assert any([get_charge_span(mol) == 1 for mol in filtered_list])
         for mol in filtered_list:
