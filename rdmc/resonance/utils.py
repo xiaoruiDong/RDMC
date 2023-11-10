@@ -502,3 +502,23 @@ def unset_aromatic_flags(mol):
             bond.GetBeginAtom().SetIsAromatic(False)
             bond.GetEndAtom().SetIsAromatic(False)
     return mol
+
+
+resonance_sanitize_flag = (
+    Chem.SanitizeFlags.SANITIZE_PROPERTIES | Chem.SanitizeFlags.SANITIZE_SYMMRINGS
+)
+
+
+# Pure RDKit
+def sanitize_resonance_mol(
+    mol: "RWMol",
+    sanitize_flag=resonance_sanitize_flag,
+):
+    """
+    A helper function to clean up a molecule from resonance structure generation.
+
+    Args:
+        mol: The molecule to be sanitized.
+        sanitize_flag: The sanitize flag used to sanitize the molecule.
+    """
+    Chem.SanitizeMol(mol, sanitize_flag)
