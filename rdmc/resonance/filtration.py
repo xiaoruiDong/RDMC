@@ -45,19 +45,19 @@ which is quite like http://www.chem.ucla.edu/~harding/IGOC/R/resonance_contribut
 
 from itertools import combinations, product
 import logging
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from rdmc.resonance.exceptions import ResonanceError
 from rdmc.resonance.utils import (
-    get_order_str,
     get_charge_span,
     get_electronegativity,
     get_lone_pair,
+    get_order_str,
     get_radical_count,
     get_total_bond_order,
     is_aromatic,
+    is_identical,
+    unset_aromatic_flags,
 )
-from rdmc.resonance.resonance import unset_aromatic_flags
 
 from rdkit import Chem
 
@@ -83,54 +83,48 @@ def filter_structures(
         features (list, optional): A list of features of the species. Default is ``None``.
         kwargs (dict, optional): Additional keyword arguments. They are ignored, but included for compatibility.
     """
-    # Remove structures with different multiplicities generated
-    # One identified issue is that Sanitize will make a N+ with two bond and 1 pair of electrons to
-    # 2 radical electrons
     logger.debug(f"Filter_structures: {len(mol_list)} structures are fed in.")
 
-    ref_radical_count = get_radical_count(mol_list[0])
-    mol_list = [mol for mol in mol_list if get_radical_count(mol) == ref_radical_count]
+    # 1. Remove structures with different multiplicities generated
+    filtered_list = multiplicity_filtration(
+        mol_list,
+        ref_idx=0,
+    )
     logger.debug(
-        f"Filter_structures: {len(mol_list)} structures after removing ones with different multiplicities."
+        f"Filter_structures: {len(filtered_list)} structures after removing ones with different multiplicities."
     )
 
-    # Get an octet deviation list
-    octet_deviation_list = get_octet_deviation_list(
+    # 2. Filter mol_list using the octet rule and the respective octet deviation list
+    filtered_list = octet_filtration(
         mol_list, allow_expanded_octet=allow_expanded_octet
     )
-
-    # Filter mol_list using the octet rule and the respective octet deviation list
-    filtered_list = octet_filtration(mol_list, octet_deviation_list)
     logger.debug(
         f"Filter_structures: {len(mol_list)} structures after octet filtration."
     )
 
-    # Filter by charge
+    # 3. Filter by charge
     filtered_list = charge_filtration(filtered_list)
     logger.debug(
         f"Filter_structures: {len(mol_list)} structures after charge filtration."
     )
 
-    # Filter aromatic structures
+    # 4. Filter aromatic structures
     if features is not None and features["is_aromatic"]:
-        filtered_list = aromaticity_filtration(filtered_list, features)
+        filtered_list = aromaticity_filtration(filtered_list, features["isPolycyclicAromatic"])
         logger.debug(
             f"Filter_structures: {len(mol_list)} structures after aromaticity filtration."
         )
 
     if not filtered_list:
-        raise ResonanceError(
-            f"Could not determine representative localized structures for species "
-            f"{Chem.MolToSmiles(mol_list[0])}"
+        raise RuntimeError(
+            f"Could not determine representative localized structures for the input molecules."
         )
 
     # Originally RMG checks reactivity here, it is removed since it is not used in RDMC
 
-    # Make sure that the (first) original structure is always first in the list (unless it was filtered out).
-    # Important whenever Species.molecule[0] is expected to be used (e.g., training reactions) after generating
-    # resonance structures. However, if it was filtered out, it should be appended to the end of the list.
+    # Make sure that the (first) original structure is always first in the list.
     for index, filtered in enumerate(filtered_list):
-        if filtered.GetSubstructMatch(mol_list[0]):
+        if is_identical(mol_list[0], filtered):
             filtered_list.insert(0, filtered_list.pop(index))
             break
     else:
@@ -140,9 +134,30 @@ def filter_structures(
     return filtered_list
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
+def multiplicity_filtration(
+    mol_list: List[Union["Mol", "RDKitMol"]],
+    ref_idx: int = 0,
+) -> List[Union["Mol", "RDKitMol"]]:
+    """
+    Returns a filtered list based on the multiplicity of the species.
+    The multiplicity of the species is determined by the number of radical electrons in the species
+    and only the one with the same multiplicity as the reference species (the first by default) is kept.
+
+    Args:
+        mol_list (list): The list of molecules to filter. Can be either RDKit Mol or RDMC RDKitMol.
+        ref_idx (int, optional): The index of the reference molecule in ``mol_list``. Default is ``0``.
+
+    Returns:
+        list: The filtered list of molecules.
+    """
+    ref_radical_count = get_radical_count(mol_list[ref_idx])
+    return [mol for mol in mol_list if get_radical_count(mol) == ref_radical_count]
+
+
+# RDKit / RDMC compatible
 def get_octet_deviation_list(
-    mol_list: list, allow_expanded_octet: bool = True
+    mol_list: List[Union["Mol", "RDKitMol"]], allow_expanded_octet: bool = True
 ) -> List[float]:
     """
     Get the octet deviations for a list of molecules.
@@ -153,7 +168,7 @@ def get_octet_deviation_list(
                                                Default is ``True``.
 
     Returns:
-        list: The octet deviations for the molecules in `mol_list`.
+        list: The octet deviations for the molecules in ``mol_list``.
     """
     return [
         get_octet_deviation(mol, allow_expanded_octet=allow_expanded_octet)
@@ -161,12 +176,23 @@ def get_octet_deviation_list(
     ]
 
 
-# Pure RDKit
-def get_octet_deviation(mol, allow_expanded_octet=True):
+# RDKit / RDMC compatible
+def get_octet_deviation(
+    mol: Union["Mol", "RDKitMol"],
+    allow_expanded_octet: bool = True,
+) -> float:
     """
-    Returns the octet deviation for a :class:Molecule object
-    if `allow_expanded_octet` is ``True`` (by default), then the function also considers dectet for
-    third row elements (currently sulfur is the only hypervalance third row element in RMG)
+    Returns the octet deviation for a molecule.
+
+    Args:
+        mol (Mol or RDKitMol): The molecule to get the octet deviation for.
+        allow_expanded_octet (bool, optional): Whether to allow expanded octets for third row elements.
+                                               if `allow_expanded_octet` is ``True`` (by default),
+                                               then the function also considers dectet for third row elements.
+                                               Default is ``True``.
+
+    Returns:
+        float: The octet deviation for the molecule.
     """
     # The overall "score" for the molecule, summed across all non-H atoms
     octet_deviation = 0
@@ -232,14 +258,24 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
     return octet_deviation
 
 
-# Pure RDkit
-def octet_filtration(mol_list, octet_deviation_list):
+# RDKit / RDMC compatible
+def octet_filtration(
+    mol_list: List[Union["Mol", "RDKitMol"]],
+    allow_expanded_octet: bool = True,
+):
     """
-    Returns a filtered list based on the octet_deviation_list. Also computes and returns a charge_span_list.
-    Filtering using the octet deviation criterion rules out most unrepresentative structures. However, since some
-    charge-strained species are still kept (e.g., [NH]N=S=O <-> [NH+]#[N+][S-][O-]), we also generate during the same
-    loop a charge_span_list to keep track of the charge spans. This is used for further filtering.
+    Filter with the octet deviation criterion to rule out unrepresentative structures.
+
+    Args:
+        mol_list (list): The list of molecules to filter.
+        allow_expanded_octet (bool, optional): Whether to allow expanded octets for third row elements.
+
+    Returns:
+        list: The filtered list of molecules.
     """
+    octet_deviation_list = get_octet_deviation_list(
+        mol_list, allow_expanded_octet=allow_expanded_octet
+    )
     min_octet_deviation = min(octet_deviation_list)
     return [
         mol
@@ -264,10 +300,10 @@ def get_charge_span_list(mol_list: list) -> List[float]:
 
 
 # Pure RDKit
-def charge_filtration(mol_list: list):
+def charge_filtration(mol_list: list) -> list:
     """
-    Returns a new filtered_list, filtered based on charge_span_list, electronegativity and proximity considerations.
-    If structures with an additional charge layer introduce reactive sites (i.e., radicals or multiple bonds) they will
+    Returns a new filtered_list, filtered based on charge_span, electronegativity and proximity considerations.
+    If structures with an additional charge layer introduce new reactive sites (i.e., radicals or multiple bonds) they will
     also be considered. For example:
 
         - Both of NO2's resonance structures will be kept: [O]N=O <=> O=[N+.][O-]
@@ -283,15 +319,21 @@ def charge_filtration(mol_list: list):
         - The following species will loose two thirds of its resonance structures, which are charged: CS(=O)SC <=>
           CS(=O)#SC <=> C[S+]([O-]SC <=> CS([O-])=[S+]C <=> C[S+]([O-])#SC <=> C[S+](=O)=[S-]C
         - Azide is know to have three resonance structures: [NH-][N+]#N <=> N=[N+]=[N-] <=> [NH+]#[N+][N-2];
-          here we filter the third one out due to the higher charge span, which does not contribute to reactivity in RMG
+
+    Args:
+        mol_list (list): The list of molecules to filter.
+
+    Returns:
+        list: The filtered list of molecules.
     """
     charge_span_list = get_charge_span_list(mol_list)
     min_charge_span = min(charge_span_list)
 
     if min_charge_span == 0 and len(set(charge_span_list)) == 1:
         return mol_list
+
     elif len(set(charge_span_list)) > 1:
-        # Proceed if there are structures with different charge spans
+        # Only keep the structures with charge span smaller or equal to minimal charge span + 1
         extra_charged_list, filtered_list = [], []
         for mol, charge_span in zip(mol_list, charge_span_list):
             if charge_span == min_charge_span:
@@ -338,7 +380,7 @@ def charge_filtration(mol_list: list):
     return filtered_list + extra_charged_list
 
 
-# Pure RDKit
+# RDKit / RDMC Compatible
 def has_unique_sites(
     mol,
     rad_idxs: set,
@@ -378,7 +420,7 @@ def has_unique_sites(
 template = Chem.MolFromSmarts("[O+X{1-3};!$([O+]-F)]")
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def stabilize_charges_by_electronegativity(
     mol_list: list,
     allow_empty_list: bool = False,
@@ -429,12 +471,15 @@ neg_atom_pattern = Chem.MolFromSmarts("[-]")
 
 
 # Pure RDKit
-def get_charge_distance(mol) -> tuple:
+def get_charge_distance(mol: "RWMol") -> tuple:
     """
     Get the cumulated charge distance for similar charge and difference charge pairs, respectively.
 
     Args:
-        mol (Mol or RDKitMol): The molecule to check.
+        mol (RWMol): The molecule to check.
+
+    Returns:
+        tuple: The cumulated charge distance for similar charge and difference charge pairs, respectively.
     """
     pos_atoms = [a[0] for a in mol.GetSubstructMatches(pos_atom_pattern)]
     neg_atoms = [a[0] for a in mol.GetSubstructMatches(neg_atom_pattern)]
@@ -465,6 +510,12 @@ def stabilize_charges_by_proximity(mol_list: list) -> list:
     """
     Only keep structures that obey the charge proximity rule.
     Opposite charges will be as close as possible to one another, and vice versa.
+
+    Args:
+        mol_list (list): The list of molecules to filter.
+
+    Returns:
+        list: The filtered list of molecules.
     """
     charge_distance_list = [get_charge_distance(mol) for mol in mol_list]
     min_cumulative_opposite_charge_distance = min(
@@ -483,10 +534,10 @@ def stabilize_charges_by_proximity(mol_list: list) -> list:
     ]
 
 
-# Pure RDKit
+# RDKit / RDMC compatible
 def aromaticity_filtration(
     mol_list: list,
-    features: list,
+    is_polycyclic_aromatic: bool = False,
 ) -> list:
     """
     Returns a filtered list of molecules based on heuristics for determining
@@ -505,6 +556,13 @@ def aromaticity_filtration(
     rings are aromatic anymore are not representative. While this isn't strictly
     true, it helps reduce the number of representative structures by focusing
     on the most important ones.
+
+    Args:
+        mol_list (list): The list of molecules to filter.
+        is_polycyclic_aromatic (bool, optional): Whether the species is polycyclic aromatic. Default is ``False``.
+
+    Returns:
+        list: The filtered list of molecules.
     """
     mol_list = [unset_aromatic_flags(mol) for mol in mol_list]
     # Start by selecting all aromatic resonance structures
@@ -516,7 +574,7 @@ def aromaticity_filtration(
         else:
             other_list.append(mol)
 
-    if not features["isPolycyclicAromatic"]:
+    if not is_polycyclic_aromatic:
         # Look for structures that don't have standard SDSDSD bond orders
         for mol in other_list:
             # Check all 6 membered rings
@@ -524,8 +582,8 @@ def aromaticity_filtration(
             # RDKit doesn't have a support to get all relevant cycles...
             # Temporarily use the BondRings as a rough fix
             # TODO: Implement pyrdl to get all relevant cycles which doesn't have full support
-            # for different python versions and different OS
-            # Another workaround maybe temporarily ignore polycyclic aromatics
+            # TODO: for different python versions and different OS
+            # TODO: Another workaround maybe temporarily ignore polycyclic aromatics
             bond_lists = [
                 ring for ring in mol.GetRingInfo().BondRings() if len(ring) == 6
             ]

@@ -163,5 +163,5 @@ class TestFiltration:
         ]
         mol_list[0].Kekulize()  # RDKit reads in the first SMILES as aromatic, while RMG reads it as Kekulized
 
-        filtered_list = aromaticity_filtration(mol_list, analyze_molecule(mol_list[0]))
+        filtered_list = aromaticity_filtration(mol_list, analyze_molecule(mol_list[0])["isPolycyclicAromatic"])
         assert len(filtered_list) == 3
