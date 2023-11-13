@@ -623,4 +623,4 @@ def is_equivalent_structure(
     if isomorphic_equivalent:
         return tuple(ref_mol.GetSubstructMatch(qry_mol))
     else:
-        return is_identical(mol, new_mol)
+        return is_identical(ref_mol, qry_mol)
