@@ -110,7 +110,9 @@ def filter_structures(
 
     # 4. Filter aromatic structures
     if features is not None and features["is_aromatic"]:
-        filtered_list = aromaticity_filtration(filtered_list, features["isPolycyclicAromatic"])
+        filtered_list = aromaticity_filtration(
+            filtered_list, features["isPolycyclicAromatic"]
+        )
         logger.debug(
             f"Filter_structures: {len(mol_list)} structures after aromaticity filtration."
         )
@@ -597,3 +599,28 @@ def aromaticity_filtration(
                 filtered_list.append(mol)
 
     return filtered_list
+
+
+# RDKit / RDMC compatible
+def is_equivalent_structure(
+    ref_mol: Union["RDKitMol", "Mol"],
+    qry_mol: Union["RDKitMol", "Mol"],
+    isomorphic_equivalent: bool = True,
+) -> bool:
+    """
+    Check if two molecules are equivalent. If `keep_isomorphic` is ``True``, then isomorphic molecules are considered
+    equivalent. Otherwise, the molecules must be identical. This method should be only used for filtering resonance structures,
+    as it doesn't check if molecules have the same set of atoms.
+
+    Args:
+        ref_mol (RDKitMol or Mol): The reference molecule.
+        qry_mol (RDKitMol or Mol): The query molecule.
+        keep_isomorphic (bool, optional): Whether to keep isomorphic molecules. Default is ``False``.
+
+    Returns:
+        bool: ``True`` if the molecules are equivalent, ``False`` otherwise.
+    """
+    if isomorphic_equivalent:
+        return tuple(ref_mol.GetSubstructMatch(qry_mol))
+    else:
+        return is_identical(mol, new_mol)
