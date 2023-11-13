@@ -5,11 +5,23 @@
 This module includes an RDKit-based rewrite of the RMG resonance pathfinder.
 """
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Optional, Set, Tuple, Union
 
+from rdmc.resonance.utils import (
+    decrement_order,
+    decrement_radical,
+    get_lone_pair,
+    has_empty_orbitals,
+    increment_order,
+    increment_radical,
+    sanitize_resonance_mol
+)
 from rdkit import Chem
 
+
+logger = logging.getLogger(__name__)
 
 # This is the implicit charge constraint embedded in the following path finding templates
 # I.e., for an query lose charge, the atom must have a charge >= 0, so that the resulting
@@ -229,7 +241,6 @@ def transform_pre_and_post_process(fun):
 
 
 class PathFinderRegistry:
-
     _registry = {}
 
     @classmethod
@@ -237,6 +248,7 @@ class PathFinderRegistry:
         def decorator(some_class):
             cls._registry[name] = some_class
             return some_class
+
         return decorator
 
     @classmethod
@@ -245,7 +257,6 @@ class PathFinderRegistry:
 
 
 class PathFinder(ABC):
-
     @classmethod
     def find(
         cls,
@@ -314,7 +325,7 @@ class AllylRadicalPathFinder(PathFinder):
         Returns:
             bool: True if the allyl delocalization path is valid, False otherwise.
         """
-        return mol.GetAtomWithIdx(a1_idx).GetNumRadicalElectrons() > 0
+        return mol.GetAtomWithIdx(path[0]).GetNumRadicalElectrons() > 0
 
     @staticmethod
     @transform_pre_and_post_process
@@ -383,7 +394,7 @@ class LonePairMultipleBondPathFinder(PathFinder):
         a3 = mol.GetAtomWithIdx(a3_idx)
         return (
             a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
-            and a3.GetFormalCharge() > ChARGE_LOWER_LIMIT
+            and a3.GetFormalCharge() > CHARGE_LOWER_LIMIT
             and get_lone_pair(a1) > 0
         )
 
@@ -522,8 +533,7 @@ class ForwardAdjacentLonePairMultipleBondPathFinder(PathFinder):
         mol: Union["RWMol", "RDKitMol"],
         path: tuple,
     ) -> bool:
-        """
-        """
+        """ """
         a1_idx, a2_idx = path
         a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
         return (
@@ -542,7 +552,7 @@ class ForwardAdjacentLonePairMultipleBondPathFinder(PathFinder):
         """
         Transform resonance structures based on the provided path of adjacent lone pair multiple bond delocalization.
         """
-        a1_idx, a2_idx, direction = path
+        a1_idx, a2_idx = path
         a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
 
         increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
@@ -597,7 +607,7 @@ class ReverseAdjacentLonePairMultipleBondPathFinder(PathFinder):
         """
         Transform resonance structures based on the provided path of adjacent lone pair multiple bond delocalization.
         """
-        a1_idx, a2_idx, direction = path
+        a1_idx, a2_idx = path
         a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
 
         decrement_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
@@ -653,7 +663,7 @@ class ForwardAdjacentLonePairRadicalMultipleBondPathFinder(PathFinder):
         """
         Transform resonance structures based on the provided path of adjacent lone pair radical multiple bond delocalization.
         """
-        a1_idx, a2_idx, direction = path
+        a1_idx, a2_idx = path
 
         increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
         increment_radical(mol.GetAtomWithIdx(a1_idx))
@@ -702,7 +712,7 @@ class ReverseAdjacentLonePairRadicalMultipleBondPathFinder(PathFinder):
         """
         Transform resonance structures based on the provided path of adjacent lone pair radical multiple bond delocalization.
         """
-        a1_idx, a2_idx, direction = path
+        a1_idx, a2_idx = path
 
         decrement_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
         decrement_radical(mol.GetAtomWithIdx(a1_idx))
