@@ -251,7 +251,7 @@ class PathFinder(ABC):
         cls,
         mol: Union["RWMol", "RDKitMol"],
         max_matches: int = 1000,
-        ) -> Set[Tuple[int]]:
+    ) -> Set[Tuple[int]]:
         """
         Find the paths for according to the template of class.
 

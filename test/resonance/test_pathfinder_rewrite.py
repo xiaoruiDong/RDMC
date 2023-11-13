@@ -30,13 +30,7 @@
 
 from rdkit import Chem
 
-from rdmc.resonance.pathfinder_rewrite import (
-    find_adj_lone_pair_multiple_bond_delocalization_paths,
-    find_adj_lone_pair_radical_delocalization_paths,
-    find_adj_lone_pair_radical_multiple_bond_delocalization_paths,
-    find_allyl_delocalization_paths,
-    find_lone_pair_multiple_bond_paths,
-)
+from rdmc.resonance.pathfinder_rewrite import PathFinderRegistry
 
 import pytest
 
@@ -50,7 +44,7 @@ import pytest
 )
 def test_find_allyl_delocalization_paths(smiles):
     mol = Chem.MolFromSmiles(smiles)
-    paths = find_allyl_delocalization_paths(mol)
+    paths = PathFinderRegistry.get("allyl_radical").find(mol)
     assert paths
 
 
@@ -68,7 +62,7 @@ def test_find_allyl_delocalization_paths(smiles):
 )
 def test_find_lone_pair_multiple_bond_paths(smiles):
     mol = Chem.MolFromSmiles(smiles)
-    paths = find_lone_pair_multiple_bond_paths(mol)
+    paths = PathFinderRegistry.get("lone_pair_multiple_bond").find(mol)
     assert paths
 
 
@@ -83,7 +77,7 @@ def test_find_lone_pair_multiple_bond_paths(smiles):
 )
 def test_find_adj_lone_pair_radical_delocalization_paths(smiles):
     mol = Chem.MolFromSmiles(smiles)
-    paths = find_adj_lone_pair_radical_delocalization_paths(mol)
+    paths = PathFinderRegistry.get("adj_lone_pair_radical").find(mol)
     assert paths
 
 
@@ -95,18 +89,19 @@ def test_find_adj_lone_pair_radical_delocalization_paths(smiles):
 )
 def test_find_adj_lone_pair_multiple_bond_delocalization_paths(smiles):
     mol = Chem.MolFromSmiles(smiles)
-    paths = find_adj_lone_pair_multiple_bond_delocalization_paths(mol)
+    paths = PathFinderRegistry.get("forward_adj_lone_pair_multiple_bond").find(
+        mol
+    ) | PathFinderRegistry.get("reverse_adj_lone_pair_multiple_bond").find(mol)
     assert paths
 
 
 @pytest.mark.parametrize(
     "smiles",
-    [
-        "N#[S]",
-        "O[S](=O)=O"
-    ],
+    ["N#[S]", "O[S](=O)=O"],
 )
 def test_find_adj_lone_pair_radical_multiple_bond_delocalization_paths(smiles):
     mol = Chem.MolFromSmiles(smiles)
-    paths = find_adj_lone_pair_radical_multiple_bond_delocalization_paths(mol)
+    paths = PathFinderRegistry.get("forward_adj_lone_pair_radical_multiple_bond").find(
+        mol
+    ) | PathFinderRegistry.get("reverse_adj_lone_pair_radical_multiple_bond").find(mol)
     assert paths
