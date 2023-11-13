@@ -5,7 +5,8 @@
 This module includes an RDKit-based rewrite of the RMG resonance pathfinder.
 """
 
-from typing import List, Union
+from abc import ABC, abstractmethod
+from typing import Optional, Set, Tuple, Union
 
 from rdkit import Chem
 
@@ -204,59 +205,6 @@ atom_lose_charge_gain_bond = ",".join(query_lose_charge_gain_bond.values())
 atom_gain_radical_lose_bond = ",".join(query_gain_radical_lose_bond.values())
 atom_lose_radical_gain_bond = ",".join(query_lose_radical_gain_bond.values())
 
-# Defined resonance templates based on the above-defined atom types
-ALLYL_RADICAL_TEMPLATE = Chem.MolFromSmarts(f"[{atom_radical}:0]-,=[*:1]=,#[*:2]")
-
-LONE_PAIR_MULTIPLE_BOND_TEMPLATE = Chem.MolFromSmarts(
-    f"[{hetero_lose_lone_pair_gain_charge_gain_bond}:1]-,=[*:2]=,#[{atom_gain_lone_pair_lose_charge_lose_bond}:3]"
-)
-
-ADJ_LONE_PAIR_RADICAL_TEMPLATE = Chem.MolFromSmarts(
-    f"[{atom_gain_lone_pair_lose_charge_lose_radical}:1]~[{atom_lose_lone_pair_gain_charge_gain_radical}:2]"
-)
-
-ADJ_LONE_PAIR_GAIN_BOND = Chem.MolFromSmarts(
-    f"[{hetero_lose_lone_pair_gain_charge_gain_bond}:1]-,=[{atom_lose_charge_gain_bond}:2]"
-)
-
-ADJ_LONE_PAIR_LOSE_BOND = Chem.MolFromSmarts(
-    f"[{hetero_gain_lone_pair_lose_charge_lose_bond}:1]=,#[{atom_gain_charge_lose_bond}:2]"
-)
-
-ADJ_LONE_PAIR_RADICAL_GAIN_BOND = Chem.MolFromSmarts(
-    f"[{hetero_lose_lone_pair_gain_radical_gain_bond}:1]-,=[{atom_lose_radical_gain_bond}:2]"
-)
-
-ADJ_LONE_PAIR_RADICAL_LOSE_BOND = Chem.MolFromSmarts(
-    f"[{hetero_gain_lone_pair_lose_radical_lose_bond}:1]=,#[{atom_gain_radical_lose_bond}:2]"
-)
-
-
-# RDKit / RDMC compatible
-def find_paths_with_template(
-    mol: Union["RWMol", "RDKitMol"],
-    template: Union["RWMol", "Mol"],
-    max_matches: int = 1000,
-) -> List[tuple]:
-    """
-    Find the delocalization paths for allyl radicals.
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        template (Mol or RWMol): The template to search for.
-        max_matches (int): The maximum number of matches to return. Defaults to 1000.
-
-    Returns:
-        list: A list of tuples containing the atom indices of the delocalization paths.
-    """
-    return list(
-        mol.GetSubstructMatches(
-            template,
-            uniquify=False,
-            maxMatches=max_matches,
-        )
-    )
-
 
 def transform_pre_and_post_process(fun):
     """
@@ -280,78 +228,125 @@ def transform_pre_and_post_process(fun):
     return wrapper
 
 
-# RDKit / RDMC compatible
-def find_allyl_delocalization_paths(
-    mol: Union["RWMol", "RDKitMol"],
-    max_matches: int = 1000,
-) -> List[tuple]:
+class PathFinderRegistry:
+
+    _registry = {}
+
+    @classmethod
+    def register(cls, name: str):
+        def decorator(some_class):
+            cls._registry[name] = some_class
+            return some_class
+        return decorator
+
+    @classmethod
+    def get(cls, name: str):
+        return cls._registry.get(name)
+
+
+class PathFinder(ABC):
+
+    @classmethod
+    def find(
+        cls,
+        mol: Union["RWMol", "RDKitMol"],
+        max_matches: int = 1000,
+        ) -> Set[Tuple[int]]:
+        """
+        Find the paths for according to the template of class.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            max_matches (int): The maximum number of matches to return. Defaults to 1000.
+
+        Returns:
+            set: A set of tuples containing the atom indices of the paths.
+        """
+        return set(
+            mol.GetSubstructMatches(
+                cls.template,
+                uniquify=False,
+                maxMatches=max_matches,
+            )
+        )
+
+    @abstractmethod
+    def verify(mol, path) -> bool:
+        """
+        Abstract method that should return True if the path is valid, False otherwise.
+
+        This needs to be implemented by subclasses.
+        """
+        pass
+
+    @abstractmethod
+    def transform(mol, path) -> "Mol":
+        """
+        Abstract method that should return the transformed molecule based on the provided path.
+
+        This needs to be implemented by subclasses.
+        """
+        pass
+
+
+@PathFinderRegistry.register("allyl_radical")
+class AllylRadicalPathFinder(PathFinder):
     """
-    Find all the delocalization paths allyl to the radical center.
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        max_matches (int): The maximum number of matches to return. Defaults to 1000.
-
-    Returns:
-        list: A list of tuples containing the atom indices of the delocalization paths.
+    A finder to find all the delocalization paths allyl to the radical center.
     """
-    return find_paths_with_template(
-        mol,
-        ALLYL_RADICAL_TEMPLATE,
-        max_matches=max_matches,
-    )
+
+    template = Chem.MolFromSmarts(f"[{atom_radical}:0]-,=[*:1]=,#[*:2]")
+
+    reverse = "AllylRadicalReversePathFinder"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the allyl delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The allyl delocalization path to verify.
+
+        Returns:
+            bool: True if the allyl delocalization path is valid, False otherwise.
+        """
+        return mol.GetAtomWithIdx(a1_idx).GetNumRadicalElectrons() > 0
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of ally delocalization.
+
+        Args:
+            mol (RDKitMol): The molecule to be processed.
+            path (tuple): The path of allyl delocalization.
+
+        Returns:
+            Mol: if the transformation is successful, return the transformed molecule;
+                otherwise, return ``None``.
+        """
+        a1_idx, a2_idx, a3_idx = path
+
+        decrement_radical(mol.GetAtomWithIdx(a1_idx))
+        increment_radical(mol.GetAtomWithIdx(a3_idx))
+        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        decrement_order(mol.GetBondBetweenAtoms(a2_idx, a3_idx))
+
+        return mol
 
 
-def verify_allyl_delocalization_path(
-    mol: Union["RWMol", "RDKitMol"],
-    path: tuple,
-) -> bool:
+@PathFinderRegistry.register("lone_pair_multiple_bond")
+class LonePairMultipleBondPathFinder(PathFinder):
     """
-    Verify that the allyl delocalization path is valid.
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        path (tuple): The allyl delocalization path to verify.
-
-    Returns:
-        bool: True if the allyl delocalization path is valid, False otherwise.
-    """
-    return mol.GetAtomWithIdx(a1_idx).GetNumRadicalElectrons() > 0
-
-
-@transform_pre_and_post_process
-def transform_allyl_delocalization_path(
-    mol: "Mol",
-    path: tuple,
-) -> Optional["Mol"]:
-    """
-    Transform resonance structures based on the provided path of ally delocalization.
-
-    Args:
-        mol (RDKitMol): The molecule to be processed.
-        path (tuple): The path of allyl delocalization.
-
-    Returns:
-        Mol: if the transformation is successful, return the transformed molecule;
-             otherwise, return ``None``.
-    """
-    a1_idx, a2_idx, a3_idx = path
-
-    decrement_radical(mol.GetAtomWithIdx(a1_idx))
-    increment_radical(mol.GetAtomWithIdx(a3_idx))
-    increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
-    decrement_order(mol.GetBondBetweenAtoms(a2_idx, a3_idx))
-
-    return mol
-
-
-# RDKit / RDMC compatible
-def find_lone_pair_multiple_bond_paths(
-    mol: Union["RWMol", "RDKitMol"],
-    max_matches: int = 1000,
-) -> List[tuple]:
-    """
-    Find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system.
+    A finder to find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system.
 
     Examples:
 
@@ -360,76 +355,67 @@ def find_lone_pair_multiple_bond_paths(
     - N#N group on sulfur (O[S-](O)[N+]#N <-> OS(O)=[N+]=[N-] <-> O[S+](O)#[N+][N-2])
     - N[N+]([O-])=O <=> N[N+](=O)[O-], these structures are isomorphic but not identical, this transition is
       important for correct degeneracy calculations
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        max_matches (int): The maximum number of matches to return. Defaults to 1000.
-
-    Returns:
-        list: A list of tuples containing the atom indices of the delocalization paths.
     """
-    return find_paths_with_template(
-        mol,
-        LONE_PAIR_MULTIPLE_BOND_TEMPLATE,
-        max_matches=max_matches,
+
+    template = Chem.MolFromSmarts(
+        f"[{hetero_lose_lone_pair_gain_charge_gain_bond}:1]-,=[*:2]=,#[{atom_gain_lone_pair_lose_charge_lose_bond}:3]"
     )
 
+    reverse = "LonePairMultipleBondReversePathFinder"
 
-def verify_lone_pair_multiple_bond_path(
-    mol: Union["RWMol", "RDKitMol"],
-    path: tuple,
-) -> bool:
-    """
-    Verify that the lone pair multiple bond path is valid.
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the lone pair multiple bond path is valid.
 
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        path (tuple): The lone pair multiple bond path to verify.
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The lone pair multiple bond path to verify.
 
-    Returns:
-        bool: True if the lone pair multiple bond path is valid, False otherwise.
-    """
-    a1_idx, _, a3_idx = path
-    a1 = mol.GetAtomWithIdx(a1_idx)
-    a3 = mol.GetAtomWithIdx(a3_idx)
-    return (
-        a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
-        and a3.GetFormalCharge() > ChARGE_LOWER_LIMIT
-        and get_lone_pair(a1) > 0
-    )
+        Returns:
+            bool: True if the lone pair multiple bond path is valid, False otherwise.
+        """
+        a1_idx, _, a3_idx = path
+        a1 = mol.GetAtomWithIdx(a1_idx)
+        a3 = mol.GetAtomWithIdx(a3_idx)
+        return (
+            a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
+            and a3.GetFormalCharge() > ChARGE_LOWER_LIMIT
+            and get_lone_pair(a1) > 0
+        )
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of lone pair multiple bond.
+
+        Args:
+            mol (RDKitMol): The molecule to be processed.
+            path (tuple): The path of lone pair multiple bond.
+
+        Returns:
+            Mol: if the transformation is successful, return the transformed molecule;
+        """
+        a1_idx, a2_idx, a3_idx = path
+        a1, a3 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a3_idx)
+
+        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        decrement_order(mol.GetBondBetweenAtoms(a2_idx, a3_idx))
+        a1.SetFormalCharge(a1.GetFormalCharge() + 1)
+        a3.SetFormalCharge(a3.GetFormalCharge() - 1)
+
+        return mol
 
 
-@transform_pre_and_post_process
-def transform_lone_pair_multiple_bond_path(
-    mol: "Mol",
-    path: tuple,
-) -> Optional["Mol"]:
-    """
-    Transform resonance structures based on the provided path of lone pair multiple bond.
-
-    Args:
-        mol (RDKitMol): The molecule to be processed.
-        path (tuple): The path of lone pair multiple bond.
-
-    Returns:
-        Mol: if the transformation is successful, return the transformed molecule;
-    """
-    a1_idx, a2_idx, a3_idx = path
-    a1, a3 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a3_idx)
-
-    increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
-    decrement_order(mol.GetBondBetweenAtoms(a2_idx, a3_idx))
-    a1.SetFormalCharge(a1.GetFormalCharge() + 1)
-    a3.SetFormalCharge(a3.GetFormalCharge() - 1)
-
-    return mol
-
-
-# RDKit / RDMC compatible
-def find_adj_lone_pair_radical_delocalization_paths(
-    mol: Union["RWMol", "RDKitMol"],
-    max_matches: int = 1000,
-) -> List[tuple]:
+@PathFinderRegistry.register("adj_lone_pair_radical")
+class AdjacentLonePairRadicalPathFinder(PathFinder):
     """
     Find all the delocalization paths of lone electron pairs next to the radical center.
     Used to generate resonance isomers in adjacent N/O/S atoms.
@@ -457,265 +443,272 @@ def find_adj_lone_pair_radical_delocalization_paths(
 
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] <=> [::O]=[:N.]
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        max_matches (int): The maximum number of matches to return. Defaults to 1000.
-
-    Returns:
-        list: A list of tuples containing the atom indices of the delocalization paths.
     """
-    return find_paths_with_template(
-        mol,
-        ADJ_LONE_PAIR_RADICAL_TEMPLATE,
-        max_matches=max_matches,
+
+    template = Chem.MolFromSmarts(
+        f"[{atom_gain_lone_pair_lose_charge_lose_radical}:1]~[{atom_lose_lone_pair_gain_charge_gain_radical}:2]"
     )
 
+    reverse = "AdjacentLonePairMultipleBondReversePathFinder"
 
-def verify_adj_lone_pair_radical_delocalization_path(
-    mol: Union["RWMol", "RDKitMol"],
-    path: tuple,
-) -> bool:
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the adjacent lone pair radical delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The adjacent lone pair radical delocalization path to verify.
+
+        Returns:
+            bool: True if the adjacent lone pair radical delocalization path is valid, False otherwise.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        return (
+            a1.GetFormalCharge() > CHARGE_LOWER_LIMIT
+            and a2.GetFormalCharge() < CHARGE_UPPER_LIMIT
+            and a1.GetNumRadicalElectrons() > 0
+            and get_lone_pair(a2) > 0
+        )
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair radical delocalization.
+
+        Args:
+            mol (RDKitMol): The molecule to be processed.
+            path (tuple): The path of adjacent lone pair radical delocalization.
+
+        Returns:
+            Mol: if the transformation is successful, return the transformed molecule;
+                otherwise, return ``None``.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        decrement_radical(a1)
+        increment_radical(a2)
+        a1.SetFormalCharge(a1.GetFormalCharge() - 1)
+        a2.SetFormalCharge(a2.GetFormalCharge() + 1)
+
+        return mol
+
+
+@PathFinderRegistry.register("forward_adj_lone_pair_multiple_bond")
+class ForwardAdjacentLonePairMultipleBondPathFinder(PathFinder):
     """
-    Verify that the adjacent lone pair radical delocalization path is valid.
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        path (tuple): The adjacent lone pair radical delocalization path to verify.
-
-    Returns:
-        bool: True if the adjacent lone pair radical delocalization path is valid, False otherwise.
+    Find all the delocalization paths of atom1 that has a lonePair and is bonded by a single/double bond
+    e.g., [::NH-]-[CH2+] <=> [:NH]=[CH2].
     """
-    a1_idx, a2_idx = path
-    a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
 
-    return (
-        a1.GetFormalCharge() > CHARGE_LOWER_LIMIT
-        and a2.GetFormalCharge() < CHARGE_UPPER_LIMIT
-        and a1.GetNumRadicalElectrons() > 0
-        and get_lone_pair(a2) > 0
+    template = Chem.MolFromSmarts(
+        f"[{hetero_lose_lone_pair_gain_charge_gain_bond}:1]-,=[{atom_lose_charge_gain_bond}:2]"
     )
 
+    reverse = "ReverseAdjacentLonePairMultipleBondPathFinder"
 
-@transform_pre_and_post_process
-def transform_adj_lone_pair_radical_delocalization_path(
-    mol: "Mol",
-    path: tuple,
-) -> Optional["Mol"]:
-    """
-    Transform resonance structures based on the provided path of adjacent lone pair radical delocalization.
-
-    Args:
-        mol (RDKitMol): The molecule to be processed.
-        path (tuple): The path of adjacent lone pair radical delocalization.
-
-    Returns:
-        Mol: if the transformation is successful, return the transformed molecule;
-             otherwise, return ``None``.
-    """
-    a1_idx, a2_idx = path
-    a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
-
-    decrement_radical(a1)
-    increment_radical(a2)
-    a1.SetFormalCharge(a1.GetFormalCharge() - 1)
-    a2.SetFormalCharge(a2.GetFormalCharge() + 1)
-
-    return mol
-
-
-# RDKit / RDMC compatible
-def find_adj_lone_pair_multiple_bond_delocalization_paths(
-    mol: Union["RWMol", "RDKitMol"],
-    max_matches: int = 1000,
-) -> List[tuple]:
-    """
-    Find all the delocalization paths of atom1 which either
-
-    - Has a lonePair and is bonded by a single/double bond (e.g., [::NH-]-[CH2+], [::N-]=[CH+]) -- direction 1
-    - Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) -- direction 2
-
-    Giving the following resonance transitions, for example:
-
-    - [::NH-]-[CH2+] <=> [:NH]=[CH2]
-    - [:N]#[CH] <=> [::N-]=[CH+]
-    - other examples: S#N, N#[S], O=S([O])=O
-
-    Direction "1" is the direction <increasing> the bond order as in [::NH-]-[CH2+] <=> [:NH]=[CH2]
-    Direction "2" is the direction <decreasing> the bond order as in [:NH]=[CH2] <=> [::NH-]-[CH2+]
-    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
-    (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        max_matches (int): The maximum number of matches to return. Defaults to 1000.
-
-    Returns:
-        list: A list of tuples containing the atom indices and direction of the delocalization paths.
-    """
-    return [
-        (a1, a2, 1)  # the last bit is the direction
-        for a1, a2 in find_paths_with_template(
-            mol,
-            ADJ_LONE_PAIR_GAIN_BOND,
-            max_matches=max_matches,
-        )
-    ] + [
-        (a1, a2, 2)  # the last bit is the direction
-        for a1, a2 in find_paths_with_template(
-            mol,
-            ADJ_LONE_PAIR_LOSE_BOND,
-            max_matches=max_matches,
-        )
-    ]
-
-
-def verify_adj_lone_pair_multiple_bond_delocalization_path(
-    mol: Union["RWMol", "RDKitMol"],
-    path: tuple,
-) -> bool:
-    """
-    Verify that the adjacent lone pair multiple bond delocalization path is valid.
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        path (tuple): The adjacent lone pair multiple bond delocalization path to verify.
-
-    Returns:
-        bool: True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.
-    """
-    a1_idx, a2_idx, direction = path
-    a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
-
-    if direction == 1:
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
         return (
             a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
             and a2.GetFormalCharge() > CHARGE_LOWER_LIMIT
             and get_lone_pair(a1) > 0
             and has_empty_orbitals(a2)
         )
-    else:
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair multiple bond delocalization.
+        """
+        a1_idx, a2_idx, direction = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        a1.SetFormalCharge(a1.GetFormalCharge() + 1)
+        a2.SetFormalCharge(a2.GetFormalCharge() - 1)
+
+        return mol
+
+
+@PathFinderRegistry.register("reverse_adj_lone_pair_multiple_bond")
+class ReverseAdjacentLonePairMultipleBondPathFinder(PathFinder):
+    """
+    Find all the delocalization paths of atom1 which either can obtain a lonePair and
+    is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]). For example, [:NH]=[CH2] <=> [::NH-]-[CH2+]
+    """
+
+    template = Chem.MolFromSmarts(
+        f"[{hetero_gain_lone_pair_lose_charge_lose_bond}:1]=,#[{atom_gain_charge_lose_bond}:2]"
+    )
+
+    reverse = "ForwardAdjacentLonePairMultipleBondPathFinder"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the adjacent lone pair multiple bond delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The adjacent lone pair multiple bond delocalization path to verify.
+
+        Returns:
+            bool: True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
         return (
             a1.GetFormalCharge() > CHARGE_LOWER_LIMIT
             and a2.GetFormalCharge() < CHARGE_UPPER_LIMIT
         )
 
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair multiple bond delocalization.
+        """
+        a1_idx, a2_idx, direction = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
 
-@transform_pre_and_post_process
-def transform_adj_lone_pair_multiple_bond_delocalization_path(
-    mol: "Mol",
-    path: tuple,
-) -> Optional["Mol"]:
-    """
-    Transform resonance structures based on the provided path of adjacent lone pair multiple bond delocalization.
-    """
-    a1_idx, a2_idx, direction = path
-    a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
-
-    if direction == 1:  # The direction <increasing> the bond order
-        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
-        a1.SetFormalCharge(a1.GetFormalCharge() + 1)
-        a2.SetFormalCharge(a2.GetFormalCharge() - 1)
-    else:  # The direction <decreasing> the bond order
         decrement_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
         a1.SetFormalCharge(a1.GetFormalCharge() - 1)
         a2.SetFormalCharge(a2.GetFormalCharge() + 1)
 
-    return mol
+        return mol
 
 
-# RDKit / RDMC compatible
-def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(
-    mol: Union["RWMol", "RDKitMol"],
-    max_matches: int = 1000,
-) -> List[tuple]:
+@PathFinderRegistry.register("forward_adj_lone_pair_radical_multiple_bond")
+class ForwardAdjacentLonePairRadicalMultipleBondPathFinder(PathFinder):
     """
-    Find all the delocalization paths of atom1 which either
-
-    - Has a lonePair and is bonded by a single/double bond to a radical atom (e.g., [::N]-[.CH2])
-    - Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])
-
-    Giving the following resonance transitions, for example:
-
-    - [::N]-[.CH2] <=> [:N.]=[CH2]
-    - O[:S](=O)[::O.] <=> O[S.](=O)=[::O]
-
-    Direction "1" is the direction <increasing> the bond order as in [::N]-[.CH2] <=> [:N.]=[CH2]
-    Direction "2" is the direction <decreasing> the bond order as in [:N.]=[CH2] <=> [::N]-[.CH2]
-    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
-    (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
-    In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
-
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        max_matches (int): The maximum number of matches to return. Defaults to 1000.
-
-    Returns:
-        list: A list of tuples containing the atom indices and direction of the delocalization paths.
+    Find all the delocalization paths of atom1 which has a lonePair and is bonded
+    by a single/double bond to a radical atom. For example: [::N]-[.CH2] <=> [:N.]=[CH2]
     """
-    return [
-        (a1, a2, 1)  # the last bit is the direction
-        for a1, a2 in find_paths_with_template(
-            mol,
-            ADJ_LONE_PAIR_RADICAL_GAIN_BOND,
-            max_matches=max_matches,
-        )
-    ] + [
-        (a1, a2, 2)  # the last bit is the direction
-        for a1, a2 in find_paths_with_template(
-            mol,
-            ADJ_LONE_PAIR_RADICAL_LOSE_BOND,
-            max_matches=max_matches,
-        )
-    ]
 
+    template = Chem.MolFromSmarts(
+        f"[{hetero_lose_lone_pair_gain_charge_gain_radical}:1]-,=[{atom_lose_radical_gain_bond}:2]"
+    )
 
-def verify_adj_lone_pair_radical_multiple_bond_delocalization_path(
-    mol: Union["RWMol", "RDKitMol"],
-    path: tuple,
-) -> bool:
-    """
-    Verify that the adjacent lone pair radical multiple bond delocalization path is valid.
+    reverse = "ReverseAdjacentLonePairRadicalMultipleBondPathFinder"
 
-    Args:
-        mol (RWMol or RDKitMol): The molecule to search.
-        path (tuple): The adjacent lone pair multiple bond delocalization path to verify.
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the adjacent lone pair radical multiple bond delocalization path is valid.
 
-    Returns:
-        bool: True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.
-    """
-    a1_idx, a2_idx, direction = path
-    a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The ÷÷÷÷≥≥adjacent lone pair multiple bond delocalization path to verify.
 
-    if direction == 1:
+        Returns:
+            bool: True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
         return (
             a2.GetNumRadicalElectrons() > 0
             and get_lone_pair(a1) > 0
             and has_empty_orbitals(a2)
         )
-    else:
-        return a1.GetNumRadicalElectrons() > 0
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair radical multiple bond delocalization.
+        """
+        a1_idx, a2_idx, direction = path
+
+        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        increment_radical(mol.GetAtomWithIdx(a1_idx))
+        decrement_radical(mol.GetAtomWithIdx(a2_idx))
+
+        return mol
 
 
-def transform_adj_lone_pair_radical_multiple_bond_delocalization_path(
-    mol: "Mol",
-    path: tuple,
-) -> Optional["Mol"]:
-    """ """
-    a1_idx, a2_idx, direction = path
-    a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
-    b12 = structure.GetBondBetweenAtoms(a1_idx, a2_idx)
+@PathFinderRegistry.register("reverse_adj_lone_pair_radical_multiple_bond")
+class ReverseAdjacentLonePairRadicalMultipleBondPathFinder(PathFinder):
+    """
+    Find all the delocalization paths of atom1 which either can obtain a lonePair,
+    has a radical, and is bonded by a double/triple bond. For example, [:N.]=[CH2] <=> [::N]-[.CH2]
+    """
 
-    if direction == 1:  # The direction <increasing> the bond order
-        increment_order(b12)
-        increment_radical(a1)
-        decrement_radical(a2)
-    elif direction == 2:  # The direction <decreasing> the bond order
-        decrement_order(b12)
-        decrement_radical(a1)
-        increment_radical(a2)
+    template = Chem.MolFromSmarts(
+        f"[{hetero_gain_lone_pair_lose_radical_lose_bond}:1]=,#[{atom_gain_radical_lose_bond}:2]"
+    )
 
-    return mol
+    reverse = "ForwardAdjacentLonePairRadicalMultipleBondPathFinder"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the adjacent lone pair radical multiple bond delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The adjacent lone pair multiple bond delocalization path to verify.
+
+        Returns:
+            bool: True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.
+        """
+        a1_idx, _ = path
+        return mol.GetAtomWithIdx(a1_idx).GetNumRadicalElectrons() > 0
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair radical multiple bond delocalization.
+        """
+        a1_idx, a2_idx, direction = path
+
+        decrement_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        decrement_radical(mol.GetAtomWithIdx(a1_idx))
+        increment_radical(mol.GetAtomWithIdx(a2_idx))
+
+        return mol
 
 
 # def find_N5dc_radical_delocalization_paths(atom1)
