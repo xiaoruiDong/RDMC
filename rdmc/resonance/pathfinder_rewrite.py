@@ -16,7 +16,7 @@ from rdmc.resonance.utils import (
     has_empty_orbitals,
     increment_order,
     increment_radical,
-    sanitize_resonance_mol
+    sanitize_resonance_mol,
 )
 from rdkit import Chem
 
@@ -228,11 +228,14 @@ def transform_pre_and_post_process(fun):
     def wrapper(mol, path, *args, **kwargs):
         structure = Chem.RWMol(mol, True)
         try:
-            structure = fun(mol, path, *args, **kwargs)
+            fun(structure, path, *args, **kwargs)
             sanitize_resonance_mol(structure)
         except BaseException as e:  # cannot make the change
+            class_name = fun.__qualname__.split(".")[0]
             logger.debug(
-                f"Cannot transform path {path} " f"in `{fun.__name__}`." f"\nGot: {e}"
+                f"Cannot transform path {path} "
+                f"in `{class_name}.{fun.__name__}`."
+                f"\nGot: {e}"
             )
         else:
             return structure
@@ -308,7 +311,8 @@ class AllylRadicalPathFinder(PathFinder):
 
     template = Chem.MolFromSmarts(f"[{atom_radical}:0]-,=[*:1]=,#[*:2]")
 
-    reverse = "AllylRadicalReversePathFinder"
+    reverse = "AllylRadicalPathFinder"
+    reverse_abbr = "allyl_radical"
 
     @staticmethod
     def verify(
@@ -372,7 +376,8 @@ class LonePairMultipleBondPathFinder(PathFinder):
         f"[{hetero_lose_lone_pair_gain_charge_gain_bond}:1]-,=[*:2]=,#[{atom_gain_lone_pair_lose_charge_lose_bond}:3]"
     )
 
-    reverse = "LonePairMultipleBondReversePathFinder"
+    reverse = "LonePairMultipleBondPathFinder"
+    reverse_abbr = "lone_pair_multiple_bond"
 
     @staticmethod
     def verify(
@@ -460,7 +465,8 @@ class AdjacentLonePairRadicalPathFinder(PathFinder):
         f"[{atom_gain_lone_pair_lose_charge_lose_radical}:1]~[{atom_lose_lone_pair_gain_charge_gain_radical}:2]"
     )
 
-    reverse = "AdjacentLonePairMultipleBondReversePathFinder"
+    reverse = "AdjacentLonePairRadicalPathFinder"
+    reverse_abbr = "adj_lone_pair_radical"
 
     @staticmethod
     def verify(
@@ -527,6 +533,7 @@ class ForwardAdjacentLonePairMultipleBondPathFinder(PathFinder):
     )
 
     reverse = "ReverseAdjacentLonePairMultipleBondPathFinder"
+    reverse_abbr = "reverse_adj_lone_pair_multiple_bond"
 
     @staticmethod
     def verify(
@@ -574,6 +581,7 @@ class ReverseAdjacentLonePairMultipleBondPathFinder(PathFinder):
     )
 
     reverse = "ForwardAdjacentLonePairMultipleBondPathFinder"
+    reverse_abbr = "forward_adj_lone_pair_multiple_bond"
 
     @staticmethod
     def verify(
@@ -625,10 +633,11 @@ class ForwardAdjacentLonePairRadicalMultipleBondPathFinder(PathFinder):
     """
 
     template = Chem.MolFromSmarts(
-        f"[{hetero_lose_lone_pair_gain_charge_gain_radical}:1]-,=[{atom_lose_radical_gain_bond}:2]"
+        f"[{hetero_lose_lone_pair_gain_radical_gain_bond}:1]-,=[{atom_lose_radical_gain_bond}:2]"
     )
 
     reverse = "ReverseAdjacentLonePairRadicalMultipleBondPathFinder"
+    reverse_abbr = "reverse_adj_lone_pair_radical_multiple_bond"
 
     @staticmethod
     def verify(
@@ -684,6 +693,7 @@ class ReverseAdjacentLonePairRadicalMultipleBondPathFinder(PathFinder):
     )
 
     reverse = "ForwardAdjacentLonePairRadicalMultipleBondPathFinder"
+    reverse_abbr = "forward_adj_lone_pair_radical_multiple_bond"
 
     @staticmethod
     def verify(
