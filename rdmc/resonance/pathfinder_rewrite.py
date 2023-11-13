@@ -228,14 +228,14 @@ def transform_pre_and_post_process(fun):
     def wrapper(mol, path, *args, **kwargs):
         structure = Chem.RWMol(mol, True)
         try:
-            fun(mol, path, *args, **kwargs)
+            structure = fun(mol, path, *args, **kwargs)
             sanitize_resonance_mol(structure)
         except BaseException as e:  # cannot make the change
             logger.debug(
                 f"Cannot transform path {path} " f"in `{fun.__name__}`." f"\nGot: {e}"
             )
         else:
-            return fun(structure, *args, **kwargs)
+            return structure
 
     return wrapper
 
