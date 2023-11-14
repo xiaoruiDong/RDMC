@@ -6,6 +6,7 @@ import math
 from typing import List, Optional
 
 from rdkit import Chem
+from rdkit.Chem import Lipinski, rdqueries
 
 
 PERIODIC_TABLE = Chem.GetPeriodicTable()
@@ -62,6 +63,8 @@ bond_order_dicts = {
     5.5: Chem.BondType.FIVEANDAHALF,
 }
 
+aryl_radical_query = rdqueries.NumRadicalElectronsGreaterQueryAtom(0)
+aryl_radical_query.ExpandQuery(rdqueries.IsAromaticQueryAtom())
 
 # RDKit / RDMC compatible
 def get_electronegativity(atom: "Atom") -> float:
@@ -374,17 +377,12 @@ def get_aromatic_rings(mol):
 
 def is_aryl_radical(
     mol,
-    aromatic_rings: Optional[list] = None,
 ) -> bool:
     """
     Determine if the molecule only contains aryl radicals, i.e., radical on an aromatic ring.
-    If no ``aromatic_rings`` provided, aromatic rings will be searched in-place,
-    and this process may involve atom order change by default.
 
     Args:
         mol (RDKitMol, RWMol): The molecule to be checked.
-        aromatic_rings (list, optional): A list of aromatic rings, each represented as a list of bond indices.
-
     Returns:
         bool: ``True`` if the molecule only contains aryl radicals, ``False`` otherwise.
     """
@@ -392,21 +390,9 @@ def is_aryl_radical(
     if not total:
         return False  # not a radical molecule
 
-    if aromatic_rings is None:
-        aromatic_rings = get_aromatic_rings(mol)[0]
+    num_aryl_rad = len(mol.GetAtomsMatchingQuery(aryl_radical_query))
 
-    # TODO: This is currently wrong as aromatic_rings are bond indices, not atom indices
-    aromatic_atoms = set(
-        [atom for atom in itertools.chain.from_iterable(aromatic_rings)]
-    )
-    aryl = sum(
-        [
-            mol.GetAtomWithIdx(atom_idx).GetNumRadicalElectrons()
-            for atom_idx in aromatic_atoms
-        ]
-    )
-
-    return total == aryl
+    return total == num_aryl_rad
 
 
 # RDKit / RDMC compatible
