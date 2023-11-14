@@ -15,16 +15,10 @@ from rdkit import Chem
 from rdmc.resonance import filtration
 from rdmc.resonance.pathfinder_rewrite import PathFinderRegistry
 from rdmc.resonance.utils import (
-    decrement_radical,
-    decrement_order,
-    get_aromatic_rings,
-    has_empty_orbitals,
-    increment_radical,
-    increment_order,
     is_aryl_radical,
     is_cyclic,
-    is_identical,
     is_radical,
+    get_aryne_rings,
     get_charge_span,
     get_lone_pair,
     get_num_aromatic_rings,
@@ -32,6 +26,19 @@ from rdmc.resonance.utils import (
 
 
 logger = logging.getLogger(__name__)
+
+sanitize_flag_kekule = (
+    Chem.SANITIZE_PROPERTIES
+    | Chem.SANITIZE_SYMMRINGS
+    | Chem.SANITIZE_KEKULIZE
+    | Chem.SANITIZE_SETCONJUGATION
+)
+sanitize_flag_aromatic = sanitizeOps = (
+    Chem.SANITIZE_PROPERTIES
+    | Chem.SANITIZE_SYMMRINGS
+    | Chem.SANITIZE_SETAROMATICITY
+    | Chem.SANITIZE_SETCONJUGATION
+)
 
 
 def analyze_molecule(mol):
@@ -343,248 +350,188 @@ def generate_resonance_structures(
     return mol_list
 
 
-def require_radical(fun):
+def generate_resonance_structures_with_pathfinder(
+    mol: "Mol",
+    pathfinder: "PathFinder",
+    prune_paths=set(),
+) -> List[tuple]:
     """
-    A decorator for resonance structure generation functions that require a radical.
+    Generate resonance structures using a path finder.
 
-    Returns an empty list if the input molecule is not a radical.
-    """
+    Args:
+        mol (Mol): the input molecule.
+        pathfinder (PathFinder): the path finder registered in the registry.
+        prune_paths (set, optional): A set of paths to prune. Defaults to an empty set.
 
-    def wrapper(mol):
-        if not is_radical(mol):
-            return []
-        return fun(mol)
-
-    return wrapper
-
-
-@require_radical
-def generate_allyl_delocalization_resonance_structures(mol):
-    """
-    Generate all of the resonance structures formed by one allyl radical shift.
-
-    Biradicals on a single atom are not supported.
+    Returns:
+        List[tuple]: a list of tuples, each tuple contains a resonance structure and a path.
     """
     structures = []
-    paths = pathfinder.find_allyl_delocalization_paths(mol)
-    logger.debug(f"Found paths: {paths}")
-    for a1_idx, a2_idx, a3_idx in paths:
-        if mol.GetAtomWithIdx(a1_idx).GetNumRadicalElectrons() < 1:
-            continue
-        structure = Chem.RWMol(mol, True)
-        a1, a3 = structure.GetAtomWithIdx(a1_idx), structure.GetAtomWithIdx(a3_idx)
-        b12 = structure.GetBondBetweenAtoms(a1_idx, a2_idx)
-        b23 = structure.GetBondBetweenAtoms(a2_idx, a3_idx)
-        try:
-            decrement_radical(a1)
-            increment_radical(a3)
-            increment_order(b12)
-            decrement_order(b23)
-            sanitize_resonance_mol(structure)
-        except BaseException as e:  # cannot make the change
-            logger.debug(
-                f"Cannot transform path {(a1_idx, a2_idx, a3_idx)} "
-                f"in `generate_allyl_delocalization_resonance_structures`."
-                f"\nGot: {e}"
-            )
+    paths = pathfinder.find(mol)
+    logger.debug(f"Found paths: {paths} with method {pathfinder.__name__}")
+    paths.difference_update(prune_paths)
+    logger.debug(f"{paths} After pruning")
+    for path in paths:
+        if pathfinder.verify(mol, path):
+            structure = pathfinder.transform(mol, path)
+            if structure is not None:
+                structures.append((structure, path))
         else:
-            structures.append(structure)
+            logger.debug(f"{path} does not pass the check")
+
     return structures
 
 
-def generate_lone_pair_multiple_bond_resonance_structures(mol):
+def generate_optimal_aromatic_resonance_structures(
+    mol: "Mol",
+    features: dict = None,
+):
     """
-    Generate all of the resonance structures formed by lone electron pair - multiple bond shifts in 3-atom systems.
-    Examples: aniline (Nc1ccccc1), azide, [:NH2]C=[::O] <=> [NH2+]=C[:::O-]
-    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
-    """
-    structures = []
-    paths = pathfinder.find_lone_pair_multiple_bond_paths(mol)
-    logger.debug(f"Found paths: {paths}")
-    for a1_idx, a2_idx, a3_idx in paths:
-        # preprocessing before attempting to make the change
-        a1 = mol.GetAtomWithIdx(a1_idx)
-        a3 = mol.GetAtomWithIdx(a3_idx)
-        charge1, charge3 = a1.GetFormalCharge(), a3.GetFormalCharge()
-        if charge1 >= 1 or charge3 <= -1 or get_lone_pair(a1) <= 0:
-            # cannot decrease lone pair on atom1 if no lone pair
-            # avoid creating +2 charged atoms
-            # avoid creating -2 charged atoms
-            continue
-        # Copy the molecule and make the change
-        structure = Chem.RWMol(mol, True)
-        a1 = structure.GetAtomWithIdx(a1_idx)
-        a3 = structure.GetAtomWithIdx(a3_idx)
-        b12 = structure.GetBondBetweenAtoms(a1_idx, a2_idx)
-        b23 = structure.GetBondBetweenAtoms(a2_idx, a3_idx)
-        try:
-            increment_order(b12)
-            decrement_order(b23)
-            a1.SetFormalCharge(charge1 + 1)
-            a3.SetFormalCharge(charge3 - 1)
-            sanitize_resonance_mol(structure)
-        except BaseException as e:
-            logger.debug(
-                f"Cannot transform path {(a1_idx, a2_idx, a3_idx)} "
-                f"in `generate_lone_pair_multiple_bond_resonance_structures`."
-                f"\nGot: {e}"
-            )
-        else:
-            structures.append(structure)
-    return structures
+    Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.
 
+    Args:
+        mol (Mol): the input molecule.
+        features (dict, optional): a dictionary of features from ``analyze_molecule``.
 
-@require_radical
-def generate_adj_lone_pair_radical_resonance_structures(mol):
+    Returns:
+        list: a list of resonance structures. In most cases, only one structure will be returned.
+              In certain cases where multiple forms have the same number of aromatic rings,
+              multiple structures will be returned. It just returns an empty list if an error is raised.
     """
-    Generate all of the resonance structures formed by lone electron pair - radical shifts between adjacent atoms.
-    These resonance transformations do not involve changing bond orders.
-    NO2 example: O=[:N]-[::O.] <=> O=[N.+]-[:::O-]
-    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
-    """
-    structures = []
-    paths = pathfinder.find_adj_lone_pair_radical_delocalization_paths(mol)
-    logger.debug(f"Found paths: {paths}")
-    for a1_idx, a2_idx in paths:
-        # preprocessing before attempting to make the change
-        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
-        charge1, charge2 = a1.GetFormalCharge(), a2.GetFormalCharge()
-        if (
-            charge1 <= -1
-            or charge2 >= 1
-            or a1.GetNumRadicalElectrons() < 1
-            or get_lone_pair(a2) <= 0
-        ):
-            continue
-        # Copy the molecule and make the change
-        structure = Chem.RWMol(mol, True)
-        a1 = structure.GetAtomWithIdx(a1_idx)
-        a2 = structure.GetAtomWithIdx(a2_idx)
-        try:
-            decrement_radical(a1)
-            increment_radical(a2)
-            a1.SetFormalCharge(charge1 - 1)
-            a2.SetFormalCharge(charge2 + 1)
-            sanitize_resonance_mol(structure)
-        except BaseException as e:
-            logger.debug(
-                f"Cannot transform path {(a1_idx, a2_idx)}) "
-                f"in `generate_adj_lone_pair_radical_resonance_structures`."
-                f"\nGot: {e}"
-            )
-        else:
-            structures.append(structure)
-    return structures
+    features = features if features is not None else analyze_molecule(mol)
 
+    if not features["is_cyclic"]:
+        return []
 
-def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
-    """
-    Generate all of the resonance structures formed by lone electron pair - multiple bond shifts between adjacent atoms.
-    Example: [:NH]=[CH2] <=> [::NH-]-[CH2+]
-    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
-    Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2's lone_pairs aren't affected)
-    (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
-    """
-    structures = []
-    paths = pathfinder.find_adj_lone_pair_multiple_bond_delocalization_paths(mol)
-    logger.debug(f"Found paths: {paths}")
-    for a1_idx, a2_idx, direction in paths:
-        # preprocessing before attempting to make the change
-        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
-        charge1, charge2 = a1.GetFormalCharge(), a2.GetFormalCharge()
-        if direction == 1 and (
-            charge1 >= 1
-            or charge2 <= -1
-            or get_lone_pair(a1) <= 0
-            or not has_empty_orbitals(a2)
-        ):
-            # atom1 needs to have at least 1 lone pair to lose
-            # atom2 needs to have at least 1 empty orbital to form a bond
-            logger.debug(
-                f"Remove paths: {(a1_idx, a2_idx, direction)} in preprocessing."
-            )
-            continue
-        elif direction == 2 and (charge1 <= -1 or charge2 >= 1):
-            logger.debug(
-                f"Remove paths: {(a1_idx, a2_idx, direction)} in preprocessing."
-            )
-            continue
+    # Copy the molecule so we don't affect the original
+    molecule = Chem.RWMol(mol, True)
 
-        # Copy the molecule and make the change
-        structure = Chem.RWMol(mol, True)
-        a1 = structure.GetAtomWithIdx(a1_idx)
-        a2 = structure.GetAtomWithIdx(a2_idx)
-        b12 = structure.GetBondBetweenAtoms(a1_idx, a2_idx)
-        try:
-            if direction == 1:  # The direction <increasing> the bond order
-                increment_order(b12)
-                a1.SetFormalCharge(charge1 + 1)
-                a2.SetFormalCharge(charge2 - 1)
-            elif direction == 2:  # The direction <decreasing> the bond order
-                decrement_order(b12)
-                a1.SetFormalCharge(charge1 - 1)
-                a2.SetFormalCharge(charge2 + 1)
-            sanitize_resonance_mol(structure)
-        except BaseException as e:
-            logger.debug(
-                f"Cannot transform path {(a1_idx, a2_idx, direction)} "
-                f"in `generate_adj_lone_pair_multiple_bond_resonance_structures`."
-                f"\nGot: {e}"
-            )
-        else:
-            # TODO: This is a constraint used in RMG, check if it is still needed here.
-            if not Chem.rdmolops.GetFormalCharge(structure):
-                structures.append(structure)
-    return structures
+    # Attempt to rearrange electrons to obtain a structure with the most aromatic rings
+    # Possible rearrangements include aryne resonance and allyl resonance
+    aromatic_specific_methods = [generate_aryne_resonance_structures]
+    aromatic_agnostic_methods = []
+    if features["is_radical"] and not features["is_aryl_radical"]:
+        aromatic_agnostic_methods.append("allyl_radical")
 
+    kekule_list = generate_kekule_structure(molecule)
 
-@require_radical
-def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
-    """
-    Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts between adjacent atoms.
-    Example: [:N.]=[CH2] <=> [::N]-[.CH2]
-    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
-    Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2's lone_pairs aren't affected)
-    This function is similar to generate_adj_lone_pair_multiple_bond_resonance_structures() except for dealing with the
-    radical transformations.
-    (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
-    In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
-    """
-    structures = []
-    paths = pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths(
-        mol
+    _generate_resonance_structures(
+        kekule_list,
+        aromatic_agnostic=aromatic_agnostic_methods,
+        aromatic_specific=aromatic_specific_methods,
     )
-    for a1_idx, a2_idx, direction in paths:
-        # preprocessing before attempting to make the change
-        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
-        if direction == 1 and (
-            a2.GetNumRadicalElectrons() < 1
-            or get_lone_pair(a1) <= 0
-            or not has_empty_orbitals(a1)
-        ):
+
+    new_structures = []
+    max_num_aromatic_rings = 0
+    for mol in kekule_list:
+        # The mol is aromatized in place
+        result = generate_aromatic_resonance_structure(mol, copy=False)
+        if (
+            not result
+        ):  # we only use result to check if the molecule is aromatized successfully
             continue
-        elif direction == 2 and (a1.GetNumRadicalElectrons() < 1):
-            continue
-        # Copy the molecule and make the change
-        structure = Chem.RWMol(mol, True)
-        a1, a2 = structure.GetAtomWithIdx(a1_idx), structure.GetAtomWithIdx(a2_idx)
-        b12 = structure.GetBondBetweenAtoms(a1_idx, a2_idx)
-        try:
-            if direction == 1:  # The direction <increasing> the bond order
-                increment_order(b12)
-                increment_radical(a1)
-                decrement_radical(a2)
-            elif direction == 2:  # The direction <decreasing> the bond order
-                decrement_order(b12)
-                decrement_radical(a1)
-                increment_radical(a2)
-            sanitize_resonance_mol(structure)
-        except BaseException as e:
-            logger.debug(
-                f"Cannot transform path {(a1_idx, a2_idx, direction)} "
-                f"in `generate_adj_lone_pair_multiple_bond_resonance_structures`."
-                f"\nGot: {e}"
-            )
-        else:
-            structures.append(structure)
-    return structures
+
+        num_aromatic_rings = get_num_aromatic_rings(mol)
+        if num_aromatic_rings > max_num_aromatic_rings:
+            # Find a molecule with more aromatic rings
+            max_num_aromatic_rings = num_aromatic_rings
+            new_structures = [mol]
+        elif num_aromatic_rings == max_num_aromatic_rings:
+            # Find a molecule with the same number of aromatic rings
+            for struct in new_structures:
+                if filtration.is_equivalent_structure(struct, mol):
+                    break
+            else:
+                new_structures.append(mol)
+
+    return new_structures
+
+
+def generate_aromatic_resonance_structure(
+    mol: "Mol",
+    copy: bool = True,
+) -> list:
+    """
+    Generate the aromatic form of the molecule in place without considering other resonance.
+
+    This method completely get rid of the implementation in the original rmg algorithm, to
+    perceive aromaticity and use purely RDKit aromaticity perception. So the performance may be different.
+
+    Args:
+        mol: molecule to generate aromatic resonance structure for
+        aromatic_bonds (optional): list of previously identified aromatic bonds
+        copy (optional): copy the molecule if ``True``, otherwise modify in place
+
+    Returns:
+        List of one molecule if successful, empty list otherwise
+    """
+    mol = Chem.RWMol(mol, True) if copy else mol
+    try:
+        Chem.SanitizeMol(mol, sanitizeOps=sanitize_flag_aromatic)
+        return [mol]
+    except BaseException:
+        return []
+
+
+def generate_kekule_structure(mol, copy: bool = True):
+    """
+    Generate a kekulized (single-double bond) form of the molecule.
+    The specific arrangement of double bonds is non-deterministic, and depends on RDKit.
+
+    Returns a single Kekule structure as an element of a list of length 1.
+    If there's an error (eg. in RDKit) then it just returns an empty list.
+    """
+    mol = Chem.RWMol(mol, True) if copy else mol
+    try:
+        Chem.SanitizeMol(mol, sanitizeOps=sanitize_flag_kekule)
+        return [mol]
+    except BaseException:
+        return []
+
+
+def generate_aryne_resonance_structures(mol):
+    """
+    Generate aryne resonance structures, including the cumulene and alkyne forms.
+
+    For all 6-membered rings, check for the following bond patterns:
+
+      - STSDSD (pattern 1)
+      - DDDSDS (pattern 2)
+
+    This does NOT cover all possible aryne resonance forms, only the simplest ones.
+    Especially for polycyclic arynes, enumeration of all resonance forms is
+    related to enumeration of all Kekule structures, which is very difficult.
+    """
+    pattern1_rings, pattern2_rings = get_aryne_rings(mol)
+
+    operations = [
+        [ring, "DDSDSD"] for ring in pattern1_rings
+    ] + [
+        [ring, "STSDSD"] for ring in pattern2_rings
+    ]
+
+    new_mol_list = []
+    for ring, new_orders in operations:
+
+        new_struct = Chem.RWMol(mol, True)
+
+        for i in range(6):
+            bond = new_struct.GetBondBetweenAtoms(ring[i-1], ring[i])
+            if new_orders[i] == "S":
+                bond.SetBondType(Chem.BondType.SINGLE)
+            elif new_orders[i] == "D":
+                bond.SetBondType(Chem.BondType.DOUBLE)
+            elif new_orders[i] == "T":
+                bond.SetBondType(Chem.BondType.TRIPLE)
+
+            try:
+                Chem.SanitizeMol(
+                    new_struct,
+                    sanitizeOps=sanitize_flag_aromatic,
+                )
+            except BaseException:
+                pass  # Don't append resonance structure if it creates an undefined atomtype
+            else:
+                new_mol_list.append(new_struct)
+
+    return new_mol_list
