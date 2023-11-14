@@ -173,6 +173,14 @@ def get_num_occupied_orbitals(atom: "Atom") -> int:
     )
 
 
+# Pure RDKit
+def get_num_aromatic_rings(mol: "Mol") -> int:
+    """
+    Get the number of aromatic rings in a molecule.
+    """
+    return Lipinski.NumAromaticRings(mol)
+
+
 # RDKit / RDMC compatible
 def has_empty_orbitals(atom: "Atom") -> bool:
     """
