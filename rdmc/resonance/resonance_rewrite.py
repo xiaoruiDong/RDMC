@@ -41,28 +41,27 @@ def analyze_molecule(mol):
             - is_radical: whether the molecule is a radical
             - is_cyclic: whether the molecule is cyclic
             - is_aromatic: whether the molecule is aromatic
-            - is_PolycyclicAromatic: whether the molecule is polycyclic aromatic
+            - isPolycyclicAromatic: whether the molecule is polycyclic aromatic
             - is_aryl_radical: whether the molecule is an aryl radical
             - hasLonePairs: whether the molecule has lone pairs
-            has
     """
     features = {
         "is_radical": is_radical(mol),
         "is_cyclic": is_cyclic(mol),
         "is_aromatic": False,
-        "is_PolycyclicAromatic": False,
+        "isPolycyclicAromatic": False,
         "is_aryl_radical": False,
         "hasLonePairs": False,
     }
 
     if features["is_cyclic"]:
-        aromatic_rings = get_aromatic_rings(mol)[0]
-        if len(aromatic_rings) > 0:
+        num_aromatic_rings = get_num_aromatic_rings(mol)
+        if num_aromatic_rings > 0:
             features["is_aromatic"] = True
-        if len(aromatic_rings) > 1:
+        if num_aromatic_rings > 1:
             features["isPolycyclicAromatic"] = True
         if features["is_radical"] and features["is_aromatic"]:
-            features["is_aryl_radical"] = is_aryl_radical(mol, aromatic_rings)
+            features["is_aryl_radical"] = is_aryl_radical(mol)
     for atom in mol.GetAtoms():
         if get_lone_pair(atom) > 0:
             features["hasLonePairs"] = True
