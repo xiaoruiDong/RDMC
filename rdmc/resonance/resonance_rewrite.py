@@ -302,7 +302,9 @@ def generate_resonance_structures(
             features["isPolycyclicAromatic"] = False
         else:
             features["is_aromatic"] = True
-            features["isPolycyclicAromatic"] = len(get_aromatic_rings(new_mol_list[0])[0]) > 1
+            features["isPolycyclicAromatic"] = (
+                get_num_aromatic_rings(new_mol_list[0]) > 1
+            )
             for new_mol in new_mol_list:
                 if not filtration.is_equivalent_structure(
                     mol, new_mol, not keep_isomorphic
@@ -311,26 +313,28 @@ def generate_resonance_structures(
 
     # Special handling for aromatic species
     if features["is_aromatic"]:
-        method_list = []
         if features["is_radical"] and not features["is_aryl_radical"]:
-            method_list.append(generate_kekule_structure)
-            method_list.append(generate_allyl_delocalization_resonance_structures)
-        if features["isPolycyclicAromatic"] and clar_structures:
-            method.append(generate_clar_structures)
-        else:
-            method.append(generate_aromatic_resonance_structure)
-
-        for method in method_list:
-            # For some reason unknown, RMG choose to apply each method separately.
-            # Here we follow the same approach.
             _generate_resonance_structures(
-                mol_list, [method], keep_isomorphic=keep_isomorphic
+                mol_list,
+                [],
+                [generate_kekule_structure],
+                keep_isomorphic=keep_isomorphic,
             )
+            _generate_resonance_structures(
+                mol_list, ["allyl_radical"], [], keep_isomorphic=keep_isomorphic
+            )
+        if features["isPolycyclicAromatic"] and clar_structures:
+            aromatic_specific = [generate_clar_structures]
+        else:
+            aromatic_specific = [generate_aromatic_resonance_structure]
+        _generate_resonance_structures(
+            mol_list, [], aromatic_specific, keep_isomorphic=keep_isomorphic
+        )
 
     # Generate remaining resonance structures
-    method_list = populate_resonance_algorithms(features)
+    aromatic_agnostic, aromatic_specific = populate_resonance_algorithms(features)
     _generate_resonance_structures(
-        mol_list, method_list, keep_isomorphic=keep_isomorphic
+        mol_list, aromatic_agnostic, aromatic_specific, keep_isomorphic=keep_isomorphic
     )
 
     if filter_structures:
