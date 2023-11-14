@@ -6,12 +6,14 @@ This module contains functions for generating resonance structures.
 This is a rewrite of the original resonance_rmg.py module.
 """
 
-from typing import List
+from collections import defaultdict
+from typing import List, Optional, Tuple
 import logging
 
 from rdkit import Chem
+
 from rdmc.resonance import filtration
-from rdmc.resonance import pathfinder_rewrite as pathfinder
+from rdmc.resonance.pathfinder_rewrite import PathFinderRegistry
 from rdmc.resonance.utils import (
     decrement_radical,
     decrement_order,
@@ -25,7 +27,7 @@ from rdmc.resonance.utils import (
     is_radical,
     get_charge_span,
     get_lone_pair,
-    sanitize_resonance_mol,
+    get_num_aromatic_rings,
 )
 
 
@@ -135,7 +137,8 @@ def populate_resonance_algorithms(
 
 def _generate_resonance_structures(
     mol_list: list,
-    method_list: List[str],
+    aromatic_agnostic: list,
+    aromatic_specific: list,
     keep_isomorphic: bool = False,
 ):
     """
@@ -144,21 +147,21 @@ def _generate_resonance_structures(
     Args:
         mol_list             starting list of molecules
         method_list          list of resonance structure algorithms
-        keep_isomorphic      if False, removes any structures that give is_isomorphic=True (default)
-                            if True, only remove structures that give is_identical=True
+        keep_isomorphic      if ``False``, removes any structures that are isomorphic (default)
+                             if ``True``, keep all unique molecules.
     """
     octate_deviations = filtration.get_octet_deviation_list(mol_list)
     charge_spans = filtration.get_charge_span_list(mol_list)
     min_octet_deviation = min(octate_deviations)
     min_charge_span = min(charge_spans)
-    input_charge = Chem.GetFormalCharge(mol_list[0])
+    ref_charge = Chem.GetFormalCharge(mol_list[0])
+
+    prune_book = {i: defaultdict(set) for i in range(len(mol_list))}
 
     # Iterate over resonance structures
     index = 0
-    while index < len(mol_list):
-        molecule = mol_list[index]
-        new_mol_list = []
 
+    while index < len(mol_list):
         # On-the-fly filtration: Extend methods only for molecule that don't deviate too much from the octet rule
         # (a +2 distance from the minimal deviation is used, octet deviations per species are in increments of 2)
         # Sometimes rearranging the structure requires an additional higher charge span structure, so allow
@@ -167,38 +170,78 @@ def _generate_resonance_structures(
         octet_deviation = octate_deviations[index]
         charge_span = charge_spans[index]
         if (
-            octet_deviation <= min_octet_deviation + 2
-            and charge_span <= min_charge_span + 1
+            octet_deviation > min_octet_deviation + 2
+            or charge_span > min_charge_span + 1
         ):
-            for method in method_list:
-                new_mol_list.extend(method(molecule))
-            if octet_deviation < min_octet_deviation:
-                # update min_octet_deviation to make this criterion tighter
-                min_octet_deviation = octet_deviation
-            if charge_span < min_charge_span:
-                # update min_charge_span to make this criterion tighter
-                min_charge_span = charge_span
+            # Skip this resonance structure
+            index += 1
+            continue
 
-        for new_mol in new_mol_list:
-            # check net charge
-            charge = Chem.GetFormalCharge(new_mol)
-            if charge != input_charge:
-                logger.debug(
-                    f"Resonance generation created a molecule {Chem.MolToSmiles(new_mol)} "
-                    f"with a net charge of {charge} which does not match the input mol charge of {input_charge}.\n"
-                    f"Removing it from resonance structures"
-                )
-                continue
-            # Append to structure list if unique
-            for mol in mol_list:
-                if filtration.is_equivalent_structure(
-                    mol, new_mol, not keep_isomorphic
-                ):
-                    break
-            else:
-                mol_list.append(new_mol)
-                octate_deviations.append(filtration.get_octet_deviation(new_mol))
-                charge_spans.append(get_charge_span(molecule))
+        if octet_deviation < min_octet_deviation:
+            # update min_octet_deviation to make this criterion tighter
+            min_octet_deviation = octet_deviation
+        if charge_span < min_charge_span:
+            # update min_charge_span to make this criterion tighter
+            min_charge_span = charge_span
+
+        for method in aromatic_agnostic:
+            pathfinder = PathFinderRegistry.get(method)
+            for new_structure, path in generate_resonance_structures_with_pathfinder(
+                mol_list[index], pathfinder, prune_paths=prune_book[index][method]
+            ):
+                charge = Chem.GetFormalCharge(new_structure)
+                if charge != ref_charge:  # Not expected to happen
+                    logger.debug(
+                        f"Resonance generation created a molecule {Chem.MolToSmiles(new_structure)} "
+                        f"with a net charge of {charge} which does not match the input mol charge of {ref_charge}.\n"
+                        f"Removing it from resonance structures"
+                    )
+                    continue
+                for j, known_structure in enumerate(mol_list):
+                    if filtration.is_equivalent_structure(
+                        known_structure,
+                        new_structure,
+                        isomorphic_equivalent=not keep_isomorphic,
+                    ):
+                        if j > index:
+                            prune_book[j][pathfinder.reverse_abbr].add(path[::-1])
+                        break
+                else:
+                    mol_list.append(new_structure)
+                    octate_deviations.append(
+                        filtration.get_octet_deviation(new_structure)
+                    )
+                    charge_spans.append(get_charge_span(new_structure))
+                    prune_book[len(mol_list) - 1] = defaultdict(set)
+                    prune_book[len(mol_list) - 1][pathfinder.reverse_abbr].add(
+                        path[::-1]
+                    )
+
+        for method in aromatic_specific:
+            new_structures = method(mol_list[index])
+            for new_structure in new_structures:
+                charge = Chem.GetFormalCharge(new_structure)
+                if charge != ref_charge:  # Not expected to happen
+                    logger.debug(
+                        f"Resonance generation created a molecule {Chem.MolToSmiles(new_structure)} "
+                        f"with a net charge of {charge} which does not match the input mol charge of {ref_charge}.\n"
+                        f"Removing it from resonance structures"
+                    )
+                    continue
+                for j, known_structure in enumerate(mol_list):
+                    if filtration.is_equivalent_structure(
+                        known_structure,
+                        new_structure,
+                        isomorphic_equivalent=not keep_isomorphic,
+                    ):
+                        break
+                else:
+                    mol_list.append(new_structure)
+                    octate_deviations.append(
+                        filtration.get_octet_deviation(new_structure)
+                    )
+                    charge_spans.append(get_charge_span(new_structure))
+                    prune_book[len(mol_list) - 1] = defaultdict(set)
 
         # Move to the next resonance structure
         index += 1
