@@ -524,15 +524,21 @@ def stabilize_charges_by_proximity(mol_list: list) -> list:
         [distances[0] for distances in charge_distance_list],
         default=0,
     )
+    # The stepwise filtering is based on the RMG original implementation
+    mol_list, charge_distance_list = zip(
+        *[
+            (mol_list[i], dist)
+            for i, dist in enumerate(charge_distance_list)
+            if dist[0] <= min_cumulative_opposite_charge_distance
+        ]
+    )
     max_cumulative_similar_charge_distance = max(
         [distances[1] for distances in charge_distance_list],
         default=0,
     )
     return [
-        mol
-        for mol, charge_distance in zip(mol_list, charge_distance_list)
-        if (charge_distance[0] <= min_cumulative_opposite_charge_distance)
-        and (charge_distance[1] >= max_cumulative_similar_charge_distance)
+        mol_list[i] for i, dist in enumerate(charge_distance_list)
+        if dist[0] >= max_cumulative_similar_charge_distance
     ]
 
 
