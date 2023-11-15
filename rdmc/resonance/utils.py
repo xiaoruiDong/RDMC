@@ -531,3 +531,52 @@ def sanitize_resonance_mol(
         sanitize_flag: The sanitize flag used to sanitize the molecule.
     """
     Chem.SanitizeMol(mol, sanitize_flag)
+
+
+def _find_shortest_path(start, end, path=None, path_idxs=None):
+    """
+    Get the shortest path between two atoms in a molecule.
+
+    """
+    path = path if path else []
+    path_idxs = path_idxs if path else []
+    path = path + [start]
+    path_idx = path_idxs + [start.GetIdx()]
+    if path_idx[-1] == end.GetIdx():
+        return path
+
+    shortest = None
+    for node in start.GetNeighbors():
+        if node.GetIdx() not in path_idx:
+            newpath = _find_shortest_path(node, end, path, path_idx)
+            if newpath:
+                if not shortest or len(newpath) < len(shortest):
+                    shortest = newpath
+    return shortest
+
+
+# Pure RDKit
+def get_shortest_path(mol, idx1, idx2):
+    """
+    Get the shortest path between two atoms in a molecule. The RDKit GetShortestPath
+    has a very long setup time ~ 0.5ms (on test machine) regardless of the size of the molecule.
+    As a comparison, on the same machine, a naive python implementation of DFS (`_find_shortest_path`)
+    takes ~0.5 ms for a 100-C normal alkane end to end. Therefore, it make more sense to use a method
+    with a shorter setup time though scaling worse for smaller molecules while using GetShortestPath
+    for larger molecules.
+
+    Args:
+        mol (RDKitMol, RWMol): The molecule to be checked.
+        idx1 (int): The index of the first atom.
+        idx2 (int): The index of the second atom.
+
+    Returns:
+        list: A list of atoms in the shortest path between the two atoms.
+    """
+    if mol.GetNumHeavyAtoms() > 100:
+        return Chem.GetShortestPath(mol, idx1, idx2)
+
+    return _find_shortest_path(
+        mol.GetAtomWithIdx(idx1),
+        mol.GetAtomWithIdx(idx2)
+    )
