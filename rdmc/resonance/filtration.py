@@ -402,7 +402,7 @@ def has_unique_sites(
     for atom in mol.GetAtoms():
         if atom.GetNumRadicalElectrons() and atom.GetIdx() not in rad_idxs:
             return True
-    for bond in atom.GetBonds():
+    for bond in mol.GetBonds():
         bond_idx = tuple(sorted((bond.GetBeginAtomIdx(), bond.GetEndAtomIdx())))
         if (
             (bond.GetBondType() in [2, 3])
