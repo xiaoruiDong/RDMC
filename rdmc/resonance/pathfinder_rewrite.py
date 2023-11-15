@@ -394,11 +394,15 @@ class LonePairMultipleBondPathFinder(PathFinder):
         Returns:
             bool: True if the lone pair multiple bond path is valid, False otherwise.
         """
-        a1_idx, _, a3_idx = path
+        a1_idx, a2_idx, a3_idx = path
         a1 = mol.GetAtomWithIdx(a1_idx)
+        a2 = mol.GetAtomWithIdx(a2_idx)
         a3 = mol.GetAtomWithIdx(a3_idx)
         return (
-            a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
+            not (
+                a1.GetAtomicNum() == a2.GetAtomicNum() == 16
+            )  # RMG algorithm avoid a1 and a2 are both S
+            and a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
             and a3.GetFormalCharge() > CHARGE_LOWER_LIMIT
             and get_lone_pair(a1) > 0
         )
@@ -544,7 +548,11 @@ class ForwardAdjacentLonePairMultipleBondPathFinder(PathFinder):
         a1_idx, a2_idx = path
         a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
         return (
-            a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
+            not (
+                    a1.GetAtomicNum() == a2.GetAtomicNum() == 16
+                    and mol.GetBondBetweenAtoms(a1_idx, a2_idx).GetBondType() == 2
+                )  # RMG have this to prevent S#S. This may be better added to the template
+            and a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
             and a2.GetFormalCharge() > CHARGE_LOWER_LIMIT
             and get_lone_pair(a1) > 0
             and has_empty_orbitals(a2)
