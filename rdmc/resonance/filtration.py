@@ -53,6 +53,7 @@ from rdmc.resonance.utils import (
     get_lone_pair,
     get_order_str,
     get_radical_count,
+    get_shortest_path,
     get_total_bond_order,
     is_aromatic,
     is_identical,
@@ -488,19 +489,19 @@ def get_charge_distance(mol: "RWMol") -> tuple:
 
     cumulative_similar_charge_distance = sum(
         [
-            len(Chem.GetShortestPath(mol, a1, a2))
+            len(get_shortest_path(mol, a1, a2))
             for a1, a2 in combinations(pos_atoms, 2)
         ]
     )
     cumulative_similar_charge_distance += sum(
         [
-            len(Chem.GetShortestPath(mol, a1, a2))
+            len(get_shortest_path(mol, a1, a2))
             for a1, a2 in combinations(neg_atoms, 2)
         ]
     )
     cumulative_opposite_charge_distance = sum(
         [
-            len(Chem.GetShortestPath(mol, a1, a2))
+            len(get_shortest_path(mol, a1, a2))
             for a1, a2 in product(pos_atoms, neg_atoms)
         ]
     )
