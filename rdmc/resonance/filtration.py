@@ -332,31 +332,20 @@ def charge_filtration(mol_list: list) -> list:
     charge_span_list = get_charge_span_list(mol_list)
     min_charge_span = min(charge_span_list)
 
-    if min_charge_span == 0 and len(set(charge_span_list)) == 1:
-        return mol_list
+    filtered_list = mol_list
 
-    elif len(set(charge_span_list)) > 1:
-        # Only keep the structures with charge span smaller or equal to minimal charge span + 1
-        extra_charged_list, filtered_list = [], []
-        for mol, charge_span in zip(mol_list, charge_span_list):
-            if charge_span == min_charge_span:
-                # the minimal charge span layer
-                filtered_list.append(mol)
-            elif charge_span == min_charge_span + 1:
-                # save the 2nd charge span layer
-                extra_charged_list.append(mol)
-    else:
-        filtered_list = mol_list
-        extra_charged_list = []
-
-    # If the species has charge separation, apply charge stability considerations.
-    # These considerations should be checked regardless of the existence of radical sites.
-    filtered_list = stabilize_charges_by_electronegativity(filtered_list)
-    filtered_list = stabilize_charges_by_proximity(filtered_list)
-
-    if extra_charged_list:
-        # Find the radical and multiple bond sites in all filtered_list structures
-        # as the sorting labels for radical sites (atom1) and for multiple bond sites (atom1, atom2), respectively.
+    if len(set(charge_span_list)) > 1:
+        # Proceed if there are structures with different charge spans
+        charged_list = [
+            filtered_mol
+            for index, filtered_mol in enumerate(filtered_list)
+            if charge_span_list[index] == min_charge_span + 1
+        ]  # save the 2nd charge span layer
+        filtered_list = [
+            filtered_mol
+            for index, filtered_mol in enumerate(filtered_list)
+            if charge_span_list[index] == min_charge_span
+        ]  # the minimal charge span layer
         rad_idxs, mul_bond_idxs = set(), set()
         for mol in filtered_list:
             for atom in mol.GetAtoms():
@@ -367,20 +356,29 @@ def charge_filtration(mol_list: list) -> list:
                     mul_bond_idxs.add(
                         tuple(sorted((bond.GetBeginAtomIdx(), bond.GetEndAtomIdx())))
                     )
-        # Find unique radical and multiple bond sites in charged_list and append to extra_charged_list:
-        extra_charged_list = [
+        unique_charged_list = [
             mol
-            for mol in extra_charged_list
+            for mol in charged_list
             if has_unique_sites(mol, rad_idxs, mul_bond_idxs)
         ]
 
-        if extra_charged_list:
-            extra_charged_list = stabilize_charges_by_electronegativity(
-                extra_charged_list, allow_empty_list=True
+        # Charge stabilization considerations for the case where there are several charge span layers
+        # are checked here for filtered_list and unique_charged_list separately.
+        if min_charge_span:
+            filtered_list = stabilize_charges_by_electronegativity(filtered_list)
+            filtered_list = stabilize_charges_by_proximity(filtered_list)
+        if unique_charged_list:
+            unique_charged_list = stabilize_charges_by_electronegativity(
+                unique_charged_list, allow_empty_list=True
             )
-            extra_charged_list = stabilize_charges_by_proximity(extra_charged_list)
+            unique_charged_list = stabilize_charges_by_proximity(unique_charged_list)
+            filtered_list.extend(unique_charged_list)
 
-    return filtered_list + extra_charged_list
+    if min_charge_span:
+        filtered_list = stabilize_charges_by_electronegativity(filtered_list)
+        filtered_list = stabilize_charges_by_proximity(filtered_list)
+
+    return filtered_list
 
 
 # RDKit / RDMC Compatible
@@ -520,6 +518,9 @@ def stabilize_charges_by_proximity(mol_list: list) -> list:
     Returns:
         list: The filtered list of molecules.
     """
+    if not mol_list:
+        return mol_list
+
     charge_distance_list = [get_charge_distance(mol) for mol in mol_list]
     min_cumulative_opposite_charge_distance = min(
         [distances[0] for distances in charge_distance_list],
@@ -538,7 +539,8 @@ def stabilize_charges_by_proximity(mol_list: list) -> list:
         default=0,
     )
     return [
-        mol_list[i] for i, dist in enumerate(charge_distance_list)
+        mol_list[i]
+        for i, dist in enumerate(charge_distance_list)
         if dist[0] >= max_cumulative_similar_charge_distance
     ]
 
