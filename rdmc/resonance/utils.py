@@ -66,7 +66,8 @@ bond_order_dicts = {
 aryl_radical_query = rdqueries.NumRadicalElectronsGreaterQueryAtom(0)
 aryl_radical_query.ExpandQuery(rdqueries.IsAromaticQueryAtom())
 
-aryne_template1 = Chem.MolFromSmarts("[*]1#[*]:[*]:[*]:[*]:[*]1")
+aryne_template1_aro = Chem.MolFromSmarts("[*]1#[*]:[*]:[*]:[*]:[*]1")
+aryne_template1_kek = Chem.MolFromSmarts("[*]1#[*]-[*]=[*]-[*]=[*]1")
 aryne_template2 = Chem.MolFromSmarts("[*]1=[*]=[*]=[*]-[*]=[*]1")
 
 
@@ -194,7 +195,10 @@ def get_aryne_rings(mol: "Mol") -> List[List[int]]:
     Get the indices of all aryne rings in a molecule.
     """
     return (
-        mol.GetSubstructMatches(aryne_template1),
+        (
+            mol.GetSubstructMatches(aryne_template1_aro)
+            + mol.GetSubstructMatches(aryne_template1_kek)
+        ),
         mol.GetSubstructMatches(aryne_template2),
     )
 

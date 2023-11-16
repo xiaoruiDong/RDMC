@@ -495,7 +495,7 @@ def generate_aryne_resonance_structures(mol):
 
     For all 6-membered rings, check for the following bond patterns:
 
-      - STSDSD (pattern 1)
+      - TSDSDS (pattern 1)
       - DDDSDS (pattern 2)
 
     This does NOT cover all possible aryne resonance forms, only the simplest ones.
@@ -505,18 +505,17 @@ def generate_aryne_resonance_structures(mol):
     pattern1_rings, pattern2_rings = get_aryne_rings(mol)
 
     operations = [
-        [ring, "DDSDSD"] for ring in pattern1_rings
+        [ring, "DDDSDS"] for ring in pattern1_rings
     ] + [
-        [ring, "STSDSD"] for ring in pattern2_rings
+        [ring, "DSTSDS"] for ring in pattern2_rings
     ]
 
     new_mol_list = []
     for ring, new_orders in operations:
-
         new_struct = Chem.RWMol(mol, True)
 
         for i in range(6):
-            bond = new_struct.GetBondBetweenAtoms(ring[i-1], ring[i])
+            bond = new_struct.GetBondBetweenAtoms(ring[i - 1], ring[i])
             if new_orders[i] == "S":
                 bond.SetBondType(Chem.BondType.SINGLE)
             elif new_orders[i] == "D":
