@@ -15,13 +15,14 @@ from rdkit import Chem
 from rdmc.resonance import filtration
 from rdmc.resonance.pathfinder_rewrite import PathFinderRegistry
 from rdmc.resonance.utils import (
-    is_aryl_radical,
-    is_cyclic,
-    is_radical,
+    force_no_implicit,
     get_aryne_rings,
     get_charge_span,
     get_lone_pair,
     get_num_aromatic_rings,
+    is_aryl_radical,
+    is_cyclic,
+    is_radical,
 )
 
 
@@ -261,6 +262,7 @@ def generate_resonance_structures(
     clar_structures: bool = False,
     keep_isomorphic: bool = False,
     filter_structures: bool = True,
+    copy: bool = True
 ) -> list:
     """
     Generate and return all of the resonance structures for the input molecule.
@@ -283,6 +285,10 @@ def generate_resonance_structures(
       All are kept regardless of aromaticity because the radical is more likely to delocalize into the ring.
     - Stable polycyclic aromatic species: Clar structures are generated
     - Stable monocyclic aromatic species: Kekule structures are generated
+
+    Note, RDKit atom obeys the octet rule, that is when making an atom electron deficient, it may automatically add
+    implicit hydrogens if possible. This is not desired in resonance structure generation, so the molecule will be processed
+    by setting atoms with no hydrogen (either implicit or explicit) to be "no implicit".
     """
     # TODO: Clar_structure is not the first priority. will be implemented later.
 
@@ -291,6 +297,10 @@ def generate_resonance_structures(
     # Comment out the check for formal charge until significant issues are found.
     # if mol.GetFormalCharge() != 0:
     #     return [mol]
+    if copy:
+        mol = Chem.RWMol(mol, True)
+
+    force_no_implicit(mol)
 
     mol_list = [mol]
     # Analyze molecule

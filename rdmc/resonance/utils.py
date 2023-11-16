@@ -71,6 +71,15 @@ aryne_template1_kek = Chem.MolFromSmarts("[*]1#[*]-[*]=[*]-[*]=[*]1")
 aryne_template2 = Chem.MolFromSmarts("[*]1=[*]=[*]=[*]-[*]=[*]1")
 
 
+def force_no_implicit(mol: "Mol"):
+    """
+    Force RDKit to not use implicit hydrogens.
+    """
+    for atom in mol.GetAtoms():
+        if atom.GetAtomicNum() > 1 and not atom.GetTotalNumHs():
+            atom.SetNoImplicit(True)
+
+
 # RDKit / RDMC compatible
 def get_electronegativity(atom: "Atom") -> float:
     """
