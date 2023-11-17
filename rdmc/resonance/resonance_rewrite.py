@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 sanitize_flag_kekule = (
     Chem.SANITIZE_PROPERTIES
     | Chem.SANITIZE_SYMMRINGS
-    | Chem.SANITIZE_KEKULIZE
+    # | Chem.SANITIZE_KEKULIZE
     | Chem.SANITIZE_SETCONJUGATION
 )
 sanitize_flag_aromatic = sanitizeOps = (
@@ -263,7 +263,7 @@ def _generate_resonance_structures(
 
 def generate_resonance_structures(
     mol,
-    clar_structures: bool = False,
+    clar_structures: bool = True,
     keep_isomorphic: bool = False,
     filter_structures: bool = True,
     copy: bool = True,
@@ -306,9 +306,20 @@ def generate_resonance_structures(
 
     force_no_implicit(mol)
 
-    mol_list = [mol]
     # Analyze molecule
     features = analyze_molecule(mol)
+
+    if features["is_aromatic"]:
+        # This may be an intended behavior in RMG
+        # `mol` (`mol_list[0]`) will be changed inplace to kekule form during `analyze_molecule`.
+        # So the optimal aromatic structure, generated in the next block will always be different
+        # from the initial one. We will always have a optimal aromatic structure and fully kekulized
+        # structure carried over to the later steps for aromatic molecules.
+        # However, in RDMC workflow, `mol` is not modified in `analyze_molecule`
+        # Therefore, to mimic RMG's behavior, we need to generate kekulized form of `mol` here
+        mol_list = generate_kekule_structure(mol)
+    else:
+        mol_list = [mol]
 
     # Use generate_optimal_aromatic_resonance_structures to check for false positives and negatives
     if features["is_aromatic"] or (
@@ -316,7 +327,7 @@ def generate_resonance_structures(
         and features["is_radical"]
         and not features["is_aryl_radical"]
     ):
-        new_mol_list = generate_optimal_aromatic_resonance_structures(mol, features)
+        new_mol_list = generate_optimal_aromatic_resonance_structures(mol_list[0], features)
         if not new_mol_list:
             # Encountered false positive, i.e., the molecule is not actually aromatic
             features["is_aromatic"] = False
@@ -328,7 +339,7 @@ def generate_resonance_structures(
             )
             for new_mol in new_mol_list:
                 if not filtration.is_equivalent_structure(
-                    mol, new_mol, not keep_isomorphic
+                    mol_list[0], new_mol, not keep_isomorphic
                 ):
                     mol_list.append(new_mol)
 
@@ -497,6 +508,7 @@ def generate_kekule_structure(mol, copy: bool = True):
     """
     mol = Chem.RWMol(mol, True) if copy else mol
     try:
+        Chem.KekulizeIfPossible(mol, clearAromaticFlags=True)
         Chem.SanitizeMol(mol, sanitizeOps=sanitize_flag_kekule)
         return [mol]
     except BaseException:
@@ -728,7 +740,7 @@ def _clar_transformation(mol, aromatic_rings, ring_assign):
     This function directly modifies the input molecule and does not return anything.
     """
     for index, is_arom in enumerate(ring_assign):
-        if is_arom == 0:
+        if is_arom == 1:
             for bidx in aromatic_rings[index]:
                 bond = mol.GetBondWithIdx(bidx)
                 bond.SetBondType(Chem.rdchem.BondType.AROMATIC)
