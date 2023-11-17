@@ -107,7 +107,7 @@ def populate_resonance_algorithms(
                 generate_optimal_aromatic_resonance_structures,
                 generate_aryne_resonance_structures,
                 generate_kekule_structure,
-                # generate_clar_structures,
+                generate_clar_structures,
             ],
         )
 
@@ -266,7 +266,7 @@ def generate_resonance_structures(
     clar_structures: bool = False,
     keep_isomorphic: bool = False,
     filter_structures: bool = True,
-    copy: bool = True
+    copy: bool = True,
 ) -> list:
     """
     Generate and return all of the resonance structures for the input molecule.
@@ -550,7 +550,53 @@ def generate_aryne_resonance_structures(mol):
     return new_mol_list
 
 
-def _clar_optimization(mol, constraints=None, max_num=None):
+def generate_clar_structures(mol):
+    """
+    Generate Clar structures for a given molecule.
+
+    Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
+    """
+    if not is_cyclic(mol):
+        return []
+
+    # Atom IDs are necessary in order to maintain consistent matrices between iterations
+
+    try:
+        solutions, aromatic_rings, bonds = _clar_optimization(mol)
+    except BaseException:
+        # The optimization algorithm did not work on the first iteration
+        return []
+
+    structures = []
+
+    for solution in solutions:
+        new_struct = Chem.RWMol(mol, True)
+        ring_assign = solution[0 : len(aromatic_rings)]
+        bond_assign = solution[len(aromatic_rings) :]
+
+        for index, bidx in enumerate(bonds):
+            bond = new_struct.GetBondWithIdx(bidx)
+            if bond_assign[index] == 0:
+                bond.SetBondType(Chem.BondType.SINGLE)
+            else:  # the value is either 0 or 1 and we don't need to check
+                bond.SetBondType(Chem.BondType.DOUBLE)
+            bond.SetIsAromatic(False)
+            bond.GetBeginAtom().SetIsAromatic(False)
+            bond.GetEndAtom().SetIsAromatic(False)
+
+        _clar_transformation(new_struct, aromatic_rings, ring_assign)
+
+        try:
+            new_struct.UpdatePropertyCache()
+        except BaseException:
+            pass
+        else:
+            structures.append(new_struct)
+
+    return structures
+
+
+def _clar_optimization(mol):
     """
     Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
     of Clar sextets within the constraints of molecular geometry and atom valency.
@@ -568,10 +614,7 @@ def _clar_optimization(mol, constraints=None, max_num=None):
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93-107.
     """
-    # Make a copy of the molecule so we don't destroy the original
-    molecule = Chem.RWMol(mol, True)
-
-    ring_info = molecule.GetRingInfo()
+    ring_info = mol.GetRingInfo()
     bond_rings = [
         ring for ring in ring_info.BondRings() if len(ring) == 6
     ]  # RMG only consider 6 member rings
@@ -599,7 +642,7 @@ def _clar_optimization(mol, constraints=None, max_num=None):
     atom_ring_map = defaultdict(set)
     for i, ring in enumerate(aromatic_rings):
         for bidx in ring:
-            bond = molecule.GetBondWithIdx(bidx)
+            bond = mol.GetBondWithIdx(bidx)
             for atom in [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()]:
                 atom_ring_map[atom].add(i)
                 atom_bond_map[atom].add(l + bonds.index(bidx))
@@ -612,21 +655,24 @@ def _clar_optimization(mol, constraints=None, max_num=None):
     for i, atom in enumerate(atoms):
         A_eq[i, list(atom_ring_map[atom] | atom_bond_map[atom])] = 1
 
+    c = np.array([1] * l + [0] * len(bonds))
+
+    solutions = _solve_clar_lp(num_rings=l, c=c, A_eq=A_eq)
+
+    return solutions, aromatic_rings, bonds
+
+
+def _solve_clar_lp(num_rings, c, A_eq, constraints=None, max_num=None):
     if constraints is None:
         A_ub, b_ub = None, None
     else:
         A_ub = np.array([new_a for new_a, _ in constraints])
         b_ub = np.array([new_b for _, new_b in constraints])
 
-    # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
-    ring_c = np.ones(l)
-    bond_c = np.zeros(len(bonds))
-    c = np.hstack([ring_c, bond_c])
-
     result = linprog(
         c=-c,  # Note: negative to maximize
         A_eq=A_eq,
-        b_eq=np.ones(m),
+        b_eq=np.ones(A_eq.shape[0]),
         A_ub=A_ub,
         b_ub=b_ub,
         bounds=(0, 1),
@@ -637,8 +683,7 @@ def _clar_optimization(mol, constraints=None, max_num=None):
     if result.status != 0:
         raise RuntimeError("Optimization could not find a valid solution.")
 
-    obj_val = -result.fun
-    solution = result.x
+    obj_val, solution = -result.fun, result.x
 
     # Check that we the result contains at least one aromatic sextet
     if obj_val == 0:
@@ -654,8 +699,8 @@ def _clar_optimization(mol, constraints=None, max_num=None):
         raise Exception("Optimization obtained a non-integer solution.")
 
     # Generate constraints based on the solution obtained
-    y = solution[0: l]
-    new_a = np.hstack([y, bond_c])
+    y = solution[0:num_rings]
+    new_a = np.hstack([y, [0] * (c.shape[0] - num_rings)])
     new_b = sum(y) - 1
     if constraints is not None:
         constraints.append((new_a, new_b))
@@ -664,11 +709,29 @@ def _clar_optimization(mol, constraints=None, max_num=None):
 
     # Run optimization with additional constraints
     try:
-        inner_solutions = _clar_optimization(
-            mol, constraints=constraints, max_num=max_num
-        )
+        inner_solutions = _solve_clar_lp(num_rings, c, A_eq, constraints, max_num)
     except RuntimeError as e:
         print(e)
         inner_solutions = []
 
-    return inner_solutions + [(molecule, aromatic_rings, bonds, solution)]
+    return inner_solutions + [solution]
+
+
+def _clar_transformation(mol, aromatic_rings, ring_assign):
+    """
+    Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
+
+    Args:
+        mol             a :class:`Molecule` object
+        aromaticRing    a list of :class:`Atom` objects corresponding to an aromatic ring in mol
+
+    This function directly modifies the input molecule and does not return anything.
+    """
+    for index, is_arom in enumerate(ring_assign):
+        if is_arom == 0:
+            for bidx in aromatic_rings[index]:
+                bond = mol.GetBondWithIdx(bidx)
+                bond.SetBondType(Chem.rdchem.BondType.AROMATIC)
+                bond.SetIsAromatic(True)
+                bond.GetBeginAtom().SetIsAromatic(True)
+                bond.GetEndAtom().SetIsAromatic(True)
