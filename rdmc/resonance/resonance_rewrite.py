@@ -7,8 +7,12 @@ This is a rewrite of the original resonance_rmg.py module.
 """
 
 from collections import defaultdict
-from typing import List, Optional, Tuple
+from itertools import chain
 import logging
+from typing import List, Optional, Tuple
+
+import numpy as np
+from scipy.optimize import linprog
 
 from rdkit import Chem
 
@@ -544,3 +548,127 @@ def generate_aryne_resonance_structures(mol):
                 new_mol_list.append(new_struct)
 
     return new_mol_list
+
+
+def _clar_optimization(mol, constraints=None, max_num=None):
+    """
+    Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
+    of Clar sextets within the constraints of molecular geometry and atom valency.
+
+    Returns a list of valid Clar solutions in the form of a tuple, with the following entries:
+        [0] Molecule object
+        [1] List of aromatic rings
+        [2] List of bonds
+        [3] Optimization solution
+
+    The optimization solution is a list of boolean values with sextet assignments followed by double bond assignments,
+    with indices corresponding to the list of aromatic rings and list of bonds, respectively.
+
+    Method adapted from:
+        Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
+            J. Math. Chem. 1994, 15 (1), 93-107.
+    """
+    # Make a copy of the molecule so we don't destroy the original
+    molecule = Chem.RWMol(mol, True)
+
+    ring_info = molecule.GetRingInfo()
+    bond_rings = [
+        ring for ring in ring_info.BondRings() if len(ring) == 6
+    ]  # RMG only consider 6 member rings
+    aromatic_rings = [
+        ring
+        for ring in bond_rings
+        if all(
+            [
+                mol.GetBondWithIdx(bidx).GetBondType() == Chem.BondType.AROMATIC
+                for bidx in ring
+            ]
+        )
+    ]
+    if not aromatic_rings:
+        return []
+    aromatic_rings.sort(key=lambda x: sum(x))
+
+    bonds = set(chain(*aromatic_rings))
+    bonds = sorted(bonds)
+
+    l = len(aromatic_rings)
+    n = l + len(bonds)
+
+    atom_bond_map = defaultdict(set)
+    atom_ring_map = defaultdict(set)
+    for i, ring in enumerate(aromatic_rings):
+        for bidx in ring:
+            bond = molecule.GetBondWithIdx(bidx)
+            for atom in [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()]:
+                atom_ring_map[atom].add(i)
+                atom_bond_map[atom].add(l + bonds.index(bidx))
+
+    atoms = sorted(atom_bond_map.keys())
+    m = len(atoms)
+
+    A_eq = np.zeros((m, n))
+
+    for i, atom in enumerate(atoms):
+        A_eq[i, list(atom_ring_map[atom] | atom_bond_map[atom])] = 1
+
+    if constraints is None:
+        A_ub, b_ub = None, None
+    else:
+        A_ub = np.array([new_a for new_a, _ in constraints])
+        b_ub = np.array([new_b for _, new_b in constraints])
+
+    # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
+    ring_c = np.ones(l)
+    bond_c = np.zeros(len(bonds))
+    c = np.hstack([ring_c, bond_c])
+
+    result = linprog(
+        c=-c,  # Note: negative to maximize
+        A_eq=A_eq,
+        b_eq=np.ones(m),
+        A_ub=A_ub,
+        b_ub=b_ub,
+        bounds=(0, 1),
+        method="highs",
+        integrality=1,
+    )
+
+    if result.status != 0:
+        raise RuntimeError("Optimization could not find a valid solution.")
+
+    obj_val = -result.fun
+    solution = result.x
+
+    # Check that we the result contains at least one aromatic sextet
+    if obj_val == 0:
+        return []
+
+    # Check that the solution contains the maximum number of sextets possible
+    if max_num is None:
+        max_num = obj_val  # This is the first solution, so the result should be an upper limit
+    elif obj_val < max_num:
+        raise RuntimeError("Optimization obtained a sub-optimal solution.")
+
+    if np.any(np.logical_and(solution != 1, solution != 0)):
+        raise Exception("Optimization obtained a non-integer solution.")
+
+    # Generate constraints based on the solution obtained
+    y = solution[0: l]
+    new_a = np.hstack([y, bond_c])
+    new_b = sum(y) - 1
+    if constraints is not None:
+        constraints.append((new_a, new_b))
+    else:
+        constraints = [(new_a, new_b)]
+
+    # Run optimization with additional constraints
+    try:
+        inner_solutions = _clar_optimization(
+            mol, constraints=constraints, max_num=max_num
+        )
+    except RuntimeError as e:
+        print(e)
+        inner_solutions = []
+
+    return inner_solutions + [(molecule, aromatic_rings, bonds, solution)]
