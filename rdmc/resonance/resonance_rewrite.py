@@ -149,6 +149,7 @@ def _generate_resonance_structures(
     aromatic_agnostic: list,
     aromatic_specific: list,
     keep_isomorphic: bool = False,
+    update_aromatic_flags: bool = False,
 ):
     """
     Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
@@ -206,6 +207,11 @@ def _generate_resonance_structures(
                         f"Removing it from resonance structures"
                     )
                     continue
+                if update_aromatic_flags:
+                    Chem.SanitizeMol(
+                        new_structure,
+                        sanitizeOps=sanitize_flag_aromatic,
+                    )
                 for j, known_structure in enumerate(mol_list):
                     if filtration.is_equivalent_structure(
                         known_structure,
@@ -291,7 +297,6 @@ def generate_resonance_structures(
     implicit hydrogens if possible. This is not desired in resonance structure generation, so the molecule will be processed
     by setting atoms with no hydrogen (either implicit or explicit) to be "no implicit".
     """
-    # TODO: Clar_structure is not the first priority. will be implemented later.
 
     # RMG avoid generating resonance structures for charged species
     # The concerns are due to invalid atom types. This may not be an issue for RDKit.
@@ -307,11 +312,14 @@ def generate_resonance_structures(
     features = analyze_molecule(mol)
 
     if features["is_aromatic"]:
-        # This may be an intended behavior in RMG
+        # This may be an intended behavior in RMG!
         # `mol` (`mol_list[0]`) will be changed inplace to kekule form during `analyze_molecule`.
         # So the optimal aromatic structure, generated in the next block will always be different
-        # from the initial one. We will always have a optimal aromatic structure and fully kekulized
-        # structure carried over to the later steps for aromatic molecules.
+        # from the initial one, if it is indeed an aromatic molecule. We will then always have an
+        # optimal aromatic structure and fully kekulized structure carried over to the later steps
+        # for aromatic molecules. And in the filtration step, all aromatic structures will be kept.
+        # The kekulized structure will be removed by aromaticity_filtration. But, it will be added
+        # back in the end, since it is the first structure in the list.
         # However, in RDMC workflow, `mol` is not modified in `analyze_molecule`
         # Therefore, to mimic RMG's behavior, we need to generate kekulized form of `mol` here
         mol_list = generate_kekule_structure(mol)
@@ -344,13 +352,8 @@ def generate_resonance_structures(
     if features["is_aromatic"]:
         if features["is_radical"] and not features["is_aryl_radical"]:
             _generate_resonance_structures(
-                mol_list,
-                [],
-                [generate_kekule_structure],
-                keep_isomorphic=keep_isomorphic,
-            )
-            _generate_resonance_structures(
-                mol_list, ["allyl_radical"], [], keep_isomorphic=keep_isomorphic
+                mol_list, ["allyl_radical"], [], keep_isomorphic=keep_isomorphic,
+                update_aromatic_flags=True,
             )
         if features["isPolycyclicAromatic"] and clar_structures:
             aromatic_specific = [generate_clar_structures]
