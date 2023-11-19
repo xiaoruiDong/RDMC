@@ -34,13 +34,10 @@ logger = logging.getLogger(__name__)
 
 sanitize_flag_kekule = (
     Chem.SANITIZE_PROPERTIES
-    | Chem.SANITIZE_SYMMRINGS
-    # | Chem.SANITIZE_KEKULIZE
     | Chem.SANITIZE_SETCONJUGATION
 )
 sanitize_flag_aromatic = sanitizeOps = (
     Chem.SANITIZE_PROPERTIES
-    | Chem.SANITIZE_SYMMRINGS
     | Chem.SANITIZE_SETAROMATICITY
     | Chem.SANITIZE_SETCONJUGATION
 )
