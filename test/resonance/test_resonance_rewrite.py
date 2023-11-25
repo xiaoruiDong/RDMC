@@ -1,6 +1,9 @@
 from rdmc import RDKitMol
 from rdmc.resonance.utils import get_lone_pair, is_aromatic, is_identical
 from rdmc.resonance.resonance_rewrite import (
+    _clar_optimization,
+    _clar_transformation,
+    generate_clar_structures,
     generate_kekule_structure,
     generate_optimal_aromatic_resonance_structures,
     generate_resonance_structures,
@@ -798,194 +801,101 @@ class TestResonance:
                 atom2_nb = {nb.GetIdx() for nb in atom2.GetNeighbors()}
                 assert atom1_nb == atom2_nb
 
-    # class ClarTest:
-    #     """
-    #     Contains unit tests for Clar structure methods.
-    #     """
 
-    #     def test_clar_transformation(self):
-    #         """Test that clarTransformation generates an aromatic ring."""
-    #         mol = Molecule().from_smiles("c1ccccc1")
-    #         sssr = mol.get_smallest_set_of_smallest_rings()
-    #         _clar_transformation(mol, sssr[0])
-    #         mol.update_atomtypes()
+class TestClar:
+    """
+    Contains unit tests for Clar structure methods.
+    """
 
-    #         assert mol.is_aromatic()
+    def test_clar_transformation(self):
+        """Test that clarTransformation generates an aromatic ring."""
+        mol = Chem.MolFromSmiles("c1ccccc1", smi_params)
+        sssr = Chem.GetSymmSSSR(mol)
+        _clar_transformation(mol, sssr, [1])
 
-    #     def test_clar_optimization(self):
-    #         """Test to ensure pi electrons are conserved during optimization"""
-    #         mol = Molecule().from_smiles("C1=CC=C2C=CC=CC2=C1")  # Naphthalene
-    #         output = _clar_optimization(mol)
+        assert is_aromatic(mol)
 
-    #         for molecule, asssr, bonds, solution in output:
-    #             # Count pi electrons in molecule
-    #             pi = 0
-    #             for bond in bonds:
-    #                 if bond.is_double():
-    #                     pi += 2
+    def test_clar_optimization(self):
+        """Test to ensure pi electrons are conserved during optimization"""
+        mol = Chem.MolFromSmiles("C1=CC=C2C=CC=CC2=C1", smi_params)
+        output = _clar_optimization(mol)
 
-    #             # Count pi electrons in solution
-    #             y = solution[0 : len(asssr)]
-    #             x = solution[len(asssr) :]
-    #             pi_solution = 6 * sum(y) + 2 * sum(x)
+        solutions, aromatic_rings, _ = output
+        for solution in solutions:
+            # Remove the count of pi electrons in molecule
+            # as it doesn't help us check the optimization
 
-    #             # Check that both counts give 10 pi electrons
-    #             assert pi == 10
-    #             assert pi_solution == 10
+            # Count pi electrons in solution
+            y = solution[0 : len(aromatic_rings)]
+            x = solution[len(aromatic_rings) :]
+            pi_solution = 6 * sum(y) + 2 * sum(x)
 
-    #             # Check that we only assign 1 aromatic sextet
-    #             assert sum(y) == 1
+            # Check that both counts give 10 pi electrons
+            assert pi_solution == 10
 
-    #     def test_phenanthrene(self):
-    #         """Test that we generate 1 Clar structure for phenanthrene."""
-    #         mol = Molecule().from_smiles("C1=CC=C2C(C=CC3=CC=CC=C32)=C1")
-    #         newmol = generate_clar_structures(mol)
+            # Check that we only assign 1 aromatic sextet
+            assert sum(y) == 1
 
-    #         struct = Molecule().from_adjacency_list(
-    #             """1  C u0 p0 c0 {2,S} {3,B} {5,B}
-    # 2  C u0 p0 c0 {1,S} {4,B} {9,B}
-    # 3  C u0 p0 c0 {1,B} {6,S} {10,B}
-    # 4  C u0 p0 c0 {2,B} {7,S} {8,B}
-    # 5  C u0 p0 c0 {1,B} {12,B} {17,S}
-    # 6  C u0 p0 c0 {3,S} {7,D} {18,S}
-    # 7  C u0 p0 c0 {4,S} {6,D} {19,S}
-    # 8  C u0 p0 c0 {4,B} {13,B} {20,S}
-    # 9  C u0 p0 c0 {2,B} {14,B} {23,S}
-    # 10 C u0 p0 c0 {3,B} {11,B} {24,S}
-    # 11 C u0 p0 c0 {10,B} {12,B} {15,S}
-    # 12 C u0 p0 c0 {5,B} {11,B} {16,S}
-    # 13 C u0 p0 c0 {8,B} {14,B} {21,S}
-    # 14 C u0 p0 c0 {9,B} {13,B} {22,S}
-    # 15 H u0 p0 c0 {11,S}
-    # 16 H u0 p0 c0 {12,S}
-    # 17 H u0 p0 c0 {5,S}
-    # 18 H u0 p0 c0 {6,S}
-    # 19 H u0 p0 c0 {7,S}
-    # 20 H u0 p0 c0 {8,S}
-    # 21 H u0 p0 c0 {13,S}
-    # 22 H u0 p0 c0 {14,S}
-    # 23 H u0 p0 c0 {9,S}
-    # 24 H u0 p0 c0 {10,S}
-    # """
-    #         )
+    def test_phenanthrene(self):
+        """Test that we generate 1 Clar structure for phenanthrene."""
+        smi_params = Chem.SmilesParserParams()
+        smi_params.removeHs = False
+        smi_params.sanitize = True
+        mol = Chem.MolFromSmiles("C1=CC=C2C(C=CC3=CC=CC=C32)=C1", smi_params)
+        newmol = generate_clar_structures(mol)
 
-    #         assert len(newmol) == 1
-    #         assert newmol[0].HasSubstructMatch(struct)
+        # Don't sanitize mol to preverse the desired bond order
+        smi_params.sanitize = False
+        struct = Chem.MolFromSmiles("C1=Cc2ccccc2-c2ccccc21", smi_params)
 
-    #     def test_phenalene(self):
-    #         """Test that we generate 2 Clar structures for phenalene.
+        assert len(newmol) == 1
+        assert newmol[0].HasSubstructMatch(struct)
 
-    #         Case where there is one non-aromatic ring."""
-    #         mol = Molecule().from_smiles("C1=CC2=CC=CC3CC=CC(=C1)C=32")
-    #         newmol = generate_clar_structures(mol)
+    def test_phenalene(self):
+        """Test that we generate 2 Clar structures for phenalene.
 
-    #         struct1 = Molecule().from_adjacency_list(
-    #             """1  C u0 p0 c0 {2,S} {6,S} {14,S} {15,S}
-    # 2  C u0 p0 c0 {1,S} {3,S} {7,D}
-    # 3  C u0 p0 c0 {2,S} {4,B} {5,B}
-    # 4  C u0 p0 c0 {3,B} {9,B} {10,S}
-    # 5  C u0 p0 c0 {3,B} {8,S} {11,B}
-    # 6  C u0 p0 c0 {1,S} {8,D} {16,S}
-    # 7  C u0 p0 c0 {2,D} {13,S} {21,S}
-    # 8  C u0 p0 c0 {5,S} {6,D} {22,S}
-    # 9  C u0 p0 c0 {4,B} {12,B} {18,S}
-    # 10 C u0 p0 c0 {4,S} {13,D} {19,S}
-    # 11 C u0 p0 c0 {5,B} {12,B} {23,S}
-    # 12 C u0 p0 c0 {9,B} {11,B} {17,S}
-    # 13 C u0 p0 c0 {7,S} {10,D} {20,S}
-    # 14 H u0 p0 c0 {1,S}
-    # 15 H u0 p0 c0 {1,S}
-    # 16 H u0 p0 c0 {6,S}
-    # 17 H u0 p0 c0 {12,S}
-    # 18 H u0 p0 c0 {9,S}
-    # 19 H u0 p0 c0 {10,S}
-    # 20 H u0 p0 c0 {13,S}
-    # 21 H u0 p0 c0 {7,S}
-    # 22 H u0 p0 c0 {8,S}
-    # 23 H u0 p0 c0 {11,S}
-    # """
-    #         )
-    #         struct2 = Molecule().from_adjacency_list(
-    #             """1  C u0 p0 c0 {2,S} {6,S} {14,S} {15,S}
-    # 2  C u0 p0 c0 {1,S} {3,B} {7,B}
-    # 3  C u0 p0 c0 {2,B} {4,B} {5,S}
-    # 4  C u0 p0 c0 {3,B} {9,S} {10,B}
-    # 5  C u0 p0 c0 {3,S} {8,S} {11,D}
-    # 6  C u0 p0 c0 {1,S} {8,D} {16,S}
-    # 7  C u0 p0 c0 {2,B} {13,B} {21,S}
-    # 8  C u0 p0 c0 {5,S} {6,D} {22,S}
-    # 9  C u0 p0 c0 {4,S} {12,D} {18,S}
-    # 10 C u0 p0 c0 {4,B} {13,B} {19,S}
-    # 11 C u0 p0 c0 {5,D} {12,S} {23,S}
-    # 12 C u0 p0 c0 {9,D} {11,S} {17,S}
-    # 13 C u0 p0 c0 {7,B} {10,B} {20,S}
-    # 14 H u0 p0 c0 {1,S}
-    # 15 H u0 p0 c0 {1,S}
-    # 16 H u0 p0 c0 {6,S}
-    # 17 H u0 p0 c0 {12,S}
-    # 18 H u0 p0 c0 {9,S}
-    # 19 H u0 p0 c0 {10,S}
-    # 20 H u0 p0 c0 {13,S}
-    # 21 H u0 p0 c0 {7,S}
-    # 22 H u0 p0 c0 {8,S}
-    # 23 H u0 p0 c0 {11,S}
-    # """
-    #         )
+        Case where there is one non-aromatic ring."""
+        smi_params = Chem.SmilesParserParams()
+        smi_params.removeHs = False
+        smi_params.sanitize = True
+        mol = Chem.MolFromSmiles("C1=CC2=CC=CC3CC=CC(=C1)C=32")
+        newmol = generate_clar_structures(mol)
 
-    #         assert len(newmol) == 2
-    #         assert newmol[0].HasSubstructMatch(struct1) or newmol[0].HasSubstructMatch(struct2)
-    #         assert newmol[1].HasSubstructMatch(struct2) or newmol[1].HasSubstructMatch(struct1)
-    #         assert not newmol[0].HasSubstructMatch(newmol[1])
+        # Don't sanitize mol to preverse the desired bond order
+        smi_params.sanitize = False
+        struct1 = Chem.MolFromSmiles("C1=Cc2cccc3c2C(=C1)CC=C3", smi_params)
+        struct2 = Chem.MolFromSmiles("C1=Cc2cccc3c2C(=C1)C=CC3", smi_params)
 
-    #     def test_corannulene(self):
-    #         """Test that we generate 5 Clar structures for corannulene
+        assert len(newmol) == 2
+        assert newmol[0].HasSubstructMatch(struct1) or newmol[0].HasSubstructMatch(
+            struct2
+        )
+        assert newmol[1].HasSubstructMatch(struct2) or newmol[1].HasSubstructMatch(
+            struct1
+        )
+        assert not newmol[0].HasSubstructMatch(newmol[1])
 
-    #         Case where linear relaxation does not give an integer solution"""
-    #         mol = Molecule().from_smiles("C1=CC2=CC=C3C=CC4=C5C6=C(C2=C35)C1=CC=C6C=C4")
-    #         newmol = generate_clar_structures(mol)
+    def test_corannulene(self):
+        """Test that we generate 5 Clar structures for corannulene
 
-    #         struct = Molecule().from_adjacency_list(
-    #             """1  C u0 p0 c0 {2,S} {5,B} {8,B}
-    # 2  C u0 p0 c0 {1,S} {3,B} {10,B}
-    # 3  C u0 p0 c0 {2,B} {4,S} {9,B}
-    # 4  C u0 p0 c0 {3,S} {5,S} {6,D}
-    # 5  C u0 p0 c0 {1,B} {4,S} {7,B}
-    # 6  C u0 p0 c0 {4,D} {12,S} {13,S}
-    # 7  C u0 p0 c0 {5,B} {14,S} {15,B}
-    # 8  C u0 p0 c0 {1,B} {16,B} {20,S}
-    # 9  C u0 p0 c0 {3,B} {11,S} {17,B}
-    # 10 C u0 p0 c0 {2,B} {18,B} {19,S}
-    # 11 C u0 p0 c0 {9,S} {12,D} {21,S}
-    # 12 C u0 p0 c0 {6,S} {11,D} {22,S}
-    # 13 C u0 p0 c0 {6,S} {14,D} {23,S}
-    # 14 C u0 p0 c0 {7,S} {13,D} {24,S}
-    # 15 C u0 p0 c0 {7,B} {16,B} {25,S}
-    # 16 C u0 p0 c0 {8,B} {15,B} {26,S}
-    # 17 C u0 p0 c0 {9,B} {18,B} {27,S}
-    # 18 C u0 p0 c0 {10,B} {17,B} {28,S}
-    # 19 C u0 p0 c0 {10,S} {20,D} {29,S}
-    # 20 C u0 p0 c0 {8,S} {19,D} {30,S}
-    # 21 H u0 p0 c0 {11,S}
-    # 22 H u0 p0 c0 {12,S}
-    # 23 H u0 p0 c0 {13,S}
-    # 24 H u0 p0 c0 {14,S}
-    # 25 H u0 p0 c0 {15,S}
-    # 26 H u0 p0 c0 {16,S}
-    # 27 H u0 p0 c0 {17,S}
-    # 28 H u0 p0 c0 {18,S}
-    # 29 H u0 p0 c0 {19,S}
-    # 30 H u0 p0 c0 {20,S}
-    # """
-    #         )
+        Case where linear relaxation does not give an integer solution"""
+        smi_params = Chem.SmilesParserParams()
+        smi_params.removeHs = False
+        smi_params.sanitize = True
+        mol = Chem.MolFromSmiles("C1=CC2=CC=C3C=CC4=C5C6=C(C2=C35)C1=CC=C6C=C4", smi_params)
+        newmol = generate_clar_structures(mol)
 
-    #         assert len(newmol) == 5
-    #         assert newmol[0].HasSubstructMatch(struct)
-    #         assert newmol[1].HasSubstructMatch(struct)
-    #         assert newmol[2].HasSubstructMatch(struct)
-    #         assert newmol[3].HasSubstructMatch(struct)
-    #         assert newmol[4].HasSubstructMatch(struct)
+        smi_params.sanitize = False
+        struct = Chem.MolFromSmiles("C1=Cc2ccc3c4c2C2=C1C=Cc1ccc(c-4c12)C=C3", smi_params)
 
-    @pytest.mark.skip("Clar structure algorithm hasn't been implemented")
+        assert len(newmol) == 5
+        assert newmol[0].HasSubstructMatch(struct)
+        assert newmol[1].HasSubstructMatch(struct)
+        assert newmol[2].HasSubstructMatch(struct)
+        assert newmol[3].HasSubstructMatch(struct)
+        assert newmol[4].HasSubstructMatch(struct)
+
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_exocyclic_db(self):
         """Test that Clar structure generation doesn't modify exocyclic double bonds
 
