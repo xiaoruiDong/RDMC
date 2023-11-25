@@ -37,7 +37,6 @@ from rdmc.resonance.filtration import (
 )
 from rdmc.resonance.resonance_rewrite import (
     generate_resonance_structures,
-    analyze_molecule,
 )
 from rdmc.resonance.utils import get_charge_span
 
@@ -178,10 +177,11 @@ class TestFiltration:
             Chem.MolFromSmiles(smi4, smi_params),
         ]
         Chem.KekulizeIfPossible(
-            mol_list[0]
+            mol_list[0],
+            clearAromaticFlags=True,
         )  # RDKit reads in the first SMILES as aromatic, while RMG reads it as Kekulized
 
         filtered_list = aromaticity_filtration(
-            mol_list, analyze_molecule(mol_list[0])["isPolycyclicAromatic"]
+            mol_list, is_polycyclic_aromatic=False,
         )
         assert len(filtered_list) == 3
