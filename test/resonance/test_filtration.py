@@ -35,7 +35,7 @@ from rdmc.resonance.filtration import (
     charge_filtration,
     aromaticity_filtration,
 )
-from rdmc.resonance.resonance_rewrite import (
+from rdmc.resonance.rmg import (
     generate_resonance_structures,
 )
 from rdmc.resonance.utils import get_charge_span

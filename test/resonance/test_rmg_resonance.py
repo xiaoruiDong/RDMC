@@ -1,6 +1,6 @@
 from rdmc import RDKitMol
 from rdmc.resonance.utils import get_lone_pair, is_aromatic, is_identical
-from rdmc.resonance.resonance_rewrite import (
+from rdmc.resonance.rmg import (
     _clar_optimization,
     _clar_transformation,
     generate_clar_structures,

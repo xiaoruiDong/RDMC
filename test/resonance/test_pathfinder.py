@@ -28,149 +28,80 @@
 ###############################################################################
 
 
-from rdmc import RDKitMol
-from rdmc.resonance.pathfinder import (
-    find_adj_lone_pair_multiple_bond_delocalization_paths,
-    find_adj_lone_pair_radical_delocalization_paths,
-    find_adj_lone_pair_radical_multiple_bond_delocalization_paths,
-    find_allyl_delocalization_paths,
-    find_lone_pair_multiple_bond_paths,
-    find_N5dc_radical_delocalization_paths,
+from rdkit import Chem
+
+from rdmc.resonance.pathfinder import PathFinderRegistry
+
+import pytest
+
+
+@pytest.mark.parametrize(
+    "smiles",
+    [
+        "[CH2]C=C",  # allyl radical
+        "[N]C=[CH]",  # nitrogenated birad
+    ],
 )
+def test_find_allyl_delocalization_paths(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    paths = PathFinderRegistry.get("allyl_radical").find(mol)
+    assert paths
 
 
-class TestFindAllylDelocalizationPaths:
-    """
-    test the find_allyl_delocalization_paths method
-    """
-
-    def test_allyl_radical(self):
-        smiles = "[CH2]C=C"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_allyl_delocalization_paths(mol.GetAtomWithIdx(0))
-        assert paths
-
-    def test_nitrogenated_birad(self):
-        smiles = "[N]C=[CH]"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_allyl_delocalization_paths(mol.GetAtomWithIdx(0))
-        assert paths
-
-
-class TestFindLonePairMultipleBondPaths:
-    """
-    test the find_lone_pair_multiple_bond_paths method
-    """
-
-    def test_azide(self):
-        smiles = "[N-]=[N+]=N"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_lone_pair_multiple_bond_paths(mol.GetAtomWithIdx(2))
-        assert paths
-
-    def test_nh2cho(self):
-        smiles = "NC=O"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_lone_pair_multiple_bond_paths(mol.GetAtomWithIdx(0))
-        assert paths
-
-    def test_n2oa(self):
-        smiles = "[N-]=[N+]=O"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_lone_pair_multiple_bond_paths(mol.GetAtomWithIdx(0))
-        assert paths
-
-    def test_n2ob(self):
-        smiles = "N#[N+][O-]"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_lone_pair_multiple_bond_paths(mol.GetAtomWithIdx(2))
-        assert paths
-
-    def test_hn3(self):
-        smiles = "[NH-][N+]#N"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_lone_pair_multiple_bond_paths(mol.GetAtomWithIdx(0))
-        assert paths
-
-    def test_sn2(self):
-        smiles = "OS(O)=[N+]=[N-]"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_lone_pair_multiple_bond_paths(mol.GetAtomWithIdx(2))
-        assert paths
-
-    def test_h2nnoo(self):
-        smiles = "N[N+]([O-])=O"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_lone_pair_multiple_bond_paths(mol.GetAtomWithIdx(0))
-        assert paths
+@pytest.mark.parametrize(
+    "smiles",
+    [
+        "[N-]=[N+]=N",  # azide
+        "NC=O",
+        "[N-]=[N+]=O",
+        "N#[N+][O-]",
+        "[NH-][N+]#N",
+        "OS(O)=[N+]=[N-]",
+        "N[N+]([O-])=O",
+    ],
+)
+def test_find_lone_pair_multiple_bond_paths(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    paths = PathFinderRegistry.get("lone_pair_multiple_bond").find(mol)
+    assert paths
 
 
-class TestFindAdjLonePairRadicalDelocalizationPaths:
-    """
-    test the find_lone_pair_radical_delocalization_paths method
-    """
-
-    def test_no2a(self):
-        smiles = "[O]N=O"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_adj_lone_pair_radical_delocalization_paths(mol.GetAtomWithIdx(0))
-        assert paths
-
-    def test_no2b(self):
-        smiles = "[O-][N+]=O"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_adj_lone_pair_radical_delocalization_paths(mol.GetAtomWithIdx(1))
-        assert paths
-
-    def test_hoso(self):
-        smiles = "[O]SO"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_adj_lone_pair_radical_delocalization_paths(mol.GetAtomWithIdx(0))
-        assert paths
-
-    def test_double_bond(self):
-        mol = RDKitMol.FromSmiles('[O+:1]=[N-:2]')
-        paths = find_adj_lone_pair_radical_delocalization_paths(mol.GetAtomWithIdx(0))
-        assert paths
+@pytest.mark.parametrize(
+    "smiles",
+    [
+        "[O]N=O",
+        "[O-][N+]=O",
+        "[O]SO",
+        "[O+:1]=[N-:2]",
+    ],
+)
+def test_find_adj_lone_pair_radical_delocalization_paths(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    paths = PathFinderRegistry.get("adj_lone_pair_radical").find(mol)
+    assert paths
 
 
-class TestFindAdjLonePairMultipleBondDelocalizationPaths:
-    """
-    test the find_lone_pair_multiple_bond_delocalization_paths method
-    """
-
-    def test_sho3(self):
-        smiles = "O=[SH](=O)[O]"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_adj_lone_pair_multiple_bond_delocalization_paths(mol.GetAtomWithIdx(0))
-        assert paths
-
-
-class TestFindAdjLonePairRadicalMultipleBondDelocalizationPaths:
-    """
-    test the find_lone_pair_radical_multiple_bond_delocalization_paths method
-    """
-
-    def test_ns(self):
-        smiles = "N#[S]"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_adj_lone_pair_radical_multiple_bond_delocalization_paths(mol.GetAtomWithIdx(1))
-        assert paths
-
-    def test_hso3(self):
-        smiles = "O[S](=O)=O"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_adj_lone_pair_radical_multiple_bond_delocalization_paths(mol.GetAtomWithIdx(1))
-        assert paths
+@pytest.mark.parametrize(
+    "smiles",
+    [
+        "O=[SH](=O)[O]",
+    ],
+)
+def test_find_adj_lone_pair_multiple_bond_delocalization_paths(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    paths = PathFinderRegistry.get("forward_adj_lone_pair_multiple_bond").find(
+        mol
+    ) | PathFinderRegistry.get("reverse_adj_lone_pair_multiple_bond").find(mol)
+    assert paths
 
 
-class TestFindN5dcRadicalDelocalizationPaths:
-    """
-    test the find_N5dc_radical_delocalization_paths method
-    """
-
-    def test_hnnoo(self):
-        smiles = "N=[N+]([O])([O-])"
-        mol = RDKitMol.FromSmiles(smiles)
-        paths = find_N5dc_radical_delocalization_paths(mol.GetAtomWithIdx(1))
-        assert paths
+@pytest.mark.parametrize(
+    "smiles",
+    ["N#[S]", "O[S](=O)=O"],
+)
+def test_find_adj_lone_pair_radical_multiple_bond_delocalization_paths(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    paths = PathFinderRegistry.get("forward_adj_lone_pair_radical_multiple_bond").find(
+        mol
+    ) | PathFinderRegistry.get("reverse_adj_lone_pair_radical_multiple_bond").find(mol)
+    assert paths

@@ -1,79 +1,367 @@
 #!/usr/bin/env python3
-
-###############################################################################
-#                                                                             #
-# RMG - Reaction Mechanism Generator                                          #
-#                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
-# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
-#                                                                             #
-# Permission is hereby granted, free of charge, to any person obtaining a     #
-# copy of this software and associated documentation files (the 'Software'),  #
-# to deal in the Software without restriction, including without limitation   #
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
-# and/or sell copies of the Software, and to permit persons to whom the       #
-# Software is furnished to do so, subject to the following conditions:        #
-#                                                                             #
-# The above copyright notice and this permission notice shall be included in  #
-# all copies or substantial portions of the Software.                         #
-#                                                                             #
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
-# DEALINGS IN THE SOFTWARE.                                                   #
-#                                                                             #
-###############################################################################
+# -*- coding: utf-8 -*-
 
 """
-This module provides functions for searching paths within a molecule.
-The paths generally consist of alternating atoms and bonds.
+This module includes an RDKit-based rewrite of the RMG resonance pathfinder.
 """
 
-from queue import Queue
+import logging
+from abc import ABC, abstractmethod
+from typing import Optional, Set, Tuple, Union
 
+from rdmc.resonance.utils import (
+    decrement_order,
+    decrement_radical,
+    get_lone_pair,
+    has_empty_orbitals,
+    increment_order,
+    increment_radical,
+    sanitize_resonance_mol,
+)
 from rdkit import Chem
-from rdkit.Chem import Atom
-
-from rdmc.resonance.utils import get_lone_pair
 
 
-def find_allyl_delocalization_paths(atom1):
+logger = logging.getLogger(__name__)
+
+# This is the implicit charge constraint embedded in the following path finding templates
+# I.e., for an query lose charge, the atom must have a charge >= 0, so that the resulting
+# charge is >= -1. The constraint is explicitly defined here for clarity, and easy for
+# other part to import.
+CHARGE_UPPER_LIMIT = 1
+CHARGE_LOWER_LIMIT = -1
+
+
+# Relevant atom types/changes in the resonance algorithm
+# 1. radical
+# lone pair <=> electron + bond electron
+# 2. lose lone pair gain charge gain bond (e.g., [::N-]= -> [:N]# )
+# 3. gain lone pair lose charge lose bond (e.g., [NH+]# -> [:NH]= )
+# lone pair <=> electron + radical electron
+# 4. lose lone pair gain charge gain radical
+# 5. gain lone pair lose charge lose radical
+# lone pair <=> radical electron + bond electron
+# 6. lose lone pair gain radical gain bond
+# 7. gain lone pair lose radical lose bond
+# bond <=> lone pair of the other atom
+# 8. gain charge lose bond
+# 9. lose charge gain bond
+# bond electron <=> radical electron
+# 10. gain radical lose bond
+# 11. lose radical gain bond
+
+query_radical = {
+    "C": "Cv{1-3}",
+    "N": "Nv{1-2}",
+    "O": "Ov1",
+    "Si": "Siv{1-3}",
+    "P": "Pv{1-2},Pv4",
+    "S": "Sv1,Sv{3-5}",
+}
+
+query_lose_lone_pair_gain_charge_gain_bond = {
+    # lose one electron of the pair (charge +1) and homolytically form a bond
+    # # A few entries are excluded as trying to avoid atom with ++ or -- charge
+    "C": "C-v{1-3},Cv{1-2}",
+    "N": "N-v{1-2},Nv{1-3}",
+    "O": "O-v1,Ov{1-2}",
+    "P": "P-v{1-4},Pv{1-3}",
+    "S": "S-v{1-5},Sv{1-4}",
+}
+
+query_gain_lone_pair_lose_charge_lose_bond = {
+    #  homolytically break a bond and gain one electron (charge -1) to form a lone pair
+    # A few entries are excluded as trying to avoid atom with ++ or -- charge
+    "C": "C+v2X1,C+v3X{1-2},Cv2X1,Cv3X{1-2},Cv4X{1-3}",
+    "N": "N+v2X1,N+v3X{1-2},N+v4X{1-3},Nv2X1,Nv3X{1-2}",
+    "O": "O+v2X1,O+v3X{1-2},Ov2X1",
+    "P": "P+v2X1,P+v3X{1-2},P+v4X{1-3},Pv2X1,Pv3X{1-2},Pv4X{1-3},Pv5X{1-4}",
+    "S": "S+v2X1,S+v3X{1-2},S+v4X{1-3},S+v5X{1-4},Sv2X1,Sv3X{1-2},Sv4X{1-3},Sv5X{1-4},Sv6X{1-5}",
+}
+
+# The following is derived manually
+# It is found to be the same set as query_lose_lone_gain_charge_pair_gain_bond
+# This is because the only difference is whether the electron is used to
+# form a bond or leave as a radical electron
+# query_gain_radical_gain_charge_lose_lone_pair = {
+#     # lose one electron from a lone pair (charge + 1) and form a radical
+#     "C": "C-v{1-3},Cv{1-2}",
+#     "N": "N-v{1-2},Nv{1-3}",
+#     "O": "O-v1,Ov{1-2}",
+#     "P": "P-v{1-4},Pv{1-3}",
+#     "S": "S-v{1-5},Sv{1-4}",
+# }
+query_lose_lone_pair_gain_charge_gain_radical = (
+    query_lose_lone_pair_gain_charge_gain_bond
+)
+
+query_gain_lone_pair_lose_charge_lose_radical = {
+    # gain an electron (charge - 1) and form a lone pair with one radical electron
+    "C": "C+v{1-2},Cv{1-3}",
+    "N": "N+v{1-3},Nv{1-2}",
+    "O": "O+v{1-2},Ov1",
+    "P": "P+v{1-3},Pv{1-4}",
+    "S": "S+v{1-4},Sv{1-5}",
+}
+
+query_lose_lone_pair_gain_radical_gain_bond = {
+    "C": "C+v1,C-v1,Cv{1-2}",
+    "N": "N+v{1-2},Nv1",
+    "O": "O+v1",
+    "P": "P+v{1-2},P-v{1-4},Pv{1-3}",
+    "S": "S+v{1-3},S-v{1-3},Sv{1-4}",
+}
+
+query_gain_lone_pair_lose_radical_lose_bond = {
+    "C": "C+v2X1,C-v2X1,Cv2X1,Cv3X{1-2}",
+    "N": "N+v2X1,N+v3X{1-2},Nv2X1",
+    "O": "O+v2X1",
+    "P": "P+v2X1,P+v3X{1-2},P-v2X1,P-v3X{1-2},P-v4X{1-3},P-v5X{1-4},Pv2X1,Pv3X{1-2},Pv4X{1-3}",
+    "S": "S+v2X1,S+v3X{1-2},S+v4X{1-3},S-v2X1,S-v3X{1-2},S-v4X{1-3},Sv2X1,Sv3X{1-2},Sv4X{1-3},Sv5X{1-4}",
+}
+
+query_gain_charge_lose_bond = {
+    # E.g., [:N]# -> [::N-]=
+    "C": "C-v2X1,C-v3X{1-2},Cv2X1,Cv3X{1-2},Cv4X{1-3}",
+    "N": "N-v2X1,Nv2X1,Nv3X{1-2}",
+    "O": "Ov2X1",
+    "P": "P-v2X1,P-v3X{1-2},P-v4X{1-3},P-v5X{1-4},P-v6X{1-5},Pv2X1,Pv3X{1-2},Pv4X{1-3},Pv5X{1-4}",
+    "S": "S-v2X1,S-v3X{1-2},S-v4X{1-3},S-v5X{1-4},Sv2X1,Sv3X{1-2},Sv4X{1-3},Sv5X{1-4},Sv6X{1-5}",
+}
+
+query_lose_charge_gain_bond = {
+    # E.g., [CH2+]- -> [CH2]=
+    "C": "C+v{1-3},Cv{1-2}",
+    "N": "N+v{1-2},Nv1",
+    "O": "O+v1",
+    "P": "P+v{1-4},Pv{1-5}",
+    "S": "S+v{1-5},Sv{1-4}",
+}
+
+query_gain_radical_lose_bond = {
+    # E.g., [CH2]= -> [CH2.]-
+    "C": "C+v2X1,C+v3X{1-2},C-v2X1,C-v3X{1-2},Cv2X1,Cv3X{1-2},Cv4X{1-3}",
+    "N": "N+v2X1,N+v3X{1-2},N+v3X{1-3},N-v2X1,Nv2X1,Nv3X{1-2}",
+    "O": "O+v2X1,O+v3X{1-2},Ov2X1",
+    "P": (
+        "P+v2X1,P+v3X{1-2},P+v4X{1-3},P-v2X1,P-v3X{1-2},P-v4X{1-3},P-v5X{1-4},P-v6X{1-5},"
+        "Pv2X1,Pv3X{1-2},Pv4X{1-3},Pv5X{1-4}"
+    ),
+    "S": (
+        "S+v2X1,S+v3X{1-2},S+v4X{1-3},S+v5X{1-4},S-v2X1,S-v3X{1-2},S-v4X{1-3},S-v5X{1-4},"
+        "Sv2X1,Sv3X{1-2},Sv4X{1-3},Sv5X{1-4},Sv6X{1-5}"
+    ),
+}
+
+query_lose_radical_gain_bond = {
+    # E.g., [CH2.]- -> [CH2]=
+    "C": "C+v{1-2},C-v{1-2},Cv{1-3}",
+    "N": "N+v{1-3},N-v1,Nv{1-2}",
+    "O": "O+v{1-2},Ov1",
+    "P": "P+v{1-3},P-v{1-5},Pv{1-4}",
+    "S": "S+v{1-4},S-v{1-4},Sv{1-5}",
+}
+
+# More generic queries
+hetero_lose_lone_pair_gain_charge_gain_bond = ",".join(
+    [query_lose_lone_pair_gain_charge_gain_bond[elem] for elem in "NOPS"]
+)
+hetero_gain_lone_pair_lose_charge_lose_bond = ",".join(
+    [query_gain_lone_pair_lose_charge_lose_bond[elem] for elem in "NOPS"]
+)
+hetero_lose_lone_pair_gain_charge_gain_radical = ",".join(
+    [query_lose_lone_pair_gain_charge_gain_radical[elem] for elem in "NOPS"]
+)
+hetero_gain_lone_pair_lose_charge_lose_radical = ",".join(
+    [query_gain_lone_pair_lose_charge_lose_radical[elem] for elem in "NOPS"]
+)
+hetero_lose_lone_pair_gain_radical_gain_bond = ",".join(
+    [query_lose_lone_pair_gain_radical_gain_bond[elem] for elem in "NOPS"]
+)
+hetero_gain_lone_pair_lose_radical_lose_bond = ",".join(
+    [query_gain_lone_pair_lose_radical_lose_bond[elem] for elem in "NOPS"]
+)
+hetero_gain_charge_lose_bond = ",".join(
+    [query_gain_charge_lose_bond[elem] for elem in "NOPS"]
+)
+hetero_lose_charge_gain_bond = ",".join(
+    [query_lose_charge_gain_bond[elem] for elem in "NOPS"]
+)
+hetero_gain_radical_lose_bond = ",".join(
+    [query_gain_radical_lose_bond[elem] for elem in "NOPS"]
+)
+hetero_lose_radical_gain_bond = ",".join(
+    [query_lose_radical_gain_bond[elem] for elem in "NOPS"]
+)
+
+atom_radical = ",".join(query_radical.values())
+atom_lose_lone_pair_gain_charge_gain_bond = ",".join(
+    query_lose_lone_pair_gain_charge_gain_bond.values()
+)
+atom_gain_lone_pair_lose_charge_lose_bond = ",".join(
+    query_gain_lone_pair_lose_charge_lose_bond.values()
+)
+atom_lose_lone_pair_gain_charge_gain_radical = ",".join(
+    query_lose_lone_pair_gain_charge_gain_radical.values()
+)
+atom_gain_lone_pair_lose_charge_lose_radical = ",".join(
+    query_gain_lone_pair_lose_charge_lose_radical.values()
+)
+atom_lose_lone_pair_gain_radical_gain_bond = ",".join(
+    query_lose_lone_pair_gain_radical_gain_bond.values()
+)
+atom_gain_lone_pair_lose_radical_lose_bond = ",".join(
+    query_gain_lone_pair_lose_radical_lose_bond.values()
+)
+atom_gain_charge_lose_bond = ",".join(query_gain_charge_lose_bond.values())
+atom_lose_charge_gain_bond = ",".join(query_lose_charge_gain_bond.values())
+atom_gain_radical_lose_bond = ",".join(query_gain_radical_lose_bond.values())
+atom_lose_radical_gain_bond = ",".join(query_lose_radical_gain_bond.values())
+
+
+def transform_pre_and_post_process(fun):
     """
-    Find all the delocalization paths allyl to the radical center indicated by `atom1`.
+    A decorator for resonance structure generation functions that require a radical.
+
+    Returns an empty list if the input molecule is not a radical.
     """
-    # No paths if atom1 is not a radical
-    if atom1.GetNumRadicalElectrons() <= 0:
-        return []
 
-    paths = []
-    for bond12 in atom1.GetBonds():
-        atom2 = bond12.GetOtherAtom(atom1)
-        if bond12.GetBondType() == 1 or bond12.GetBondType() == 2:
-            for bond23 in atom2.GetBonds():
-                atom3 = bond23.GetOtherAtom(atom2)
-                # Allyl bond must be capable of losing an order without breaking
-                if atom1.GetIdx() != atom3.GetIdx() and (
-                    bond23.GetBondType() in [2, 3]
-                ):
-                    paths.append(
-                        [
-                            atom1.GetIdx(),
-                            atom2.GetIdx(),
-                            atom3.GetIdx(),
-                            bond12.GetIdx(),
-                            bond23.GetIdx(),
-                        ]
-                    )
-    return paths
+    def wrapper(mol, path, *args, **kwargs):
+        structure = Chem.RWMol(mol, True)
+        try:
+            fun(structure, path, *args, **kwargs)
+            sanitize_resonance_mol(structure)
+        except BaseException as e:  # cannot make the change
+            class_name = fun.__qualname__.split(".")[0]
+            logger.debug(
+                f"Cannot transform path {path} "
+                f"in `{class_name}.{fun.__name__}`."
+                f"\nGot: {e}"
+            )
+        else:
+            return structure
+
+    return wrapper
 
 
-def find_lone_pair_multiple_bond_paths(atom1):
+class PathFinderRegistry:
+    _registry = {}
+
+    @classmethod
+    def register(cls, name: str):
+        def decorator(some_class):
+            cls._registry[name] = some_class
+            return some_class
+
+        return decorator
+
+    @classmethod
+    def get(cls, name: str):
+        return cls._registry.get(name)
+
+
+class PathFinder(ABC):
+    @classmethod
+    def find(
+        cls,
+        mol: Union["RWMol", "RDKitMol"],
+        max_matches: int = 1000,
+    ) -> Set[Tuple[int]]:
+        """
+        Find the paths for according to the template of class.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            max_matches (int): The maximum number of matches to return. Defaults to 1000.
+
+        Returns:
+            set: A set of tuples containing the atom indices of the paths.
+        """
+        return set(
+            mol.GetSubstructMatches(
+                cls.template,
+                uniquify=False,
+                maxMatches=max_matches,
+            )
+        )
+
+    @abstractmethod
+    def verify(mol, path) -> bool:
+        """
+        Abstract method that should return True if the path is valid, False otherwise.
+
+        This needs to be implemented by subclasses.
+        """
+        pass
+
+    @abstractmethod
+    def transform(mol, path) -> "Mol":
+        """
+        Abstract method that should return the transformed molecule based on the provided path.
+
+        This needs to be implemented by subclasses.
+        """
+        pass
+
+
+@PathFinderRegistry.register("allyl_radical")
+class AllylRadicalPathFinder(PathFinder):
     """
-    Find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system
-    `atom1` indicates the localized lone pair site. Currently carbenes are excluded from this path.
+    A finder to find all the delocalization paths allyl to the radical center.
+    """
+
+    template = Chem.MolFromSmarts(f"[{atom_radical}:0]-,=[*:1]=,#[*:2]")
+
+    reverse = "AllylRadicalPathFinder"
+    reverse_abbr = "allyl_radical"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the allyl delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The allyl delocalization path to verify.
+
+        Returns:
+            bool: True if the allyl delocalization path is valid, False otherwise.
+        """
+        return mol.GetAtomWithIdx(path[0]).GetNumRadicalElectrons() > 0
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of ally delocalization.
+
+        Args:
+            mol (RDKitMol): The molecule to be processed.
+            path (tuple): The path of allyl delocalization.
+
+        Returns:
+            Mol: if the transformation is successful, return the transformed molecule;
+                otherwise, return ``None``.
+        """
+        a1_idx, a2_idx, a3_idx = path
+
+        decrement_radical(mol.GetAtomWithIdx(a1_idx))
+        increment_radical(mol.GetAtomWithIdx(a3_idx))
+        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        decrement_order(mol.GetBondBetweenAtoms(a2_idx, a3_idx))
+
+        return mol
+
+
+@PathFinderRegistry.register("lone_pair_multiple_bond")
+class LonePairMultipleBondPathFinder(PathFinder):
+    """
+    A finder to find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system.
 
     Examples:
 
@@ -83,50 +371,74 @@ def find_lone_pair_multiple_bond_paths(atom1):
     - N[N+]([O-])=O <=> N[N+](=O)[O-], these structures are isomorphic but not identical, this transition is
       important for correct degeneracy calculations
     """
-    # No paths if atom1 has no lone pairs, or cannot lose them, or is a carbon atom
-    if (
-        get_lone_pair(atom1) <= 0
-        or not is_atom_able_to_lose_lone_pair(atom1)
-        or atom1.GetAtomicNum() == 6
-    ):
-        return []
 
-    paths = []
-    for bond12 in atom1.GetBonds():
-        atom2 = bond12.GetOtherAtom(atom1)
-        # If both atom1 and atom2 are sulfur then don't do this type of resonance. Also, the bond must be capable of gaining an order.
-        if (atom1.GetAtomicNum() != 16 or atom2.GetAtomicNum() != 16) and (
-            bond12.GetBondType() == 1 or bond12.GetBondType() == 2
-        ):
-            for bond23 in atom2.GetBonds():
-                atom3 = bond23.GetOtherAtom(atom2)
-                # Bond must be capable of losing an order without breaking, atom3 must be able to gain a lone pair
-                if (
-                    atom1.GetIdx() != atom3.GetIdx()
-                    and (bond23.GetBondType() == 2 or bond23.GetBondType() == 3)
-                    and (
-                        atom3.GetAtomicNum() == 6
-                        or is_atom_able_to_gain_lone_pair(atom3)
-                    )
-                ):
-                    paths.append(
-                        [
-                            atom1.GetIdx(),
-                            atom2.GetIdx(),
-                            atom3.GetIdx(),
-                            bond12.GetIdx(),
-                            bond23.GetIdx(),
-                        ]
-                    )
-    return paths
+    template = Chem.MolFromSmarts(
+        f"[{hetero_lose_lone_pair_gain_charge_gain_bond}:1]-,=[*:2]=,#[{atom_gain_lone_pair_lose_charge_lose_bond}:3]"
+    )
+
+    reverse = "LonePairMultipleBondPathFinder"
+    reverse_abbr = "lone_pair_multiple_bond"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the lone pair multiple bond path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The lone pair multiple bond path to verify.
+
+        Returns:
+            bool: True if the lone pair multiple bond path is valid, False otherwise.
+        """
+        a1_idx, a2_idx, a3_idx = path
+        a1 = mol.GetAtomWithIdx(a1_idx)
+        a2 = mol.GetAtomWithIdx(a2_idx)
+        a3 = mol.GetAtomWithIdx(a3_idx)
+        return (
+            not (
+                a1.GetAtomicNum() == a2.GetAtomicNum() == 16
+            )  # RMG algorithm avoid a1 and a2 are both S
+            and a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
+            and a3.GetFormalCharge() > CHARGE_LOWER_LIMIT
+            and get_lone_pair(a1) > 0
+        )
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of lone pair multiple bond.
+
+        Args:
+            mol (RDKitMol): The molecule to be processed.
+            path (tuple): The path of lone pair multiple bond.
+
+        Returns:
+            Mol: if the transformation is successful, return the transformed molecule;
+        """
+        a1_idx, a2_idx, a3_idx = path
+        a1, a3 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a3_idx)
+
+        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        decrement_order(mol.GetBondBetweenAtoms(a2_idx, a3_idx))
+        a1.SetFormalCharge(a1.GetFormalCharge() + 1)
+        a3.SetFormalCharge(a3.GetFormalCharge() - 1)
+
+        return mol
 
 
-def find_adj_lone_pair_radical_delocalization_paths(atom1):
+@PathFinderRegistry.register("adj_lone_pair_radical")
+class AdjacentLonePairRadicalPathFinder(PathFinder):
     """
-    Find all the delocalization paths of lone electron pairs next to the radical center indicated
-    by `atom1`. Used to generate resonance isomers in adjacent N/O/S atoms.
-    Two adjacent O atoms are not allowed since (a) currently RMG has no good thermo/kinetics for R[:O+.][:::O-] which
-    could have been generated as a resonance structure of R[::O][::O.].
+    Find all the delocalization paths of lone electron pairs next to the radical center.
+    Used to generate resonance isomers in adjacent N/O/S atoms.
 
     The radical site (atom1) could be either:
 
@@ -152,197 +464,283 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] <=> [::O]=[:N.]
     """
-    paths = []
-    if (atom1.GetNumRadicalElectrons() >= 1) and (
-        (atom1.GetAtomicNum() == 6 and get_lone_pair(atom1) == 0)
-        or (atom1.GetAtomicNum() == 7 and get_lone_pair(atom1) in [0, 1])
-        or (atom1.GetAtomicNum() == 8 and get_lone_pair(atom1) in [1, 2])
-        or (atom1.GetAtomicNum() == 16 and get_lone_pair(atom1) in [0, 1, 2])
-    ):
-        for atom2 in atom1.GetNeighbors():
-            if (
-                (atom2.GetAtomicNum() == 6 and get_lone_pair(atom2) == 1)
-                or (atom2.GetAtomicNum() == 7 and get_lone_pair(atom2) in [1, 2])
-                or (
-                    atom2.GetAtomicNum() == 8
-                    and get_lone_pair(atom2) in [2, 3]
-                    and atom1.GetAtomicNum() != 6
-                )
-                or (atom2.GetAtomicNum() == 16 and get_lone_pair(atom2) in [1, 2, 3])
-            ):
-                paths.append([atom1.GetIdx(), atom2.GetIdx()])
-    return paths
 
-
-def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
-    """
-    Find all the delocalization paths of atom1 which either
-
-    - Has a lonePair and is bonded by a single/double bond (e.g., [::NH-]-[CH2+], [::N-]=[CH+]) -- direction 1
-    - Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) -- direction 2
-
-    Giving the following resonance transitions, for example:
-
-    - [::NH-]-[CH2+] <=> [:NH]=[CH2]
-    - [:N]#[CH] <=> [::N-]=[CH+]
-    - other examples: S#N, N#[S], O=S([O])=O
-
-    Direction "1" is the direction <increasing> the bond order as in [::NH-]-[CH2+] <=> [:NH]=[CH2]
-    Direction "2" is the direction <decreasing> the bond order as in [:NH]=[CH2] <=> [::NH-]-[CH2+]
-    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
-    (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
-    """
-    paths = []
-
-    # Carbenes are currently excluded from this path.
-    # Only atom1 is checked since it is either the donor or acceptor of the lone pair
-    if atom1.GetAtomicNum() == 6:
-        return paths
-
-    for bond12 in atom1.GetBonds():
-        atom2 = bond12.GetOtherAtom(atom1)
-        if atom2.GetAtomicNum() > 1:  # don't bother with hydrogen atoms.
-            # Find paths in the direction <increasing> the bond order,
-            # atom1 must posses at least one lone pair to loose it
-            # the final clause of this prevents S#S from forming by this resonance pathway
-            if (
-                (bond12.GetBondType() in [1, 2])
-                and is_atom_able_to_lose_lone_pair(atom1)
-            ) and not (
-                atom1.GetAtomicNum() == 16
-                and atom2.GetAtomicNum() == 16
-                and bond12.GetBondType() == 2
-            ):
-                paths.append(
-                    [atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 1]
-                )  # direction = 1
-            # Find paths in the direction <decreasing> the bond order,
-            # atom1 gains a lone pair, hence cannot already have more than two lone pairs
-            if (bond12.GetBondType() in [2, 3]) and is_atom_able_to_gain_lone_pair(
-                atom1
-            ):
-                paths.append(
-                    [atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 2]
-                )  # direction = 2
-    return paths
-
-
-def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
-    """
-    Find all the delocalization paths of atom1 which either
-
-    - Has a lonePair and is bonded by a single/double bond to a radical atom (e.g., [::N]-[.CH2])
-    - Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])
-
-    Giving the following resonance transitions, for example:
-
-    - [::N]-[.CH2] <=> [:N.]=[CH2]
-    - O[:S](=O)[::O.] <=> O[S.](=O)=[::O]
-
-    Direction "1" is the direction <increasing> the bond order as in [::N]-[.CH2] <=> [:N.]=[CH2]
-    Direction "2" is the direction <decreasing> the bond order as in [:N.]=[CH2] <=> [::N]-[.CH2]
-    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
-    (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
-    In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
-    """
-    paths = []
-
-    # Carbenes are currently excluded from this path.
-    # Only atom1 is checked since it is either the donor or acceptor of the lone pair
-    if atom1.GetAtomicNum() == 6:
-        return paths
-
-    for bond12 in atom1.GetBonds():
-        atom2 = bond12.GetOtherAtom(atom1)
-        # Find paths in the direction <increasing> the bond order
-        # atom1 must posses at least one lone pair to loose it, atom2 must be a radical
-        if (
-            atom2.GetNumRadicalElectrons()
-            and (bond12.GetBondType() == 1 or bond12.GetBondType() == 2)
-            and is_atom_able_to_lose_lone_pair(atom1)
-        ):
-            paths.append(
-                [atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 1]
-            )  # direction = 1
-        # Find paths in the direction <decreasing> the bond order
-        # atom1 gains a lone pair, hence cannot already have more than two lone pairs, and is also a radical
-        if (
-            atom1.GetNumRadicalElectrons()
-            and (bond12.GetBondType() == 2 or bond12.GetBondType() == 3)
-            and is_atom_able_to_gain_lone_pair(atom1)
-        ):
-            paths.append(
-                [atom1.GetIdx(), atom2.GetIdx(), bond12.GetIdx(), 2]
-            )  # direction = 2
-    return paths
-
-
-def find_N5dc_radical_delocalization_paths(atom1):
-    """
-    Find all the resonance structures of an N5dc nitrogen atom with a single bond to a radical N/O/S site, another
-    single bond to a negatively charged N/O/S site, and one double bond (not participating in this transformation)
-
-    Example:
-
-    - N=[N+]([O])([O-]) <=> N=[N+]([O-])([O]), these structures are isomorphic but not identical, the transition is
-      important for correct degeneracy calculations
-
-    In this transition atom1 is the middle N+ (N5dc), atom2 is the radical site, and atom3 is negatively charged
-    A "if atom1.atomtype.label == 'N5dc'" check should be done before calling this function
-    """
-    path = []
-
-    for bond12 in atom1.GetBonds():
-        atom2 = bond12.GetOtherAtom(atom1)
-
-        if (
-            atom2.GetNumRadicalElectrons()
-            and bond12.GetBondType() == 1
-            and not atom2.GetFormalCharge()
-            and is_atom_able_to_lose_lone_pair(atom2)
-        ):
-            for bond13 in atom1.GetBonds():
-                atom3 = bond13.GetOtherAtom(atom1)
-                if (
-                    atom2.GetIdx() != atom3.GetIdx()
-                    and bond13.GetBondType() == 1
-                    and atom3.GetFormalCharge() < 0
-                    and is_atom_able_to_lose_lone_pair(atom3)
-                ):
-                    path.append([atom2.GetIdx(), atom3.GetIdx()])
-                    return path  # there could only be one such path per atom1, return if found
-    return path
-
-
-def is_atom_able_to_gain_lone_pair(atom):
-    """
-    Helper function
-    Returns True if atom is N/O/S and is able to <gain> an additional lone pair, False otherwise
-    We don't allow O to remain with no lone pairs
-    """
-    return (
-        (
-            (atom.GetAtomicNum() == 7 or atom.GetAtomicNum() == 16)
-            and get_lone_pair(atom) in [0, 1, 2]
-        )
-        or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [1, 2])
-        or atom.GetAtomicNum() == 6
-        and get_lone_pair(atom) == 0
+    template = Chem.MolFromSmarts(
+        f"[{atom_gain_lone_pair_lose_charge_lose_radical}:1]~[{atom_lose_lone_pair_gain_charge_gain_radical}:2]"
     )
 
+    reverse = "AdjacentLonePairRadicalPathFinder"
+    reverse_abbr = "adj_lone_pair_radical"
 
-def is_atom_able_to_lose_lone_pair(atom):
-    """
-    Helper function
-    Returns True if atom is N/O/S and is able to <loose> a lone pair, False otherwise
-    We don't allow O to remain with no lone pairs
-    """
-    return (
-        (
-            (atom.GetAtomicNum() == 7 or atom.GetAtomicNum() == 16)
-            and get_lone_pair(atom) in [1, 2, 3]
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the adjacent lone pair radical delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The adjacent lone pair radical delocalization path to verify.
+
+        Returns:
+            bool: True if the adjacent lone pair radical delocalization path is valid, False otherwise.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        return (
+            a1.GetFormalCharge() > CHARGE_LOWER_LIMIT
+            and a2.GetFormalCharge() < CHARGE_UPPER_LIMIT
+            and a1.GetNumRadicalElectrons() > 0
+            and get_lone_pair(a2) > 0
         )
-        or (atom.GetAtomicNum() == 8 and get_lone_pair(atom) in [2, 3])
-        or atom.GetAtomicNum() == 6
-        and get_lone_pair(atom) == 1
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair radical delocalization.
+
+        Args:
+            mol (RDKitMol): The molecule to be processed.
+            path (tuple): The path of adjacent lone pair radical delocalization.
+
+        Returns:
+            Mol: if the transformation is successful, return the transformed molecule;
+                otherwise, return ``None``.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        decrement_radical(a1)
+        increment_radical(a2)
+        a1.SetFormalCharge(a1.GetFormalCharge() - 1)
+        a2.SetFormalCharge(a2.GetFormalCharge() + 1)
+
+        return mol
+
+
+@PathFinderRegistry.register("forward_adj_lone_pair_multiple_bond")
+class ForwardAdjacentLonePairMultipleBondPathFinder(PathFinder):
+    """
+    Find all the delocalization paths of atom1 that has a lonePair and is bonded by a single/double bond
+    e.g., [::NH-]-[CH2+] <=> [:NH]=[CH2].
+    """
+
+    template = Chem.MolFromSmarts(
+        f"[{hetero_lose_lone_pair_gain_charge_gain_bond}:1]-,=[{atom_lose_charge_gain_bond}:2]"
     )
+
+    reverse = "ReverseAdjacentLonePairMultipleBondPathFinder"
+    reverse_abbr = "reverse_adj_lone_pair_multiple_bond"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """ """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+        return (
+            not (
+                a1.GetAtomicNum() == a2.GetAtomicNum() == 16
+                and mol.GetBondBetweenAtoms(a1_idx, a2_idx).GetBondType() == 2
+            )  # RMG have this to prevent S#S. This may be better added to the template
+            and a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
+            and a2.GetFormalCharge() > CHARGE_LOWER_LIMIT
+            and get_lone_pair(a1) > 0
+            and has_empty_orbitals(a2)
+        )
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair multiple bond delocalization.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        a1.SetFormalCharge(a1.GetFormalCharge() + 1)
+        a2.SetFormalCharge(a2.GetFormalCharge() - 1)
+
+        return mol
+
+
+@PathFinderRegistry.register("reverse_adj_lone_pair_multiple_bond")
+class ReverseAdjacentLonePairMultipleBondPathFinder(PathFinder):
+    """
+    Find all the delocalization paths of atom1 which either can obtain a lonePair and
+    is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]). For example, [:NH]=[CH2] <=> [::NH-]-[CH2+]
+    """
+
+    template = Chem.MolFromSmarts(
+        f"[{hetero_gain_lone_pair_lose_charge_lose_bond}:1]=,#[{atom_gain_charge_lose_bond}:2]"
+    )
+
+    reverse = "ForwardAdjacentLonePairMultipleBondPathFinder"
+    reverse_abbr = "forward_adj_lone_pair_multiple_bond"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the adjacent lone pair multiple bond delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The adjacent lone pair multiple bond delocalization path to verify.
+
+        Returns:
+            bool: True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        return (
+            a1.GetFormalCharge() > CHARGE_LOWER_LIMIT
+            and a2.GetFormalCharge() < CHARGE_UPPER_LIMIT
+        )
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair multiple bond delocalization.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        decrement_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        a1.SetFormalCharge(a1.GetFormalCharge() - 1)
+        a2.SetFormalCharge(a2.GetFormalCharge() + 1)
+
+        return mol
+
+
+@PathFinderRegistry.register("forward_adj_lone_pair_radical_multiple_bond")
+class ForwardAdjacentLonePairRadicalMultipleBondPathFinder(PathFinder):
+    """
+    Find all the delocalization paths of atom1 which has a lonePair and is bonded
+    by a single/double bond to a radical atom. For example: [::N]-[.CH2] <=> [:N.]=[CH2]
+    """
+
+    template = Chem.MolFromSmarts(
+        f"[{hetero_lose_lone_pair_gain_radical_gain_bond}:1]-,=[{atom_lose_radical_gain_bond}:2]"
+    )
+
+    reverse = "ReverseAdjacentLonePairRadicalMultipleBondPathFinder"
+    reverse_abbr = "reverse_adj_lone_pair_radical_multiple_bond"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the adjacent lone pair radical multiple bond delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The ÷÷÷÷≥≥adjacent lone pair multiple bond delocalization path to verify.
+
+        Returns:
+            bool: True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.
+        """
+        a1_idx, a2_idx = path
+        a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
+
+        return (
+            a2.GetNumRadicalElectrons() > 0
+            and get_lone_pair(a1) > 0
+            and has_empty_orbitals(a2)
+        )
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair radical multiple bond delocalization.
+        """
+        a1_idx, a2_idx = path
+
+        increment_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        increment_radical(mol.GetAtomWithIdx(a1_idx))
+        decrement_radical(mol.GetAtomWithIdx(a2_idx))
+
+        return mol
+
+
+@PathFinderRegistry.register("reverse_adj_lone_pair_radical_multiple_bond")
+class ReverseAdjacentLonePairRadicalMultipleBondPathFinder(PathFinder):
+    """
+    Find all the delocalization paths of atom1 which either can obtain a lonePair,
+    has a radical, and is bonded by a double/triple bond. For example, [:N.]=[CH2] <=> [::N]-[.CH2]
+    """
+
+    template = Chem.MolFromSmarts(
+        f"[{hetero_gain_lone_pair_lose_radical_lose_bond}:1]=,#[{atom_gain_radical_lose_bond}:2]"
+    )
+
+    reverse = "ForwardAdjacentLonePairRadicalMultipleBondPathFinder"
+    reverse_abbr = "forward_adj_lone_pair_radical_multiple_bond"
+
+    @staticmethod
+    def verify(
+        mol: Union["RWMol", "RDKitMol"],
+        path: tuple,
+    ) -> bool:
+        """
+        Verify that the adjacent lone pair radical multiple bond delocalization path is valid.
+
+        Args:
+            mol (RWMol or RDKitMol): The molecule to search.
+            path (tuple): The adjacent lone pair multiple bond delocalization path to verify.
+
+        Returns:
+            bool: True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.
+        """
+        a1_idx, _ = path
+        return mol.GetAtomWithIdx(a1_idx).GetNumRadicalElectrons() > 0
+
+    @staticmethod
+    @transform_pre_and_post_process
+    def transform(
+        mol: "Mol",
+        path: tuple,
+    ) -> Optional["Mol"]:
+        """
+        Transform resonance structures based on the provided path of adjacent lone pair radical multiple bond delocalization.
+        """
+        a1_idx, a2_idx = path
+
+        decrement_order(mol.GetBondBetweenAtoms(a1_idx, a2_idx))
+        decrement_radical(mol.GetAtomWithIdx(a1_idx))
+        increment_radical(mol.GetAtomWithIdx(a2_idx))
+
+        return mol
+
+
+# def find_N5dc_radical_delocalization_paths(atom1)
+# It is included in the original version
+# But the relevant resonance transformation is recoverable
+# by the above methods.
+# Removed in the rewriting.

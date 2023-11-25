@@ -17,7 +17,7 @@ from scipy.optimize import linprog
 from rdkit import Chem
 
 from rdmc.resonance import filtration
-from rdmc.resonance.pathfinder_rewrite import PathFinderRegistry
+from rdmc.resonance.pathfinder import PathFinderRegistry
 from rdmc.resonance.utils import (
     force_no_implicit,
     get_aryne_rings,
