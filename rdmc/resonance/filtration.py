@@ -575,7 +575,6 @@ def aromaticity_filtration(
     Returns:
         list: The filtered list of molecules.
     """
-    mol_list = [unset_aromatic_flags(mol) for mol in mol_list]
     # Start by selecting all aromatic resonance structures
     filtered_list = []
     other_list = []
