@@ -647,8 +647,8 @@ def _clar_optimization(mol):
     bonds = set(chain(*aromatic_rings))
     bonds = sorted(bonds)
 
-    l = len(aromatic_rings)
-    n = l + len(bonds)
+    n_ring = len(aromatic_rings)
+    n_ring_bond = len(bonds)
 
     atom_bond_map = defaultdict(set)
     atom_ring_map = defaultdict(set)
@@ -657,24 +657,43 @@ def _clar_optimization(mol):
             bond = mol.GetBondWithIdx(bidx)
             for atom in [bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()]:
                 atom_ring_map[atom].add(i)
-                atom_bond_map[atom].add(l + bonds.index(bidx))
+                atom_bond_map[atom].add(n_ring + bonds.index(bidx))
 
     atoms = sorted(atom_bond_map.keys())
-    m = len(atoms)
 
-    A_eq = np.zeros((m, n))
+    exo_bonds, exo_bond_orders = [], []
+    for aidx in atoms:
+        atom = mol.GetAtomWithIdx(aidx)
+        for bond in atom.GetBonds():
+            bidx = bond.GetIdx()
+            if bidx in bonds or bidx in exo_bonds:
+                continue
+            elif bond.GetOtherAtom(atom).GetAtomicNum() == 1:
+                continue
+            exo_bonds.append(bond.GetIdx())
+            if bond.GetBondType() == 2:
+                exo_bond_orders.append(1)
+            else:
+                exo_bond_orders.append(0)
+    n_exo_bond = len(exo_bonds)
+
+    n_atom = len(atoms)
+
+    A_eq = np.zeros((n_atom, n_ring + n_ring_bond + n_exo_bond))
 
     for i, atom in enumerate(atoms):
         A_eq[i, list(atom_ring_map[atom] | atom_bond_map[atom])] = 1
 
-    c = np.array([1] * l + [0] * len(bonds))
+    c = np.array([1] * n_ring + [0] * (n_ring_bond + n_exo_bond))
 
-    solutions = _solve_clar_lp(num_rings=l, c=c, A_eq=A_eq)
+    bounds = [(0, 1)] * (n_ring + n_ring_bond) + [(1, 1)] * n_exo_bond
+
+    solutions = _solve_clar_lp(num_rings=n_ring, c=c, A_eq=A_eq, bounds=bounds)
 
     return solutions, aromatic_rings, bonds
 
 
-def _solve_clar_lp(num_rings, c, A_eq, constraints=None, max_num=None):
+def _solve_clar_lp(num_rings, c, A_eq, bounds, constraints=None, max_num=None):
     if constraints is None:
         A_ub, b_ub = None, None
     else:
@@ -687,7 +706,7 @@ def _solve_clar_lp(num_rings, c, A_eq, constraints=None, max_num=None):
         b_eq=np.ones(A_eq.shape[0]),
         A_ub=A_ub,
         b_ub=b_ub,
-        bounds=(0, 1),
+        bounds=bounds,
         method="highs",
         integrality=1,
     )
@@ -721,7 +740,9 @@ def _solve_clar_lp(num_rings, c, A_eq, constraints=None, max_num=None):
 
     # Run optimization with additional constraints
     try:
-        inner_solutions = _solve_clar_lp(num_rings, c, A_eq, constraints, max_num)
+        inner_solutions = _solve_clar_lp(
+            num_rings, c, A_eq, bounds, constraints, max_num
+        )
     except RuntimeError as e:
         print(e)
         inner_solutions = []
