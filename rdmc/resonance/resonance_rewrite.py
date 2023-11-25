@@ -744,7 +744,6 @@ def _solve_clar_lp(num_rings, c, A_eq, bounds, constraints=None, max_num=None):
             num_rings, c, A_eq, bounds, constraints, max_num
         )
     except RuntimeError as e:
-        print(e)
         inner_solutions = []
 
     return inner_solutions + [solution]
