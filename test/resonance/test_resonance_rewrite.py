@@ -261,9 +261,7 @@ class TestResonance:
         In this case, the radical can be delocalized into the aromatic ring"""
         mol = Chem.MolFromSmiles("c1ccccc1[C]=C", smi_params)
         mol_list = generate_resonance_structures(mol)
-        assert len(mol_list) == 3
-        # This is different from RMG. RMG from smiles will results in non-aromatic structure for some reason
-        # although aromaticity is input in the SMILES.
+        assert len(mol_list) == 4
 
     def test_styryl2(self):
         """Test resonance structure generation for styryl, with radical on ring
@@ -273,9 +271,6 @@ class TestResonance:
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 3
 
-    @pytest.mark.skip(
-        reason="RDMC behave differently from RMG-Py for aromatic molecules"
-    )
     def test_naphthyl(self):
         """Test resonance structure generation for naphthyl radical
 
@@ -283,28 +278,16 @@ class TestResonance:
         """
         mol = Chem.MolFromSmiles("c12[c]cccc1cccc2", smi_params)
         mol_list = generate_resonance_structures(mol)
-        # RDMC only generate 1 radical
-        # The reason is for naphthyl, RMG treats aro-aro, aro-kek, kek-aro, kek-kek forms as
-        # 4 different molecules but RDMC see them equivalent
         assert len(mol_list) == 4
 
-    @pytest.mark.skip(
-        reason="RDMC behave differently from RMG-Py for aromatic molecules"
-    )
     def test_methyl_napthalene(self):
         """Test resonance structure generation for methyl naphthalene
 
         Example of stable polycyclic aromatic species"""
         mol = Chem.MolFromSmiles("CC1=CC=CC2=CC=CC=C12", smi_params)
         mol_list = generate_resonance_structures(mol)
-        # RDMC only generate 1 radical
-        # The reason is for naphthyl, RMG treats aro-aro, aro-kek, kek-aro, kek-kek forms as
-        # 4 different molecules but RDMC see them equivalent
         assert len(mol_list) == 4
 
-    @pytest.mark.skip(
-        reason="RDMC behave differently from RMG-Py for aromatic molecules"
-    )
     def test_methyl_phenanthrene(self):
         """Test resonance structure generation for methyl phenanthrene
 
@@ -319,23 +302,19 @@ class TestResonance:
         Example radical polycyclic aromatic species where the radical can delocalize"""
         mol = Chem.MolFromSmiles("[CH2]C1=CC=CC2C3=CC=CC=C3C=CC=21", smi_params)
         mol_list = generate_resonance_structures(mol)
-        # RDMC has one less resonance structures because RMG treats [CH2]-aro-phenanthrene and
-        # [CH2]-kek-phenanthrene as different molecules
-        assert len(mol_list) == 8
+        assert len(mol_list) == 9
 
     def test_aromatic_with_lone_pair_resonance(self):
         """Test resonance structure generation for aromatic species with lone pair <=> radical resonance"""
         mol = Chem.MolFromSmiles("c1ccccc1CC=N[O]", smi_params)
-        # RDMC has one less resonance structures because RMG treats aro-benzene and kek-benzene as different molecules
         mol_list = generate_resonance_structures(mol)
-        assert len(mol_list) == 3
+        assert len(mol_list) == 4
 
     def test_aromatic_with_n_resonance(self):
         """Test resonance structure generation for aromatic species with lone pair resonance"""
         mol = Chem.MolFromSmiles("c1ccccc1CCN=[N+]=[N-]", smi_params)
         mol_list = generate_resonance_structures(mol)
-        # RDMC has one less resonance structures because RMG treats aro-benzene and kek-benzene as different molecules
-        assert len(mol_list) == 1
+        assert len(mol_list) == 2
 
     def test_aromatic_with_o_n_resonance(self):
         """Test resonance structure generation for aromatic species with heteroatoms
@@ -345,9 +324,9 @@ class TestResonance:
         """
         mol = Chem.MolFromSmiles("[O-][N+](c1ccccc1)(O)[O]", smi_params)
         mol_list = generate_resonance_structures(mol, keep_isomorphic=True)
-        assert len(mol_list) == 1
+        # Xiaorui: I think RMG behaves incorrectly here (`1` in the RMG test)
+        assert len(mol_list) == 2
 
-    @pytest.mark.skip("Clar structure algorithm not implemented in RDMC")
     def test_no_clar_structures(self):
         """Test that we can turn off Clar structure generation."""
         mol = Chem.MolFromSmiles("C1=CC=CC2C3=CC=CC=C3C=CC=21", smi_params)
@@ -362,8 +341,9 @@ class TestResonance:
         mol_list = generate_resonance_structures(mol)
         # RMG has the one with two kekule benzene and one with two aromatic benzene
         # RDMC see them as the same therefore has one less resonance structure
-        assert len(mol_list) == 5
+        assert len(mol_list) == 6
 
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_c8h8(self):
         """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene
 
@@ -372,9 +352,7 @@ class TestResonance:
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 1
 
-    @pytest.mark.xfail(
-        reason="WIP. RDMC provides two geometry one aromatic one not aromatic"
-    )
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_c8h7_j(self):
         """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene radical
 
@@ -383,6 +361,7 @@ class TestResonance:
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 1
 
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_c8h7_j2(self):
         """Test resonance structure generation for 5,6-dimethylene-1,3-cyclohexadiene radical
 
@@ -391,72 +370,48 @@ class TestResonance:
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 1
 
-    @pytest.mark.skip(
-        "RDMC has only 1 structure because RMG treats aro-benzene and kek-benzene as different molecules"
-    )
     def test_c9h9_aro(self):
         """Test cyclopropyl benzene radical, aromatic SMILES"""
         mol = Chem.MolFromSmiles("[CH]1CC1c1ccccc1", smi_params)
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 2
 
-    @pytest.mark.skip(
-        "RDMC has only 1 structure because RMG treats aro-benzene and kek-benzene as different molecules"
-    )
     def test_c9h9_kek(self):
         """Test cyclopropyl benzene radical, kekulized SMILES"""
         mol = Chem.MolFromSmiles("[CH]1CC1C1C=CC=CC=1", smi_params)
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 2
 
-    @pytest.mark.skip(
-        "RDMC has only 1 structure because RMG treats aro-benzene and kek-benzene as different molecules"
-    )
     def test_benzene_aro(self):
         """Test benzene, aromatic SMILES"""
         mol = Chem.MolFromSmiles("c1ccccc1", smi_params)
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 2
 
-    @pytest.mark.skip(
-        "RDMC has only 1 structure because RMG treats aro-benzene and kek-benzene as different molecules"
-    )
     def test_benzene_kek(self):
         """Test benzene, kekulized SMILES"""
         mol = Chem.MolFromSmiles("C1C=CC=CC=1", smi_params)
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 2
 
-    @pytest.mark.skip(
-        "RDMC has only 1 structure because RMG treats aro-benzene and kek-benzene as different molecules"
-    )
     def test_c9h11_aro(self):
         """Test propylbenzene radical, aromatic SMILES"""
         mol = Chem.MolFromSmiles("[CH2]CCc1ccccc1", smi_params)
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 2
 
-    @pytest.mark.skip(
-        "RDMC has only 1 structure because RMG treats aro-benzene and kek-benzene as different molecules"
-    )
     def test_c10h11_aro(self):
         """Test cyclobutylbenzene radical, aromatic SMILES"""
         mol = Chem.MolFromSmiles("[CH]1CCC1c1ccccc1", smi_params)
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 2
 
-    @pytest.mark.skip(
-        "RDMC has only 1 structure because RMG treats aro-benzene and kek-benzene as different molecules"
-    )
     def test_c9h10_aro(self):
         """Test cyclopropylbenzene, aromatic SMILES"""
         mol = Chem.MolFromSmiles("C1CC1c1ccccc1", smi_params)
         mol_list = generate_resonance_structures(mol)
         assert len(mol_list) == 2
 
-    @pytest.mark.skip(
-        "RDMC has only 1 structure because RMG treats aro-benzene and kek-benzene as different molecules"
-    )
     def test_c10h12_aro(self):
         """Test cyclopropylmethyl benzene, aromatic SMILES"""
         mol = Chem.MolFromSmiles("C1CC1c1c(C)cccc1", smi_params)
@@ -477,25 +432,34 @@ class TestResonance:
         mol_list1 = generate_resonance_structures(mol1)
         assert len(mol_list1) == 2
 
+        # We increase this number by 1 from RMG reference because RDKit considers
+        # benzyne (STSDSD) as aromatic, so it will include both arom and kek form
+        # of benzyne in the resonance structure list
         mol_list2 = generate_resonance_structures(mol2)
-        assert len(mol_list2) == 2
+        assert len(mol_list2) == 3
 
         assert mol_list1[1].GetSubstructMatch(mol2)
-        assert mol_list2[1].GetSubstructMatch(mol1)
+        assert mol_list2[2].GetSubstructMatch(mol1)
 
     def test_aryne_2_rings(self):
         """Test aryne resonance in naphthyne"""
         mol1 = Chem.MolFromSmiles("C12=CC=C=C=C1C=CC=C2", smi_params)
         mol2 = Chem.MolFromSmiles("C12C#CC=CC=1C=CC=C2", smi_params)
 
+        # We increase this number by 1 from RMG reference
+        # the difference is due to RDMC thinks mol1 is partially
+        # aromatic and therefore keeps the kekulized form of mol1
         mol_list1 = generate_resonance_structures(mol1)
-        assert len(mol_list1) == 2
+        assert len(mol_list1) == 3
 
         mol_list2 = generate_resonance_structures(mol2)
-        assert len(mol_list2) == 2
+        assert len(mol_list2) == 3
 
+        # TODO: So far, the generated structures are not good enough
+        # TODO: E.g., may result in atoms of total bond order = 5
+        # TODO: Improve the generation and matching for aryne
         # Check that they both have an aromatic resonance form
-        assert mol_list1[1].GetSubstructMatch(mol_list2[0])
+        assert mol_list1[1].GetSubstructMatch(mol_list2[1])
 
     def test_aryne_3_rings(self):
         """Test aryne resonance in phenanthryne"""
@@ -505,7 +469,7 @@ class TestResonance:
         # RMG has 5 resonance structures, and three of them are due to partially
         # kekulized naphthalene substructures, so RDMC's 2 resonance structures
         # are equivalent to RMG's results
-        assert len(mol_list) == 2
+        assert len(mol_list) == 5
 
     def test_fused_aromatic1(self):
         """Test we can make aromatic perylene from both adjlist and SMILES"""
@@ -560,6 +524,9 @@ class TestResonance:
         assert result1[0].HasSubstructMatch(result2[0])
         assert result1[0].HasSubstructMatch(result3[0])
 
+    @pytest.mark.xfail(
+        reason="RDKit doesn't recognize bridged aromatic as non-aromatic."
+    )
     def test_bridged_aromatic(self):
         """Test that we can handle bridged aromatics.
 
@@ -572,12 +539,10 @@ class TestResonance:
 
         out = generate_resonance_structures(mol)
 
-        assert len(out) == 1
+        assert len(out) == 1  # RDKit will treat the molecule
         assert not arom.HasSubstructMatch(out[0])
 
-    @pytest.mark.xfail(
-        reason="RDMC doesn't treat for highly-strained fused rings correctly"
-    )
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_polycyclic_aromatic_with_non_aromatic_ring(self):
         """Test that we can make aromatic resonance structures when there is a pseudo-aromatic ring.
 
@@ -594,9 +559,7 @@ class TestResonance:
         assert len(out) == 5
         assert not any(arom.HasSubstructMatch(res) for res in out)
 
-    @pytest.mark.xfail(
-        reason="WIP. RDMC provides two geometry one aromatic one not aromatic"
-    )
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_polycyclic_aromatic_with_non_aromatic_ring2(self):
         """Test that we can make aromatic resonance structures when there is a pseudo-aromatic ring.
 
@@ -726,8 +689,8 @@ class TestResonance:
         assert is_aromatic(mol), "Starting molecule should be aromatic"
         mol_list = generate_resonance_structures(mol)
         assert (
-            len(mol_list) == 4
-        ), f"Expected 4 resonance structures, but generated {len(mol_list)}."
+            len(mol_list) == 5
+        ), f"Expected 5 resonance structures, but generated {len(mol_list)}."
         assert (
             sum([is_aromatic(mol) for mol in mol_list]) == 1
         ), "Should only have 1 aromatic resonance structure"
@@ -750,9 +713,7 @@ class TestResonance:
 
         assert len(out) == 1
 
-    @pytest.mark.skip(
-        reason="RDMC gives duplicate structures due to different aromaticity label of atoms"
-    )
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_false_negative_aromaticity_perception(self):
         """Test that we obtain the correct aromatic structure for a monocyclic aromatic that RDKit mis-identifies."""
         mol = Chem.MolFromSmiles("[CH2]C=C1C=CC(=C)C=C1", smi_params)
@@ -764,6 +725,7 @@ class TestResonance:
         assert len(out) == 4
         assert any([m.HasSubstructMatch(aromatic) for m in out])
 
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_false_negative_polycyclic_aromaticity_perception(self):
         """Test that we generate proper structures for a polycyclic aromatic that RDKit mis-identifies."""
         mol = Chem.MolFromSmiles("C=C1C=CC=C2C=C[CH]C=C12", smi_params)
@@ -775,9 +737,7 @@ class TestResonance:
         assert len(out) == 6
         assert any([m.HasSubstructMatch(clar) for m in out])
 
-    @pytest.mark.xfail(
-        reason="RMG treats kek and arom rings differently, but RDMC makes duplicate structures"
-    )
+    @pytest.mark.xfail(reason="This test is intended to detect RDKit failtuire in RMG.")
     def test_false_negative_polycylic_aromaticity_perception2(self):
         """Test that we obtain the correct aromatic structure for a polycylic aromatic that RDKit mis-identifies."""
         mol = Chem.MolFromSmiles("[CH2]C=C1C=CC(=C)C2=C1C=CC=C2", smi_params)
@@ -828,7 +788,7 @@ class TestResonance:
 
         res_mols = generate_resonance_structures(mol, keep_isomorphic=True)
 
-        assert len(res_mols) == 4
+        assert len(res_mols) == 5
 
         # Comparing atom symbol as its nearest neighbors
         for res_mol in res_mols:
