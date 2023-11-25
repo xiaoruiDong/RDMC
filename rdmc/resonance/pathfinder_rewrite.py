@@ -549,9 +549,9 @@ class ForwardAdjacentLonePairMultipleBondPathFinder(PathFinder):
         a1, a2 = mol.GetAtomWithIdx(a1_idx), mol.GetAtomWithIdx(a2_idx)
         return (
             not (
-                    a1.GetAtomicNum() == a2.GetAtomicNum() == 16
-                    and mol.GetBondBetweenAtoms(a1_idx, a2_idx).GetBondType() == 2
-                )  # RMG have this to prevent S#S. This may be better added to the template
+                a1.GetAtomicNum() == a2.GetAtomicNum() == 16
+                and mol.GetBondBetweenAtoms(a1_idx, a2_idx).GetBondType() == 2
+            )  # RMG have this to prevent S#S. This may be better added to the template
             and a1.GetFormalCharge() < CHARGE_UPPER_LIMIT
             and a2.GetFormalCharge() > CHARGE_LOWER_LIMIT
             and get_lone_pair(a1) > 0

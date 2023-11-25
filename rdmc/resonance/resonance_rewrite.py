@@ -32,10 +32,7 @@ from rdmc.resonance.utils import (
 
 logger = logging.getLogger(__name__)
 
-sanitize_flag_kekule = (
-    Chem.SANITIZE_PROPERTIES
-    | Chem.SANITIZE_SETCONJUGATION
-)
+sanitize_flag_kekule = Chem.SANITIZE_PROPERTIES | Chem.SANITIZE_SETCONJUGATION
 sanitize_flag_aromatic = sanitizeOps = (
     Chem.SANITIZE_PROPERTIES
     | Chem.SANITIZE_SETAROMATICITY
@@ -332,7 +329,9 @@ def generate_resonance_structures(
         and features["is_radical"]
         and not features["is_aryl_radical"]
     ):
-        new_mol_list = generate_optimal_aromatic_resonance_structures(mol_list[0], features)
+        new_mol_list = generate_optimal_aromatic_resonance_structures(
+            mol_list[0], features
+        )
         if not new_mol_list:
             # Encountered false positive, i.e., the molecule is not actually aromatic
             features["is_aromatic"] = False
@@ -352,7 +351,10 @@ def generate_resonance_structures(
     if features["is_aromatic"]:
         if features["is_radical"] and not features["is_aryl_radical"]:
             _generate_resonance_structures(
-                mol_list, ["allyl_radical"], [], keep_isomorphic=keep_isomorphic,
+                mol_list,
+                ["allyl_radical"],
+                [],
+                keep_isomorphic=keep_isomorphic,
                 update_aromatic_flags=True,
             )
         if features["isPolycyclicAromatic"] and clar_structures:
@@ -530,9 +532,7 @@ def generate_aryne_resonance_structures(mol):
     """
     pattern1_rings, pattern2_rings = get_aryne_rings(mol)
 
-    operations = [
-        [ring, "DDDSDS"] for ring in pattern1_rings
-    ] + [
+    operations = [[ring, "DDDSDS"] for ring in pattern1_rings] + [
         [ring, "DSTSDS"] for ring in pattern2_rings
     ]
 
@@ -583,8 +583,8 @@ def generate_clar_structures(mol):
 
     for solution in solutions:
         new_struct = Chem.RWMol(mol, True)
-        ring_assign = solution[0 : len(aromatic_rings)]
-        bond_assign = solution[len(aromatic_rings) :]
+        ring_assign = solution[0: len(aromatic_rings)]
+        bond_assign = solution[len(aromatic_rings):]
 
         for index, bidx in enumerate(bonds):
             bond = new_struct.GetBondWithIdx(bidx)

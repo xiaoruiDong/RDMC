@@ -74,7 +74,6 @@ from rdmc.resonance.utils import (
     get_relevant_cycles,
     update_charge,
 )
-from rdmc.resonance.resonance import _unset_aromatic_flags
 
 # from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError, ResonanceError
 # from rmgpy.molecule.adjlist import Saturator
@@ -276,6 +275,7 @@ def generate_resonance_structures(
     return mol_list
 
 
+# Rewrite version available
 def _generate_resonance_structures(
     mol_list, method_list, keep_isomorphic=False, copy=False
 ):
@@ -354,6 +354,7 @@ def _generate_resonance_structures(
     return mol_list
 
 
+# Rewrite version available
 def generate_allyl_delocalization_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by one allyl radical shift.
@@ -387,6 +388,7 @@ def generate_allyl_delocalization_resonance_structures(mol):
     return structures
 
 
+# Rewrite version available
 def generate_lone_pair_multiple_bond_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by lone electron pair - multiple bond shifts in 3-atom systems.
@@ -423,6 +425,7 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
     return structures
 
 
+# Rewrite version available
 def generate_adj_lone_pair_radical_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by lone electron pair - radical shifts between adjacent atoms.
@@ -463,6 +466,7 @@ def generate_adj_lone_pair_radical_resonance_structures(mol):
     return structures
 
 
+# Rewrite version available
 def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by lone electron pair - multiple bond shifts between adjacent atoms.
@@ -503,6 +507,7 @@ def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
     return structures
 
 
+# Rewrite version available
 def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts between adjacent atoms.
@@ -517,12 +522,16 @@ def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
     structures = []
     if is_radical(mol):  # Iterate over radicals in structure
         for atom in mol.GetAtoms():
-            paths = pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom)
+            paths = pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths(
+                atom
+            )
             for atom1_idx, atom2_idx, bond12_idx, direction in paths:
                 try:
                     # Make a copy of structure
                     structure = mol.Copy(quickCopy=True)
-                    atom1, atom2 = structure.GetAtomWithIdx(atom1_idx), structure.GetAtomWithIdx(atom2_idx)
+                    atom1, atom2 = structure.GetAtomWithIdx(
+                        atom1_idx
+                    ), structure.GetAtomWithIdx(atom2_idx)
                     bond12 = structure.GetBondWithIdx(bond12_idx)
                     lone_pair_1 = get_lone_pair(atom1)
                     lone_pair_2 = get_lone_pair(atom2)
@@ -537,7 +546,10 @@ def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
                         update_charge(atom1, lone_pair_1 + 1)
                         increment_radical(atom2)
                     update_charge(atom2, lone_pair_2)
-                    structure.Sanitize(sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+                    structure.Sanitize(
+                        sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
+                        ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
+                    )
                 except BaseException as e:
                     pass  # Don't append resonance structure if it creates an undefined atomtype
                 else:
@@ -545,6 +557,7 @@ def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
     return structures
 
 
+# Removed in rewrite
 def generate_N5dc_radical_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by radical and lone pair shifts mediated by an N5dc atom.
@@ -576,6 +589,7 @@ def generate_N5dc_radical_resonance_structures(mol):
     return structures
 
 
+# Rewrite version available
 def generate_optimal_aromatic_resonance_structures(mol, features=None):
     """
     Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.
@@ -647,6 +661,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
     return new_mol_list
 
 
+# Rewrite version available
 def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
     """
     Generate the aromatic form of the molecule in place without considering other resonance.
@@ -686,7 +701,7 @@ def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
             sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL
             ^ Chem.SanitizeFlags.SANITIZE_KEKULIZE
         )
-    except:
+    except BaseException:
         return []
     # except AtomTypeError:
     #     # If this didn't work the first time, then there might be a ring that is not actually aromatic
@@ -717,14 +732,15 @@ def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
     #         else:
     #             # We're done with this ring, so go on to the next ring
     #             i += 1
-        # # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
-        # if i == 0:
-        #     # Move onto next molecule in the list
-        #     return []
+    # # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
+    # if i == 0:
+    #     # Move onto next molecule in the list
+    #     return []
 
     return [molecule]
 
 
+# Rewrite version available
 def generate_aryne_resonance_structures(mol):
     """
     Generate aryne resonance structures, including the cumulene and alkyne forms.
@@ -801,6 +817,7 @@ def generate_aryne_resonance_structures(mol):
     return new_mol_list
 
 
+# Rewrite version available
 def generate_kekule_structure(mol):
     """
     Generate a kekulized (single-double bond) form of the molecule.
@@ -825,6 +842,7 @@ def generate_kekule_structure(mol):
     return [molecule]
 
 
+# Removed as it is not used at all
 def generate_isomorphic_resonance_structures(mol, saturate_h=False):
     """
     Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
@@ -902,8 +920,8 @@ def generate_clar_structures(mol):
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
-        y = solution[0 : len(aromatic_rings)]
-        x = solution[len(aromatic_rings) :]
+        y = solution[0: len(aromatic_rings)]
+        x = solution[len(aromatic_rings):]
 
         # Apply results to molecule - double bond locations first
         for index, bond in enumerate(bonds):

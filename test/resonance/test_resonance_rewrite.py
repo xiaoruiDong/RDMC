@@ -826,8 +826,8 @@ class TestClar:
             # as it doesn't help us check the optimization
 
             # Count pi electrons in solution
-            y = solution[0 : len(aromatic_rings)]
-            x = solution[len(aromatic_rings) :]
+            y = solution[0: len(aromatic_rings)]
+            x = solution[len(aromatic_rings):]
             pi_solution = 6 * sum(y) + 2 * sum(x)
 
             # Check that both counts give 10 pi electrons

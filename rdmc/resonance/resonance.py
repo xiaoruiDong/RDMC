@@ -124,4 +124,3 @@ def generate_radical_resonance_structures(
         ]  # At least return the original molecule if no resonance structure is found
 
     return cleaned_mols
-

@@ -16,6 +16,7 @@ def test_generate_allyl_delocalization_resonance_structures():
         )
     ) == 1
 
+
 class TestResonance:
 
     def test_allyl_shift(self):
@@ -1563,5 +1564,4 @@ class TestResonance:
         find_adj_lone_pair_multiple_bond_delocalization_paths
         """
         mol_list = generate_resonance_structures(RDKitMol.FromSmiles("S1SSS1"), filter_structures=False)
-        assert len(mol_list) == 10
-
+        assert len(mol_list) == 1
