@@ -3,7 +3,7 @@
 
 import itertools
 import math
-from typing import List, Optional
+from typing import List, Union
 
 from rdkit import Chem
 from rdkit.Chem import Lipinski, rdqueries
@@ -607,3 +607,28 @@ def get_shortest_path(mol, idx1, idx2):
         return Chem.GetShortestPath(mol, idx1, idx2)
 
     return _find_shortest_path(mol.GetAtomWithIdx(idx1), mol.GetAtomWithIdx(idx2))
+
+
+# RDKit / RDMC compatible
+def is_equivalent_structure(
+    ref_mol: Union["RDKitMol", "Mol"],
+    qry_mol: Union["RDKitMol", "Mol"],
+    isomorphic_equivalent: bool = True,
+) -> bool:
+    """
+    Check if two molecules are equivalent. If `keep_isomorphic` is ``True``, then isomorphic molecules are considered
+    equivalent. Otherwise, the molecules must be identical. This method should be only used for filtering resonance structures,
+    as it doesn't check if molecules have the same set of atoms.
+
+    Args:
+        ref_mol (RDKitMol or Mol): The reference molecule.
+        qry_mol (RDKitMol or Mol): The query molecule.
+        keep_isomorphic (bool, optional): Whether to keep isomorphic molecules. Default is ``False``.
+
+    Returns:
+        bool: ``True`` if the molecules are equivalent, ``False`` otherwise.
+    """
+    if isomorphic_equivalent:
+        return tuple(ref_mol.GetSubstructMatch(qry_mol))
+    else:
+        return is_identical(ref_mol, qry_mol)
