@@ -5,19 +5,23 @@
 This module contains the function generating resonance structures.
 """
 
-from rdmc.mol import RDKitMol
-from rdmc.mol_compare import get_unique_mols
-from rdmc.resonance.utils import unset_aromatic_flags
+import logging
+
+from rdmc.resonance.utils import is_partially_charged, unset_aromatic_flags
+from rdmc.resonance.filtration import is_equivalent_structure
 
 from rdkit import Chem
-from rdkit.Chem import RWMol
+
+
+logger = logging.getLogger(__name__)
 
 
 def generate_radical_resonance_structures(
-    mol: RDKitMol,
-    unique: bool = True,
-    consider_atommap: bool = False,
+    mol: Chem.RWMol,
+    keep_isomorphic: bool = False,
+    copy: bool = True,
     kekulize: bool = False,
+    **kwargs,
 ):
     """
     Generate resonance structures for a radical molecule.  RDKit by design doesn't work
@@ -30,19 +34,15 @@ def generate_radical_resonance_structures(
     - Phenyl radical only generate one resonance structure when ``kekulize=True``, expecting 2.
 
     Args:
-        mol (RDKitMol): A radical molecule.
-        unique (bool, optional): Filter out duplicate resonance structures from the list. Defaults to ``True``.
-        consider_atommap (bool, atommap): If consider atom map numbers in filtration duplicates.
-                                          Only effective when ``unique=True``. Defaults to ``False``.
-        kekulize (bool, optional): Whether to kekulize the molecule. Defaults to ``False``. As an example,
-                                   benzene have one resonance structure if not kekulized (``False``) and
-                                   two resonance structures if kekulized (``True``).
+        mol (Chem.RWMol): A radical molecule in RDKit RWMol.
+        keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
+        copy (bool, optional): If copy the input molecule. Defaults to ``True``.
+        kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``False``.
 
     Returns:
         list: a list of molecules with resonance structures.
     """
-    assert mol.GetFormalCharge() == 0, "The current function only works for radical species."
-    mol_copy = mol.Copy(quickCopy=True)  # Make a copy of the original molecule
+    mol_copy = Chem.RWMol(mol, True) if copy else mol
 
     # Modify the original molecule to make it a positively charged species
     recipe = {}  # Used to record changes. Temporarily not used now.
@@ -54,23 +54,24 @@ def generate_radical_resonance_structures(
             atom.SetNumRadicalElectrons(0)
     # Make sure conjugation is assigned
     # Only assign the conjugation after changing radical sites to positively charged sites
-    Chem.rdmolops.SetConjugation(mol_copy._mol)
+    Chem.SetConjugation(mol_copy)
 
     # Avoid generating certain resonance bonds
     for atom in mol_copy.GetAtoms():
-        if (atom.GetAtomicNum() == 8 and len(atom.GetNeighbors()) > 1) or \
-                (atom.GetAtomicNum() == 7 and len(atom.GetNeighbors()) > 2):
+        if (atom.GetAtomicNum() == 8 and len(atom.GetNeighbors()) > 1) or (
+            atom.GetAtomicNum() == 7 and len(atom.GetNeighbors()) > 2
+        ):
             # Avoid X-O-Y be part of the resonance and forms X-O.=Y
             # Avoid X-N(-Y)-Z be part of the resonance and forms X=N.(-Y)(-Z)
             [bond.SetIsConjugated(False) for bond in atom.GetBonds()]
-    mol_copy.UpdatePropertyCache()  # Make sure the assignment is boardcast to atoms / bonds
+    mol_copy.UpdatePropertyCache()  # Make sure the assignment is broadcast to atoms / bonds
 
     # Generate Resonance Structures
     flags = Chem.ALLOW_INCOMPLETE_OCTETS | Chem.UNCONSTRAINED_CATIONS
     if kekulize:
         flags |= Chem.KEKULE_ALL
-    suppl = Chem.ResonanceMolSupplier(mol_copy._mol, flags=flags)
-    res_mols = [RDKitMol(RWMol(mol)) for mol in suppl if mol is not None]
+    suppl = Chem.ResonanceMolSupplier(mol_copy, flags=flags)
+    res_mols = [Chem.RWMol(mol) for mol in suppl if mol is not None]
 
     # Post-processing resonance structures
     cleaned_mols = []
@@ -94,33 +95,133 @@ def generate_radical_resonance_structures(
         try:
             # Sanitization strategy is inspired by
             # https://github.com/rdkit/rdkit/discussions/6358
-            flags = Chem.SanitizeFlags.SANITIZE_ALL
-            if kekulize:
-                flags ^= (
+            flags = Chem.SANITIZE_PROPERTIES | Chem.SANITIZE_SETCONJUGATION
+            if not kekulize:
+                flags |= (
                     Chem.SanitizeFlags.SANITIZE_KEKULIZE
                     | Chem.SanitizeFlags.SANITIZE_SETAROMATICITY
                 )
-            res_mol.Sanitize(sanitizeOps=flags)
+            Chem.SanitizeMol(res_mol, sanitizeOps=flags)
         except BaseException as e:
-            print(e)
-            # todo: make error type more specific and add a warning message
+            logger.debug(f"Sanitization failed for a resonance structure. Got {e}")
             continue
         if kekulize:
             unset_aromatic_flags(res_mol)
         cleaned_mols.append(res_mol)
 
     # To remove duplicate resonance structures
-    if unique:
-        cleaned_mols = get_unique_mols(cleaned_mols, consider_atommap=consider_atommap)
-        for mol in cleaned_mols:
-            # According to
-            # https://github.com/rdkit/rdkit/blob/9249ca5cc840fc72ea3bb73c2ff1d71a1fbd3f47/rdkit/Chem/Draw/IPythonConsole.py#L152
-            # highlight info is stored in __sssAtoms
-            mol._mol.__setattr__("__sssAtoms", [])
+    known_structs = []
+    for new_struct in cleaned_mols:
+        for known_struct in known_structs:
+            if is_equivalent_structure(
+                ref_mol=known_struct,
+                qry_mol=new_struct,
+                isomorphic_equivalent=not keep_isomorphic,
+            ):
+                break
+        else:
+            new_struct.__setattr__("__sssAtoms", [])
+            known_structs.append(new_struct)
 
-    if not cleaned_mols:
+    if not known_structs:
         return [
-            mol
+            mol_copy
         ]  # At least return the original molecule if no resonance structure is found
 
-    return cleaned_mols
+    return known_structs
+
+
+def generate_charged_resonance_structures(
+    mol: Chem.RWMol,
+    keep_isomorphic: bool = False,
+    copy: bool = True,
+    kekulize: bool = False,
+    **kwargs,
+) -> list:
+    """
+    Generate resonance structures for a charged molecule.
+
+    Args:
+        mol (Chem.RWMol): A charged molecule in RDKit RWMol.
+        keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
+        copy (bool, optional): If copy the input molecule. Defaults to ``True``.
+        kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``False``.
+
+    Returns:
+        list: a list of molecules with resonance structures.
+    """
+    mol_copy = Chem.RWMol(mol, True) if copy else mol
+
+    # Generate Resonance Structures
+    flags = Chem.ALLOW_INCOMPLETE_OCTETS | Chem.UNCONSTRAINED_CATIONS
+    if kekulize:
+        flags |= Chem.KEKULE_ALL
+    suppl = Chem.ResonanceMolSupplier(mol_copy, flags=flags)
+    res_mols = [Chem.RWMol(mol) for mol in suppl if mol is not None]
+
+    # Post-processing resonance structures
+    cleaned_mols = []
+    for res_mol in res_mols:
+        # If a structure cannot be sanitized, removed it
+        try:
+            # Sanitization strategy is inspired by
+            # https://github.com/rdkit/rdkit/discussions/6358
+            flags = Chem.SANITIZE_PROPERTIES | Chem.SANITIZE_SETCONJUGATION
+            if not kekulize:
+                flags |= (
+                    Chem.SanitizeFlags.SANITIZE_KEKULIZE
+                    | Chem.SanitizeFlags.SANITIZE_SETAROMATICITY
+                )
+            Chem.SanitizeMol(res_mol, sanitizeOps=flags)
+        except BaseException as e:
+            logger.debug(f"Sanitization failed for a resonance structure. Got {e}")
+            continue
+        if kekulize:
+            unset_aromatic_flags(res_mol)
+        cleaned_mols.append(res_mol)
+
+    # To remove duplicate resonance structures
+    known_structs = []
+    for new_struct in cleaned_mols:
+        for known_struct in known_structs:
+            if is_equivalent_structure(
+                ref_mol=known_struct,
+                qry_mol=new_struct,
+                isomorphic_equivalent=not keep_isomorphic,
+            ):
+                break
+        else:
+            new_struct.__setattr__("__sssAtoms", [])
+            known_structs.append(new_struct)
+
+    if not known_structs:
+        return [
+            mol_copy
+        ]  # At least return the original molecule if no resonance structure is found
+
+    return known_structs
+
+
+def generate_resonance_structures(
+    mol: Chem.RWMol,
+    keep_isomorphic: bool = False,
+    copy: bool = True,
+    kekulize: bool = False,
+    **kwargs,
+):
+    if is_partially_charged(mol):
+        return generate_charged_resonance_structures(
+            mol=mol,
+            keep_isomorphic=keep_isomorphic,
+            copy=copy,
+            kekulize=kekulize,
+            **kwargs,
+        )
+    else:
+        return generate_radical_resonance_structures(
+            mol=mol,
+            keep_isomorphic=keep_isomorphic,
+            copy=copy,
+            kekulize=kekulize,
+            **kwargs,
+        )

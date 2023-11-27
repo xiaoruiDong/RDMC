@@ -257,6 +257,23 @@ def is_radical(mol) -> bool:
 
 
 # RDKit / RDMC compatible
+def is_partially_charged(mol) -> bool:
+    """
+    Determine whether a molecule is partially charged.
+
+    Args:
+        mol (RDKitMol, RWMol): The molecule to be checked.
+
+    Returns:
+        bool: ``True`` if the molecule is partially charged, ``False`` otherwise.
+    """
+    for atom in mol.GetAtoms():
+        if atom.GetFormalCharge() != 0:
+            return True
+    return False
+
+
+# RDKit / RDMC compatible
 def is_aromatic(mol) -> bool:
     """
     Determine whether a molecule is aromatic.
