@@ -15,7 +15,7 @@ from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
 from rdmc.mol_compare import is_same_complex, is_equivalent_reaction
-from rdmc.resonance import generate_radical_resonance_structures
+from rdmc.resonance import generate_resonance_structures
 from rdmc.ts import get_all_changing_bonds
 
 
@@ -339,7 +339,6 @@ class Reaction:
     def apply_resonance_correction(
         self,
         inplace: bool = True,
-        kekulize: bool = True,
     ) -> "Reaction":
         """
         Apply resonance correction to the reactant and product complexes.
@@ -350,14 +349,14 @@ class Reaction:
             # TODO: when the reactant and product are changed
             return self
         try:
-            rcps = generate_radical_resonance_structures(
-                self.reactant_complex, kekulize=kekulize
+            rcps = generate_resonance_structures(
+                self.reactant_complex,
             )
         except BaseException:
             rcps = [self.reactant_complex]
         try:
-            pcps = generate_radical_resonance_structures(
-                self.product_complex, kekulize=kekulize
+            pcps = generate_resonance_structures(
+                self.product_complex,
             )
         except BaseException:
             pcps = [self.product_complex]
