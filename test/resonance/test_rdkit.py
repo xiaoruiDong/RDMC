@@ -9,7 +9,7 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.resonance.naive import generate_resonance_structures
+from rdmc.resonance.rdkit import generate_resonance_structures
 
 
 smi_params = Chem.SmilesParserParams()
@@ -32,6 +32,8 @@ smi_params.sanitize = True
         ("[CH2-]C=C", False, 1),
         ("[CH2-]C=CC", True, 2),
         ("[CH2-]C=CC", False, 2),
+        ("C(=O)[O-]", True, 2),
+        ("C(=O)[O-]", False, 1),
     ],
 )
 def test_generate_charged_resonance_structures(smi, keep_isomorphic, expected_num):
@@ -75,7 +77,7 @@ def test_generate_charged_resonance_structures(smi, keep_isomorphic, expected_nu
         ),
     ],
 )
-def test_generate_benzene_resonance_structures(keep_isomorphic, kekulize, expected_num):
+def test_benzene(keep_isomorphic, kekulize, expected_num):
     """
     Test the function for generating radical resonance structures for benzene.
     """
@@ -125,7 +127,57 @@ def test_generate_benzene_resonance_structures(keep_isomorphic, kekulize, expect
         ),
     ],
 )
-def test_generate_phenylethyl_resonance_structures(
+def test_phenylethyl_radical(
+    keep_isomorphic, kekulize, expected_num
+):
+    """
+    Test the function for generating radical resonance structures for phenylethyl.
+    """
+    smi = "c1ccccc1[CH]C"
+    mol = Chem.MolFromSmiles(smi, smi_params)
+    res_mols = generate_resonance_structures(
+        mol, keep_isomorphic=keep_isomorphic, kekulize=kekulize
+    )
+
+    assert len(res_mols) == expected_num
+
+
+@pytest.mark.parametrize(
+    "keep_isomorphic, kekulize, expected_num",
+    [
+        (
+            # Without kekulization, RDKit returns 3 resonance structures
+            # 2 with radical site on the ring and 1 with radial site on the alkyl chain
+            False,
+            False,
+            3,
+        ),
+        (
+            # Without kekulization, RDKit returns 4 resonance structures
+            # 2 ortho, 1 para, and 1 on the alkyl chain
+            True,
+            False,
+            4,
+        ),
+        (
+            # With kekulization and keeping isomorphic structures,
+            # RDKit returns 5 resonance structures
+            # 2 ortho, 1 para, and 2 on the alkyl chain
+            True,
+            True,
+            5,
+        ),
+        (
+            # With kekulization and not keeping isomorphic structures,
+            # RDKit returns 3 resonance structures
+            # 1 ortho, 1 para, and 1 on the alkyl chain
+            False,
+            True,
+            3,
+        ),
+    ],
+)
+def test_phenylethyl_cation(
     keep_isomorphic, kekulize, expected_num
 ):
     """
@@ -133,7 +185,7 @@ def test_generate_phenylethyl_resonance_structures(
     """
 
     # Test case 1: benzene
-    smi = "c1ccccc1[CH]C"
+    smi = "c1ccccc1[CH+]C"
     mol = Chem.MolFromSmiles(smi, smi_params)
     res_mols = generate_resonance_structures(
         mol, keep_isomorphic=keep_isomorphic, kekulize=kekulize
@@ -175,15 +227,85 @@ def test_generate_phenylethyl_resonance_structures(
         ),
     ],
 )
-def test_generate_bisallyl_resonance_structures(
+def test_bisallyl_radical(
     keep_isomorphic, kekulize, expected_num
 ):
     """
     Test the function for generating radical resonance structures for phenylethyl.
     """
-
-    # Test case 1: benzene
     smi = "C=C[CH]C=C"
+    mol = Chem.MolFromSmiles(smi, smi_params)
+    res_mols = generate_resonance_structures(
+        mol, keep_isomorphic=keep_isomorphic, kekulize=kekulize
+    )
+
+    assert len(res_mols) == expected_num
+
+
+@pytest.mark.parametrize(
+    "keep_isomorphic, kekulize, expected_num",
+    # Kekulize / keep_isomorphic expect to have no effect
+    [
+        (
+            False,
+            False,
+            2,
+        ),
+        (
+            True,
+            False,
+            2,
+        ),
+        (
+            True,
+            True,
+            2,
+        ),
+        (
+            False,
+            True,
+            2,
+        ),
+    ],
+)
+def test_alpha_ketone_radical(keep_isomorphic, kekulize, expected_num):
+    smi = "[CH2]C=O"
+    mol = Chem.MolFromSmiles(smi, smi_params)
+    res_mols = generate_resonance_structures(
+        mol, keep_isomorphic=keep_isomorphic, kekulize=kekulize
+    )
+
+    assert len(res_mols) == expected_num
+
+
+@pytest.mark.parametrize(
+    "keep_isomorphic, kekulize, expected_num",
+    # Kekulize / keep_isomorphic expect to have no effect
+    [
+        (
+            False,
+            False,
+            1,
+        ),
+        (
+            True,
+            False,
+            1,
+        ),
+        (
+            True,
+            True,
+            1,
+        ),
+        (
+            False,
+            True,
+            1,
+        ),
+    ],
+)
+def test_beta_unsaturated_ketone(keep_isomorphic, kekulize, expected_num):
+    smi = "C=CC=O"
     mol = Chem.MolFromSmiles(smi, smi_params)
     res_mols = generate_resonance_structures(
         mol, keep_isomorphic=keep_isomorphic, kekulize=kekulize

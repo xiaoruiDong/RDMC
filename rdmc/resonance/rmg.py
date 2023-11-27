@@ -16,7 +16,13 @@ from scipy.optimize import linprog
 
 from rdkit import Chem
 
-from rdmc.resonance import filtration
+from rdmc.resonance.base import ResonanceAlgoRegistry
+from rdmc.resonance.filtration import (
+    get_octet_deviation,
+    get_octet_deviation_list,
+    get_charge_span_list,
+)
+from rdmc.resonance.filtration import filter_structures as filter_resonance_structures
 from rdmc.resonance.pathfinder import PathFinderRegistry
 from rdmc.resonance.utils import (
     force_no_implicit,
@@ -26,6 +32,7 @@ from rdmc.resonance.utils import (
     get_num_aromatic_rings,
     is_aryl_radical,
     is_cyclic,
+    is_equivalent_structure,
     is_radical,
 )
 
@@ -157,8 +164,8 @@ def _generate_resonance_structures(
         keep_isomorphic      if ``False``, removes any structures that are isomorphic (default)
                              if ``True``, keep all unique molecules.
     """
-    octate_deviations = filtration.get_octet_deviation_list(mol_list)
-    charge_spans = filtration.get_charge_span_list(mol_list)
+    octate_deviations = get_octet_deviation_list(mol_list)
+    charge_spans = get_charge_span_list(mol_list)
     min_octet_deviation = min(octate_deviations)
     min_charge_span = min(charge_spans)
     ref_charge = Chem.GetFormalCharge(mol_list[0])
@@ -210,7 +217,7 @@ def _generate_resonance_structures(
                         sanitizeOps=sanitize_flag_aromatic,
                     )
                 for j, known_structure in enumerate(mol_list):
-                    if filtration.is_equivalent_structure(
+                    if is_equivalent_structure(
                         known_structure,
                         new_structure,
                         isomorphic_equivalent=not keep_isomorphic,
@@ -220,9 +227,7 @@ def _generate_resonance_structures(
                         break
                 else:
                     mol_list.append(new_structure)
-                    octate_deviations.append(
-                        filtration.get_octet_deviation(new_structure)
-                    )
+                    octate_deviations.append(get_octet_deviation(new_structure))
                     charge_spans.append(get_charge_span(new_structure))
                     prune_book[len(mol_list) - 1] = defaultdict(set)
                     prune_book[len(mol_list) - 1][pathfinder.reverse_abbr].add(
@@ -241,7 +246,7 @@ def _generate_resonance_structures(
                     )
                     continue
                 for j, known_structure in enumerate(mol_list):
-                    if filtration.is_equivalent_structure(
+                    if is_equivalent_structure(
                         known_structure,
                         new_structure,
                         isomorphic_equivalent=not keep_isomorphic,
@@ -249,9 +254,7 @@ def _generate_resonance_structures(
                         break
                 else:
                     mol_list.append(new_structure)
-                    octate_deviations.append(
-                        filtration.get_octet_deviation(new_structure)
-                    )
+                    octate_deviations.append(get_octet_deviation(new_structure))
                     charge_spans.append(get_charge_span(new_structure))
                     prune_book[len(mol_list) - 1] = defaultdict(set)
 
@@ -261,12 +264,14 @@ def _generate_resonance_structures(
     return mol_list
 
 
+@ResonanceAlgoRegistry.register("rmg")
 def generate_resonance_structures(
     mol,
     clar_structures: bool = True,
     keep_isomorphic: bool = False,
     filter_structures: bool = True,
     copy: bool = True,
+    **kwargs,
 ) -> list:
     """
     Generate and return all of the resonance structures for the input molecule.
@@ -342,7 +347,7 @@ def generate_resonance_structures(
                 get_num_aromatic_rings(new_mol_list[0]) > 1
             )
             for new_mol in new_mol_list:
-                if not filtration.is_equivalent_structure(
+                if not is_equivalent_structure(
                     mol_list[0], new_mol, not keep_isomorphic
                 ):
                     mol_list.append(new_mol)
@@ -372,7 +377,7 @@ def generate_resonance_structures(
     )
 
     if filter_structures:
-        return filtration.filter_structures(mol_list, features=features)
+        return filter_resonance_structures(mol_list, features=features)
 
     return mol_list
 
@@ -466,7 +471,7 @@ def generate_optimal_aromatic_resonance_structures(
         elif num_aromatic_rings == max_num_aromatic_rings:
             # Find a molecule with the same number of aromatic rings
             for struct in new_structures:
-                if filtration.is_equivalent_structure(struct, mol):
+                if is_equivalent_structure(struct, mol):
                     break
             else:
                 new_structures.append(mol)

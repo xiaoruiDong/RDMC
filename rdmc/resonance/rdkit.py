@@ -7,8 +7,12 @@ This module contains the function generating resonance structures.
 
 import logging
 
-from rdmc.resonance.utils import is_partially_charged, unset_aromatic_flags
-from rdmc.resonance.filtration import is_equivalent_structure
+from rdmc.resonance.base import ResonanceAlgoRegistry
+from rdmc.resonance.utils import (
+    is_equivalent_structure,
+    is_partially_charged,
+    unset_aromatic_flags,
+)
 
 from rdkit import Chem
 
@@ -20,7 +24,7 @@ def generate_radical_resonance_structures(
     mol: Chem.RWMol,
     keep_isomorphic: bool = False,
     copy: bool = True,
-    kekulize: bool = False,
+    kekulize: bool = True,
     **kwargs,
 ):
     """
@@ -37,7 +41,7 @@ def generate_radical_resonance_structures(
         mol (Chem.RWMol): A radical molecule in RDKit RWMol.
         keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
         copy (bool, optional): If copy the input molecule. Defaults to ``True``.
-        kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``False``.
+        kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``True``.
 
     Returns:
         list: a list of molecules with resonance structures.
@@ -135,7 +139,7 @@ def generate_charged_resonance_structures(
     mol: Chem.RWMol,
     keep_isomorphic: bool = False,
     copy: bool = True,
-    kekulize: bool = False,
+    kekulize: bool = True,
     **kwargs,
 ) -> list:
     """
@@ -145,7 +149,7 @@ def generate_charged_resonance_structures(
         mol (Chem.RWMol): A charged molecule in RDKit RWMol.
         keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
         copy (bool, optional): If copy the input molecule. Defaults to ``True``.
-        kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``False``.
+        kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``True``.
 
     Returns:
         list: a list of molecules with resonance structures.
@@ -202,13 +206,26 @@ def generate_charged_resonance_structures(
     return known_structs
 
 
+@ResonanceAlgoRegistry.register("rdkit")
 def generate_resonance_structures(
     mol: Chem.RWMol,
     keep_isomorphic: bool = False,
     copy: bool = True,
-    kekulize: bool = False,
+    kekulize: bool = True,
     **kwargs,
 ):
+    """
+    Generate resonance structures with RDKit algorithm.
+
+    Args:
+        mol (Chem.RWMol): A charged molecule in RDKit RWMol.
+        keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
+        copy (bool, optional): If copy the input molecule. Defaults to ``True``.
+        kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``True``.
+
+    Returns:
+        list: a list of molecules with resonance structures.
+    """
     if is_partially_charged(mol):
         return generate_charged_resonance_structures(
             mol=mol,
