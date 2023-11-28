@@ -9,6 +9,8 @@ from typing import List, Tuple, Union
 
 from rdkit.Chem.rdMolDescriptors import CalcMolFormula
 
+from rdmc.resonance import generate_resonance_structures
+
 
 def get_resonance_structure_match(
     mol1_res: List["RDKitMol"],
@@ -121,9 +123,6 @@ def is_same_complex(
     Returns:
         bool: Whether the two complexes are the same.
     """
-    if resonance:
-        from rdmc.resonance import generate_radical_resonance_structures
-
     if not isinstance(complex1, (list, tuple)):
         complex1 = list(complex1.GetMolFrags(asMols=True))
     if not isinstance(complex2, (list, tuple)):
@@ -140,7 +139,7 @@ def is_same_complex(
 
     for mol1 in mol1s:
         mol1_res = (
-            generate_radical_resonance_structures(mol1[0], kekulize=True)
+            generate_resonance_structures(mol1[0])
             if resonance
             else [mol1[0]]
         )
@@ -153,7 +152,7 @@ def is_same_complex(
             mol2_res = mol2_res_dict.get(i)
             if mol2_res is None:
                 mol2_res = (
-                    generate_radical_resonance_structures(mol2[0], kekulize=True)
+                    generate_resonance_structures(mol2[0])
                     if resonance
                     else [mol2[0]]
                 )

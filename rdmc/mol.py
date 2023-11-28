@@ -334,7 +334,7 @@ class RDKitMol(object):
         Returns:
             RDKitMol: a copied molecule
         """
-        new_mol = RDKitMol(Chem.RWMol(self._mol, quickCopy, confId=confId))
+        new_mol = RDKitMol(Chem.RWMol(self._mol, quickCopy, confId))
         copy_attrs = copy_attrs or []
         for attr in copy_attrs:
             setattr(new_mol, attr, copy.deepcopy(getattr(self, attr)))
