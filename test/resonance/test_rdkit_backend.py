@@ -9,7 +9,7 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.resonance.rdkit import generate_resonance_structures
+from rdmc.resonance.rdkit_backend import generate_resonance_structures
 
 
 smi_params = Chem.SmilesParserParams()
