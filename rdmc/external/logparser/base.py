@@ -13,7 +13,7 @@ import pandas as pd
 from rdmc import RDKitMol
 from rdmc.mathlib.curvefit import FourierSeries1D
 from rdmc.ts import guess_rxn_from_normal_mode
-from rdmc.utils import PERIODIC_TABLE as PT
+from rdmc.rdtools.element import PERIODIC_TABLE as PT
 from rdmc.view import mol_viewer, freq_viewer, mol_animation
 
 try:

@@ -13,7 +13,7 @@ from scipy.spatial import distance
 
 from rdmc import RDKitMol
 from rdmc.mathlib.geom import get_centroid, get_max_distance_from_center, rotate, translate, translate_centroid
-from rdmc.utils import PERIODIC_TABLE as PT
+from rdmc.rdtools.element import PERIODIC_TABLE as PT
 
 
 def _get_bonds_as_sets(*mols: Union['RDKitMol', 'Mol'],
@@ -366,6 +366,7 @@ def examine_normal_mode(r_mol: RDKitMol,
         smaller_factor = (np.min(changed_diff) - baseline) / std
     else:
         smaller_factor = 0
+    other_factor = baseline / std
 
     if verbose:
         print(f'The min. bond distance change for bonds that are broken or formed'
@@ -375,7 +376,7 @@ def examine_normal_mode(r_mol: RDKitMol,
                   f' is {np.min(changed_diff)} A and is {smaller_factor:.1f} STD off the baseline.')
 
     if as_factors:
-        return larger_factor, smaller_factor
+        return larger_factor, smaller_factor, other_factor
 
     if larger_factor > 3:
         return True

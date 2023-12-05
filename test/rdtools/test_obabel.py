@@ -20,16 +20,12 @@ from rdmc.rdtools.obabel import (
     set_obmol_coords,
 )
 
-from rdmc.rdtools.atom import PERIODIC_TABLE
+from rdmc.rdtools.element import get_atomic_num
 
 
 smi_params = Chem.SmilesParserParams()
 smi_params.removeHs = False
 smi_params.sanitize = True
-
-
-def get_atomic_num(atomic_symbol):
-    return PERIODIC_TABLE.GetAtomicNumber(atomic_symbol)
 
 
 @pytest.mark.parametrize(

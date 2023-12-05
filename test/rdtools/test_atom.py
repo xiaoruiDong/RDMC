@@ -4,7 +4,6 @@ from rdkit import Chem
 
 from rdmc.rdtools.atom import (
     decrement_radical,
-    electronegativity,
     get_electronegativity,
     get_lone_pair,
     get_num_occupied_orbitals,
@@ -12,6 +11,7 @@ from rdmc.rdtools.atom import (
     has_empty_orbitals,
     increment_radical,
 )
+from rdmc.rdtools.element import electronegativity
 
 
 smi_params = Chem.SmilesParserParams()
@@ -48,10 +48,7 @@ def test_decrement_radical_raises_ValueError():
 def test_get_electronegativity():
     for i in range(119):
         X = get_electronegativity(Chem.Atom(i))
-        if i in electronegativity:
-            assert X == electronegativity[i]
-        else:
-            assert X == 1.0
+        assert X == electronegativity.get(i, 1.0)
 
 
 @pytest.mark.parametrize(

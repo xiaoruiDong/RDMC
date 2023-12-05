@@ -2,42 +2,7 @@ import math
 
 from rdkit import Chem
 
-PERIODIC_TABLE = Chem.GetPeriodicTable()
-
-electronegativity = {
-    1: 2.20,
-    3: 0.98,
-    4: 1.57,
-    5: 2.04,
-    6: 2.55,
-    7: 3.04,
-    8: 3.44,
-    9: 3.98,
-    11: 0.93,
-    12: 1.31,
-    13: 1.61,
-    14: 1.90,
-    15: 2.19,
-    16: 2.58,
-    17: 3.16,
-    19: 0.82,
-    20: 1.00,
-    21: 1.36,
-    22: 1.54,
-    23: 1.63,
-    24: 1.66,
-    25: 1.55,
-    26: 1.83,
-    27: 1.91,
-    29: 1.90,
-    30: 1.65,
-    31: 1.81,
-    32: 2.01,
-    33: 2.18,
-    34: 2.55,
-    35: 2.96,
-    53: 2.66,
-}
+from rdmc.rdtools import element
 
 
 def decrement_radical(atom: Chem.Atom):
@@ -53,6 +18,19 @@ def decrement_radical(atom: Chem.Atom):
     atom.SetNumRadicalElectrons(new_radical_count)
 
 
+def get_atom_mass(atom: Chem.Atom) -> float:
+    """
+    Get the mass of an atom given its atomic number.
+
+    Args:
+        atom (Atom): The atom whose mass is to be returned.
+
+    Returns:
+        float: The mass of the atom.
+    """
+    return element.get_atom_mass(atom.GetAtomicNum())
+
+
 def get_electronegativity(atom: Chem.Atom) -> float:
     """
     Get the electronegativity of an atom. Currently, only supports atom 1-35 and 53. Others will
@@ -64,7 +42,33 @@ def get_electronegativity(atom: Chem.Atom) -> float:
     Returns:
         float: The electronegativity of the atom.
     """
-    return electronegativity.get(atom.GetAtomicNum(), 1.0)
+    return element.get_electronegativity(atom.GetAtomicNum())
+
+
+def get_element_symbol(atom: Chem.Atom) -> str:
+    """
+    Get the symbol of an atom given its atomic number.
+
+    Args:
+        atom (Atom): The atom whose symbol is to be returned.
+
+    Returns:
+        str: The symbol of the atom.
+    """
+    return element.get_element_symbol(atom.GetAtomicNum())
+
+
+def get_n_outer_electrons(atom: Chem.Atom) -> int:
+    """
+    Get the number of outer electrons of an atom.
+
+    Args:
+        atom (Atom): The atom whose number of outer electrons is to be returned.
+
+    Returns:
+        int: The number of outer electrons of the atom.
+    """
+    return element.get_n_outer_electrons(atom.GetAtomicNum())
 
 
 def get_total_bond_order(atom: Chem.Atom) -> float:
@@ -104,7 +108,7 @@ def get_lone_pair(atom: Chem.Atom) -> int:
     """
     order = get_total_bond_order(atom)
     return (
-        PERIODIC_TABLE.GetNOuterElecs(atom.GetAtomicNum())
+        get_n_outer_electrons(atom)
         - atom.GetNumRadicalElectrons()
         - atom.GetFormalCharge()
         - int(order)
@@ -124,7 +128,7 @@ def get_num_occupied_orbitals(atom: Chem.Atom) -> int:
     order = get_total_bond_order(atom)
     return math.ceil(
         (
-            PERIODIC_TABLE.GetNOuterElecs(atom.GetAtomicNum())
+            get_n_outer_electrons(atom)
             - atom.GetFormalCharge()
             + atom.GetNumRadicalElectrons()
             + int(order)
