@@ -28,7 +28,7 @@ smi_params.removeHs = False
 smi_params.sanitize = True
 
 
-def get_element_symbol(atomic_symbol):
+def get_atomic_num(atomic_symbol):
     return PERIODIC_TABLE.GetAtomicNumber(atomic_symbol)
 
 
@@ -141,7 +141,7 @@ def test_parse_xyz_by_openbabel(xyz, smi, mult):
     num_atoms = int(xyz.splitlines()[0].strip())
     assert obmol.NumAtoms() == num_atoms
     assert [obmol.GetAtomById(i).GetAtomicNum() for i in range(num_atoms)] == [
-        get_element_symbol(atom.strip().split()[0])
+        get_atomic_num(atom.strip().split()[0])
         for atom in xyz.splitlines()[2 : 2 + num_atoms]
     ]
     assert obmol.GetTotalSpinMultiplicity() == mult
