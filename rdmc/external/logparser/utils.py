@@ -119,6 +119,7 @@ def scheme_to_dict(scheme_str: str) -> dict:
             scheme_dict = schemes['LOT']
             scheme_dict['method'] = arg.strip()
         elif arg in BASIS_SETS:
+            scheme_dict = schemes['LOT']
             scheme_dict['basis_set'] = arg.strip()
         else:
             schemes[arg.strip()] = True
