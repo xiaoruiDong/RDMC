@@ -23,6 +23,7 @@ def get_adjacency_matrix(mol: Chem.Mol) -> np.ndarray:
 def get_distance_matrix(
     mol: Chem.Mol,
     conf_id: int = -1,
+    balaban: bool = False,
 ) -> np.ndarray:
     """
     Get the distance matrix of the molecule.
@@ -35,7 +36,7 @@ def get_distance_matrix(
         numpy.ndarray: A square distance matrix of the molecule, where the value of each element is the distance
                         between the atoms.
     """
-    return Chem.Get3DDistanceMatrix(mol, confId=conf_id)
+    return Chem.Get3DDistanceMatrix(mol, confId=conf_id, useAtomWts=balaban)
 
 
 def _create_matrix_with_radii_values(radii: np.array) -> np.array:
