@@ -4,3 +4,6 @@ from rdmc.rdtools.fix.mult import (
     saturate_carbene,
     saturate_mol,
 )
+from rdmc.rdtools.fix.fix import (
+    fix_mol, fix_oxonium_bonds, remedy_manager
+)
