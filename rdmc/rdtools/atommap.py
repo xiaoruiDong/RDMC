@@ -18,6 +18,19 @@ def get_atom_map_numbers(mol: Chem.Mol) -> List[int]:
     return [atom.GetAtomMapNum() for atom in mol.GetAtoms()]
 
 
+def clear_atom_map_numbers(mol: Chem.Mol) -> List[int]:
+    """
+    Clear atom map numbers of the molecule
+
+    Args:
+        mol (Chem.Mol): The molecule to clear atom map numbers.
+
+    Returns:
+        np.ndarray: The atom map numbers of the molecule.
+    """
+    [atom.SetAtomMapNum(0) for atom in mol.GetAtoms()]
+
+
 def _renumber_atoms(
     mol: Chem.Mol,
     new_order: Iterable,
@@ -195,8 +208,7 @@ def reverse_map(map: Iterable, as_list: bool = True):
 def update_product_atom_map_after_reaction(
     mol: Chem.Mol,
     ref_mol: Chem.Mol,
-    clean_rxn_props: bool = True,
-):
+) -> List[Chem.Atom]:
     """
     Update the atom map number of the product molecule after reaction according to the reference molecule (usually the reactant).
     The operation is in-place.
@@ -206,12 +218,16 @@ def update_product_atom_map_after_reaction(
         ref_mol (Chem.Mol): The reference molecule (usually the reactant).
         clean_rxn_props (bool, optional): Whether to clean the reaction properties (`"old_mapno"` and `"react_atom_idx"`).
                                           Defaults to ``True``.
+
+    Returns:
+        list: atoms that are updated.
     """
+    updated_atoms = []
     for atom in mol.GetAtoms():
         if atom.HasProp("old_mapno"):
+            updated_atoms.append(atom)
             # atom map number of the product will zeroed out during the reaction
             react_atom_idx = int(atom.GetProp("react_atom_idx"))
             atom.SetAtomMapNum(ref_mol.GetAtomWithIdx(react_atom_idx).GetAtomMapNum())
-            if clean_rxn_props:
-                atom.ClearProp("react_atom_idx")
-                atom.ClearProp("old_mapno")
+
+    return updated_atoms

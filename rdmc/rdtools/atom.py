@@ -5,6 +5,14 @@ from rdkit import Chem
 from rdmc.rdtools import element
 
 
+def clear_rxn_prop(atom):
+    """
+    A helper function used to clean up the atom props created by reaction conversion
+    """
+    atom.ClearProp("react_atom_idx")
+    atom.ClearProp("old_mapno")
+
+
 def decrement_radical(atom: Chem.Atom):
     """
     Decrement the number of radical electrons on an atom by one.
