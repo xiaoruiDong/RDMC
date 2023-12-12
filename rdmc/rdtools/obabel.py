@@ -10,7 +10,7 @@ except ImportError:
     import openbabel as ob
 
 from rdmc.rdtools.conf import set_conformer_coordinates, add_conformer
-from rdmc.rdtools.general import BOND_ORDERS
+from rdmc.rdtools.bond import BOND_ORDERS
 
 RDKIT_TO_OB_BOND_ORDER = {
     Chem.BondType.SINGLE: 1,
