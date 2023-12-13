@@ -280,4 +280,8 @@ def get_shortest_path(mol, idx1, idx2):
     if mol.GetNumHeavyAtoms() > 100:  # An empirical cutoff
         return Chem.GetShortestPath(mol, idx1, idx2)
 
-    return _find_shortest_path(mol.GetAtomWithIdx(idx1), mol.GetAtomWithIdx(idx2))
+    return [
+        atom.GetIdx()
+        for atom in
+        _find_shortest_path(mol.GetAtomWithIdx(idx1), mol.GetAtomWithIdx(idx2))
+    ]
