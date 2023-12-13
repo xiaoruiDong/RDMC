@@ -8,6 +8,7 @@ smi_params.sanitize = True
 
 from rdmc.rdtools.atommap import (
     get_atom_map_numbers,
+    has_atom_map_numbers,
     needs_renumber,
     renumber_atoms,
     renumber_atoms_by_substruct_match_result,
@@ -117,3 +118,15 @@ def test_renumber_atoms_for_fragments():
 def test_needs_renumber(smiles, if_needs_renumber):
     mol = Chem.MolFromSmiles(smiles, smi_params)
     assert needs_renumber(mol) == if_needs_renumber
+
+
+@pytest.mark.parametrize(
+    "smiles, if_has_numbers",
+    [
+        ("C1CCCCC1", False),
+        ("[CH2:1]1[CH2:2][CH2:3][CH2:4][CH2:5][CH2:6]1", True),
+    ]
+)
+def test_has_atom_map_numbers(smiles, if_has_numbers):
+    mol = Chem.MolFromSmiles(smiles, smi_params)
+    assert has_atom_map_numbers(mol) == if_has_numbers

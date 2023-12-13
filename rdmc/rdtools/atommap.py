@@ -18,6 +18,19 @@ def get_atom_map_numbers(mol: Chem.Mol) -> List[int]:
     return [atom.GetAtomMapNum() for atom in mol.GetAtoms()]
 
 
+def has_atom_map_numbers(mol: Chem.Mol) -> bool:
+    """
+    Check whether the molecule has atom map numbers.
+
+    Args:
+        mol (Chem.Mol): The molecule to check.
+
+    Returns:
+        bool: Whether the molecule has atom map numbers.
+    """
+    return any(atom.GetAtomMapNum() for atom in mol.GetAtoms())
+
+
 def clear_atom_map_numbers(mol: Chem.Mol) -> List[int]:
     """
     Clear atom map numbers of the molecule
