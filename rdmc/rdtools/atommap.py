@@ -31,6 +31,26 @@ def clear_atom_map_numbers(mol: Chem.Mol) -> List[int]:
     [atom.SetAtomMapNum(0) for atom in mol.GetAtoms()]
 
 
+def needs_renumber(mol: Chem.Mol) -> bool:
+    """
+    Check whether the molecule needs renumbering. Expect atom map numbers to be non-zero and
+    monotonically increasing but not necessarily continuous.
+
+    Args:
+        mol (Chem.Mol): The molecule to check.
+
+    Returns:
+        bool: Whether the molecule needs renumbering.
+    """
+    cur_atom_map_number = 0
+    for atom in mol.GetAtoms():
+        atom_map_num = atom.GetAtomMapNum()
+        if atom_map_num <= cur_atom_map_number:
+            return True
+        cur_atom_map_number = atom_map_num
+    return False
+
+
 def _renumber_atoms(
     mol: Chem.Mol,
     new_order: Iterable,
