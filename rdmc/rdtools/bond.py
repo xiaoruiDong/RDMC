@@ -85,7 +85,6 @@ def increment_order(bond: Chem.Bond):
     bond.SetBondType(BOND_ORDERS[bond.GetBondType() + 1])
 
 
-# RDKit / RDMC compatible
 def decrement_order(bond: Chem.Bond):
     """
     Decrement the bond order of a bond by one.
@@ -97,3 +96,16 @@ def decrement_order(bond: Chem.Bond):
     if new_order <= 0.5:  # Also avoid decrementing aromatic bonds with bond order 1.5
         raise ValueError("Bond order cannot be negative")
     bond.SetBondType(BOND_ORDERS[new_order])
+
+
+def get_bonds_as_tuples(mol: Chem.Mol) -> List[Tuple[int, int]]:
+    """
+    Get the bonds of a molecule as a list of tuples.
+
+    Args:
+        mol (Mol): The molecule whose bonds are to be returned.
+
+    Returns:
+        List[Tuple[int, int]]: The bonds of the molecule as a list of tuples.
+    """
+    return [tuple(sorted((b.GetBeginAtomIdx(), b.GetEndAtomIdx()))) for b in mol.GetBonds()]
