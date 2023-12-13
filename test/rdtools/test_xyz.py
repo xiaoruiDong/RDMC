@@ -5,11 +5,7 @@ import numpy as np
 from rdkit import Chem
 
 from rdmc.rdtools.element import get_atomic_num
-from rdmc.rdtools.conversion import mol_from_xyz
-
-smi_params = Chem.SmilesParserParams()
-smi_params.removeHs = False
-smi_params.sanitize = True
+from rdmc.rdtools.conversion import mol_from_xyz, mol_to_xyz, mol_to_smiles
 
 
 mols = {
@@ -134,8 +130,7 @@ def test_mol_from_xyz_xyz2mol(xyz, smi, header, force_rdmc):
     )
 
     # Need to remove Hs for SMILES comparison
-    mol = Chem.rdmolops.RemoveHs(mol, sanitize=True)
-    assert Chem.MolToSmiles(Chem.RemoveHs(mol)) == smi
+    assert mol_to_smiles(mol, remove_hs=True) == smi
 
 
 @pytest.mark.parametrize("header", [True, False])
@@ -186,3 +181,12 @@ def test_embed_chiral(xyz, chiral_tag, backend):
     mol = mol_from_xyz(xyz, backend=backend, header=True, embed_chiral=True)
 
     assert mol.GetAtomWithIdx(0).GetChiralTag() == chiral_tag
+
+
+@pytest.mark.parametrize(
+    "xyz",
+    mols.values(),
+)
+def test_mol_to_xyz(xyz):
+    mol = mol_from_xyz(xyz, backend="openbabel", header=True)
+    assert xyz == mol_to_xyz(mol)

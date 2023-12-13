@@ -23,7 +23,9 @@ except:
     xyz_from_openbabel = None
 
 from rdmc.rdtools.element import PERIODIC_TABLE
-from rdmc.rdtools.conversion.xyz2mol import parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc
+from rdmc.rdtools.conversion.xyz2mol import (
+    parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc,
+)
 
 
 def parse_xyz_by_xyz2mol_rdkit_native(
@@ -122,11 +124,12 @@ def parse_xyz_by_openbabel(
     embed_chiral: bool = True,
     sanitize: bool = True,
 ):
-    if xyz_from_openbabel is None:
+    try:
+        obmol = xyz_from_openbabel(xyz)
+    except TypeError:  # NoneType is not callable
         raise ImportError(
             "Unable to parse XYZ with openbabel as openbabel is not installed. Please install openbabel first."
         )
-    obmol = xyz_from_openbabel(xyz)
     rdmol = openbabel_mol_to_rdkit_mol(obmol, remove_hs=False, sanitize=sanitize)
     if embed_chiral:
         Chem.AssignStereochemistryFrom3D(rdmol)
@@ -196,3 +199,32 @@ def mol_from_xyz(
             f"Backend ({backend}) is not supported. Only `openbabel` and `xyz2mol`"
             f" are supported."
         )
+
+
+def mol_to_xyz(
+    mol: Chem.Mol,
+    conf_id: int = -1,
+    header: bool = True,
+    comment: str = "",
+) -> str:
+    """
+    Convert Chem.Mol to a XYZ string.
+
+    Args:
+        mol (RDKitMol): A RDKitMol object.
+        conf_id (int, optional): The index of the conformer to be converted. Defaults to ``-1``, exporting the XYZ of the first conformer.
+        header (bool, optional): If lines of the number of atoms and title are included. Defaults to ``True``.
+        comment (str, optional): The comment to be added. Defaults to ``''``.
+
+    Returns:
+        str: A XYZ string.
+    """
+    xyz = Chem.MolToXYZBlock(mol, confId=conf_id)
+
+    if not header:
+        xyz = "\n".join(xyz.splitlines()[2:]) + "\n"
+    elif comment:
+        xyz = (
+            f"{mol.GetNumAtoms()}\n{comment}\n" + "\n".join(xyz.splitlines()[2:]) + "\n"
+        )
+    return xyz
