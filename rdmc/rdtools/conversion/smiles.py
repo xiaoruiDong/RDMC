@@ -99,9 +99,9 @@ def mol_to_smiles(
     mol: Chem.Mol,
     stereo: bool = True,
     kekule: bool = False,
-    canonical: bool = False,
+    canonical: bool = True,
     remove_atom_map: bool = True,
-    remove_hs: bool = False,
+    remove_hs: bool = True,
 ) -> str:
     """
     Convert an RDKit molecule object to a SMILES string.
@@ -110,10 +110,10 @@ def mol_to_smiles(
         mol (Chem.Mol): An RDKit molecule object.
         stereo (bool, optional): Whether to include stereochemistry information in the SMILES. Defaults to ``True``.
         kekule (bool, optional): Whether to use Kekule encoding. Defaults to ``False``.
-        canonical (bool, optional): Whether to use canonical SMILES. Defaults to ``False``.
+        canonical (bool, optional): Whether to use canonical SMILES. Defaults to ``True``.
         remove_atom_map (bool, optional): Whether to keep the Atom mapping contained in the SMILES. Defaults
             Defaults to ``True``.
-        remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule. Defaults to ``False``.
+        remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule. Defaults to ``True``.
 
     Returns:
         str: A SMILES string corresponding to the RDKit molecule object.
