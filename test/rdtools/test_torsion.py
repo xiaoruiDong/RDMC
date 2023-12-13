@@ -2,12 +2,8 @@ import pytest
 
 from rdkit import Chem
 
+from rdmc.rdtools.conversion import mol_from_smiles
 from rdmc.rdtools.torsion import get_torsional_modes
-
-
-smi_params = Chem.SmilesParserParams()
-smi_params.removeHs = False
-smi_params.sanitize = True
 
 
 @pytest.mark.parametrize(
@@ -59,9 +55,11 @@ smi_params.sanitize = True
 @pytest.mark.parametrize("exclude_methyl", [True, False])
 @pytest.mark.parametrize("include_ring", [True, False])
 def test_get_torsional_modes(
-    smi, methyl_torsions, other_torsions, ring_torsions, exclude_methyl, include_ring
+    smi,
+    methyl_torsions, other_torsions, ring_torsions,
+    exclude_methyl, include_ring
 ):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+    mol = mol_from_smiles(smi)
 
     torsions = [
         tuple(tor)

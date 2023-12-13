@@ -2,13 +2,8 @@ import pytest
 
 from rdkit import Chem
 
+from rdmc.rdtools.conversion import mol_from_smiles, mol_from_xyz
 from rdmc.rdtools.dist import get_missing_bonds, has_colliding_atoms
-from rdmc.rdtools.conversion import mol_from_xyz
-
-
-smi_params = Chem.SmilesParserParams()
-smi_params.removeHs = False
-smi_params.sanitize = True
 
 
 @pytest.mark.parametrize(
@@ -89,7 +84,7 @@ def test_missing_bonds(xyz, threshold, expect_bonds):
 @pytest.mark.parametrize("reference", ["vdw", "covalent", "bond"])
 def test_has_colliding_atoms_false(reference):
     # RDKit ETKDG methods won't results in colliding atoms
-    mol = Chem.MolFromSmiles("CC")
+    mol = mol_from_smiles("CC")
 
     Chem.AllChem.EmbedMolecule(mol)
 
@@ -97,9 +92,8 @@ def test_has_colliding_atoms_false(reference):
 
 
 def test_has_colliding_atoms_true():
-
     # Create a [CH3].[H] molecule
-    mol = Chem.MolFromSmiles("[C:1]([H:2])([H:3])[H:4].[H:5]", smi_params)
+    mol = mol_from_smiles("[C:1]([H:2])([H:3])[H:4].[H:5]")
     # When embedding, the H atom is placed at the origin, causing colliding atoms
     Chem.AllChem.EmbedMolecule(mol)
 

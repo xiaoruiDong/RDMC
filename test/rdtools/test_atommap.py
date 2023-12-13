@@ -2,6 +2,9 @@ import pytest
 
 from rdkit import Chem
 
+# In this module, RDKit's native smiles to mol is used,
+# as RDMC's version includes atom mapping change / reordering,
+# making it not the best way to test pure atom mapping functions
 smi_params = Chem.SmilesParserParams()
 smi_params.removeHs = False
 smi_params.sanitize = True

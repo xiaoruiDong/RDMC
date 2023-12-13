@@ -20,12 +20,8 @@ from rdmc.rdtools.obabel import (
     set_obmol_coords,
 )
 
+from rdmc.rdtools.conversion import mol_from_smiles
 from rdmc.rdtools.element import get_atomic_num
-
-
-smi_params = Chem.SmilesParserParams()
-smi_params.removeHs = False
-smi_params.sanitize = True
 
 
 @pytest.mark.parametrize(
@@ -207,8 +203,9 @@ def test_set_obmol_coords(smi, xyz):
     ],
 )
 @pytest.mark.parametrize("embed", [True, False])
-def test_rdkit_mol_to_openbabel_mol(smi, embed):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_rdkit_mol_to_openbabel_mol(smi, add_hs, embed):
+    mol = mol_from_smiles(smi, add_hs=add_hs)
     if embed:
         Chem.AllChem.EmbedMolecule(mol)
 
@@ -236,8 +233,9 @@ def test_rdkit_mol_to_openbabel_mol(smi, embed):
     ],
 )
 @pytest.mark.parametrize("embed", [True, False])
-def test_rdkit_mol_to_openbabel_mol_manual(smi, embed):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_rdkit_mol_to_openbabel_mol_manual(smi, add_hs, embed):
+    mol = mol_from_smiles(smi, add_hs=add_hs)
     if embed:
         Chem.AllChem.EmbedMolecule(mol)
 

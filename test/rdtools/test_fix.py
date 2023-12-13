@@ -3,9 +3,9 @@ import pytest
 from rdkit import Chem
 
 from rdmc.rdtools.atommap import clear_atom_map_numbers, get_atom_map_numbers
+from rdmc.rdtools.conversion import mol_from_smiles, mol_from_xyz, mol_to_smiles
 from rdmc.rdtools.fix import fix_oxonium_bonds, remedy_manager, saturate_mol, fix_mol
 from rdmc.rdtools.mol import get_spin_multiplicity
-from rdmc.rdtools.conversion import mol_from_xyz
 
 
 smi_params = Chem.SmilesParserParams()
@@ -25,13 +25,14 @@ smi_params.sanitize = True
         ("[CH]C=CC=C[CH2]", "[CH]=CC=CC=C", 2),
     ],
 )
-def test_saturate_mol(smi, exp_smi, exp_mult):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_saturate_mol(smi, add_hs, exp_smi, exp_mult):
+    mol = mol_from_smiles(smi, add_hs=add_hs)
 
     saturate_mol(mol)
 
     assert get_spin_multiplicity(mol) == exp_mult
-    assert Chem.MolToSmiles(mol) == exp_smi
+    assert mol_to_smiles(mol) == exp_smi
 
 
 @pytest.mark.parametrize(
@@ -44,11 +45,11 @@ def test_saturate_mol(smi, exp_smi, exp_mult):
         ("[CH2]C=CO[O]", "C=CC=[O+][O-]"),
     ],
 )
-def test_fix_sanitize_ok(smi, exp_smi):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_fix_sanitize_ok(smi, add_hs, exp_smi):
+    mol = mol_from_smiles(smi, add_hs=add_hs)
     fixed_mol = fix_mol(mol, remedy_manager.all_remedies)
-    clear_atom_map_numbers(fixed_mol)
-    assert Chem.MolToSmiles(fixed_mol) == exp_smi
+    assert mol_to_smiles(fixed_mol) == exp_smi
 
 
 @pytest.mark.parametrize(
@@ -69,45 +70,38 @@ def test_fix_sanitize_ok(smi, exp_smi):
         ("[NH3]CP(=O)([O])O", "[NH3+]CP(=O)([O-])O"),
     ],
 )
-def test_fix_sanitize_bad_non_resonance(smi, exp_smi):
-    smi_params = Chem.SmilesParserParams()
-    smi_params.removeHs = False
-    smi_params.sanitize = False
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_fix_sanitize_bad_non_resonance(smi, add_hs, exp_smi):
+    mol = mol_from_smiles(smi, add_hs=add_hs, sanitize=False)
 
-    mol = Chem.MolFromSmiles(smi, smi_params)
     with pytest.raises(Exception):
         mol.Sanitize()
 
     fixed_mol = fix_mol(mol, remedy_manager.all_remedies)
-    clear_atom_map_numbers(fixed_mol)
 
-    assert Chem.MolToSmiles(fixed_mol) == exp_smi
+    assert mol_to_smiles(fixed_mol) == exp_smi
 
 
 def test_fix_mol_complex():
-    mol = Chem.MolFromSmiles("O=O.[C]=O", smi_params)
+    mol = mol_from_smiles("O=O.[C]=O")
 
     fixed_mols = Chem.GetMolFrags(
         fix_mol(mol, remedy_manager.all_remedies), asMols=True
     )
-    [clear_atom_map_numbers(fixed_mols) for fixed_mols in fixed_mols]
 
-    assert set(Chem.MolToSmiles(fixed_mol) for fixed_mol in fixed_mols) == set(
+    assert set(mol_to_smiles(fixed_mol) for fixed_mol in fixed_mols) == set(
         ["[O][O]", "[C-]#[O+]"]
     )
 
 
 def test_fix_spin_multiplicity():
-    mol = Chem.MolFromSmiles("[CH2][CH2]", smi_params)
+    mol = mol_from_smiles("[CH2][CH2]")
     assert get_spin_multiplicity(fix_mol(mol, fix_spin_multiplicity=True, mult=1)) == 1
 
 
 def test_renumber_after_fix():
-    smi_params = Chem.SmilesParserParams()
-    smi_params.removeHs = False
-    smi_params.sanitize = False
 
-    mol = Chem.MolFromSmiles("[H:1][C:2]([H:3])[N:4]#[C:5]", smi_params)
+    mol = mol_from_smiles("[H:1][C:2]([H:3])[N:4]#[C:5]", sanitize=False)
 
     fixed_mol = fix_mol(mol, remedy_manager.all_remedies, renumber_atoms=False)
     assert get_atom_map_numbers(fixed_mol) != get_atom_map_numbers(mol)
@@ -173,5 +167,4 @@ H        0.43540870       0.21959280       0.94605120""",
 def test_fix_oxonium(xyz, exp_smi):
     mol = mol_from_xyz(xyz, sanitize=False, header=False)
     fixed_mol = fix_oxonium_bonds(mol)
-    clear_atom_map_numbers(fixed_mol)
-    assert Chem.MolToSmiles(Chem.RemoveHs(fixed_mol)) == exp_smi
+    assert mol_to_smiles(fixed_mol) == exp_smi

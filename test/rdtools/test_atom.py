@@ -11,12 +11,8 @@ from rdmc.rdtools.atom import (
     has_empty_orbitals,
     increment_radical,
 )
+from rdmc.rdtools.conversion import mol_from_smiles
 from rdmc.rdtools.element import electronegativity
-
-
-smi_params = Chem.SmilesParserParams()
-smi_params.removeHs = False
-smi_params.sanitize = True
 
 
 @pytest.mark.parametrize(
@@ -28,8 +24,9 @@ smi_params.sanitize = True
         "[C]",
     ],
 )
-def test_decrement_radical(smi):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_decrement_radical(smi, add_hs):
+    mol = mol_from_smiles(smi, add_hs=add_hs)
     atom = mol.GetAtomWithIdx(0)
     radical_count_before = atom.GetNumRadicalElectrons()
     decrement_radical(atom)
@@ -37,8 +34,9 @@ def test_decrement_radical(smi):
     assert radical_count_after == radical_count_before - 1
 
 
-def test_decrement_radical_raises_ValueError():
-    mol = Chem.MolFromSmiles("[CH4]", smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_decrement_radical_raises_ValueError(add_hs):
+    mol = mol_from_smiles("[CH4]", add_hs=add_hs)
     atom = mol.GetAtomWithIdx(0)
     atom.SetNumRadicalElectrons(0)
     with pytest.raises(ValueError):
@@ -64,8 +62,9 @@ def test_get_electronegativity():
         ("[C]", 0),
     ],
 )
+# add_hs is not used as Hs are well-defined in the SMILES
 def test_get_total_bond_order(smi, bo):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+    mol = mol_from_smiles(smi, add_hs=False)
     atom = mol.GetAtomWithIdx(0)
     assert get_total_bond_order(atom) == bo
 
@@ -82,8 +81,9 @@ def test_get_total_bond_order(smi, bo):
         ("[F]", 3),
     ],
 )
-def test_get_lone_pair(smi, expect):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_get_lone_pair(smi, add_hs, expect):
+    mol = mol_from_smiles(smi, add_hs=add_hs)
     atom = mol.GetAtomWithIdx(0)
     assert get_lone_pair(atom) == expect
 
@@ -109,14 +109,16 @@ def test_get_lone_pair(smi, expect):
         # ("I(F)(F)(F)(F)(F)(F)F", 7),  # RDKit does not support generating IF7 from SMILES
     ],
 )
-def test_get_num_occupided_orbitals(smi, expect):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_get_num_occupided_orbitals(smi, add_hs, expect):
+    mol = mol_from_smiles(smi, add_hs=add_hs)
     atom = mol.GetAtomWithIdx(0)
     assert get_num_occupied_orbitals(atom) == expect
 
 
-def test_get_num_occupided_orbitals_carbenes():
-    mol = Chem.MolFromSmiles("[CH2]", smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_get_num_occupided_orbitals_carbenes(add_hs):
+    mol = mol_from_smiles("[CH2]", add_hs=add_hs)
     atom = mol.GetAtomWithIdx(0)
     # Triplet carbene
     atom.SetNumRadicalElectrons(2)
@@ -147,14 +149,16 @@ def test_get_num_occupided_orbitals_carbenes():
         # ("I(F)(F)(F)(F)(F)(F)F", 7),  # RDKit does not support generating IF7 from SMILES
     ],
 )
-def test_has_empty_orbitals(smi, expect):
-    mol = Chem.MolFromSmiles(smi, smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_has_empty_orbitals(smi, add_hs, expect):
+    mol = mol_from_smiles(smi, add_hs=add_hs)
     atom = mol.GetAtomWithIdx(0)
     assert has_empty_orbitals(atom) == expect
 
 
-def test_increment_radical():
-    mol = Chem.MolFromSmiles("[CH4]", smi_params)
+@pytest.mark.parametrize("add_hs", [True, False])
+def test_increment_radical(add_hs):
+    mol = mol_from_smiles("[CH4]", add_hs=add_hs)
     atom = mol.GetAtomWithIdx(0)
     radical_count_before = atom.GetNumRadicalElectrons()
     increment_radical(atom)
