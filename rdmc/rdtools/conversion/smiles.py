@@ -1,11 +1,19 @@
 from rdkit import Chem
 
-from rdmc.rdtools.atommap import needs_renumber, renumber_atoms, clear_atom_map_numbers
+from rdmc.rdtools.atommap import (
+    clear_atom_map_numbers,
+    has_atom_map_numbers,
+    needs_renumber,
+    renumber_atoms,
+    reset_atom_map_numbers,
+)
 from rdmc.rdtools.conversion.utils import prepare_output_mol
 
 
 def get_smiles_parser_params(
-    remove_hs: bool = True, sanitize: bool = True, allow_cxsmiles: bool = False
+    remove_hs: bool = True,
+    sanitize: bool = True,
+    allow_cxsmiles: bool = False
 ) -> Chem.SmilesParserParams:
     """
     Get the parameters for the RDKit SMILES parser.
@@ -29,7 +37,7 @@ def process_mol_from_smiles(
     mol: Chem.Mol,
     remove_hs: bool = True,
     add_hs: bool = True,
-):
+) -> Chem.Mol:
     if mol is None:
         raise ValueError("The provided SMILES is not valid. Please double check.")
 
@@ -54,6 +62,7 @@ def mol_from_smiles(
     sanitize: bool = True,
     allow_cxsmiles: bool = True,
     keep_atom_map: bool = True,
+    assign_atom_map: bool = True,
 ) -> Chem.Mol:
     """
     Convert a SMILES string to an Chem.Mol molecule object.
@@ -65,8 +74,10 @@ def mol_from_smiles(
                                 Only functioning when removeHs is False.
         sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
         allow_cxsmiles (bool, optional): Whether to recognize and parse CXSMILES. Defaults to ``True``.
-        keep_atom_map (bool, optional): Whether to keep the Atom mapping contained in the SMILES. Defaults
-                                      Defaults to ``True``.
+        keep_atom_map (bool, optional): Whether to keep the atom mapping contained in the SMILES. Defaults
+                                        Defaults to ``True``.
+        assign_atom_map (bool, optional): Whether to assign the atom mapping according to the atom index
+                                          if no atom mapping available in the SMILES. Defaults to ``True``.
 
     Returns:
         Chem.Mol: An RDKit molecule object corresponding to the SMILES.
@@ -74,8 +85,13 @@ def mol_from_smiles(
     params = get_smiles_parser_params(remove_hs, sanitize, allow_cxsmiles)
     mol = Chem.MolFromSmiles(smiles, params)
     mol = process_mol_from_smiles(mol, remove_hs, add_hs)
-    if needs_renumber(mol):
-        mol = renumber_atoms(mol, keep_atom_map)
+    if not keep_atom_map:
+        reset_atom_map_numbers(mol)
+    elif needs_renumber(mol):
+        if has_atom_map_numbers(mol):
+            mol = renumber_atoms(mol)
+        elif assign_atom_map:
+            reset_atom_map_numbers(mol)
     return mol
 
 
