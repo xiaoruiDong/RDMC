@@ -2,7 +2,7 @@
 branch = True
 source = rdmc
 omit =
-    rdmc/rdtools/xyz/xyz2mol.py
+    rdmc/rdtools/conversion/xyz2mol.py
     rdmc/external/GeoMol/*
     rdmc/external/rmg.py
     rdmc/external/xyz2mol.py
@@ -15,7 +15,7 @@ exclude_lines =
     logger.warning
     if __name__ == .__main__.:
 omit =
-    rdmc/rdtools/xyz/xyz2mol.py
+    rdmc/rdtools/conversion/xyz2mol.py
     rdmc/external/GeoMol/*
     rdmc/external/rmg.py
     rdmc/external/xyz2mol.py

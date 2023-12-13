@@ -5,7 +5,7 @@ import numpy as np
 from rdkit import Chem
 
 from rdmc.rdtools.element import get_atomic_num
-from rdmc.rdtools.xyz import mol_from_xyz
+from rdmc.rdtools.conversion import mol_from_xyz
 
 smi_params = Chem.SmilesParserParams()
 smi_params.removeHs = False

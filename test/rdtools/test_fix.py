@@ -5,7 +5,7 @@ from rdkit import Chem
 from rdmc.rdtools.atommap import clear_atom_map_numbers, get_atom_map_numbers
 from rdmc.rdtools.fix import fix_oxonium_bonds, remedy_manager, saturate_mol, fix_mol
 from rdmc.rdtools.mol import get_spin_multiplicity
-from rdmc.rdtools.xyz import mol_from_xyz
+from rdmc.rdtools.conversion import mol_from_xyz
 
 
 smi_params = Chem.SmilesParserParams()

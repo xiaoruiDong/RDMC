@@ -23,7 +23,7 @@ except:
     xyz_from_openbabel = None
 
 from rdmc.rdtools.element import PERIODIC_TABLE
-from rdmc.rdtools.xyz.xyz2mol import parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc
+from rdmc.rdtools.conversion.xyz2mol import parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc
 
 
 def parse_xyz_by_xyz2mol_rdkit_native(

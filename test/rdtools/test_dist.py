@@ -3,7 +3,7 @@ import pytest
 from rdkit import Chem
 
 from rdmc.rdtools.dist import get_missing_bonds, has_colliding_atoms
-from rdmc.rdtools.xyz import mol_from_xyz
+from rdmc.rdtools.conversion import mol_from_xyz
 
 
 smi_params = Chem.SmilesParserParams()
