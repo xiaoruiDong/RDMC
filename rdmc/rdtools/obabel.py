@@ -7,10 +7,18 @@ try:
     from openbabel import openbabel as ob
 except ImportError:
     # Openbabel 2
-    import openbabel as ob
+    try:
+        import openbabel as ob
+    except ImportError:
+        class FakeOpenBabel:
+            def __getattribute__(self, __name: str):
+                raise RuntimeError("The function cannot run as OpenBabel is not installed. "
+                                   "Please install the openbael and restart the python Kernel.")
+        ob = FakeOpenBabel()
 
-from rdmc.rdtools.conf import set_conformer_coordinates, add_conformer
+from rdmc.rdtools.conf import add_conformer
 from rdmc.rdtools.bond import BOND_ORDERS
+
 
 RDKIT_TO_OB_BOND_ORDER = {
     Chem.BondType.SINGLE: 1,
@@ -21,7 +29,7 @@ RDKIT_TO_OB_BOND_ORDER = {
 }
 
 
-def get_obmol_coords(obmol: ob.OBMol):
+def get_obmol_coords(obmol: "ob.OBMol"):
     """
     Get the atom coordinates from an openbabel molecule. If all coordinates are zero,
     None will be returned.
@@ -63,7 +71,7 @@ def openbabel_mol_to_rdkit_mol(
 
 
 def _obmol_to_rdkitmol_keephs(
-    obmol: ob.OBMol,
+    obmol: "ob.OBMol",
     sanitize: bool,
     embed: bool,
 ) -> Chem.RWMol:
@@ -107,7 +115,7 @@ def _obmol_to_rdkitmol_keephs(
 
 
 def _obmol_to_rdkitmol_removehs(
-    obmol: ob.OBMol,
+    obmol: "ob.OBMol",
     sanitize: bool,
     embed: bool,
 ) -> Chem.RWMol:
@@ -164,7 +172,7 @@ def _obmol_to_rdkitmol_removehs(
 def rdkit_mol_to_openbabel_mol(
     rdmol: Chem.Mol,
     embed: bool = True,
-) -> ob.OBMol:
+) -> "ob.OBMol":
     """
     Convert a Mol to an Openbabel mol. This a temporary replace of
     ``rdkit_mol_to_openbabel_mol_manual``. When the molecule has multiple conformers,
@@ -195,7 +203,7 @@ def rdkit_mol_to_openbabel_mol(
 def rdkit_mol_to_openbabel_mol_manual(
     rdmol: Chem.Mol,
     embed: bool = True,
-) -> ob.OBMol:
+) -> "ob.OBMol":
     """
     Convert a Mol/RWMol to a Openbabel mol. This function has a problem converting
     aromatic molecules. Example: 'c1nc[nH]n1'. Currently use a workaround, converting an
@@ -243,7 +251,7 @@ def rdkit_mol_to_openbabel_mol_manual(
     return obmol
 
 
-def set_obmol_coords(obmol: ob.OBMol, coords: np.array):
+def set_obmol_coords(obmol: "ob.OBMol", coords: np.array):
     """
     Get the atom coordinates from an openbabel molecule. If all coordinates are zero,
     It will return None
@@ -256,7 +264,7 @@ def set_obmol_coords(obmol: ob.OBMol, coords: np.array):
         atom.SetVector(ob.vector3(*coords[atom_idx].tolist()))
 
 
-def parse_xyz_by_openbabel(xyz: str) -> ob.OBMol:
+def parse_xyz_by_openbabel(xyz: str) -> "ob.OBMol":
     """
     Perceive a xyz str using openbabel and generate the corresponding OBMol.
 
@@ -279,7 +287,7 @@ def parse_xyz_by_openbabel(xyz: str) -> ob.OBMol:
     return obmol
 
 
-def _correct_atom_spin_mult(obmol: ob.OBMol):
+def _correct_atom_spin_mult(obmol: "ob.OBMol"):
     """
     This is a temporary Fix for Issue # 1. Openbabel has a native function called AssignSpinMultiplicity
     however,  it becomes a dummy function in openbabel 3,
