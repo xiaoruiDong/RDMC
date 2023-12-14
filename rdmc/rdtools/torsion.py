@@ -1,6 +1,9 @@
-from typing import List
+from typing import List, Sequence
 
 from rdkit import Chem
+
+from rdmc.rdtools.dist import get_shortest_path
+
 
 # The rotational bond definition in RDkit
 # It is the same as rdkit.Chem.Lipinski import RotatableBondSmarts
@@ -119,3 +122,52 @@ def get_torsional_modes(
     ring_torsions = find_ring_torsions(mol) if include_ring else []
 
     return internal_torsions + ring_torsions
+
+
+def get_torsion_tops(
+    mol: Chem.Mol,
+    torsion: Sequence,
+    allow_non_bonding_pivots: bool = False,
+) -> tuple:
+    """
+    Generate tops for the given torsion. Top atoms are defined as atoms on one side of the torsion.
+    The mol should be in one-piece when using this function, otherwise, the results will be
+    misleading.
+
+    Args:
+        torsion (Sequence): The atom indices of the pivot atoms (length of 2) or
+            a length-4 atom index sequence with the 2nd and 3rd are the pivot of the torsion.
+        allow_non_bonding_pivots (bool, optional): Allow pivots. Defaults to ``False``.
+            There are cases like CC#CC or X...H...Y, where a user may want to define a
+            torsion with a nonbonding pivots.
+
+    Returns:
+        tuple: Two frags, one of the top of the torsion, and the other top of the torsion.
+    """
+    pivot = torsion if len(torsion) == 2 else [int(i) for i in torsion[1:3]]
+    try:
+        bond_idxs = [mol.GetBondBetweenAtoms(*pivot).GetIdx()]
+    except AttributeError:
+        if allow_non_bonding_pivots:
+            try:
+                path = list(get_shortest_path(mol, pivot[0], pivot[1]))
+            except IndexError:
+                raise ValueError(f"Atom {pivot[0]} and {pivot[1]} are not bonded.")
+
+            bond_idxs = [mol.GetBondBetweenAtoms(*path[:2]).GetIdx(),
+                         mol.GetBondBetweenAtoms(*path[-2:]).GetIdx()]
+        else:
+            raise ValueError(f"Atom {pivot[0]} and {pivot[1]} are not bonded.")
+
+    split_mol = Chem.rdmolops.FragmentOnBonds(mol, bond_idxs, addDummies=False)
+
+    # Generate the indexes for each fragment from the cutting
+    frags = Chem.GetMolFrags(
+        split_mol,
+        asMols=False,
+        sanitizeFrags=False,
+    )
+    if len(frags) == 2:
+        return frags
+    # only remain the fragment that containing pivot atoms
+    return tuple(frag for i in pivot for frag in frags if i in frag)

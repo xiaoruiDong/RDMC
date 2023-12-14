@@ -2,8 +2,9 @@ import pytest
 
 from rdkit import Chem
 
+from rdmc.rdtools.bond import add_bond
 from rdmc.rdtools.conversion import mol_from_smiles
-from rdmc.rdtools.torsion import get_torsional_modes
+from rdmc.rdtools.torsion import get_torsional_modes, get_torsion_tops
 
 
 @pytest.mark.parametrize(
@@ -55,9 +56,7 @@ from rdmc.rdtools.torsion import get_torsional_modes
 @pytest.mark.parametrize("exclude_methyl", [True, False])
 @pytest.mark.parametrize("include_ring", [True, False])
 def test_get_torsional_modes(
-    smi,
-    methyl_torsions, other_torsions, ring_torsions,
-    exclude_methyl, include_ring
+    smi, methyl_torsions, other_torsions, ring_torsions, exclude_methyl, include_ring
 ):
     mol = mol_from_smiles(smi)
 
@@ -77,3 +76,34 @@ def test_get_torsional_modes(
     expect_tors = [tuple(tor) for tor in expect_tors]
 
     assert set(torsions) == set(expect_tors)
+
+
+def test_get_torsion_tops():
+    """
+    Test get torsion tops of a given molecule.
+    """
+    smi1 = "[C:1]([C:2]([H:6])([H:7])[H:8])([H:3])([H:4])[H:5]"
+    mol = mol_from_smiles(smi1)
+    tops = get_torsion_tops(mol, [2, 0, 1, 5])
+    assert len(tops) == 2
+    assert set(tops) == {(0, 2, 3, 4), (1, 5, 6, 7)}
+    tops = get_torsion_tops(mol, [0, 1], allow_non_bonding_pivots=True)
+    assert len(tops) == 2
+    assert set(tops) == {(0, 2, 3, 4), (1, 5, 6, 7)}
+
+    smi2 = "[C:1]([C:2]#[C:3][C:4]([H:8])([H:9])[H:10])([H:5])([H:6])[H:7]"
+    mol = mol_from_smiles(smi2)
+    with pytest.raises(ValueError):
+        get_torsion_tops(mol, [4, 0, 3, 7])
+    tops = get_torsion_tops(mol, [4, 0, 3, 7], allow_non_bonding_pivots=True)
+    assert len(tops) == 2
+    assert set(tops) == {(0, 4, 5, 6), (3, 7, 8, 9)}
+
+    smi3 = "[C:1]([H:3])([H:4])([H:5])[H:6].[O:2][H:7]"
+    mol = Chem.RWMol(mol_from_smiles(smi3))
+    mol = add_bond(mol, (1, 2))  # convert it to a transition state
+    with pytest.raises(ValueError):
+        get_torsion_tops(mol, [3, 0, 1, 6])
+    tops = get_torsion_tops(mol, [3, 0, 1, 6], allow_non_bonding_pivots=True)
+    assert len(tops) == 2
+    assert set(tops) == {(0, 3, 4, 5), (1, 6)}
