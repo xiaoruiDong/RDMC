@@ -5,7 +5,7 @@ from typing import Union
 def prepare_output_mol(
     mol: Chem.Mol,
     remove_hs: bool = False,
-    sanitize: Union[bool,Chem.SanitizeFlags] = True,
+    sanitize: Union[bool, Chem.SanitizeFlags] = True,
 ):
     """
     Generate a RDKit Mol instance for output purpose, to ensure that the original molecule is not modified.

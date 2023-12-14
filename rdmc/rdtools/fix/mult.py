@@ -2,14 +2,13 @@ from functools import lru_cache
 from itertools import chain
 import logging
 
-logger = logging.getLogger(__name__)
-
-
 from rdkit import Chem
 
 from rdmc.rdtools.atom import decrement_radical
 from rdmc.rdtools.bond import increment_order, BOND_ORDERS
 from rdmc.rdtools.mol import get_spin_multiplicity
+
+logger = logging.getLogger(__name__)
 
 
 def _check_viability(
@@ -246,7 +245,7 @@ def saturate_biradical_cdb(mol: Chem.Mol, multiplicity: int, chain_length: int =
                 # Switch over the bond types
                 # E.g., C-C=C-C => C=C-C=C
                 bonds = [
-                    mol.GetBondBetweenAtoms(*path[i : i + 2])
+                    mol.GetBondBetweenAtoms(*path[i: i + 2])
                     for i in range(path_length - 1)
                 ]
 

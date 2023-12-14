@@ -2,6 +2,16 @@ import logging
 
 from rdkit import Chem
 
+from rdmc.rdtools.obabel import (
+    parse_xyz_by_openbabel as xyz_from_openbabel,
+    openbabel_mol_to_rdkit_mol,
+)
+
+from rdmc.rdtools.element import PERIODIC_TABLE
+from rdmc.rdtools.conversion.xyz2mol import (
+    parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc,
+)
+
 logger = logging.getLogger(__name__)
 
 # Since 2022.09.1, RDKit added built-in XYZ parser using xyz2mol approach
@@ -13,19 +23,6 @@ except ImportError:
         "The current version of RDKit does not contain built-in xyz2mol."
         "Using the original python implementation instead."
     )
-
-try:
-    from rdmc.rdtools.obabel import (
-        parse_xyz_by_openbabel as xyz_from_openbabel,
-        openbabel_mol_to_rdkit_mol,
-    )
-except:
-    xyz_from_openbabel = None
-
-from rdmc.rdtools.element import PERIODIC_TABLE
-from rdmc.rdtools.conversion.xyz2mol import (
-    parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc,
-)
 
 
 def parse_xyz_by_xyz2mol_rdkit_native(

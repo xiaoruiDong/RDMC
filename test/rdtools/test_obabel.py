@@ -134,7 +134,7 @@ def test_parse_xyz_by_openbabel(xyz, smi, mult):
     assert obmol.NumAtoms() == num_atoms
     assert [obmol.GetAtomById(i).GetAtomicNum() for i in range(num_atoms)] == [
         get_atomic_num(atom.strip().split()[0])
-        for atom in xyz.splitlines()[2 : 2 + num_atoms]
+        for atom in xyz.splitlines()[2: 2 + num_atoms]
     ]
     assert obmol.GetTotalSpinMultiplicity() == mult
 
@@ -149,7 +149,7 @@ def test_parse_xyz_by_openbabel(xyz, smi, mult):
                     float(coord_values)
                     for coord_values in coord_values.strip().split()[1:]
                 ]
-                for coord_values in xyz.splitlines()[2 : 2 + num_atoms]
+                for coord_values in xyz.splitlines()[2: 2 + num_atoms]
             ]
         ),
         decimal=6,

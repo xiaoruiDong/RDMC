@@ -144,6 +144,7 @@ def test_invalid_xyz(backend):
     with pytest.raises(ValueError):
         mol_from_xyz("C 0 0 0\n", backend=backend, header=True)
 
+
 @pytest.mark.parametrize(
     "xyz, chiral_tag",
     [

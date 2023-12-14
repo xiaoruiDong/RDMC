@@ -2,13 +2,6 @@ import pytest
 
 from rdkit import Chem
 
-# In this module, RDKit's native smiles to mol is used,
-# as RDMC's version includes atom mapping change / reordering,
-# making it not the best way to test pure atom mapping functions
-smi_params = Chem.SmilesParserParams()
-smi_params.removeHs = False
-smi_params.sanitize = True
-
 from rdmc.rdtools.atommap import (
     get_atom_map_numbers,
     has_atom_map_numbers,
@@ -16,6 +9,13 @@ from rdmc.rdtools.atommap import (
     renumber_atoms,
     renumber_atoms_by_substruct_match_result,
 )
+
+# In this module, RDKit's native smiles to mol is used,
+# as RDMC's version includes atom mapping change / reordering,
+# making it not the best way to test pure atom mapping functions
+smi_params = Chem.SmilesParserParams()
+smi_params.removeHs = False
+smi_params.sanitize = True
 
 
 @pytest.mark.parametrize(
@@ -111,12 +111,13 @@ def test_renumber_atoms_for_fragments():
     for atom, atomic_num in zip(new_mol.GetAtoms(), [8, 17, 6]):
         assert atom.GetAtomicNum() == atomic_num
 
+
 @pytest.mark.parametrize(
     "smiles, if_needs_renumber",
     [
         ("[CH2:1]1[CH2:2][CH2:3][CH2:4][CH2:5][CH2:6]1", False),
         ("[CH2:1]1[CH2:3][CH2:2][CH2:4][CH2:5][CH2:6]1", True),
-    ]
+    ],
 )
 def test_needs_renumber(smiles, if_needs_renumber):
     mol = Chem.MolFromSmiles(smiles, smi_params)
@@ -128,7 +129,7 @@ def test_needs_renumber(smiles, if_needs_renumber):
     [
         ("C1CCCCC1", False),
         ("[CH2:1]1[CH2:2][CH2:3][CH2:4][CH2:5][CH2:6]1", True),
-    ]
+    ],
 )
 def test_has_atom_map_numbers(smiles, if_has_numbers):
     mol = Chem.MolFromSmiles(smiles, smi_params)
