@@ -30,7 +30,7 @@
 
 from rdkit import Chem
 
-from rdmc.resonance.pathfinder import PathFinderRegistry
+from rdmc.rdtools.resonance.pathfinder import PathFinderRegistry
 
 import pytest
 

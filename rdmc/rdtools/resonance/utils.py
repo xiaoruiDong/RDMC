@@ -109,8 +109,7 @@ def get_total_bond_order(atom: "Atom") -> float:
     # b.GetValenceContrib(atom) is more robust than b.GetBondTypeAsDouble()
     # as it considers cases like dative bonds
     return (
-        sum([b.GetValenceContrib(atom) for b in atom.GetBonds()])
-        + atom.GetNumImplicitHs()
+        sum([b.GetValenceContrib(atom) for b in atom.GetBonds()]) + atom.GetTotalNumHs()
     )
 
 

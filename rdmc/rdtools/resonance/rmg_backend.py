@@ -16,15 +16,15 @@ from scipy.optimize import linprog
 
 from rdkit import Chem
 
-from rdmc.resonance.base import ResonanceAlgoRegistry
-from rdmc.resonance.filtration import (
+from rdmc.rdtools.resonance.base import ResonanceAlgoRegistry
+from rdmc.rdtools.resonance.filtration import (
     get_octet_deviation,
     get_octet_deviation_list,
     get_charge_span_list,
 )
-from rdmc.resonance.filtration import filter_structures as filter_resonance_structures
-from rdmc.resonance.pathfinder import PathFinderRegistry
-from rdmc.resonance.utils import (
+from rdmc.rdtools.resonance.filtration import filter_structures as filter_resonance_structures
+from rdmc.rdtools.resonance.pathfinder import PathFinderRegistry
+from rdmc.rdtools.resonance.utils import (
     force_no_implicit,
     get_aryne_rings,
     get_charge_span,

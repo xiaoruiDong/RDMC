@@ -28,17 +28,17 @@
 ###############################################################################
 
 
-from rdmc.resonance.filtration import (
+from rdmc.rdtools.resonance.filtration import (
     get_octet_deviation_list,
     get_octet_deviation,
     filter_structures,
     charge_filtration,
     aromaticity_filtration,
 )
-from rdmc.resonance.rmg_backend import (
+from rdmc.rdtools.resonance.rmg_backend import (
     generate_resonance_structures,
 )
-from rdmc.resonance.utils import get_charge_span
+from rdmc.rdtools.resonance.utils import get_charge_span
 
 from rdkit import Chem
 

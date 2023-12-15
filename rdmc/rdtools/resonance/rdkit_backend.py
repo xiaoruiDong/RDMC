@@ -7,8 +7,8 @@ This module contains the function generating resonance structures.
 
 import logging
 
-from rdmc.resonance.base import ResonanceAlgoRegistry
-from rdmc.resonance.utils import (
+from rdmc.rdtools.resonance.base import ResonanceAlgoRegistry
+from rdmc.rdtools.resonance.utils import (
     is_equivalent_structure,
     is_partially_charged,
     unset_aromatic_flags,

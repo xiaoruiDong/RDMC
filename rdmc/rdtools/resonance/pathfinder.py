@@ -9,7 +9,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Optional, Set, Tuple, Union
 
-from rdmc.resonance.utils import (
+from rdmc.rdtools.resonance.utils import (
     decrement_order,
     decrement_radical,
     get_lone_pair,
@@ -291,7 +291,6 @@ class PathFinder(ABC):
 
         This needs to be implemented by subclasses.
         """
-        pass
 
     @abstractmethod
     def transform(mol, path) -> "Mol":
@@ -300,7 +299,6 @@ class PathFinder(ABC):
 
         This needs to be implemented by subclasses.
         """
-        pass
 
 
 @PathFinderRegistry.register("allyl_radical")

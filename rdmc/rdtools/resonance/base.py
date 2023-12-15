@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from rdmc.resonance.utils import is_equivalent_structure
+from rdmc.rdtools.resonance.utils import is_equivalent_structure
 
 
 class ResonanceAlgoRegistry:

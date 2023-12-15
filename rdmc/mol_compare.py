@@ -9,7 +9,7 @@ from typing import List, Tuple, Union
 
 from rdkit.Chem.rdMolDescriptors import CalcMolFormula
 
-from rdmc.resonance import generate_resonance_structures
+from rdmc.rdtools.resonance import generate_resonance_structures
 
 
 def get_resonance_structure_match(

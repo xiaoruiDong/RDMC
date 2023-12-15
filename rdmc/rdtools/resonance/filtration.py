@@ -47,7 +47,7 @@ from itertools import combinations, product
 import logging
 from typing import List, Optional, Union
 
-from rdmc.resonance.utils import (
+from rdmc.rdtools.resonance.utils import (
     get_charge_span,
     get_electronegativity,
     get_lone_pair,
@@ -57,7 +57,6 @@ from rdmc.resonance.utils import (
     get_total_bond_order,
     is_aromatic,
     is_identical,
-    unset_aromatic_flags,
 )
 
 from rdkit import Chem
@@ -486,16 +485,10 @@ def get_charge_distance(mol: "RWMol") -> tuple:
     neg_atoms = [a[0] for a in mol.GetSubstructMatches(neg_atom_pattern)]
 
     cumulative_similar_charge_distance = sum(
-        [
-            len(get_shortest_path(mol, a1, a2))
-            for a1, a2 in combinations(pos_atoms, 2)
-        ]
+        [len(get_shortest_path(mol, a1, a2)) for a1, a2 in combinations(pos_atoms, 2)]
     )
     cumulative_similar_charge_distance += sum(
-        [
-            len(get_shortest_path(mol, a1, a2))
-            for a1, a2 in combinations(neg_atoms, 2)
-        ]
+        [len(get_shortest_path(mol, a1, a2)) for a1, a2 in combinations(neg_atoms, 2)]
     )
     cumulative_opposite_charge_distance = sum(
         [

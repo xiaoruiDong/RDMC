@@ -15,7 +15,7 @@ from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
 from rdmc.mol_compare import is_same_complex, is_equivalent_reaction
-from rdmc.resonance import generate_resonance_structures
+from rdmc.rdtools.resonance import generate_resonance_structures
 from rdmc.ts import get_all_changing_bonds
 
 
