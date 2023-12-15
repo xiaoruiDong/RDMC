@@ -255,6 +255,12 @@ class CclibLog(BaseLog):
         num_opt_geoms = self.num_all_geoms
         if (only_opt and 'opt' in self.job_type) or 'scan' in self.job_type:
             scf_energies = self.cclib_results.scfenergies[:num_opt_geoms]
+        elif 'irc' in self.job_type:
+            # If taking corrector steps and job failed due to corrector fails
+            # There is one more energy value compared to the number of geometries
+            scf_energies = self.cclib_results.scfenergies[
+                : len(self.cclib_results.optstatus)
+            ]
         else:
             scf_energies = self.cclib_results.scfenergies
 
@@ -943,17 +949,18 @@ class CclibLog(BaseLog):
         Returns:
             RDKitMol
         """
-        # Figure out if there is an 'inverse' point in the IRC path
-        midpoint = self.get_irc_midpoint(converged=converged)
-        if bothway and midpoint:
-            mol = self.get_mol(converged=converged, embed_conformers=False, backend=backend, sanitize=sanitize)
-            num_confs = self.num_converged_geoms if converged else self.num_all_geoms
-            mol.EmbedMultipleNullConfs(n=num_confs)
-            coords = self.converged_geometries if converged else self.all_geometries
-            # Inverse part of the geometry to make the change in geometry 'monotonically'
-            coords[:midpoint] = coords[midpoint - 1::-1]
-            for i in range(num_confs):
-                mol.SetPositions(coords=coords[i], id=i)
+        if bothway:
+            # Figure out if there is an 'inverse' point in the IRC path
+            midpoint = self.get_irc_midpoint(converged=converged)
+            if midpoint:
+                mol = self.get_mol(converged=converged, embed_conformers=False, backend=backend, sanitize=sanitize)
+                num_confs = self.num_converged_geoms if converged else self.num_all_geoms
+                mol.EmbedMultipleNullConfs(n=num_confs)
+                coords = self.converged_geometries if converged else self.all_geometries
+                # Inverse part of the geometry to make the change in geometry 'monotonically'
+                coords[:midpoint] = coords[midpoint - 1::-1]
+                for i in range(num_confs):
+                    mol.SetPositions(coords=coords[i], id=i)
         else:
             mol = self.get_mol(converged=converged, backend=backend, sanitize=sanitize)
         return mol

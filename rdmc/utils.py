@@ -5,6 +5,7 @@
 This module provides methods that can directly apply to RDKit Mol/RWMol.
 """
 
+import pathlib
 from typing import Iterable, Tuple, Union
 
 import numpy as np
@@ -27,6 +28,9 @@ from rdkit.Chem.TorsionFingerprints import CalculateTorsionLists
 # Mute RDKit's error logs
 # They can be confusing at places where try ... except ... are implemented.
 RDLogger.DisableLog("rdApp.*")
+
+
+repo_dir = pathlib.Path(__file__).absolute().parent.parent
 
 try:
     # Openbabel 3
