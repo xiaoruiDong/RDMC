@@ -26,12 +26,7 @@ def get_spin_multiplicity(mol: Chem.Mol) -> int:
     Returns:
         int : Spin multiplicity.
     """
-    return 1 + sum(
-        [
-            mol.GetAtomWithIdx(i).GetNumRadicalElectrons()
-            for i in range(mol.GetNumAtoms())
-        ]
-    )
+    return 1 + Chem.Descriptors.NumRadicalElectrons(mol)
 
 
 def get_formal_charge(mol: Chem.Mol) -> int:
@@ -45,6 +40,31 @@ def get_formal_charge(mol: Chem.Mol) -> int:
         int : Formal charge.
     """
     return Chem.GetFormalCharge(mol)
+
+
+def get_mol_weight(
+    mol: Chem.Mol,
+    exact: bool = False,
+    heavy_atoms: bool = False,
+) -> float:
+    """
+    Get the molecule weight.
+
+    Args:
+        mol (Chem.Mol): The molecule to get the weight.
+        exact (bool, optional): If ``True``, the exact weight is returned.
+            Otherwise, the average weight is returned. Defaults to ``False``.
+        heavy_atoms (bool, optional): If ``True``, the weight is calculated using only heavy atoms.
+            Otherwise, the weight is calculated using all atoms. Defaults to ``False``.
+
+    Returns:
+        float: The weight of the molecule.
+    """
+    if heavy_atoms:
+        return Chem.Descriptors.HeavyAtomMolWt(mol)
+    if exact:
+        return Chem.Descriptors.ExactMolWt(mol)
+    return Chem.Descriptors.MolWt(mol)
 
 
 def get_heavy_atoms(mol: Chem.Mol) -> int:
