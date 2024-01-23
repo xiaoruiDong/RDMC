@@ -33,6 +33,20 @@ def parse_xyz_by_xyz2mol_rdkit_native(
     embed_chiral: bool = True,
     use_atom_maps: bool = False,
 ):
+    """
+    Parse xyz with RDKit's native implementation of xyz2mol.
+
+    Args:
+        xyz (str): The xyz string.
+        charge (int, optional): The charge of the species. Defaults to ``0``.
+        allow_charged_fragments (bool, optional): ``True`` for charged fragment, ``False`` for radical. Defaults to ``False``.
+        use_huckel (bool, optional): ``True`` for Huckel method, ``False`` for Gasteiger method. Defaults to False.
+        embed_chiral (bool, optional): ``True`` for chiral molecule, ``False`` for non-chiral molecule. Defaults to ``True``.
+        use_atom_maps (bool, optional): ``True`` for atom map, ``False`` for non-atom map. Defaults to ``False``.
+
+    Returns:
+        Chem.Mol: The RDKit Mol instance.
+    """
     try:
         mol = Chem.Mol(Chem.MolFromXYZBlock(xyz))
     except BaseException:
@@ -121,6 +135,17 @@ def parse_xyz_by_openbabel(
     embed_chiral: bool = True,
     sanitize: bool = True,
 ):
+    """
+    Parse xyz with openbabel.
+
+    Args:
+        xyz (str): The xyz string.
+        embed_chiral (bool, optional): ``True`` to embed chiral information. Defaults to ``True``.
+        sanitize (bool, optional): ``True`` to sanitize the molecule. Defaults to ``True``.
+
+    Returns:
+        Chem.Mol: The RDKit Mol instance.
+    """
     try:
         obmol = xyz_from_openbabel(xyz)
     except TypeError:  # NoneType is not callable
@@ -154,9 +179,9 @@ def mol_from_xyz(
     sanitize: bool = True,
     embed_chiral: bool = False,
     **kwargs,
-):
+) -> Chem.RWMol:
     """
-    Convert xyz string to RDKitMol.
+    Convert xyz string to RDKit Chem.RWMol.
 
     Args:
         xyz (str): A XYZ String.
@@ -179,7 +204,7 @@ def mol_from_xyz(
                                which user's may have some flexibility to modify.
 
     Returns:
-        RDKitMol: An RDKit molecule object corresponding to the xyz.
+        Chem.RWMol: An RDKit molecule object corresponding to the xyz.
     """
     if not header:
         xyz = add_header_to_xyz(xyz, title="")

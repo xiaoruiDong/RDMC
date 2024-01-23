@@ -38,6 +38,17 @@ def process_mol_from_smiles(
     remove_hs: bool = True,
     add_hs: bool = True,
 ) -> Chem.Mol:
+    """
+    A helper function processing molecules generated from MolFromSmiles.
+
+    Args:
+        mol (Chem.Mol): The RDKit Mol/RWMol object to be processed.
+        remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule. Defaults to ``True``.
+        add_hs (bool, optional): Whether to add explicit hydrogen atoms to the molecule. Defaults to ``True``.
+            Only functioning when ``removeHs`` is False.
+    Returns:
+        Chem.Mol: The processed RDKit Mol/RWMol object.
+    """
     if mol is None:
         raise ValueError("The provided SMILES is not valid. Please double check.")
 

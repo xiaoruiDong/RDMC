@@ -253,8 +253,7 @@ def rdkit_mol_to_openbabel_mol_manual(
 
 def set_obmol_coords(obmol: "ob.OBMol", coords: np.array):
     """
-    Get the atom coordinates from an openbabel molecule. If all coordinates are zero,
-    It will return None
+    Set the atom coordinates of an openbabel molecule.
 
     Args:
         obmol (OBMol): The openbabel OBMol to get coordinates from.

@@ -125,7 +125,7 @@ def get_lone_pair(atom: Chem.Atom) -> int:
 
 def get_num_occupied_orbitals(atom: Chem.Atom) -> int:
     """
-    Get the number of occupied orbitals on an atom.
+    Get the number of occupied orbitals of an atom.
 
     Args:
         atom (Atom): The atom whose number of occupied orbitals is to be returned.
