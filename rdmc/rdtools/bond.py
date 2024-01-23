@@ -75,7 +75,7 @@ def add_bonds(
     return mol
 
 
-def increment_order(bond: Chem.Bond):
+def increment_bond_order(bond: Chem.Bond):
     """
     Increment the bond order of a bond by one.
 
@@ -85,7 +85,7 @@ def increment_order(bond: Chem.Bond):
     bond.SetBondType(BOND_ORDERS[bond.GetBondType() + 1])
 
 
-def decrement_order(bond: Chem.Bond):
+def decrement_bond_order(bond: Chem.Bond):
     """
     Decrement the bond order of a bond by one.
 
