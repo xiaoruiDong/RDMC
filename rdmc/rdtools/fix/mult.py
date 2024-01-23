@@ -5,7 +5,7 @@ import logging
 from rdkit import Chem
 
 from rdmc.rdtools.atom import decrement_radical
-from rdmc.rdtools.bond import increment_order, BOND_ORDERS
+from rdmc.rdtools.bond import increment_bond_order, BOND_ORDERS
 from rdmc.rdtools.mol import get_spin_multiplicity
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ def saturate_biradical_12(
         for i, j in target_bonds:
             bond = mol.GetBondBetweenAtoms(i, j)
             try:
-                increment_order(bond)
+                increment_bond_order(bond)
             except KeyError:  # Cannot get the bond with bond order + 1
                 continue
             for atom in [mol.GetAtomWithIdx(i), mol.GetAtomWithIdx(j)]:

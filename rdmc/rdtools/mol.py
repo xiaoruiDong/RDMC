@@ -5,6 +5,7 @@ from typing import List, Optional
 import numpy as np
 
 from rdkit import Chem
+from rdkit.Chem import Descriptors
 from rdkit.Geometry.rdGeometry import Point3D
 
 from rdmc.rdtools.atom import get_element_symbol
@@ -26,7 +27,7 @@ def get_spin_multiplicity(mol: Chem.Mol) -> int:
     Returns:
         int : Spin multiplicity.
     """
-    return 1 + Chem.Descriptors.NumRadicalElectrons(mol)
+    return 1 + Descriptors.NumRadicalElectrons(mol)
 
 
 def get_formal_charge(mol: Chem.Mol) -> int:
@@ -61,10 +62,10 @@ def get_mol_weight(
         float: The weight of the molecule.
     """
     if heavy_atoms:
-        return Chem.Descriptors.HeavyAtomMolWt(mol)
+        return Descriptors.HeavyAtomMolWt(mol)
     if exact:
-        return Chem.Descriptors.ExactMolWt(mol)
-    return Chem.Descriptors.MolWt(mol)
+        return Descriptors.ExactMolWt(mol)
+    return Descriptors.MolWt(mol)
 
 
 def get_heavy_atoms(mol: Chem.Mol) -> int:
