@@ -8,6 +8,7 @@ from rdmc.rdtools.resonance.rmg_backend import (
     generate_optimal_aromatic_resonance_structures,
     generate_resonance_structures,
 )
+import rdkit
 from rdkit import Chem
 
 import pytest
@@ -469,10 +470,15 @@ class TestResonance:
         mol = Chem.MolFromSmiles("C12C#CC=CC=1C=CC3=C2C=CC=C3", smi_params)
 
         mol_list = generate_resonance_structures(mol)
-        # RMG has 5 resonance structures, and three of them are due to partially
-        # kekulized naphthalene substructures, so RDMC's 2 resonance structures
-        # are equivalent to RMG's results
-        assert len(mol_list) == 5
+        # RMG has 5 resonance structures. In new versions of RDKit like 2023.09, 5 is successfully
+        # reproduced, and the structures are consistent. However, in earlier versions like 2021.09,
+        # 4 is returned. This is due to different default aromaticity criteria. The differences are not
+        # significant enough to implement any kind of remedy to the earlier versions, so we will pass both cases.
+        # Given RDKit's version style, it is okay to directly compare the versions as strings.
+        if rdkit.__version__ >= '2023.09.1':
+            assert len(mol_list) == 5
+        else:
+            assert len(mol_list) == 4 or len(mol_list) == 5
 
     def test_fused_aromatic1(self):
         """Test we can make aromatic perylene from both adjlist and SMILES"""
