@@ -28,7 +28,7 @@ def add_bond(
     inplace: bool = True,
 ) -> Chem.RWMol:
     """
-    Add bonds to a molecule.
+    Add a bond to a molecule.
 
     Args:
         mol (Chem.RWMol): The molecule to be added.

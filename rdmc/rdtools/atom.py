@@ -55,7 +55,7 @@ def get_electronegativity(atom: Chem.Atom) -> float:
 
 def get_element_symbol(atom: Chem.Atom) -> str:
     """
-    Get the symbol of an atom given its atomic number.
+    Get the element symbol of an atom.
 
     Args:
         atom (Atom): The atom whose symbol is to be returned.
