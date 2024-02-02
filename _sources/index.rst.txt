@@ -37,8 +37,8 @@ To start with, simply try:
 .. code-block:: python
 
     from rdmc import RDKitMol, Reaction
-    mol = RDKitMol('CCO')
-    rxn = Reaction('CCO>>CC(=O)O')
+    mol = RDKitMol.FromSmiles('CCO')
+    rxn = Reaction.from_reaction_smiles('CCO>>CC(=O)O')
 
 And see what the ``mol`` and ``rxn`` are capable of! The full lists of APIs of :obj:`RDKitMol <rdmc.mol.RDKitMol>` and :obj:`Reaction <rdmc.reaction.Reaction>` are provided in this documentation.
 
