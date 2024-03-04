@@ -695,16 +695,11 @@ def _clar_optimization(mol):
     c = np.array([1] * n_ring + [0] * (n_ring_bond + n_exo_bond))
 
     bounds = Bounds(
-        lb=np.array([0] * (n_ring + n_ring_bond) + [1] * n_exo_bond),
-        ub=1,
+        lb=np.array([0] * (n_ring + n_ring_bond) + exo_bond_orders),
+        ub=np.array([1] * (n_ring + n_ring_bond) + exo_bond_orders),
     )
 
-    solutions = _solve_clar_lp(
-        c,
-        bounds,
-        constraints,
-        n_ring,
-    )
+    solutions = _solve_clar_lp(c, bounds, constraints, n_ring)
 
     return solutions, aromatic_rings, bonds
 
