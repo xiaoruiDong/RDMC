@@ -12,7 +12,7 @@ import logging
 from typing import List, Optional, Tuple
 
 import numpy as np
-from scipy.optimize import linprog
+from scipy.optimize import milp, Bounds, LinearConstraint
 
 from rdkit import Chem
 
@@ -685,35 +685,43 @@ def _clar_optimization(mol):
     n_atom = len(atoms)
 
     A_eq = np.zeros((n_atom, n_ring + n_ring_bond + n_exo_bond))
-
     for i, atom in enumerate(atoms):
         A_eq[i, list(atom_ring_map[atom] | atom_bond_map[atom])] = 1
 
+    constraints = [LinearConstraint(
+        A=A_eq, lb=np.ones(n_atom), ub=np.ones(n_atom)
+    )]
+
     c = np.array([1] * n_ring + [0] * (n_ring_bond + n_exo_bond))
 
-    bounds = [(0, 1)] * (n_ring + n_ring_bond) + [(1, 1)] * n_exo_bond
+    bounds = Bounds(
+        lb=np.array([0] * (n_ring + n_ring_bond) + [1] * n_exo_bond),
+        ub=1,
+    )
 
-    solutions = _solve_clar_lp(num_rings=n_ring, c=c, A_eq=A_eq, bounds=bounds)
+    solutions = _solve_clar_lp(
+        c,
+        bounds,
+        constraints,
+        n_ring,
+    )
 
     return solutions, aromatic_rings, bonds
 
 
-def _solve_clar_lp(num_rings, c, A_eq, bounds, constraints=None, max_num=None):
-    if constraints is None:
-        A_ub, b_ub = None, None
-    else:
-        A_ub = np.array([new_a for new_a, _ in constraints])
-        b_ub = np.array([new_b for _, new_b in constraints])
-
-    result = linprog(
+def _solve_clar_lp(
+    c: np.array,
+    bounds: Bounds,
+    constraints: List[LinearConstraint],
+    n_ring: int,
+    max_num=None,
+):
+    result = milp(
         c=-c,  # Note: negative to maximize
-        A_eq=A_eq,
-        b_eq=np.ones(A_eq.shape[0]),
-        A_ub=A_ub,
-        b_ub=b_ub,
-        bounds=bounds,
-        method="highs",
         integrality=1,
+        bounds=bounds,
+        constraints=constraints,
+        options={'time_limit': 10}
     )
 
     if result.status != 0:
@@ -735,19 +743,16 @@ def _solve_clar_lp(num_rings, c, A_eq, bounds, constraints=None, max_num=None):
         raise Exception("Optimization obtained a non-integer solution.")
 
     # Generate constraints based on the solution obtained
-    y = solution[0:num_rings]
-    new_a = np.hstack([y, [0] * (c.shape[0] - num_rings)])
-    new_b = sum(y) - 1
-    if constraints is not None:
-        constraints.append((new_a, new_b))
-    else:
-        constraints = [(new_a, new_b)]
-
+    y = solution[0: n_ring]
+    constraints.append(
+        LinearConstraint(
+            A=np.hstack([y, [0] * (solution.shape[0] - n_ring)]),
+            ub=sum(y) - 1,
+        ),
+    )
     # Run optimization with additional constraints
     try:
-        inner_solutions = _solve_clar_lp(
-            num_rings, c, A_eq, bounds, constraints, max_num
-        )
+        inner_solutions = _solve_clar_lp(c, bounds, constraints, n_ring, max_num)
     except RuntimeError as e:
         inner_solutions = []
 
