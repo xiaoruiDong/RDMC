@@ -11,7 +11,10 @@ import py3Dmol
 
 from rdmc.mol import RDKitMol
 from rdmc.ts import clean_ts
-from ipywidgets import interact, IntSlider
+try:
+    from ipywidgets import interact, IntSlider
+except ImportError:
+    interact = None
 
 
 def mol_viewer(obj: str,
@@ -162,6 +165,9 @@ def interactive_conformer_viewer(mol, **kwargs):
     Returns:
         py3Dmol.view: The molecule viewer with slider to view different conformers.
     """
+    if not interact:
+        raise ImportError("This function requires ipywidgets to be installed. You can install it by pip or conda")
+
     if isinstance(mol, list) or isinstance(mol, tuple):
         def viewer(confId):
             return mol_viewer(obj=mol[confId], confId=0, **kwargs)

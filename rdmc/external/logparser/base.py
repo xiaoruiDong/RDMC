@@ -19,7 +19,7 @@ from rdmc.view import mol_viewer, freq_viewer, mol_animation
 try:
     from ipywidgets import interact, IntSlider, Dropdown, FloatLogSlider
 except ImportError:
-    pass
+    interact = None
 
 
 class BaseLog(object):
@@ -700,6 +700,9 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         mol = self.get_mol(converged=False, sanitize=sanitize, backend=backend)
         xyzs = self.get_xyzs(converged=False)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
@@ -838,6 +841,9 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         xyz = self.get_xyzs(converged=True)[0]
         lines = xyz.splitlines()
         vib_xyz_list = lines[0:2]
@@ -851,6 +857,9 @@ class CclibLog(BaseLog):
         """
         Create a IPython interactive widget to investigate the frequency calculation.
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         dropdown = Dropdown(
             options=self.freqs,
             value=self.freqs[0],
@@ -1018,6 +1027,9 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         mol = self._process_irc_mol(sanitize=sanitize, converged=converged, backend=backend, bothway=bothway)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         xyzs = self.get_xyzs(converged=converged)
@@ -1188,6 +1200,9 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         mol = self._process_scan_mol(align_scan=align_scan,
                                      align_frag_idx=align_frag_idx,
                                      sanitize=sanitize,
