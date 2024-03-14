@@ -33,7 +33,7 @@ def fix_mol_by_remedy(
     sanitize: bool = True,
 ) -> Chem.Mol:
     """
-    Fix the molecule according to the given remedy defined as an RDKit ChemicalReaction.
+    Fix the molecule according to the given remedies that are defined as RDKit ChemicalReaction.
 
     Args:
         mol (Chem.Mol): The molecule to be fixed.
