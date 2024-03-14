@@ -140,6 +140,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
 
     sdf_path = temp_dir / "mol.sdf"
     mol.ToSDFFile(str(sdf_path), confId=confId)
+    update_rdkit_mol_format(sdf_path)
 
     command = [
         XTB_BINARY,
@@ -159,6 +160,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
     if job == "--path":
         p_sdf_path = temp_dir / "pmol.sdf"
         pmol.ToSDFFile(str(p_sdf_path), confId=pconfId)
+        update_rdkit_mol_format(sdf_path)
         command.insert(3, str(p_sdf_path))
 
     with open(logfile, "w") as f:
@@ -219,3 +221,36 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
         props.update({"wbo": get_wbo(xtb_wbo)})
         not save_dir and rmtree(temp_dir)
         return (props, opt_mol) if return_optmol else props
+
+
+def update_rdkit_mol_format(path):
+    """
+    After xTB changes its parser backend to mctc-lib, it stops being able to read Mol/SDF
+    files generated from RDKit. This is due to, in the bond property section, mctc-lib
+    looks for 7 elements while RDKit only generates 4. As xTB doesn't really need to know
+    the extra information, we can simply assign them to 0s. This patch function helps
+    append the missing 0s.
+    """
+
+    with open(path, "r") as f:
+        lines = f.readlines()
+
+    n_atoms = int(lines[3].split()[0])
+    n_bonds = int(lines[3].split()[1])
+
+    # Check if the file needs to be fixed, only check once
+    n_bond_props = len(lines[4 + n_atoms].split())
+    if n_bond_props > 7:
+        raise ValueError("This SDF/Mol file is abnormal, please double check your file")
+    elif n_bond_props == 7:  # No need to fix
+        return
+    else:
+        n_0s = 7 - n_bond_props
+
+    new_lines = lines[:4 + n_atoms] + [
+        line[:-1] + "  0" * n_0s + "\n"
+        for line in lines[4 + n_atoms: 4 + n_atoms + n_bonds]
+    ] + lines[4 + n_atoms + n_bonds:]
+
+    with open(path, "w") as f:
+        f.writelines(new_lines)
