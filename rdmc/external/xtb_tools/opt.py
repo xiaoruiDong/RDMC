@@ -25,7 +25,7 @@ from rdmc.external.xtb_tools.utils import (
     TS_PATH_INP,
 )
 
-XTB_INPUT_FILE = Path(UTILS_PATH) / "xtb.inp")
+XTB_INPUT_FILE = Path(UTILS_PATH) / "xtb.inp"
 
 
 def read_xtb_json(json_file, mol):
