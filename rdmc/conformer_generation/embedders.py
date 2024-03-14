@@ -214,11 +214,11 @@ class GeoMolEmbedder(ConfGenEmbedder):
         # featurize data and run GeoMol
         if self.tg_data is None:
             self.tg_data = featurize_mol_from_smiles(self.smiles, dataset=self.dataset)
-        data = from_data_list([self.tg_data])  # need to run this bc of dumb internal GeoMol processing
+        data = from_data_list([self.tg_data]).to(self.device)  # need to run this bc of dumb internal GeoMol processing
         self.model(data, inference=True, n_model_confs=n_conformers)
 
         # process predictions
-        model_coords = construct_conformers(data, self.model).double().cpu().detach().numpy()
+        model_coords = construct_conformers(data, self.model, self.device).double().cpu().detach().numpy()
         split_model_coords = np.split(model_coords, n_conformers, axis=1)
 
         # package in mol and return
