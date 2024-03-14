@@ -7,7 +7,7 @@ Taken from https://github.com/josejimenezluna/delfta/blob/f33dbe4fc2b860cef28788
 """
 
 import json
-import os
+from pathlib import Path
 from shutil import rmtree
 import subprocess
 import tempfile
@@ -25,7 +25,7 @@ from rdmc.external.xtb_tools.utils import (
     TS_PATH_INP,
 )
 
-XTB_INPUT_FILE = os.path.join(UTILS_PATH, "xtb.inp")
+XTB_INPUT_FILE = Path(UTILS_PATH) / "xtb.inp")
 
 
 def read_xtb_json(json_file, mol):
@@ -131,19 +131,19 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
     method = "--" + method
     input_file = TS_PATH_INP if job == "--path" else ""
 
-    temp_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
-    logfile = os.path.join(temp_dir, "xtb.log")
-    xtb_out = os.path.join(temp_dir, "xtbout.json")
-    xtb_wbo = os.path.join(temp_dir, "wbo")
-    xtb_g98 = os.path.join(temp_dir, "g98.out")
-    xtb_ts = os.path.join(temp_dir, "xtbpath_ts.xyz")
+    temp_dir = Path(save_dir).absolute() if save_dir else Path(tempfile.mkdtemp()).absolute()
+    logfile = temp_dir / "xtb.log"
+    xtb_out = temp_dir / "xtbout.json"
+    xtb_wbo = temp_dir / "wbo"
+    xtb_g98 = temp_dir / "g98.out"
+    xtb_ts = temp_dir / "xtbpath_ts.xyz"
 
-    sdf_path = os.path.join(temp_dir, "mol.sdf")
-    mol.ToSDFFile(sdf_path, confId=confId)
+    sdf_path = temp_dir / "mol.sdf"
+    mol.ToSDFFile(str(sdf_path), confId=confId)
 
     command = [
         XTB_BINARY,
-        sdf_path,
+        str(sdf_path),
         xtb_command,
         method,
         level,
@@ -157,9 +157,9 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
     ]
 
     if job == "--path":
-        p_sdf_path = os.path.join(temp_dir, "pmol.sdf")
-        pmol.ToSDFFile(p_sdf_path, confId=pconfId)
-        command.insert(3, p_sdf_path)
+        p_sdf_path = temp_dir / "pmol.sdf"
+        pmol.ToSDFFile(str(p_sdf_path), confId=pconfId)
+        command.insert(3, str(p_sdf_path))
 
     with open(logfile, "w") as f:
         xtb_run = subprocess.run(
@@ -184,7 +184,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
                         [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
                 except IndexError:
                     # logfile doesn't exist for [H]
-                    if not os.path.exists(os.path.join(temp_dir, "xtbopt.sdf")):
+                    if not (temp_dir / "xtbopt.sdf").exists():
                         not save_dir and rmtree(temp_dir)
                         raise ValueError(f"xTB calculation failed.")
                     else:
@@ -201,7 +201,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
 
         if job == "--path":
             try:
-                opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbpath_ts.xyz"))
+                opt_mol = RDKitMol.FromFile(str(temp_dir / "xtbpath_ts.xyz"))
             except FileNotFoundError:
                 return (props, None) if return_optmol else props
             # props.update(read_xtb_json(xtb_out, opt_mol))
@@ -209,13 +209,13 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
             return (props, opt_mol) if return_optmol else props
 
         if method == "--gff":
-            opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
+            opt_mol = RDKitMol.FromFile(str(temp_dir / "xtbopt.sdf"))[0]
             not save_dir and rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
 
         props.update(read_xtb_json(xtb_out, mol))
         if return_optmol:
-            opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
+            opt_mol = RDKitMol.FromFile(str(temp_dir / "xtbopt.sdf"))[0]
         props.update({"wbo": get_wbo(xtb_wbo)})
         not save_dir and rmtree(temp_dir)
         return (props, opt_mol) if return_optmol else props
