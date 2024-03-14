@@ -148,7 +148,7 @@ def parse_xyz_by_openbabel(
     """
     try:
         obmol = xyz_from_openbabel(xyz)
-    except TypeError:  # NoneType is not callable
+    except TypeError:   # xyz_from_openbabel is None if openbabel is not available
         raise ImportError(
             "Unable to parse XYZ with openbabel as openbabel is not installed. Please install openbabel first."
         )
@@ -169,7 +169,7 @@ def add_header_to_xyz(xyz: str, title: str = "") -> str:
     Returns:
         str: The xyz string with header.
     """
-    return f"{len(xyz.splitlines())}\n{title}\n{xyz}"
+    return f"{len(xyz.strip().splitlines())}\n{title}\n{xyz}"
 
 
 def mol_from_xyz(
