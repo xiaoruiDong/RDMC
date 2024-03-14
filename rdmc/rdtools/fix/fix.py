@@ -135,7 +135,7 @@ def fix_mol(
     remedies: Optional[List["ChemicalReaction"]] = None,
     max_attempts: int = 10,
     sanitize: bool = True,
-    fix_spin_multiplicity: bool = False,
+    fix_spin_multiplicity: bool = True,
     mult: int = 0,
     renumber_atoms: bool = True,
 ) -> "Chem.Mol":
@@ -152,7 +152,7 @@ def fix_mol(
         sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
                                    Using ``False`` is only recommended for debugging and testing.
         fix_spin_multiplicity (bool, optional): Whether to fix the spin multiplicity of the molecule. The fix can only
-                                                reduce the spin multiplicity. Defaults to ``False``.
+                                                reduce the spin multiplicity. Defaults to ``True``.
         mult (int, optional): The desired spin multiplicity. Defaults to ``0``, which means the lowest possible
                               spin multiplicity will be inferred from the number of unpaired electrons.
                               Only used when ``fix_spin_multiplicity`` is ``True``.
