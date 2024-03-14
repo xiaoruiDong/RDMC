@@ -8,19 +8,12 @@ Modules for providing initial guess geometries
 from pathlib import Path
 
 from rdmc import RDKitMol
-import os.path as osp
 
 import numpy as np
 from time import time
-
-try:
-    import torch
-    from torch_geometric.data import Batch
-except ImportError:
-    pass
-
 from .utils import *
 
+# GeoMol relevant imports
 try:
     import torch
     from geomol.model import GeoMol
