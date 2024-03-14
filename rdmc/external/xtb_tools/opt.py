@@ -48,6 +48,7 @@ def read_xtb_json(json_file, mol):
     atoms = [ATOMNUM_TO_ELEM[atom.GetAtomicNum()] for atom in mol.GetAtoms()]
     atomic_energy = sum([ATOM_ENERGIES_XTB[atom] for atom in atoms])
     props = {
+        "total energy": data["total energy"],
         "E_form": data["total energy"] - atomic_energy,  # already in Hartree
         "E_homo": E_homo * EV_TO_HARTREE,
         "E_lumo": E_lumo * EV_TO_HARTREE,
