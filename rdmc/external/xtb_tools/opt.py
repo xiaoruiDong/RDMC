@@ -212,6 +212,11 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
 
         if method == "--gff":
             opt_mol = RDKitMol.FromFile(str(temp_dir / "xtbopt.sdf"))[0]
+            try:
+                with open(temp_dir / "gfnff_lists.json", "r") as f:
+                    props["total energy"] = json.load(f)["total energy"]
+            except FileNotFoundError:
+                props["total energy"] = 0.
             not save_dir and rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
 
