@@ -270,6 +270,12 @@ class CclibLog(BaseLog):
             # sub2 stores the energies for subsequent jobs e.g., multiple sps
             if 'opt' in self.job_type or 'scan' in self.job_type:
                 sub1 = scf_energies[:num_opt_geoms][self.get_converged_geom_idx()]
+            elif 'irc' in self.job_type:
+                # If taking corrector steps and job failed due to corrector fails
+                # There is one more energy value compared to the number of geometries
+                sub1 = scf_energies[: len(self.cclib_results.optstatus)][
+                    self.get_converged_geom_idx()
+                ]
             else:
                 sub1 = scf_energies[self.get_converged_geom_idx()]
             if 'scan' not in self.job_type:
