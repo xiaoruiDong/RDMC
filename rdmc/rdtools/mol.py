@@ -68,7 +68,7 @@ def get_mol_weight(
     return Descriptors.MolWt(mol)
 
 
-def get_heavy_atoms(mol: Chem.Mol) -> int:
+def get_heavy_atoms(mol: Chem.Mol) -> list:
     """
     Get heavy atoms of a molecule.
 
@@ -76,7 +76,7 @@ def get_heavy_atoms(mol: Chem.Mol) -> int:
         mol (Chem.Mol): The molecule to get heavy atoms.
 
     Returns:
-        int : Number of heavy atoms.
+        list: the list of heavy atoms.
     """
     return [atom for atom in mol.GetAtoms() if atom.GetAtomicNum() != 1]
 
@@ -114,8 +114,8 @@ def combine_mols(
     c_product: bool = False,
 ):
     """
-    Combine the current molecule with the given ``molFrag`` (another molecule
-    or fragment). A new object instance will be created and changes are not made to the current molecule.
+    Combine two molecules (``mol1`` and ``mol2``).
+    A new object instance will be created and changes are not made to the current molecule.
 
     Args:
         mol1 (Chem.Mol): The current molecule.
