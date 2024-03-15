@@ -11,6 +11,59 @@ default_style_spec = {
     'sphere': {'scale': 0.25},
 }
 
+
+default_label_spec = {
+    "fontSize": 15,
+    "fontColor": "white",
+    "alignment": "center",
+    "showBackground": True,
+    "backgroundOpacity": 0.2,  # I found adding a background is slightly better
+    "backgroundColor": "black",
+}
+
+
+def _set_atom_index(viewer, viewer_loc):
+
+    viewer.addPropertyLabels(
+        "index",  # property name
+        {},  # AtomSelectionSpec
+        default_label_spec,
+        viewer=viewer_loc,
+    )
+
+
+def _set_atom_index_hoverable(viewer):
+
+    viewer.setHoverable(
+        # AtomSelectionSpec
+        {},
+        # is Hoverable (Boolean)
+        True,
+        # hover_callback
+        """function(atom,viewer,event,container) {
+            if(!atom.label) {
+            atom.label = viewer.addLabel(
+                atom.atom+":"+atom.index,
+                {
+                    position: atom,
+                    backgroundColor: 'black',
+                    fontColor: 'white',
+                    alignment: 'center',
+                    showBackground: true,
+                    backgroundOpacity: 0.2
+                }
+            );
+        }}""",
+        # unhover_callback
+        """function(atom,viewer) {
+            if(atom.label) {
+            viewer.removeLabel(atom.label);
+            delete atom.label;
+            }
+        }""",
+    )
+
+
 def base_viewer(
     obj: Union[str, list],
     model: str = 'xyz',
@@ -79,54 +132,10 @@ def base_viewer(
         viewer.animate(animate, viewer=viewer_loc)
 
     if atom_index:
-        viewer.addPropertyLabels(
-            "index",  # property name
-            {},  # AtomSelectionSpec
-            {
-                'fontSize': 15,
-                'fontColor': 'white',
-                'alignment': 'center',
-                'showBackground': True,
-                'backgroundOpacity': 0.2,  # I found adding a background is slightly better
-                'backgroundColor': 'black',
-            },  # LabelSpec
-            viewer=viewer_loc
-        )
+        _set_atom_index(viewer, viewer_loc)
     else:
-        set_atom_index_hoverable(viewer)
+        _set_atom_index_hoverable(viewer)
 
     viewer.zoomTo(viewer=viewer_loc)
 
     return viewer
-
-
-def set_atom_index_hoverable(viewer):
-
-    viewer.setHoverable(
-        # AtomSelectionSpec
-        {},
-        # is Hoverable (Boolean)
-        True,
-        # hover_callback
-        """function(atom,viewer,event,container) {
-            if(!atom.label) {
-            atom.label = viewer.addLabel(
-                atom.atom+":"+atom.index,
-                {
-                    position: atom,
-                    backgroundColor: 'black',
-                    fontColor: 'white',
-                    alignment: 'center',
-                    showBackground: true,
-                    backgroundOpacity: 0.2
-                }
-            );
-        }}""",
-        # unhover_callback
-        """function(atom,viewer) {
-            if(atom.label) {
-            viewer.removeLabel(atom.label);
-            delete atom.label;
-            }
-        }""",
-    )
