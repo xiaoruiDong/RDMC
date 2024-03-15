@@ -174,3 +174,43 @@ def grid_viewer(
         width=width, height=height, linked=linked, viewergrid=viewer_grid
     )
 
+
+def animation_viewer(
+    obj: str,
+    model: str = "xyz",
+    loop: str = "forward",
+    reps: int = 0,
+    step: int = 1,
+    interval: int = 60,
+    **kwargs,
+) -> py3Dmol.view:
+    """
+    Create a viewer for animation. The only viable input the RDMC authors know is a xyz string of
+    multiple molecules.
+
+    Args:
+        obj (str): A string representation of the molecule can be xyz string,
+                   sdf string, etc.
+        model (str, optional): The model (format) of the molecule representation, e.g., ``'xyz'``.
+                                Defaults to ``'xyz'``.
+        loop (str, optional): The direction of looping. Available options are ``'forward'``, ``'backward'``,
+                              or ``'backAndForth'``. Defaults to ``'forward'``.
+        reps (int, optional): The number of times the animation is repeated. Defaults to ``0``, for infinite loop.
+        step (int, optional): The number of steps between frames. Defaults to ``1``, showing all the frames,
+        interval (int, optional): The time interval between each frame in millisecond. Defaults to ``60``.
+                                  To slow down the animation, you may want to use a larger number.
+        **kwargs (dict, optional): Additional arguments for the viewer. E.g., ``{'viewer_size': (400, 400)}``.
+                                   See `base_viewer <#base_viewer>`_ for more details.
+
+    Returns:
+        py3Dmol.view: The molecule viewer.
+    """
+    animate = {"loop": loop, "reps": reps, "step": step, "interval": interval}
+
+    return base_viewer(
+        obj,
+        model,
+        animate=animate,
+        as_frames=True,
+        **kwargs,
+    )
