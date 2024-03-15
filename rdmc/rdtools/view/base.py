@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 try:
     import py3Dmol
@@ -12,7 +12,7 @@ default_style_spec = {
 }
 
 def base_viewer(
-    obj: str,
+    obj: Union[str, list],
     model: str = 'xyz',
     model_extra: Optional[dict] = None,
     animate: Optional[dict] = None,
@@ -39,7 +39,16 @@ def base_viewer(
                                      Otherwise, atom index can be viewed by hovering the mouse
                                      onto the atom and stay a while.
         style_spec (dict, Optional): Style of the shown molecule. The default is showing atom as spheres and
-                                     bond as rods. Other specs can be found in the documentation of 3Dmol.js.
+                                     bond as rods. The default setting is:
+
+                                     .. code-block:: javascript
+
+                                        {'stick': {'radius': 0.05,
+                                                   'color': '#f2f2f2'},
+                                         'sphere': {'scale': 0.25},}
+
+                                     which set both bond width/color and atom sizes. For more details, please refer to the
+                                     original APIs in `3DMol.js <https://3dmol.org/doc/tutorial-home.html>`_.
         viewer (py3Dmol.view, optional): Provide an existing viewer, instead of create a new one.
         viewer_size (tuple, optional): Set the viewer size. Only useful if ``viewer`` is not provided.
                                        Defaults to ``(400, 400)``.
@@ -55,8 +64,12 @@ def base_viewer(
             raise RuntimeError("py3Dmol is not installed. Please install py3Dmol with conda or pip. ")
 
     if not model_extra:
-        viewer.addModel(obj, model, viewer=viewer_loc)
+        obj = [obj] if isinstance(obj, str) else obj
+        for object in obj:
+            viewer.addModel(object, model, viewer=viewer_loc)
     else:
+        if not isinstance(obj, str):
+            raise NotImplemented("Passing multiple objs with model_extra is currently not supported.")
         viewer.addModel(obj, model, model_extra, viewer=viewer_loc)
 
     style_spec = style_spec or default_style_spec
