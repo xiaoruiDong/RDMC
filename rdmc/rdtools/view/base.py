@@ -74,6 +74,7 @@ def base_viewer(
     viewer: Optional['py3Dmol.view'] = None,
     viewer_size: tuple = (400, 400),
     viewer_loc: Optional[tuple] = None,
+    as_frames: bool = False,
 ) -> 'py3Dmol.view':
     """
     This is the most general function to view a molecule powered by py3Dmol and its backend 3Dmol.js.
@@ -106,6 +107,7 @@ def base_viewer(
         viewer_size (tuple, optional): Set the viewer size. Only useful if ``viewer`` is not provided.
                                        Defaults to ``(400, 400)``.
         viewer_loc (tuple, optional): The location of the viewer in the grid. E.g., (0, 1). Defaults to None.
+        as_frames (bool, optional): If add object as frames of an animation. Defaults to ``False``.
 
     Returns:
         py3Dmol.view: The molecule viewer.
@@ -116,14 +118,20 @@ def base_viewer(
         except TypeError:
             raise RuntimeError("py3Dmol is not installed. Please install py3Dmol with conda or pip. ")
 
-    if not model_extra:
-        obj = [obj] if isinstance(obj, str) else obj
-        for object in obj:
-            viewer.addModel(object, model, viewer=viewer_loc)
+    if as_frames:
+        if model_extra:
+            viewer.addModelsAsFrames(obj, model, model_extra, viewer=viewer_loc)
+        else:
+            viewer.addModelsAsFrames(obj, model, viewer=viewer_loc)
     else:
-        if not isinstance(obj, str):
-            raise NotImplemented("Passing multiple objs with model_extra is currently not supported.")
-        viewer.addModel(obj, model, model_extra, viewer=viewer_loc)
+        if model_extra:
+            if not isinstance(obj, str):
+                raise NotImplemented("Passing multiple objs with model_extra is currently not supported.")
+            viewer.addModel(obj, model, model_extra, viewer=viewer_loc)
+        else:  # Most common usage
+            obj = [obj] if isinstance(obj, str) else obj
+            for object in obj:
+                viewer.addModel(object, model, viewer=viewer_loc)
 
     style_spec = style_spec or default_style_spec
     viewer.setStyle(default_style_spec, viewer=viewer_loc)
