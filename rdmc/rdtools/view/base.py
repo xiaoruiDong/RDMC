@@ -147,3 +147,30 @@ def base_viewer(
     viewer.zoomTo(viewer=viewer_loc)
 
     return viewer
+
+
+def grid_viewer(
+    viewer_grid: tuple,
+    linked: bool = False,
+    viewer_size: Optional[tuple] = None,
+) -> py3Dmol.view:
+    """
+    Create a empty grid viewer. You can then fill in each blank by passing this viewer and viewer_loc
+    to desired viewer functions.
+
+    Args:
+        viewer_grid (tuple): The layout of the grid, e.g., (1, 4) or (2, 2).
+        linked (bool, optional): Whether changes in different sub viewers are linked. Defaults to ``False``.
+        viewer_size (tuple, optional): The size of the viewer in (width, height). By Default, each block
+                                       is 250 width and 400 height.
+    """
+    if viewer_size:
+        width, height = viewer_size
+    else:
+        width = viewer_grid[1] * 250
+        height = viewer_grid[0] * 400
+
+    return py3Dmol.view(
+        width=width, height=height, linked=linked, viewergrid=viewer_grid
+    )
+
