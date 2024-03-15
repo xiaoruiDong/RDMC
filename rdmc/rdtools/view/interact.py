@@ -29,7 +29,10 @@ def interactive_conformer_viewer(mol: "Mol", **kwargs):
 
         return ipywidgets.interact(
             viewer,
-            conf_id=ipywidgets.IntSlider(min=0, max=len(mol) - 1,step=1),
+            conf_id=ipywidgets.IntSlider(
+                value=0, min=0, max=len(mol) - 1, step=1,
+                description="Molecule ID:"
+            ),
         )
 
     else:
@@ -39,5 +42,8 @@ def interactive_conformer_viewer(mol: "Mol", **kwargs):
 
         return ipywidgets.interact(
             viewer,
-            conf_id=ipywidgets.IntSlider(min=0, max=mol.GetNumConformers() - 1, step=1),
+            conf_id=ipywidgets.IntSlider(
+                value=0, min=0, max=mol.GetNumConformers() - 1, step=1,
+                description="Conformer ID:"
+            ),
         )
