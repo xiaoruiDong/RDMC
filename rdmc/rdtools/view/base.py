@@ -89,7 +89,7 @@ def base_viewer(
         model_extra (dict, optional): Extra specs for the model (format). E.g., frequency specs.
                                       Default to ``None``
         animate (dict, optional): Specs for animation. E.g., ``{'loop': 'backAndForth'}``.
-        atom_index (bool, optional): Whether to show atom index. Defaults to ``True``.
+        atom_index (bool, optional): Whether to show atom index persistently. Defaults to ``True``.
                                      Otherwise, atom index can be viewed by hovering the mouse
                                      onto the atom and stay a while.
         style_spec (dict, Optional): Style of the shown molecule. The default is showing atom as spheres and
@@ -182,6 +182,7 @@ def animation_viewer(
     reps: int = 0,
     step: int = 1,
     interval: int = 60,
+    atom_index: bool = False,
     **kwargs,
 ) -> py3Dmol.view:
     """
@@ -199,6 +200,9 @@ def animation_viewer(
         step (int, optional): The number of steps between frames. Defaults to ``1``, showing all the frames,
         interval (int, optional): The time interval between each frame in millisecond. Defaults to ``60``.
                                   To slow down the animation, you may want to use a larger number.
+        atom_index (bool, optional): Whether to show atom index persistently. Defaults to ``False``.
+                                     Currently, the label is only created based on the first frame, so we
+                                     suggest turning it off.
         **kwargs (dict, optional): Additional arguments for the viewer. E.g., ``{'viewer_size': (400, 400)}``.
                                    See `base_viewer <#base_viewer>`_ for more details.
 
@@ -212,5 +216,6 @@ def animation_viewer(
         model,
         animate=animate,
         as_frames=True,
+        atom_index=atom_index,
         **kwargs,
     )
