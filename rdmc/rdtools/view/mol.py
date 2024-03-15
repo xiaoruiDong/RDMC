@@ -1,9 +1,9 @@
-import copy
-from typing import List, Optional
+from typing import List
 import logging
 
 from rdkit import Chem
 from rdmc.rdtools.view.base import base_viewer, animation_viewer
+from rdmc.rdtools.view.utils import clean_ts
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ def ts_viewer(
     formed_bond_width: float = 0.1,
     **kwargs,
 ):
-    mol = _clean_ts(mol, broken_bonds, formed_bonds)
+    mol = clean_ts(mol, broken_bonds, formed_bonds)
 
     viewer = mol_viewer(mol, **kwargs)
 
@@ -103,13 +103,3 @@ def ts_viewer(
             },
         )
     return viewer
-
-def _clean_ts(mol, broken_bonds, formed_bonds):
-    """
-    A helper function remove changing bonds in the TS.
-    """
-    mol = copy.deepcopy(mol)
-    for bond in broken_bonds + formed_bonds:
-        mol.RemoveBond(*bond)
-
-    return mol
