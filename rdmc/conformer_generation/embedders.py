@@ -5,27 +5,27 @@
 Modules for providing initial guess geometries
 """
 
+from pathlib import Path
+
 from rdmc import RDKitMol
-import os.path as osp
-import yaml
+
 import numpy as np
 from time import time
-
-try:
-    import torch
-    from torch_geometric.data import Batch
-except ImportError:
-    pass
-
 from .utils import *
 
+# GeoMol relevant imports
 try:
     import torch
-    from rdmc.external.GeoMol.model.model import GeoMol
-    from rdmc.external.GeoMol.model.featurization import featurize_mol_from_smiles
-    from rdmc.external.GeoMol.model.inference import construct_conformers
-except ImportError:
+    from geomol.model import GeoMol
+    from geomol.featurization import featurize_mol_from_smiles, from_data_list
+    from geomol.inference import construct_conformers
+    from geomol.utils import model_path as geomol_model_path
+    import yaml  # only used to load GeoMol parameters
+except ImportError as e:
+    GeoMol = None
+    print(e)
     print("No GeoMol installation detected. Skipping import...")
+    print("Please install the GeoMol fork at https://github.com/xiaoruiDong/GeoMol")
 
 
 class ConfGenEmbedder:
@@ -58,8 +58,10 @@ class ConfGenEmbedder:
             # Copy the graph but remove conformers
             self.mol = self.mol.Copy(quickCopy=True)
 
-    def embed_conformers(self,
-                         n_conformers: int):
+    def embed_conformers(
+        self,
+        n_conformers: int
+    ):
         """
         Embed conformers according to the molecule graph.
 
@@ -71,10 +73,11 @@ class ConfGenEmbedder:
         """
         raise NotImplementedError
 
-    def update_stats(self,
-                     n_trials: int,
-                     time: float = 0.
-                     ) -> dict:
+    def update_stats(
+        self,
+        n_trials: int,
+        time: float = 0.
+    ) -> dict:
         """
         Update the statistics of the conformer generation.
 
@@ -88,10 +91,12 @@ class ConfGenEmbedder:
         n_success = self.mol.GetNumConformers()
         self.n_success = n_success
         self.percent_success = n_success / n_trials * 100
-        stats = {"iter": self.iter,
-                 "time": time,
-                 "n_success": self.n_success,
-                 "percent_success": self.percent_success}
+        stats = {
+            "iter": self.iter,
+            "time": time,
+            "n_success": self.n_success,
+            "percent_success": self.percent_success
+        }
         self.stats.append(stats)
         return stats
 
@@ -104,9 +109,11 @@ class ConfGenEmbedder:
         """
         return mol_to_dict(self.mol, copy=False, iter=self.iter)
 
-    def __call__(self,
-                 smiles: str,
-                 n_conformers: int):
+    def __call__(
+        self,
+        smiles: str,
+        n_conformers: int
+    ):
         """
         Embed conformers according to the molecule graph.
 
@@ -137,28 +144,36 @@ class GeoMolEmbedder(ConfGenEmbedder):
     Embed conformers using GeoMol.
 
     Args:
-            trained_model_dir (str): Directory of the trained model.
+            trained_model_dir (str, optional): Directory of the trained model. If not provided, the models distributed with the package will be used.
             dataset (str, optional): Dataset used for training. Defaults to ``"drugs"``.
             temp_schedule (str, optional): Temperature schedule. Defaults to ``"linear"``.
             track_stats (bool, optional): Whether to track the statistics of the conformer generation. Defaults to ``False``.
     """
 
-    def __init__(self,
-                 trained_model_dir: str,
-                 dataset: str = "drugs",
-                 temp_schedule: str = "linear",
-                 track_stats: bool = False):
+    def __init__(
+        self,
+        trained_model_dir: str = None,
+        dataset: str = "drugs",
+        temp_schedule: str = "linear",
+        track_stats: bool = False,
+        device: str = 'cpu',
+    ):
+        if GeoMol is None:
+            raise ImportError("No GeoMol installation detected. Please install the GeoMol fork at https://github.com/xiaoruiDong/GeoMol.")
         super(GeoMolEmbedder, self).__init__(track_stats)
 
         # TODO: add option of pre-pruning geometries using alpha values
-        # TODO: inverstigate option of changing "temperature" each iteration to sample diverse geometries
+        # TODO: investigate option of changing "temperature" each iteration to sample diverse geometries
+        self.device = device
 
-        with open(osp.join(trained_model_dir, "model_parameters.yml")) as f:
+        trained_model_dir = geomol_model_path / dataset if trained_model_dir is None else Path(trained_model_dir)
+        with open(trained_model_dir / "model_parameters.yml") as f:
             model_parameters = yaml.full_load(f)
         model = GeoMol(**model_parameters)
 
-        state_dict = torch.load(osp.join(trained_model_dir, "best_model.pt"), map_location=torch.device('cpu'))
+        state_dict = torch.load(trained_model_dir / "best_model.pt", map_location=torch.device(device))
         model.load_state_dict(state_dict, strict=True)
+        model.to(self.device)
         model.eval()
         self.model = model
         self.tg_data = None
@@ -166,8 +181,14 @@ class GeoMolEmbedder(ConfGenEmbedder):
         self.temp_schedule = temp_schedule
         self.dataset = dataset
 
-    def embed_conformers(self,
-                         n_conformers: int):
+    def to(self, device: str):
+        self.device = device
+        self.model.to(device)
+
+    def embed_conformers(
+        self,
+        n_conformers: int
+    ):
         """
         Embed conformers according to the molecule graph.
 
@@ -186,11 +207,11 @@ class GeoMolEmbedder(ConfGenEmbedder):
         # featurize data and run GeoMol
         if self.tg_data is None:
             self.tg_data = featurize_mol_from_smiles(self.smiles, dataset=self.dataset)
-        data = Batch.from_data_list([self.tg_data])  # need to run this bc of dumb internal GeoMol processing
+        data = from_data_list([self.tg_data]).to(self.device)  # need to run this bc of dumb internal GeoMol processing
         self.model(data, inference=True, n_model_confs=n_conformers)
 
         # process predictions
-        model_coords = construct_conformers(data, self.model).double().cpu().detach().numpy()
+        model_coords = construct_conformers(data, self.model, self.device).double().cpu().detach().numpy()
         split_model_coords = np.split(model_coords, n_conformers, axis=1)
 
         # package in mol and return

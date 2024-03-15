@@ -19,7 +19,7 @@ from rdmc.view import mol_viewer, freq_viewer, mol_animation
 try:
     from ipywidgets import interact, IntSlider, Dropdown, FloatLogSlider
 except ImportError:
-    pass
+    interact = None
 
 
 class BaseLog(object):
@@ -270,6 +270,12 @@ class CclibLog(BaseLog):
             # sub2 stores the energies for subsequent jobs e.g., multiple sps
             if 'opt' in self.job_type or 'scan' in self.job_type:
                 sub1 = scf_energies[:num_opt_geoms][self.get_converged_geom_idx()]
+            elif 'irc' in self.job_type:
+                # If taking corrector steps and job failed due to corrector fails
+                # There is one more energy value compared to the number of geometries
+                sub1 = scf_energies[: len(self.cclib_results.optstatus)][
+                    self.get_converged_geom_idx()
+                ]
             else:
                 sub1 = scf_energies[self.get_converged_geom_idx()]
             if 'scan' not in self.job_type:
@@ -700,6 +706,9 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         mol = self.get_mol(converged=False, sanitize=sanitize, backend=backend)
         xyzs = self.get_xyzs(converged=False)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
@@ -838,6 +847,9 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         xyz = self.get_xyzs(converged=True)[0]
         lines = xyz.splitlines()
         vib_xyz_list = lines[0:2]
@@ -851,6 +863,9 @@ class CclibLog(BaseLog):
         """
         Create a IPython interactive widget to investigate the frequency calculation.
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         dropdown = Dropdown(
             options=self.freqs,
             value=self.freqs[0],
@@ -1018,6 +1033,9 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         mol = self._process_irc_mol(sanitize=sanitize, converged=converged, backend=backend, bothway=bothway)
         sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         xyzs = self.get_xyzs(converged=converged)
@@ -1188,6 +1206,9 @@ class CclibLog(BaseLog):
         Returns:
             interact
         """
+        if interact is None:
+            raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
+
         mol = self._process_scan_mol(align_scan=align_scan,
                                      align_frag_idx=align_frag_idx,
                                      sanitize=sanitize,

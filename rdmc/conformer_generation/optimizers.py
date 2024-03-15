@@ -192,7 +192,7 @@ class XTBOptimizer(ConfGenOptimizer):
             positions = opt_mol.GetPositions()
             conf = new_mol.GetConformer(id=c_id)
             conf.SetPositions(positions)
-            energy = float(opt_mol.GetProp('total energy / Eh'))  # * HARTREE_TO_KCAL_MOL  # kcal/mol (TODO: check)
+            energy = props['total energy']
             mol_data[c_id].update({"positions": positions,  # issues if not all opts succeeded?
                                    "conf": conf,
                                    "energy": energy})

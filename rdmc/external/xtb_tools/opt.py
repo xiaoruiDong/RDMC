@@ -7,7 +7,7 @@ Taken from https://github.com/josejimenezluna/delfta/blob/f33dbe4fc2b860cef28788
 """
 
 import json
-import os
+from pathlib import Path
 from shutil import rmtree
 import subprocess
 import tempfile
@@ -25,7 +25,7 @@ from rdmc.external.xtb_tools.utils import (
     TS_PATH_INP,
 )
 
-XTB_INPUT_FILE = os.path.join(UTILS_PATH, "xtb.inp")
+XTB_INPUT_FILE = Path(UTILS_PATH) / "xtb.inp"
 
 
 def read_xtb_json(json_file, mol):
@@ -48,6 +48,7 @@ def read_xtb_json(json_file, mol):
     atoms = [ATOMNUM_TO_ELEM[atom.GetAtomicNum()] for atom in mol.GetAtoms()]
     atomic_energy = sum([ATOM_ENERGIES_XTB[atom] for atom in atoms])
     props = {
+        "total energy": data["total energy"],
         "E_form": data["total energy"] - atomic_energy,  # already in Hartree
         "E_homo": E_homo * EV_TO_HARTREE,
         "E_lumo": E_lumo * EV_TO_HARTREE,
@@ -130,19 +131,20 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
     method = "--" + method
     input_file = TS_PATH_INP if job == "--path" else ""
 
-    temp_dir = os.path.abspath(save_dir) if save_dir else tempfile.mkdtemp()
-    logfile = os.path.join(temp_dir, "xtb.log")
-    xtb_out = os.path.join(temp_dir, "xtbout.json")
-    xtb_wbo = os.path.join(temp_dir, "wbo")
-    xtb_g98 = os.path.join(temp_dir, "g98.out")
-    xtb_ts = os.path.join(temp_dir, "xtbpath_ts.xyz")
+    temp_dir = Path(save_dir).absolute() if save_dir else Path(tempfile.mkdtemp()).absolute()
+    logfile = temp_dir / "xtb.log"
+    xtb_out = temp_dir / "xtbout.json"
+    xtb_wbo = temp_dir / "wbo"
+    xtb_g98 = temp_dir / "g98.out"
+    xtb_ts = temp_dir / "xtbpath_ts.xyz"
 
-    sdf_path = os.path.join(temp_dir, "mol.sdf")
-    mol.ToSDFFile(sdf_path, confId=confId)
+    sdf_path = temp_dir / "mol.sdf"
+    mol.ToSDFFile(str(sdf_path), confId=confId)
+    update_rdkit_mol_format(sdf_path)
 
     command = [
         XTB_BINARY,
-        sdf_path,
+        str(sdf_path),
         xtb_command,
         method,
         level,
@@ -156,9 +158,10 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
     ]
 
     if job == "--path":
-        p_sdf_path = os.path.join(temp_dir, "pmol.sdf")
-        pmol.ToSDFFile(p_sdf_path, confId=pconfId)
-        command.insert(3, p_sdf_path)
+        p_sdf_path = temp_dir / "pmol.sdf"
+        pmol.ToSDFFile(str(p_sdf_path), confId=pconfId)
+        update_rdkit_mol_format(sdf_path)
+        command.insert(3, str(p_sdf_path))
 
     with open(logfile, "w") as f:
         xtb_run = subprocess.run(
@@ -183,7 +186,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
                         [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
                 except IndexError:
                     # logfile doesn't exist for [H]
-                    if not os.path.exists(os.path.join(temp_dir, "xtbopt.sdf")):
+                    if not (temp_dir / "xtbopt.sdf").exists():
                         not save_dir and rmtree(temp_dir)
                         raise ValueError(f"xTB calculation failed.")
                     else:
@@ -200,7 +203,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
 
         if job == "--path":
             try:
-                opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbpath_ts.xyz"))
+                opt_mol = RDKitMol.FromFile(str(temp_dir / "xtbpath_ts.xyz"))
             except FileNotFoundError:
                 return (props, None) if return_optmol else props
             # props.update(read_xtb_json(xtb_out, opt_mol))
@@ -208,13 +211,51 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
             return (props, opt_mol) if return_optmol else props
 
         if method == "--gff":
-            opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
+            opt_mol = RDKitMol.FromFile(str(temp_dir / "xtbopt.sdf"))[0]
+            try:
+                with open(temp_dir / "gfnff_lists.json", "r") as f:
+                    props["total energy"] = json.load(f)["total energy"]
+            except FileNotFoundError:
+                props["total energy"] = 0.
             not save_dir and rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
 
         props.update(read_xtb_json(xtb_out, mol))
         if return_optmol:
-            opt_mol = RDKitMol.FromFile(os.path.join(temp_dir, "xtbopt.sdf"))[0]
+            opt_mol = RDKitMol.FromFile(str(temp_dir / "xtbopt.sdf"))[0]
         props.update({"wbo": get_wbo(xtb_wbo)})
         not save_dir and rmtree(temp_dir)
         return (props, opt_mol) if return_optmol else props
+
+
+def update_rdkit_mol_format(path):
+    """
+    After xTB changes its parser backend to mctc-lib, it stops being able to read Mol/SDF
+    files generated from RDKit. This is due to, in the bond property section, mctc-lib
+    looks for 7 elements while RDKit only generates 4. As xTB doesn't really need to know
+    the extra information, we can simply assign them to 0s. This patch function helps
+    append the missing 0s.
+    """
+
+    with open(path, "r") as f:
+        lines = f.readlines()
+
+    n_atoms = int(lines[3].split()[0])
+    n_bonds = int(lines[3].split()[1])
+
+    # Check if the file needs to be fixed, only check once
+    n_bond_props = len(lines[4 + n_atoms].split())
+    if n_bond_props > 7:
+        raise ValueError("This SDF/Mol file is abnormal, please double check your file")
+    elif n_bond_props == 7:  # No need to fix
+        return
+    else:
+        n_0s = 7 - n_bond_props
+
+    new_lines = lines[:4 + n_atoms] + [
+        line[:-1] + "  0" * n_0s + "\n"
+        for line in lines[4 + n_atoms: 4 + n_atoms + n_bonds]
+    ] + lines[4 + n_atoms + n_bonds:]
+
+    with open(path, "w") as f:
+        f.writelines(new_lines)

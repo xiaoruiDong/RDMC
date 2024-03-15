@@ -116,7 +116,7 @@ class GaussianLog(CclibLog):
         scheme_str = ''.join(line.strip('\n')[1:] for line in scheme_lines[1:])
 
         try:
-            self._schemes = scheme_to_dict(scheme_str)
+            self._schemes = scheme_to_dict(scheme_str.lower())
         except Exception as e:
             print(f'Calculation scheme parser encounters a problem. \nGot: {e}\n'
                   f'Feel free to raise an issue about this error at RDMC\'s Github Repo.')
