@@ -1,3 +1,4 @@
+import copy
 from typing import List, Optional
 import logging
 
@@ -62,3 +63,53 @@ def mol_animation(
     xyz = "".join([Chem.MolToXYZBlock(mol, confId=i) for mol, i in zip(mols, conf_ids)])
 
     return animation_viewer(xyz, "xyz", interval=interval, **kwargs)
+
+
+def ts_viewer(
+    mol: "Mol",
+    broken_bonds: list = [],
+    formed_bonds: list = [],
+    broken_bond_color: str = "red",
+    formed_bond_color: str = "green",
+    broken_bond_width: float = 0.1,
+    formed_bond_width: float = 0.1,
+    **kwargs,
+):
+    mol = _clean_ts(mol, broken_bonds, formed_bonds)
+
+    viewer = mol_viewer(mol, **kwargs)
+
+    coords = mol.GetConformer(id=kwargs.get("conf_id", 0)).GetPositions()
+    for bond in broken_bonds:
+        start, end = coords[bond, :]
+        viewer.addCylinder(
+            {
+                "start": dict(x=start[0], y=start[1], z=start[2]),
+                "end": dict(x=end[0], y=end[1], z=end[2]),
+                "color": broken_bond_color,
+                "radius": broken_bond_width,
+                "dashed": True,
+            },
+        )
+    for bond in formed_bonds:
+        start, end = coords[bond, :]
+        viewer.addCylinder(
+            {
+                "start": dict(x=start[0], y=start[1], z=start[2]),
+                "end": dict(x=end[0], y=end[1], z=end[2]),
+                "color": formed_bond_color,
+                "radius": formed_bond_width,
+                "dashed": True,
+            },
+        )
+    return viewer
+
+def _clean_ts(mol, broken_bonds, formed_bonds):
+    """
+    A helper function remove changing bonds in the TS.
+    """
+    mol = copy.deepcopy(mol)
+    for bond in broken_bonds + formed_bonds:
+        mol.RemoveBond(*bond)
+
+    return mol
