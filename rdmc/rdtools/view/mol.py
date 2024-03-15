@@ -90,6 +90,7 @@ def ts_viewer(
                 "radius": broken_bond_width,
                 "dashed": True,
             },
+            **{"viewer": kwargs.get('viewer_loc')},
         )
     for bond in formed_bonds:
         start, end = coords[bond, :]
@@ -101,5 +102,6 @@ def ts_viewer(
                 "radius": formed_bond_width,
                 "dashed": True,
             },
+            **{"viewer": kwargs.get("viewer_loc")},
         )
     return viewer

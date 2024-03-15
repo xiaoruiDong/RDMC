@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 
 def clean_ts(mol, broken_bonds, formed_bonds):
     """
@@ -9,6 +11,32 @@ def clean_ts(mol, broken_bonds, formed_bonds):
 
     return mol
 
+
+# The following two functions have duplicates in rdtools
+# These are copied over in preparation of making view completely standalone
+def get_broken_formed_bonds(r_mol, p_mol):
+    """
+    A helper function to get the broken and formed bonds.
+    """
+    r_bonds = set(get_bonds_as_tuples(r_mol))
+    p_bonds = set(get_bonds_as_tuples(p_mol))
+
+    return list(r_bonds - p_bonds), list(p_bonds - r_bonds)
+
+
+def get_bonds_as_tuples(mol: "Mol") -> List[Tuple[int, int]]:
+    """
+    Get the bonds of a molecule as a list of tuples.
+
+    Args:
+        mol (Mol): The molecule whose bonds are to be returned.
+
+    Returns:
+        List[Tuple[int, int]]: The bonds of the molecule as a list of tuples.
+    """
+    return [
+        tuple(sorted((b.GetBeginAtomIdx(), b.GetEndAtomIdx()))) for b in mol.GetBonds()
+    ]
 
 
 def merge_xyz_dxdydz(
