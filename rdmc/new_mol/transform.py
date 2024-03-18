@@ -1,5 +1,7 @@
 from rdkit import Chem
 
+from rdmc.rdtools.conversion.rmg import mol_from_rmg_mol
+
 class MolTransformerMixin:
 
     @classmethod
@@ -15,7 +17,7 @@ class MolTransformerMixin:
             smarts (str): A SMARTS string of the molecule
 
         Returns:
-            RDKitMol: An RDKit molecule object corresponding to the SMARTS.
+            Mol: A molecule object corresponding to the SMARTS.
         """
         mol = Chem.MolFromSmarts(smarts, **kwargs)
         return cls(mol)
@@ -40,9 +42,29 @@ class MolTransformerMixin:
             sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
 
         Returns:
-            RDKitMol: An RDKit molecule object corresponding to the InChI.
+            Mol: A molecule object corresponding to the InChI.
         """
         mol = Chem.inchi.MolFromInchi(inchi, sanitize=sanitize, removeHs=removeHs)
         if not removeHs and addHs:
             mol = Chem.AddHs(mol)
         return cls(mol)
+
+    @classmethod
+    def FromRMGMol(
+        cls,
+        rmgMol: "rmgpy.molecule.Molecule",
+        removeHs: bool = False,
+        sanitize: bool = True,
+    ):
+        """
+        Convert an RMG ``Molecule`` to an ``RDkitMol`` object.
+
+        Args:
+            rmgMol ('rmg.molecule.Molecule'): An RMG ``Molecule`` instance.
+            removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+            sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
+
+        Returns:
+            Mol: A molecule object corresponding to the RMG Molecule.
+        """
+        return cls(mol_from_rmg_mol(rmgMol, removeHs, sanitize))
