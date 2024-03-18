@@ -1,12 +1,20 @@
 from typing import List, Tuple
 
+from rdkit import Chem
+
 
 def clean_ts(mol, broken_bonds, formed_bonds):
     """
     A helper function remove changing bonds in the TS.
     """
-    mol = mol.__copy__()
+    if isinstance(mol, Chem.RWMol):
+        mol = mol.__copy__()
+    else:  # Assume it is a Mol, we need to make it editable
+        mol = Chem.RWMol(mol)
+
     for bond in broken_bonds + formed_bonds:
+        if mol.GetBondBetweenAtoms(*bond) is None:
+            continue
         mol.RemoveBond(*bond)
 
     return mol
