@@ -12,6 +12,7 @@ from rdmc.rdtools.mol import (
     combine_mols,
     get_element_symbols,
     get_element_counts,
+    get_atomic_nums,
 )
 from rdmc.rdtools.conf import (
     embed_multiple_null_confs,
@@ -114,3 +115,21 @@ def test_get_element_symbols(smi, expected):
 def test_get_element_counts(smi, expected):
     mol = mol_from_smiles(smi)
     assert get_element_counts(mol) == expected
+
+
+@pytest.mark.parametrize(
+    "smi, expected",
+    [
+        (
+            "[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]",
+            [1, 6, 1, 1, 1, 1],
+        ),
+        (
+            "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
+            [8, 6, 6, 1, 1, 1, 1]
+        ),
+    ],
+)
+def test_get_atomic_nums(smi, expected):
+    mol = mol_from_smiles(smi)
+    assert get_atomic_nums(mol) == expected

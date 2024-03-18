@@ -94,6 +94,19 @@ def get_element_symbols(mol: Chem.Mol) -> List[str]:
     return [get_element_symbol(atom) for atom in mol.GetAtoms()]
 
 
+def get_atomic_nums(mol: Chem.Mol) -> List[int]:
+    """
+    Get atomic numbers of a molecule.
+
+    Args:
+        mol (Chem.Mol): The molecule to get atomic numbers.
+
+    Returns:
+        List[int] : List of atomic numbers (e.g. ``[1, 6, 8, ]`` etc.)
+    """
+    return [atom.GetAtomicNum() for atom in mol.GetAtoms()]
+
+
 def get_element_counts(mol: Chem.Mol) -> dict:
     """
     Get element counts of a molecule.
