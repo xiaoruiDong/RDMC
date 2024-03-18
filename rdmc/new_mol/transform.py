@@ -18,6 +18,11 @@ try:
 except ImportError:
     Atoms = get_fake_module("Atom", "ase")
 
+try:
+    import networkx as nx
+except ImportError:
+    nx = get_fake_module("networkx", "networkx")
+
 
 class MolFromMixin:
 
@@ -481,3 +486,31 @@ class MolToMixin:
             [atom.GetFormalCharge() for atom in self.GetAtoms()]
         )
         return atoms
+
+    def ToGraph(
+        self,
+        keep_bond_order: bool = False,
+    ) -> "nx.Graph":
+        """
+        Convert a molecule object to a networkx graph.
+
+        Args:
+            keep_bond_order (bool): Whether to keep bond order information. Defaults to ``False``,
+                                    meaning treat all bonds as single bonds.
+
+        Returns:
+            nx.Graph: A networkx graph representing the molecule.
+        """
+        nx_graph = nx.Graph()
+        for atom in self.GetAtoms():
+            nx_graph.add_node(
+                atom.GetIdx(), symbol=atom.GetSymbol(), atomic_num=atom.GetAtomicNum()
+            )
+
+        for bond in self.GetBonds():
+            bond_type = 1 if not keep_bond_order else bond.GetBondTypeAsDouble()
+            nx_graph.add_edge(
+                bond.GetBeginAtomIdx(), bond.GetEndAtomIdx(), bond_type=bond_type
+            )
+
+        return nx_graph
