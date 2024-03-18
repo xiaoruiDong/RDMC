@@ -1,3 +1,4 @@
+import copy
 from collections import Counter
 from itertools import product as cartesian_product
 from typing import List, Optional, Tuple
@@ -8,6 +9,7 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Geometry.rdGeometry import Point3D
 
+from rdmc.rdtools.atommap import has_atom_map_numbers
 from rdmc.rdtools.atom import get_element_symbol, get_atom_mass
 from rdmc.rdtools.conf import (
     embed_multiple_null_confs,
@@ -267,3 +269,112 @@ def get_match_and_recover_recipe(
                 del recipe[j]
 
     return tuple(match), recipe
+
+
+def fast_sanitize(mol: Chem.RWMol):
+    """
+    Only update the molecule's property and ring perception.
+    """
+    Chem.SanitizeMol(
+            mol,
+            sanitizeOps=Chem.SanitizeFlags.SANITIZE_PROPERTIES
+            | Chem.SanitizeFlags.SANITIZE_SYMMRINGS,
+        )
+
+
+def get_closed_shell_mol(
+    mol: Chem.RWMol,
+    sanitize: bool = True,
+    cheap: bool = False,
+) -> "Chem.RWMol":
+    """
+    Get a closed shell molecule by removing all radical electrons and adding
+    H atoms to these radical sites. This method currently only work for radicals
+    and will not work properly for singlet radicals (number of radical electrons = 0).
+
+    Args:
+        mol (Chem.RWMol): The radical molecule
+        cheap (bool): Whether to use a cheap method where H atoms are only implicitly added.
+                      Defaults to ``False``. Setting it to ``False`` only when the molecule
+                      is immediately used for generating SMILES/InChI and other representations,
+                      and no further manipulation is needed. Otherwise, it may be confusing as
+                      the hydrogen atoms will not appear in the list of atoms, not display in the
+                      2D graph, etc.
+        sanitize (bool): Whether to sanitize the molecule. Defaults to ``True``.
+
+    Returns:
+        RDKitMol: A closed shell molecule.
+    """
+    if cheap:
+        return get_closed_shell_cheap(mol, sanitize)
+    else:
+        return get_closed_shell_by_add_hs(mol, sanitize)
+
+
+def get_closed_shell_by_add_hs(
+    mol: Chem.RWMol,
+    sanitize: bool = True,
+) -> Chem.RWMol:
+    """
+    Get the closed shell molecule of a radical molecule by explicitly adding
+    hydrogen atoms to the molecule.
+
+    Args:
+        mol (Chem.RWMol): The radical molecule.
+        sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
+
+    Returns:
+        Chem.RWMol: The closed shell molecule.
+    """
+    if isinstance(mol, Chem.RWMol):
+        mol = copy.copy(mol)
+    else:
+        mol = Chem.RWMol(mol)
+
+    h_atom_idx = mol.GetNumAtoms()
+    num_orig_atoms = mol.GetNumAtoms()
+
+    for atom_idx in range(mol.GetNumAtoms()):
+        atom = mol.GetAtomWithIdx(atom_idx)
+        num_rad_elecs = atom.GetNumRadicalElectrons()
+        if num_rad_elecs:
+            for _ in range(num_rad_elecs):
+                mol.AddAtom(Chem.Atom(1))
+                mol.AddBond(h_atom_idx, atom_idx, Chem.BondType.SINGLE)
+                h_atom_idx += 1
+            atom.SetNumRadicalElectrons(0)
+
+    if has_atom_map_numbers:
+        for atom_idx in range(num_orig_atoms, h_atom_idx):
+            mol.GetAtomWithIdx(atom_idx).SetAtomMapNum(atom_idx + 1)
+
+    if sanitize:
+        fast_sanitize(mol)
+    return mol
+
+
+def get_closed_shell_cheap(
+    mol: Chem.Mol,
+    sanitize: bool = True,
+) -> Chem.Mol:
+    """
+    Get the closed shell molecule of a radical molecule. This is a cheap version
+    where no new atom is actually added to the molecule.
+
+    Args:
+        mol (Chem.Mol): The radical molecule.
+        sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
+
+    Returns:
+        Chem.Mol: The closed shell molecule.
+    """
+    mol = copy.copy(mol)
+
+    for atom in mol.GetAtoms():
+        if atom.GetNumRadicalElectrons():
+            atom.SetNumRadicalElectrons(0)
+            atom.SetNoImplicit(False)
+
+    if sanitize:
+        fast_sanitize(mol)
+    return mol
