@@ -19,8 +19,15 @@ from rdmc.featurizer import get_fingerprint
 logging.basicConfig(level=logging.DEBUG)
 
 
-smis = ['Fc1cccc(C2(c3nnc(Cc4cccc5ccccc45)o3)CCOCC2)c1',
-        'O=C(NCc1ccnc(Oc2ccc(F)cc2)c1)c1[nH]nc2c1CCCC2',]
+smis = [
+    "Fc1cccc(C2(c3nnc(Cc4cccc5ccccc45)o3)CCOCC2)c1",
+    "O=C(NCc1ccnc(Oc2ccc(F)cc2)c1)c1[nH]nc2c1CCCC2",
+    "C[C@H](CCCC(C)C)[C@H]1CC[C@@H]2[C@@]1(CC[C@H]3[C@H]2CC=C4[C@@]3(CC[C@@H](C4)O)C)C",
+]
+
+smi_params = Chem.SmilesParserParams()
+smi_params.removeHs = False
+smi_params.sanitize = True
 
 
 @pytest.fixture(params=smis)
@@ -29,8 +36,8 @@ def mol(request):
 
 
 @pytest.fixture(params=smis)
-def rdkitmol(request):
-    return RDKitMol.FromSmiles(request.param, addHs=False)
+def mol_with_hs(request):
+    return Chem.MolFromSmiles(request.param, smi_params)
 
 
 @pytest.fixture(
@@ -54,14 +61,18 @@ def radius(request):
     return request.param
 
 
+@pytest.fixture(params=['int16', 'int32', 'float16', 'float32'])
+def dtype(request):
+    return request.param
+
+
 generator_name = {
-    ('Morgan', True): 'GetHashedMorganFingerprint',
-    ('Morgan', False): 'GetMorganFingerprintAsBitVect',
-    ('AtomPair', True): 'GetHashedAtomPairFingerprint',
-    ('AtomPair', False): 'GetHashedAtomPairFingerprintAsBitVect',
-    ('TopologicalTorsion', True): 'GetHashedTopologicalTorsionFingerprint',
-    ('TopologicalTorsion', False): 'GetHashedTopologicalTorsionFingerprintAsBitVect',
-    ('RDKitFP', False): 'RDKFingerprint',
+    ('morgan', True): 'GetHashedMorganFingerprint',
+    ('morgan', False): 'GetMorganFingerprintAsBitVect',
+    ('atom_pair', True): 'GetHashedAtomPairFingerprint',
+    ('atom_pair', False): 'GetHashedAtomPairFingerprintAsBitVect',
+    ('topological_torsion', True): 'GetHashedTopologicalTorsionFingerprint',
+    ('topological_torsion', False): 'GetHashedTopologicalTorsionFingerprintAsBitVect',
 }  # The names
 
 
@@ -76,48 +87,114 @@ def get_allchem_fingerprint(mol, count, fp_type, num_bits, **kwargs):
 
 
 class TestFingerprint:
-    @pytest.mark.parametrize('fp_type, count',
-                             [('Morgan', True),
-                              ('Morgan', False),
-                              ])
-    def test_morgan_fingerprint(self, fp_type, count, mol, num_bits, radius):
+
+    def test_morgan_fingerprint(self, count, mol, num_bits, radius, dtype):
         """
         Test the ``get_fingerprint`` function get a reproducible count fingerprint for morgan fingerprints.
         """
-        assert np.isclose(get_fingerprint(mol, count=count, num_bits=num_bits, fp_type=fp_type, radius=radius),
-                          get_allchem_fingerprint(mol, count=count, num_bits=num_bits, fp_type=fp_type, radius=radius)).all()
+        fp = get_fingerprint(
+                mol, count=count, num_bits=num_bits, fp_type='morgan', radius=radius, dtype=dtype
+        )
+        fp_exp = get_allchem_fingerprint(mol, count=count, num_bits=num_bits, fp_type='morgan', radius=radius)
 
-    @pytest.mark.parametrize('fp_type, count',
-                             [('Morgan', True),
-                              ('Morgan', False),
-                              ])
-    def test_morgan_fingerprint_rdkitmol(self, fp_type, count, rdkitmol, num_bits, radius):
-        """
-        Test the ``get_fingerprint`` function get a reproducible count fingerprint for morgan fingerprints and RDKitMol.
-        """
-        assert np.isclose(get_fingerprint(rdkitmol, count=count, num_bits=num_bits, fp_type=fp_type, radius=radius),
-                          get_allchem_fingerprint(rdkitmol.ToRWMol(), count=count, num_bits=num_bits, fp_type=fp_type, radius=radius)).all()
+        assert np.allclose(fp, fp_exp)
+        assert fp.dtype == np.dtype(dtype)
 
-    @pytest.mark.parametrize('fp_type, count',
-                             [('AtomPair', True),
-                              ('AtomPair', False),
-                              ('TopologicalTorsion', True),
-                              ('TopologicalTorsion', False),
-                              ])
-    def test_atompair_and_topological_torsion_fingerprint_rdkitmol(self, fp_type, count, rdkitmol, num_bits):
+    def test_morgan_fingerprint_for_mol_with_hs(self, count, mol_with_hs, num_bits, radius, dtype):
+        """
+        Test the ``get_fingerprint`` function get a reproducible count fingerprint for morgan fingerprints.
+        """
+        fp = get_fingerprint(
+                mol_with_hs, count=count, num_bits=num_bits, fp_type='morgan', radius=radius, dtype=dtype
+        )
+        fp_exp = get_allchem_fingerprint(mol_with_hs, count=count, num_bits=num_bits, fp_type='morgan', radius=radius)
+
+        assert np.allclose(fp, fp_exp)
+        assert fp.dtype == np.dtype(dtype)
+
+    def test_atom_pair_fingerprint(self, mol, count, num_bits, dtype):
         """
         Test the ``get_fingerprint`` function get a reproducible count fingerprint for AtomPair and TopologicalTorsion Fingerprints.
         """
-        assert np.isclose(get_fingerprint(rdkitmol, count=count, num_bits=num_bits, fp_type=fp_type),
-                          get_allchem_fingerprint(rdkitmol.ToRWMol(), count=count, num_bits=num_bits, fp_type=fp_type)).all()
+        fp = get_fingerprint(
+                mol, count=count, num_bits=num_bits, fp_type='atom_pair', dtype=dtype
+        )
+        fp_exp = get_allchem_fingerprint(mol, count=count, num_bits=num_bits, fp_type='atom_pair')
 
-    def test_rdkitfp_bit(self, rdkitmol, num_bits):
+        assert np.allclose(fp, fp_exp)
+        assert fp.dtype == np.dtype(dtype)
+
+    def test_atom_pair_fingerprint_for_mol_with_hs(self, mol_with_hs, count, num_bits, dtype):
+        """
+        Test the ``get_fingerprint`` function get a reproducible count fingerprint for AtomPair and TopologicalTorsion Fingerprints.
+        """
+        fp = get_fingerprint(
+                mol_with_hs, count=count, num_bits=num_bits, fp_type='atom_pair', dtype=dtype
+        )
+        fp_exp = get_allchem_fingerprint(mol_with_hs, count=count, num_bits=num_bits, fp_type='atom_pair')
+
+        assert np.allclose(fp, fp_exp)
+        assert fp.dtype == np.dtype(dtype)
+
+    def test_topological_torsion_fingerprint(self, mol, count, num_bits, dtype):
+        """
+        Test the ``get_fingerprint`` function get a reproducible count fingerprint for AtomPair and TopologicalTorsion Fingerprints.
+        """
+        fp = get_fingerprint(
+            mol, count=count, num_bits=num_bits, fp_type="topological_torsion", dtype=dtype
+        )
+        fp_exp = get_allchem_fingerprint(
+            mol, count=count, num_bits=num_bits, fp_type="topological_torsion",
+        )
+
+        assert np.allclose(fp, fp_exp)
+        assert fp.dtype == np.dtype(dtype)
+
+    def test_topological_torsion_fingerprint_for_mol_with_hs(self, mol_with_hs, count, num_bits, dtype):
+        """
+        Test the ``get_fingerprint`` function get a reproducible count fingerprint for AtomPair and TopologicalTorsion Fingerprints.
+        """
+        fp = get_fingerprint(
+            mol_with_hs,
+            count=count,
+            num_bits=num_bits,
+            fp_type="topological_torsion",
+            dtype=dtype,
+        )
+        fp_exp = get_allchem_fingerprint(
+            mol_with_hs,
+            count=count,
+            num_bits=num_bits,
+            fp_type="topological_torsion",
+        )
+
+        assert np.allclose(fp, fp_exp)
+        assert fp.dtype == np.dtype(dtype)
+
+    def test_rdkitfp_bit(self, mol, num_bits, dtype):
         """
         Test the ``get_fingerprint`` function get a reproducible bit-based fingerprint for RDKitFP.
         I don't find the the count-based fingerprint for RDKitFP implementation in AllChem.
         """
-        features_vec = AllChem.RDKFingerprint(rdkitmol.ToRWMol(), fpSize=num_bits)
-        features = np.zeros((1,))
-        DataStructs.ConvertToNumpyArray(features_vec, features)
-        assert np.isclose(get_fingerprint(rdkitmol, count=False, num_bits=num_bits, fp_type='rdkitfp'),
-                          features).all()
+        fp = get_fingerprint(mol, count=False, num_bits=num_bits, fp_type='rdkit', dtype=dtype)
+
+        features_vec = AllChem.RDKFingerprint(mol, fpSize=num_bits)
+        fp_exp = np.zeros((1,))
+        DataStructs.ConvertToNumpyArray(features_vec, fp_exp)
+
+        assert np.allclose(fp, fp_exp)
+        assert fp.dtype == np.dtype(dtype)
+
+    def test_rdkitfp_bit_for_mol_with_hs(self, mol_with_hs, num_bits, dtype):
+        """
+        Test the ``get_fingerprint`` function get a reproducible bit-based fingerprint for RDKitFP.
+        I don't find the the count-based fingerprint for RDKitFP implementation in AllChem.
+        """
+        fp = get_fingerprint(mol_with_hs, count=False, num_bits=num_bits, fp_type='rdkit', dtype=dtype)
+
+        features_vec = AllChem.RDKFingerprint(mol_with_hs, fpSize=num_bits)
+        fp_exp = np.zeros((1,))
+        DataStructs.ConvertToNumpyArray(features_vec, fp_exp)
+
+        assert np.allclose(fp, fp_exp)
+        assert fp.dtype == np.dtype(dtype)
