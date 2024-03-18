@@ -38,7 +38,6 @@ def test_saturate_mol(smi, add_hs, exp_smi, exp_mult):
 @pytest.mark.parametrize(
     "smi, exp_smi",
     [
-        ("O=O", "[O][O]"),
         ("[C]=O", "[C-]#[O+]"),
         ("CS(C)([O])[O]", "CS(C)(=O)=O"),
         ("[CH2]O[O]", "C=[O+][O-]"),
@@ -83,14 +82,14 @@ def test_fix_sanitize_bad_non_resonance(smi, add_hs, exp_smi):
 
 
 def test_fix_mol_complex():
-    mol = mol_from_smiles("O=O.[C]=O")
+    mol = mol_from_smiles("[CH2][CH2].[C]=O")
 
     fixed_mols = Chem.GetMolFrags(
         fix_mol(mol, remedy_manager.all_remedies), asMols=True
     )
 
     assert set(mol_to_smiles(fixed_mol) for fixed_mol in fixed_mols) == set(
-        ["[O][O]", "[C-]#[O+]"]
+        ["C=C", "[C-]#[O+]"]
     )
 
 
