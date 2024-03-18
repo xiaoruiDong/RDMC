@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 from rdkit import Chem
 
-from rdmc.rdtools.conversion.smiles import mol_from_smiles
+from rdmc.rdtools.conversion.smiles import mol_from_smiles, mol_to_smiles
 from rdmc.rdtools.conversion.rmg import mol_from_rmg_mol
 from rdmc.rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
 from rdmc.rdtools.obabel import (
@@ -425,3 +425,27 @@ class MolToMixin:
             pass
         finally:
             writer.close()
+
+    def ToSmiles(
+        self,
+        stereo: bool = True,
+        kekule: bool = False,
+        canonical: bool = True,
+        remove_atom_map: bool = True,
+        remove_hs: bool = True,
+    ) -> str:
+        """
+        Convert a molecule object to a SMILES string.
+
+        Args:
+            stereo (bool, optional): Whether to include stereochemistry information in the SMILES. Defaults to ``True``.
+            kekule (bool, optional): Whether to use Kekule encoding. Defaults to ``False``.
+            canonical (bool, optional): Whether to use canonical SMILES. Defaults to ``True``.
+            remove_atom_map (bool, optional): Whether to keep the Atom mapping contained in the SMILES. Defaults
+                Defaults to ``True``.
+            remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule. Defaults to ``True``.
+
+        Returns:
+            str: A SMILES string corresponding to the molecule.
+        """
+        return mol_to_smiles(self, stereo, kekule, canonical, remove_atom_map, remove_hs)
