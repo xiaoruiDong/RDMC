@@ -2,6 +2,9 @@ from rdkit import Chem
 
 from rdmc.rdtools.conversion.rmg import mol_from_rmg_mol
 from rdmc.rdtools.conversion.xyz import mol_from_xyz
+from rdmc.rdtools.obabel import (
+    openbabel_mol_to_rdkit_mol as mol_from_openbabel_mol,
+)
 
 class MolTransformerMixin:
 
@@ -128,3 +131,25 @@ class MolTransformerMixin:
             Mol: A molecule object corresponding to the Mol block string.
         """
         return cls(Chem.MolFromMolBlock(molBlock, removeHs=removeHs, sanitize=sanitize))
+
+    @classmethod
+    def FromOBMol(
+        cls,
+        obMol: "openbabel.OBMol",
+        removeHs: bool = False,
+        sanitize: bool = True,
+        embed: bool = True,
+    ):
+        """
+        Convert a OpenBabel Mol to an RDKitMol object.
+
+        Args:
+            obMol (Molecule): An OpenBabel Molecule object for the conversion.
+            removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to ``False``.
+            sanitize (bool, optional): Whether to sanitize the RDKit molecule. Defaults to ``True``.
+            embed (bool, optional): Whether to embeb 3D conformer from OBMol. Defaults to ``True``.
+
+        Returns:
+            RDKitMol: An RDKit molecule object corresponding to the input OpenBabel Molecule object.
+        """
+        return cls(mol_from_openbabel_mol(obMol, removeHs, sanitize, embed))
