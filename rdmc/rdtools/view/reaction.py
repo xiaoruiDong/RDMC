@@ -34,15 +34,13 @@ def reaction_viewer(
                                             Only valid when `only_ts` is `False`.
     """
     # Check if TS is provided
-    if ts_mol is None:
-        grid = ['r', 'p']
-    else:
-        grid = ['r', 'ts', 'p']
-        # Remove the ts_viewer's key from kwargs
-        ts_kwargs = {}
-        for key in _ts_viewer_keys:
-            if key in kwargs:
-                ts_kwargs[key] = kwargs.pop(key)
+    grid = ['r', 'p'] if ts_mol is None else ['r', 'ts', 'p'] 
+
+    ts_kwargs = {}
+    # Remove the ts_viewer's key from kwargs
+    for key in _ts_viewer_keys:
+        if key in kwargs:
+            ts_kwargs[key] = kwargs.pop(key)
 
     # Set up grid viewer
     if "viewer" in kwargs:
