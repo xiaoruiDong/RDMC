@@ -7,6 +7,7 @@ from rdmc.rdtools.conf import (
 )
 from rdmc.rdtools.conversion import (
     mol_from_smiles,
+    mol_to_smiles,
 )
 from rdmc.rdtools.mol import (
     combine_mols,
@@ -15,6 +16,7 @@ from rdmc.rdtools.mol import (
     get_atomic_nums,
     get_atom_masses,
     get_match_and_recover_recipe,
+    get_closed_shell_mol,
 )
 from rdmc.rdtools.conf import (
     embed_multiple_null_confs,
@@ -202,3 +204,22 @@ def test_get_match_and_recover_recipe(smi1, smi2, expected):
     mol1 = mol_from_smiles(smi1)
     mol2 = mol_from_smiles(smi2)
     assert expected == get_match_and_recover_recipe(mol1, mol2)
+
+
+@pytest.mark.parametrize(
+    "rad_smi, expect_smi",
+    [
+        ("[CH3]", "C"),
+        ("c1[c]cccc1", "c1ccccc1"),
+        ("C[NH2]", "CN"),
+        ("[CH2]C[CH2]", "CCC"),
+        ("C", "C"),
+    ],
+)
+@pytest.mark.parametrize("cheap", [True, False])
+@pytest.mark.parametrize("atommap", [True, False])
+def test_get_closed_shell_mol(rad_smi, expect_smi, cheap, atommap):
+
+    rad_mol = mol_from_smiles(rad_smi, assign_atom_map=atommap)
+    cs_mol = get_closed_shell_mol(rad_mol, cheap=cheap)
+    assert mol_to_smiles(cs_mol) == expect_smi
