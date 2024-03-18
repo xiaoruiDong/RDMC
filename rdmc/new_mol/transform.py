@@ -514,3 +514,12 @@ class MolToMixin:
             )
 
         return nx_graph
+
+
+class MolTransformMixin(MolFromMixin, MolToMixin):
+
+    """
+    A mixin used to transform a molecule object. It is intended to be used with the ``Mol`` class
+    and its child classes.
+    """
+    pass
