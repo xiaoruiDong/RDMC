@@ -37,7 +37,7 @@ def conformer_viewer(
     model = "sdf"
 
     # Turn off atom_index, unless user explicitly set it
-    atom_index = kwargs.get("atom_index") or False
+    atom_index = kwargs.pop("atom_index") if "atom_index" in kwargs else False
 
     viewer = base_viewer(obj, model, atom_index=atom_index, **kwargs)
 
