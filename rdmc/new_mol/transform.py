@@ -10,7 +10,7 @@ from rdmc.rdtools.obabel import (
     openbabel_mol_to_rdkit_mol as mol_from_openbabel_mol,
 )
 
-class MolTransformerMixin:
+class MolFromMixin:
 
     @classmethod
     def FromSmarts(
