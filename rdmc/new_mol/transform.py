@@ -1,5 +1,6 @@
 from rdkit import Chem
 
+from rdmc.rdtools.conversion.smiles import mol_from_smiles
 from rdmc.rdtools.conversion.rmg import mol_from_rmg_mol
 from rdmc.rdtools.conversion.xyz import mol_from_xyz
 from rdmc.rdtools.obabel import (
@@ -141,15 +142,47 @@ class MolTransformerMixin:
         embed: bool = True,
     ):
         """
-        Convert a OpenBabel Mol to an RDKitMol object.
+        Convert a OpenBabel Mol to a molecule object.
 
         Args:
             obMol (Molecule): An OpenBabel Molecule object for the conversion.
             removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to ``False``.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule. Defaults to ``True``.
-            embed (bool, optional): Whether to embeb 3D conformer from OBMol. Defaults to ``True``.
+            embed (bool, optional): Whether to embed 3D conformer from OBMol. Defaults to ``True``.
 
         Returns:
-            RDKitMol: An RDKit molecule object corresponding to the input OpenBabel Molecule object.
+            Mol: A molecule object corresponding to the input OpenBabel Molecule object.
         """
         return cls(mol_from_openbabel_mol(obMol, removeHs, sanitize, embed))
+
+    @classmethod
+    def FromSmiles(
+        cls,
+        smiles: str,
+        remove_hs: bool = False,
+        add_hs: bool = True,
+        sanitize: bool = True,
+        allow_cxsmiles: bool = True,
+        keep_atom_map: bool = True,
+        assign_atom_map: bool = True,
+    ):
+        """
+        Convert a SMILES string to a molecule object.
+
+        Args:
+            smiles (str): A SMILES representation of the molecule.
+            remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+            add_hs (bool, optional): Whether to add explicit hydrogen atoms to the molecule. ``True`` to add.
+                                    Only functioning when removeHs is False.
+            sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
+            allow_cxsmiles (bool, optional): Whether to recognize and parse CXSMILES. Defaults to ``True``.
+            keep_atom_map (bool, optional): Whether to keep the atom mapping contained in the SMILES. Defaults
+                                            Defaults to ``True``.
+            assign_atom_map (bool, optional): Whether to assign the atom mapping according to the atom index
+                                              if no atom mapping available in the SMILES. Defaults to ``True``.
+
+        Returns:
+            Mol: A molecule object corresponding to the SMILES.
+        """
+        return cls(mol_from_smiles(smiles, remove_hs, add_hs, sanitize, allow_cxsmiles, keep_atom_map, assign_atom_map))
+    
