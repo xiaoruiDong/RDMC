@@ -13,8 +13,7 @@ import pytest
 
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
-from rdmc import RDKitMol
-from rdmc.featurizer import get_fingerprint
+from rdmc.rdtools.featurizer import get_fingerprint
 
 logging.basicConfig(level=logging.DEBUG)
 
