@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import List, Tuple
 
 import numpy as np
@@ -53,7 +54,7 @@ def _create_matrix_with_radii_values(radii: np.array) -> np.array:
     mat = np.zeros((num_atom, num_atom))
     return mat + radii + radii.T
 
-
+@lru_cache()
 def get_vdw_distance_matrix(
     mol: Chem.Mol,
 ) -> np.array:
@@ -78,6 +79,7 @@ def get_vdw_distance_matrix(
     return _create_matrix_with_radii_values(vdw_radii)
 
 
+@lru_cache()
 def get_covalent_distance_matrix(mol: Chem.Mol) -> np.array:
     """
     Generate a covalent matrix of the molecule.
@@ -100,6 +102,7 @@ def get_covalent_distance_matrix(mol: Chem.Mol) -> np.array:
     return _create_matrix_with_radii_values(covalent_radii)
 
 
+@lru_cache()
 def get_bond_distance_matrix(mol: Chem.Mol) -> np.ndarray:
     """
     Get the bond distance matrix of the molecule.
