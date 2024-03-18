@@ -11,6 +11,13 @@ from rdmc.rdtools.obabel import (
     openbabel_mol_to_rdkit_mol as mol_from_openbabel_mol,
     rdkit_mol_to_openbabel_mol as mol_to_openbabel_mol,
 )
+from rdmc.rdtools.utils import get_fake_module
+
+try:
+    from ase import Atoms
+except ImportError:
+    Atoms = get_fake_module("Atom", "ase")
+
 
 class MolFromMixin:
 
@@ -449,3 +456,28 @@ class MolToMixin:
             str: A SMILES string corresponding to the molecule.
         """
         return mol_to_smiles(self, stereo, kekule, canonical, remove_atom_map, remove_hs)
+
+    def ToAtoms(
+        self,
+        confId: int = 0,
+    ) -> "Atoms":
+        """
+        Convert a molecule object to the ``ase.Atoms`` object.
+
+        Args:
+            confId (int): The conformer ID to be exported. Defaults to ``0``.
+
+        Returns:
+            Atoms: The corresponding ``ase.Atoms`` object.
+        """
+        atoms = Atoms(
+            positions=self.GetPositions(id=confId),
+            numbers=self.GetAtomicNumbers()
+        )
+        atoms.set_initial_magnetic_moments(
+            [atom.GetNumRadicalElectrons() + 1 for atom in self.GetAtoms()]
+        )
+        atoms.set_initial_charges(
+            [atom.GetFormalCharge() for atom in self.GetAtoms()]
+        )
+        return atoms
