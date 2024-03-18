@@ -2,6 +2,10 @@ import numpy as np
 
 from rdkit import Chem
 
+from rdmc.rdtools.utils import get_fake_module
+from rdmc.rdtools.conf import add_conformer
+from rdmc.rdtools.bond import BOND_ORDERS
+
 try:
     # Openbabel 3
     from openbabel import openbabel as ob
@@ -10,14 +14,7 @@ except ImportError:
     try:
         import openbabel as ob
     except ImportError:
-        class FakeOpenBabel:
-            def __getattribute__(self, __name: str):
-                raise RuntimeError("The function cannot run as OpenBabel is not installed. "
-                                   "Please install the openbael and restart the python Kernel.")
-        ob = FakeOpenBabel()
-
-from rdmc.rdtools.conf import add_conformer
-from rdmc.rdtools.bond import BOND_ORDERS
+        ob = get_fake_module("openbabel")
 
 
 RDKIT_TO_OB_BOND_ORDER = {
