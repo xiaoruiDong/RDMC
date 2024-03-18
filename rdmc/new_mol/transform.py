@@ -320,7 +320,10 @@ class MolToMixin:
         Returns:
             Mol: The corresponding rdkit ``Mol``.
         """
-        return Chem.Mol(self)
+        try:
+            self.GetMol()
+        except AttributeError:
+            return Chem.Mol(self)
 
     def ToMolBlock(
         self,
