@@ -475,6 +475,7 @@ class MolToMixin:
         Returns:
             Atoms: The corresponding ``ase.Atoms`` object.
         """
+        # todo: add this into rdtools.conversion
         atoms = Atoms(
             positions=self.GetPositions(id=confId),
             numbers=self.GetAtomicNumbers()
@@ -501,6 +502,7 @@ class MolToMixin:
         Returns:
             nx.Graph: A networkx graph representing the molecule.
         """
+        # todo: add this to rdtools.conversion
         nx_graph = nx.Graph()
         for atom in self.GetAtoms():
             nx_graph.add_node(
