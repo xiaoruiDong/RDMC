@@ -438,8 +438,8 @@ class MolToMixin:
         stereo: bool = True,
         kekule: bool = False,
         canonical: bool = True,
-        remove_atom_map: bool = True,
-        remove_hs: bool = True,
+        removeAtomMap: bool = True,
+        removeHs: bool = True,
     ) -> str:
         """
         Convert a molecule object to a SMILES string.
@@ -455,7 +455,7 @@ class MolToMixin:
         Returns:
             str: A SMILES string corresponding to the molecule.
         """
-        return mol_to_smiles(self, stereo, kekule, canonical, remove_atom_map, remove_hs)
+        return mol_to_smiles(self, stereo, kekule, canonical, removeAtomMap, removeHs)
 
     def ToAtoms(
         self,
