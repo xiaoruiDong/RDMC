@@ -1,10 +1,13 @@
 from rdkit import Chem
 
+from rdmc.rdtools.utils import get_fake_module
+
 try:
     import rmgpy.molecule.element as elements
     import rmgpy.molecule.molecule as mm
 except:
-    rmgpy = None
+    elements = get_fake_module("elements", "rmgpy")
+    mm = get_fake_module("molecule", "rmgpy")
 
 
 ORDERS = {
@@ -118,9 +121,6 @@ def mol_to_rmg_mol(
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
-    if not rmgpy:
-        raise ImportError("rmgpy cannot be imported and possibly is not installed.")
-
     mol = mm.Molecule()
     mol.vertices = []
 
