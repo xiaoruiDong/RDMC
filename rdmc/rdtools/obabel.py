@@ -311,3 +311,47 @@ def _correct_atom_spin_mult(obmol: "ob.OBMol"):
         # Find the unsaturated nitrogen and halogen
         elif atomic_num in [1, 9, 17, 35, 53] and total_valence == 0:
             obatom.SetSpinMultiplicity(2)
+
+
+# todo: xiaorui Mar 18 2024: I forgot what I wrote here. need to check and update in the future.
+# def get_internal_coord_system(
+#     obmol: "ob.OBMol",
+#     nonredundant: bool = True,
+# ) -> tuple:
+#     """
+#     Generate a non_redundant_internal coordinate.
+
+#     Args:
+#         obmol (OBMol): Openbabel mol.
+#         nonredundant (bool): whether non-redundant. Defaults to ``True``.
+
+#     Returns:
+#         A three-element tuple containing the bonds, angles, and torsions.
+#         Each element is a list of tuples. Each tuple contains the index of the atoms.
+#     """
+#     obconv = ob.OBConversion()
+#     obconv.SetOutFormat("gzmat")
+#     gzmat_str = obconv.WriteString(obmol)
+
+#     lines = gzmat_str.split("Variables:")[0].splitlines()[7:]
+#     bonds, angles, torsions = [], [], []
+#     for idx, line in enumerate(lines):
+#         items = line.split()
+#         try:
+#             bonds.append((idx + 2, int(items[1])))
+#             angles.append((idx + 2, int(items[1]), int(items[3])))
+#             torsions.append((idx + 2, int(items[1]), int(items[3]), int(items[5])))
+#         except IndexError:
+#             # First and second lines are special
+#             pass
+
+#     if nonredundant:
+#         non_red_torsions = []
+#         pivots = []
+#         for tor in torsions:
+#             if tor[1:3] not in pivots and tor[-2:-4:-1] not in pivots:
+#                 pivots.append(tor[1:3])
+#                 non_red_torsions.append(tor)
+#         torsions = non_red_torsions
+
+#     return bonds, angles, torsions
