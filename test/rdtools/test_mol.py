@@ -13,6 +13,7 @@ from rdmc.rdtools.mol import (
     get_element_symbols,
     get_element_counts,
     get_atomic_nums,
+    get_atom_masses,
 )
 from rdmc.rdtools.conf import (
     embed_multiple_null_confs,
@@ -133,3 +134,23 @@ def test_get_element_counts(smi, expected):
 def test_get_atomic_nums(smi, expected):
     mol = mol_from_smiles(smi)
     assert get_atomic_nums(mol) == expected
+
+
+@pytest.mark.parametrize(
+    "smi, expected",
+    [
+        (
+            "[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]",
+            [1.008, 12.011, 1.008, 1.008, 1.008, 1.008],
+        ),
+        (
+            "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
+            [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008]),
+    ],
+)
+def test_get_atom_masses(smi, expected):
+    mol = mol_from_smiles(smi)
+    np.testing.assert_allclose(
+        np.array(get_atom_masses(mol)),
+        np.array(expected)
+    )

@@ -8,7 +8,7 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Geometry.rdGeometry import Point3D
 
-from rdmc.rdtools.atom import get_element_symbol
+from rdmc.rdtools.atom import get_element_symbol, get_atom_mass
 from rdmc.rdtools.conf import (
     embed_multiple_null_confs,
     reflect as _reflect,
@@ -105,6 +105,18 @@ def get_atomic_nums(mol: Chem.Mol) -> List[int]:
         List[int] : List of atomic numbers (e.g. ``[1, 6, 8, ]`` etc.)
     """
     return [atom.GetAtomicNum() for atom in mol.GetAtoms()]
+
+def get_atom_masses(mol: Chem.Mol) -> List[float]:
+    """
+    Get atomic masses of a molecule.
+
+    Args:
+        mol (Chem.Mol): The molecule to get atomic masses.
+
+    Returns:
+        List[float] : List of atomic masses (e.g. ``[1.008, 12.01, 15.999, ]`` etc.)
+    """
+    return [get_atom_mass(atom) for atom in mol.GetAtoms()]
 
 
 def get_element_counts(mol: Chem.Mol) -> dict:
