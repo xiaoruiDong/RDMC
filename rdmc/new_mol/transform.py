@@ -1,5 +1,6 @@
 from copy import copy
 from pathlib import Path
+from typing import Optional, Union
 
 from rdkit import Chem
 
@@ -395,3 +396,29 @@ class MolToMixin:
         """
         return Chem.MolToSmarts(self, isomericSmiles, rootedAtAtom)
 
+    def ToSDFFile(
+        self,
+        path: str,
+        confId: Optional[Union[int, list]] = None,
+    ):
+        """
+        Convert a molecule object to a SDF file.
+
+        Args:
+            path (str): The path to the SDF file.
+            confId (int or list, optional): The conformer ID to be converted. Defaults to ``None``, to write all conformers to the sdf file.
+                                             If ``confId`` is a list or a int, it will writes the specified conformers
+        """
+        if confId is None:
+            confId = range(self.GetNumConformers())
+        elif isinstance(confId, int):
+            confId = [confId]
+
+        try:
+            writer = Chem.rdmolfiles.SDWriter(str(path))
+            for i in confId:
+                writer.write(self, confId=i)
+        except:
+            pass
+        finally:
+            writer.close()
