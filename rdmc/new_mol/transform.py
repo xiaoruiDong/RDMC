@@ -376,3 +376,22 @@ class MolToMixin:
             str: The corresponding XYZ string.
         """
         return mol_to_xyz(self, confId, header, comment)
+
+    def ToSmarts(
+        self,
+        isomericSmiles: bool = True,
+        rootedAtAtom: int = -1,
+    ) -> str:
+        """
+        Convert a molecule object to a SMARTS string.
+
+        Args:
+            isomericSmiles (bool, optional): Whether to generate isomeric SMILES and include information about stereochemistry.
+                                             Defaults to ``True``.
+            rootedAtAtom (int, optional): The atom index to be used as the root of the SMARTS. Defaults to ``-1``.
+
+        Returns:
+            str: The corresponding SMARTS string.
+        """
+        return Chem.MolToSmarts(self, isomericSmiles, rootedAtAtom)
+
