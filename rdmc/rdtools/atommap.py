@@ -81,10 +81,12 @@ def _renumber_atoms(
     Returns:
         Chem.Mol: The molecule with renumbered atoms.
     """
-    mol = Chem.RenumberAtoms(mol, new_order)
+    new_mol = Chem.RenumberAtoms(mol, new_order)
+    if isinstance(mol, Chem.RWMol):
+        new_mol = mol.__class__(new_mol)
     if update_atom_map:
-        reset_atom_map_numbers(mol)
-    return mol
+        reset_atom_map_numbers(new_mol)
+    return new_mol
 
 
 def renumber_atoms(
