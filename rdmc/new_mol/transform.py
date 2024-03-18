@@ -1,6 +1,7 @@
 from rdkit import Chem
 
 from rdmc.rdtools.conversion.rmg import mol_from_rmg_mol
+from rdmc.rdtools.conversion.xyz import mol_from_xyz
 
 class MolTransformerMixin:
 
@@ -11,7 +12,7 @@ class MolTransformerMixin:
         **kwargs,
     ):
         """
-        Convert a SMARTS to an ``RDKitMol`` object.
+        Convert a SMARTS to a new molecule object.
 
         Args:
             smarts (str): A SMARTS string of the molecule
@@ -31,7 +32,7 @@ class MolTransformerMixin:
         sanitize: bool = True,
     ):
         """
-        Construct an ``RDKitMol`` object from a InChI string.
+        Convert a InChI string to a new molecule object.
 
         Args:
             inchi (str): A InChI string. https://en.wikipedia.org/wiki/International_Chemical_Identifier
@@ -57,7 +58,7 @@ class MolTransformerMixin:
         sanitize: bool = True,
     ):
         """
-        Convert an RMG ``Molecule`` to an ``RDkitMol`` object.
+        Convert an RMG ``Molecule`` to a new molecule object.
 
         Args:
             rmgMol ('rmg.molecule.Molecule'): An RMG ``Molecule`` instance.
@@ -68,3 +69,43 @@ class MolTransformerMixin:
             Mol: A molecule object corresponding to the RMG Molecule.
         """
         return cls(mol_from_rmg_mol(rmgMol, removeHs, sanitize))
+
+    @classmethod
+    def FromXYZ(
+        cls,
+        xyz: str,
+        backend: str = "openbabel",
+        header: bool = True,
+        sanitize: bool = True,
+        embed_chiral: bool = False,
+        **kwargs,
+    ):
+        """
+        Convert a xyz string to a new molecule object.
+
+        Args:
+            xyz (str): A XYZ String.
+            backend (str): The backend used to perceive molecule. Defaults to ``'openbabel'``.
+                            Currently, we only support ``'openbabel'`` and ``'xyz2mol'``.
+            header (bool, optional): If lines of the number of atoms and title are included.
+                                    Defaults to ``True.``
+            sanitize (bool): Sanitize the RDKit molecule during conversion. Helpful to set it to ``False``
+                            when reading in TSs. Defaults to ``True``.
+            embed_chiral: ``True`` to embed chiral information. Defaults to ``True``.
+            supported kwargs:
+                xyz2mol:
+                    - charge: The charge of the species. Defaults to ``0``.
+                    - allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to ``False``.
+                    - use_graph: ``True`` to use networkx module for accelerate. Defaults to ``True``.
+                    - use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to ``False``.
+                    - forced_rdmc: Defaults to ``False``. In rare case, we may hope to use a tailored
+                                    version of the Jensen XYZ parser, other than the one available in RDKit.
+                                    Set this argument to ``True`` to force use RDMC's implementation,
+                                    which user's may have some flexibility to modify.
+
+            Returns:
+                Mol: A molecule object corresponding to the xyz.
+        """
+        return cls(mol_from_xyz(xyz, backend, header, sanitize, embed_chiral, **kwargs))
+    
+
