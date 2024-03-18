@@ -1,6 +1,6 @@
 from collections import Counter
 from itertools import product as cartesian_product
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -204,3 +204,66 @@ def reflect(mol: Chem.Mol, conf_id: int = 0):
     """
     conf = mol.GetConformer(conf_id)
     _reflect(conf)
+
+
+def get_match_and_recover_recipe(
+    mol1: Chem.Mol,
+    mol2: Chem.Mol,
+) -> Tuple[tuple, dict]:
+    """
+    Get the isomorphism match between two molecules and the recipe to recover
+    mol2 to mol1. If swapping the atom indices in mol2 according to the recipe,
+    mol2 should be the same as mol1.
+
+    Args:
+        mol1 (RWMol): The first molecule.
+        mol2 (RWMol): The second molecule.
+
+    Returns:
+        tuple: The substructure match.
+        dict: A truncated atom mapping of mol2 to mol1.
+    """
+    if mol1.GetNumAtoms() != mol2.GetNumAtoms():
+        return (), {}
+    match = mol1.GetSubstructMatch(mol2)
+    recipe = {i: j for i, j in enumerate(match) if i != j}
+
+    if len(recipe) == 0:
+        # Either mol1 and mol2 has identical graph or no match at all
+        return match, recipe
+
+    # The default GetSubstructMatch may not always return the simplest mapping
+    # The following implements a naive algorithm fixing the issue caused by equivalent
+    # hydrogens. The idea is that if two hydrogens are equivalent, they are able to
+    # be mapped to the same atom in mol1.
+
+    # Find equivalent hydrogens
+    hs = [i for i in recipe.keys() if mol1.GetAtomWithIdx(i).GetAtomicNum() == 1]
+    equivalent_hs = []
+    checked_hs = set()
+
+    for i in range(len(hs)):
+        if i in checked_hs:
+            continue
+        equivalent_hs.append([hs[i]])
+        checked_hs.add(i)
+        for j in range(i + 1, len(hs)):
+            if j in checked_hs:
+                continue
+            path = Chem.rdmolops.GetShortestPath(mol2, hs[i], hs[j])
+            if len(path) == 3:  # H1-X2-H3
+                equivalent_hs[-1].append(hs[j])
+                checked_hs.add(j)
+
+    # Clean up the recipe based on the equivalent hydrogens
+    # E.g. {2: 13, 12: 2, 13: 12} -> {2: 13, 12: 13}
+    match = list(match)
+    for group in equivalent_hs:
+        for i in group:
+            j = recipe.get(i)
+            if j is not None and j in group:
+                recipe[i] = recipe[j]
+                match[i], match[j] = match[j], j
+                del recipe[j]
+
+    return tuple(match), recipe
