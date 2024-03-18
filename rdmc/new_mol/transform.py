@@ -107,5 +107,24 @@ class MolTransformerMixin:
                 Mol: A molecule object corresponding to the xyz.
         """
         return cls(mol_from_xyz(xyz, backend, header, sanitize, embed_chiral, **kwargs))
-    
 
+    @classmethod
+    def FromMolBlock(
+        cls,
+        molBlock: str,
+        removeHs: bool = False,
+        sanitize: bool = True,
+    ):
+        """
+        Convert a string containing the Mol block to a molecule object.
+
+        Args:
+            MolBlock (str): string containing the Mol block.
+            removeHs (bool): Whether or not to remove hydrogens from the input. Defaults to ``False``.
+            sanitize (bool): Whether or not to use RDKit's sanitization algorithm to clean input; helpful to set this
+                             to ``False`` when reading TS files. Defaults to ``True``.
+
+        Returns:
+            Mol: A molecule object corresponding to the Mol block string.
+        """
+        return cls(Chem.MolFromMolBlock(molBlock, removeHs=removeHs, sanitize=sanitize))
