@@ -20,7 +20,7 @@ from rdkit.Chem.rdchem import Mol, RWMol, Conformer
 from rdkit.Geometry.rdGeometry import Point3D
 
 from rdmc.conf import RDKitConf
-from rdmc.featurizer import get_fingerprint
+from rdmc.rdtools.featurizer import get_fingerprint
 from rdmc.utils import *
 
 from ase import Atoms
@@ -979,7 +979,7 @@ class RDKitMol(object):
             np.ndarray: A fingerprint of the molecule.
         """
         return get_fingerprint(
-            self, fp_type=fpType, num_bits=numBits, count=count, **kwargs
+            self._mol, fp_type=fpType, num_bits=numBits, count=count, **kwargs
         )
 
     def GetPositions(self, id: int = 0) -> np.ndarray:
