@@ -1,3 +1,6 @@
+from copy import copy
+from pathlib import Path
+
 from rdkit import Chem
 
 from rdmc.rdtools.conversion.smiles import mol_from_smiles
@@ -185,4 +188,102 @@ class MolTransformerMixin:
             Mol: A molecule object corresponding to the SMILES.
         """
         return cls(mol_from_smiles(smiles, remove_hs, add_hs, sanitize, allow_cxsmiles, keep_atom_map, assign_atom_map))
-    
+
+    @classmethod
+    def FromXYZFile(
+        cls,
+        path: str,
+        backend: str = "openbabel",
+        header: bool = True,
+        sanitize: bool = True,
+        embed_chiral: bool = False,
+        **kwargs,
+    ):
+        """
+        Convert a xyz file to a new molecule object.
+
+        Args:
+            path (str): The path to the XYZ file.
+            backend (str): The backend used to perceive molecule. Defaults to ``'openbabel'``.
+                            Currently, we only support ``'openbabel'`` and ``'xyz2mol'``.
+            header (bool, optional): If lines of the number of atoms and title are included.
+                                    Defaults to ``True.``
+            sanitize (bool): Sanitize the RDKit molecule during conversion. Helpful to set it to ``False``
+                            when reading in TSs. Defaults to ``True``.
+            embed_chiral: ``True`` to embed chiral information. Defaults to ``True``.
+            supported kwargs:
+                xyz2mol:
+                    - charge: The charge of the species. Defaults to ``0``.
+                    - allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to ``False``.
+                    - use_graph: ``True`` to use networkx module for accelerate. Defaults to ``True``.
+                    - use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to ``False``.
+                    - forced_rdmc: Defaults to ``False``. In rare case, we may hope to use a tailored
+                                    version of the Jensen XYZ parser, other than the one available in RDKit.
+                                    Set this argument to ``True`` to force use RDMC's implementation,
+                                    which user's may have some flexibility to modify.
+
+            Returns:
+                Mol: A molecule object corresponding to the xyz.
+        """
+        with open(path, "r") as f:
+            xyz = f.read()
+        return cls(mol_from_xyz(xyz, backend, header, sanitize, embed_chiral, **kwargs))
+
+    @classmethod
+    def MolFromSDFFile(
+        cls,
+        path: str,
+        removeHs: bool = False,
+        sanitize: bool = True,
+        sameMol: bool = False,
+    ):
+        """
+        Convert a SDF file to a new molecule object.
+
+        Args:
+            path (str): The path to the SDF file.
+            removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+            sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
+            sameMol (bool, optional):  Whether or not all the conformers in the sdf file are for the same mol, in which case
+                                       Only one molecule object is returned, otherwise, a list of molecule objects are returned.
+                                       Defaults to ``False``.
+
+        Returns:
+            Mol: A molecule object corresponding to the SDF file if ``sameMol`` is True, otherwise a list of molecule objects.
+        """
+        suppl = Chem.SDMolSupplier(path, removeHs=removeHs, sanitize=sanitize)
+
+        if not sameMol:
+            return [cls(m) for m in suppl]
+
+
+        new_mol = copy(suppl[0])
+        for m in suppl:
+            new_mol.AddConformer(m.GetConformer(), assignId=True)
+        return new_mol
+
+    @classmethod
+    def FromFile(
+        cls,
+        path: str,
+        **kwargs,
+    ):
+        """
+        Convert a file to a new molecule object. The file type is determined by its suffix.
+        For the detailed guidance of available keyword arguments, check the keyword arguments
+        for the specific From{}File API. Currently it supports "xyz" and "sdf" file.
+
+        Args:
+            path (str): The path to the file.
+
+        Returns:
+            Mol: A molecule object corresponding to the file.
+        """
+        extension = Path(path).suffix.lower()
+
+        if path.endswith(".xyz"):
+            return cls.FromXYZFile(path, **kwargs)
+        elif path.endswith(".sdf"):
+            return cls.MolFromSDFFile(path, **kwargs)
+        else:
+            raise NotImplementedError(f"File type {extension} is not supported.")
