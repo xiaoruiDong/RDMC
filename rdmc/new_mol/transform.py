@@ -5,9 +5,10 @@ from rdkit import Chem
 
 from rdmc.rdtools.conversion.smiles import mol_from_smiles
 from rdmc.rdtools.conversion.rmg import mol_from_rmg_mol
-from rdmc.rdtools.conversion.xyz import mol_from_xyz
+from rdmc.rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
 from rdmc.rdtools.obabel import (
     openbabel_mol_to_rdkit_mol as mol_from_openbabel_mol,
+    rdkit_mol_to_openbabel_mol as mol_to_openbabel_mol,
 )
 
 class MolFromMixin:
@@ -287,3 +288,91 @@ class MolFromMixin:
             return cls.MolFromSDFFile(path, **kwargs)
         else:
             raise NotImplementedError(f"File type {extension} is not supported.")
+
+
+class MolToMixin:
+
+    """This class is a mixin intended to work with Mol object and its child classes"""
+
+    def ToOBMol(self) -> "openbabel.OBMol":
+        """
+        Convert a molecule object to a ``OBMol``.
+
+        Returns:
+            OBMol: The corresponding openbabel ``OBMol``.
+        """
+        return mol_to_openbabel_mol(self)
+
+    def ToRWMol(self) -> Chem.RWMol:
+        """
+        Convert a molecule object to a ``RWMol``.
+
+        Returns:
+            RWMol: The corresponding rdkit ``RWMol``.
+        """
+        return Chem.RWMol(self)
+
+    def ToMol(self) -> Chem.Mol:
+        """
+        Convert a molecule object to a ``Mol``.
+
+        Returns:
+            Mol: The corresponding rdkit ``Mol``.
+        """
+        return Chem.Mol(self)
+
+    def ToMolBlock(
+        self,
+        confId: int = -1,
+        includeStereo: bool = True,
+        kekulize: bool = True,
+    ) -> str:
+        """
+        Convert a molecule object to a Mol block string. The defaults are consistent with Chem.MolToMolblock.
+
+        Args:
+            confId (int, optional): The conformer ID to be converted. Defaults to ``-1``.
+            includeStereo (bool, optional): Whether to include stereo information in the Mol block. Defaults to ``True``.
+            kekulize (bool, optional): Whether to kekulize the molecule. Defaults to ``True``.
+
+        Returns:
+            str: The corresponding Mol block string.
+        """
+        return Chem.MolToMolBlock(self, confId=confId, includeStereo=includeStereo, kekulize=kekulize)
+
+    def ToInchi(
+        self,
+        options: str = "",
+    ) -> str:
+        """
+        Convert a molecule object to an InChI string using RDKit builtin converter.
+
+        Args:
+            options (str, optional): The InChI generation options. Options should be
+                                     prefixed with either a - or a / Available options are explained in the
+                                     InChI technical FAQ: https://www.inchi-trust.org/technical-faq/#15.14 and
+                                     https://www.inchi-trust.org/?s=user+guide. Defaults to "".
+
+        Returns:
+            str: The corresponding InChI string.
+        """
+        return Chem.rdinchi.MolToInchi(self, options=options)[0]
+
+    def ToXYZ(
+        self,
+        confId: int = -1,
+        header: bool = True,
+        comment: str = "",
+    ) -> str:
+        """
+        Convert a molecule object to a XYZ string.
+
+        Args:
+            conf_id (int, optional): The index of the conformer to be converted. Defaults to ``-1``, exporting the XYZ of the first conformer.
+            header (bool, optional): If lines of the number of atoms and title are included. Defaults to ``True``.
+            comment (str, optional): The comment to be added. Defaults to ``''``.
+
+        Returns:
+            str: The corresponding XYZ string.
+        """
+        return mol_to_xyz(self, confId, header, comment)
