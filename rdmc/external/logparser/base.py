@@ -14,7 +14,7 @@ from rdmc import RDKitMol
 from rdmc.mathlib.curvefit import FourierSeries1D
 from rdmc.ts import guess_rxn_from_normal_mode
 from rdmc.rdtools.element import PERIODIC_TABLE as PT
-from rdmc.view import mol_viewer, freq_viewer, mol_animation
+from rdmc.rdtools.view import mol_viewer, freq_viewer, mol_animation, animation_viewer, merge_xyz_dxdydz
 
 try:
     from ipywidgets import interact, IntSlider, Dropdown, FloatLogSlider
@@ -506,11 +506,13 @@ class CclibLog(BaseLog):
                 mol.SetPositions(coords=self.cclib_results.atomcoords[i], id=i)
         return mol
 
-    def view_mol(self,
-                 backend: str = 'openbabel',
-                 sanitize: bool = False,
-                 *args,
-                 **kwargs):
+    def view_mol(
+        self,
+        backend: str = 'openbabel',
+        sanitize: bool = False,
+        *args,
+        **kwargs
+    ) -> 'py3Dmol.view':
         """
         Create a Py3DMol viewer for the molecule. By default, it will shows either
         the initial geometry or the converged geometry depending on what job type
@@ -520,17 +522,20 @@ class CclibLog(BaseLog):
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
             sanitize (bool): Whether to sanitize the generated mol. Defaults to `False`.
         """
-        return mol_viewer(self.get_mol(backend=backend,
-                                       sanitize=sanitize),
-                          *args,
-                          **kwargs)
+        return mol_viewer(
+            self.get_mol(backend=backend, sanitize=sanitize),
+            *args,
+            **kwargs
+        )
 
-    def view_traj(self,
-                  align_scan: bool = True,
-                  align_frag_idx: int = 1,
-                  backend: str = 'openbabel',
-                  converged: bool = True,
-                  **kwargs):
+    def view_traj(
+        self,
+        align_scan: bool = True,
+        align_frag_idx: int = 1,
+        backend: str = 'openbabel',
+        converged: bool = True,
+        **kwargs,
+    ) -> "py3Dmol.view":
         """
         View the trajectory as a Py3DMol animation.
 
@@ -542,21 +547,31 @@ class CclibLog(BaseLog):
             backend (str): The backend engine for parsing XYZ. Defaults to ``'openbabel'``.
         """
         if 'scan' in self.job_type and align_scan:
-            mol = self._process_scan_mol(align_scan=align_scan,
-                                         align_frag_idx=align_frag_idx,
-                                         backend=backend)
-            xyzs = [mol.ToXYZ(confId=i) for i in range(mol.GetNumConformers())]
-        elif 'irc' in self.job_type and \
-                not (self.schemes.get('irc', {}).get('forward')
-                     or self.schemes.get('irc', {}).get('reverse')):
-            mol = self._process_irc_mol(backend=backend, converged=converged)
-            xyzs = [mol.ToXYZ(confId=i) for i in range(mol.GetNumConformers())]
+            mol = self._process_scan_mol(
+                align_scan=align_scan,
+                align_frag_idx=align_frag_idx,
+                backend=backend
+        )
+        elif 'irc' in self.job_type:
+            bothway = ('forward' not in self.schemes.get('irc', {})) and ('reverse' not in self.schemes.get('irc', {}))
+            mol = self._process_irc_mol(
+                backend=backend,
+                converged=converged,
+                bothway=bothway
+            )
         else:
-            xyzs = self.get_xyzs(converged=converged)
+            mol = None
+
+        if mol is not None:
+            if mol.GetNumConformers() == 1:
+                print('Warning: There is only one geometry in the file.')
+            mol_animation(mol, **kwargs)
+
+        xyzs = self.get_xyzs(converged=converged)
         if len(xyzs) == 1:
             print('Warning: There is only one geomtry in the file.')
         combined_xyzs = ''.join(xyzs)
-        return mol_animation(combined_xyzs, 'xyz', **kwargs)
+        return animation_viewer(combined_xyzs, 'xyz', **kwargs)
 
     def get_lowest_e_geometry(self,
                               as_xyz: bool = False):
@@ -690,11 +705,13 @@ class CclibLog(BaseLog):
             df.loc[[highlight_index]].plot(marker='o', ax=ax, legend=False)
         return ax
 
-    def interact_opt(self,
-                     sanitize: bool = True,
-                     backend: str = 'openbabel',
-                     continuous_update: bool = False,
-                     ) -> interact:
+    def interact_opt(
+        self,
+        sanitize: bool = True,
+        backend: str = 'openbabel',
+        continuous_update: bool = False,
+        **kwargs,
+    ) -> "ipywidgets.interact":
         """
         Create a IPython interactive widget to investigate the optimization convergence.
 
@@ -711,19 +728,19 @@ class CclibLog(BaseLog):
 
         mol = self.get_mol(converged=False, sanitize=sanitize, backend=backend)
         xyzs = self.get_xyzs(converged=False)
-        sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
 
         def visual(idx):
-            mol_viewer(sdfs[idx - 1], 'sdf').update()
+            mol_viewer(mol, conf_id=idx - 1, **kwargs).update()
             ax = plt.axes()
             self.plot_opt_convergence(highlight_index=idx, ax=ax)
             plt.show()
             print(xyzs[idx - 1])
 
-        slider = IntSlider(value=0,
-                           min=1, max=self.num_all_geoms, step=1,
-                           description='Index',
-                           )
+        slider = IntSlider(
+            value=0,
+            min=1, max=self.num_all_geoms, step=1,
+            description='Index',
+        )
         if self.opt_convergence.shape[0] - 1 < self.num_all_geoms:
             print('Warning: The last geometry doesn\'t has convergence information due to error.')
         return interact(visual, idx=slider, continuous_update=continuous_update)
@@ -828,13 +845,14 @@ class CclibLog(BaseLog):
 
         return r_mols, p_mols
 
-    def view_freq(self,
-                  mode_idx: int = 0,
-                  frames: int = 10,
-                  amplitude: float = 1.0,
-                  *args,
-                  **kwargs,
-                  ) -> interact:
+    def view_freq(
+        self,
+        mode_idx: int = 0,
+        frames: int = 10,
+        amplitude: float = 1.0,
+        *args,
+        **kwargs,
+    ) -> "py3Dmol.view":
         """
         Create a Py3DMol viewer for the frequency mode.
 
@@ -851,15 +869,11 @@ class CclibLog(BaseLog):
             raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
 
         xyz = self.get_xyzs(converged=True)[0]
-        lines = xyz.splitlines()
-        vib_xyz_list = lines[0:2]
-        for i, line in enumerate(lines[2:]):
-            line = line.strip() + f'{"":12}' + ''.join([f'{item:<12}' for item in self.cclib_results.vibdisps[mode_idx][i].tolist()])
-            vib_xyz_list.append(line)
-        vib_xyz = '\n'.join(vib_xyz_list)
-        return freq_viewer(vib_xyz, model='xyz', frames=frames, amplitude=amplitude, *args, **kwargs)
+        dxdydz = self.cclib_results.vibdisps[mode_idx]
+        vib_xyz = merge_xyz_dxdydz(xyz, dxdydz)
+        return freq_viewer(vib_xyz, frames=frames, amplitude=amplitude, *args, **kwargs)
 
-    def interact_freq(self):
+    def interact_freq(self, **kwargs) -> "ipywidget.interact":
         """
         Create a IPython interactive widget to investigate the frequency calculation.
         """
@@ -877,7 +891,7 @@ class CclibLog(BaseLog):
 
         def get_freq_viewer(freq, frames, amplitude):
             freq_idx = np.where(self.freqs == freq)[0][0]
-            self.view_freq(mode_idx=freq_idx, frames=frames, amplitude=amplitude).update()
+            self.view_freq(mode_idx=freq_idx, frames=frames, amplitude=amplitude, **kwargs).update()
 
         return interact(get_freq_viewer, freq=dropdown,
                         frames=slider1, amplitude=slider2)
@@ -1013,14 +1027,15 @@ class CclibLog(BaseLog):
             ax.plot(x_params[0], y_params[0], 'ro')
         return ax
 
-    def interact_irc(self,
-                     sanitize: bool = False,
-                     converged: bool = True,
-                     backend: str = 'openbabel',
-                     bothway: bool = False,
-                     continuous_update: bool = False,
-                     **kwargs,
-                     ) -> interact:
+    def interact_irc(
+        self,
+        sanitize: bool = False,
+        converged: bool = True,
+        backend: str = 'openbabel',
+        bothway: bool = False,
+        continuous_update: bool = False,
+        **kwargs,
+    ):
         """
         Create a IPython interactive widget to investigate the IRC results.
 
@@ -1037,7 +1052,6 @@ class CclibLog(BaseLog):
             raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
 
         mol = self._process_irc_mol(sanitize=sanitize, converged=converged, backend=backend, bothway=bothway)
-        sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
         xyzs = self.get_xyzs(converged=converged)
         y_params = self.get_scf_energies(converged=converged)
         y_params -= y_params.max()
@@ -1051,7 +1065,7 @@ class CclibLog(BaseLog):
         ylabel = 'E(SCF) [kcal/mol]'
 
         def visual(idx):
-            mol_viewer(sdfs[idx - 1], 'sdf', **kwargs).update()
+            mol_viewer(mol, conf_id=idx - 1, **kwargs).update()
             ax = plt.axes()
             ax.plot(x_params, y_params)
             ax.set(xlabel=xlabel, ylabel=ylabel)
@@ -1059,10 +1073,11 @@ class CclibLog(BaseLog):
             plt.show()
             print(xyzs[idx - 1])
 
-        slider = IntSlider(value=0,
-                           min=1, max=x_params.shape[0], step=1,
-                           description='Index',
-                           )
+        slider = IntSlider(
+            value=0,
+            min=1, max=x_params.shape[0], step=1,
+            description='Index',
+        )
 
         return interact(visual, idx=slider, continuous_update=continuous_update)
 
@@ -1183,14 +1198,15 @@ class CclibLog(BaseLog):
         return mol
 
     @BaseLog.require_job_type('scan')
-    def interact_scan(self,
-                      sanitize: bool = True,
-                      align_scan: bool = True,
-                      align_frag_idx: int = 1,
-                      backend: str = 'openbabel',
-                      continuous_update: bool = False,
-                      **kwargs,
-                      ) -> interact:
+    def interact_scan(
+        self,
+        sanitize: bool = True,
+        align_scan: bool = True,
+        align_frag_idx: int = 1,
+        backend: str = 'openbabel',
+        continuous_update: bool = False,
+        **kwargs,
+    ) -> "ipywidgets.interact":
         """
         Create a IPython interactive widget to investigate the scan results.
 
@@ -1209,42 +1225,48 @@ class CclibLog(BaseLog):
         if interact is None:
             raise ImportError('interact is not installed. Please install it by `pip install ipywidgets`.')
 
-        mol = self._process_scan_mol(align_scan=align_scan,
-                                     align_frag_idx=align_frag_idx,
-                                     sanitize=sanitize,
-                                     backend=backend)
-        sdfs = [mol.ToMolBlock(confId=i) for i in range(mol.GetNumConformers())]
+        mol = self._process_scan_mol(
+            align_scan=align_scan,
+            align_frag_idx=align_frag_idx,
+            sanitize=sanitize,
+            backend=backend,
+        )
         xyzs = self.get_xyzs(converged=True)
 
         # Not directly calling plot_scan_energies for better performance
         y_params = self.get_scf_energies(converged=True, only_opt=('opt' in self.job_type), relative=True)
         baseline_y = 0
         x_params = self.get_scanparams(converged=True, relative=True)
-        xlabel = {2: 'Distance (A)',
-                  3: 'Angle (deg)',
-                  4: 'Dihedral (deg)'}[len(self.get_scannames(as_list=True)[0])]
+        xlabel = {
+            2: 'Distance (A)',
+            3: 'Angle (deg)',
+            4: 'Dihedral (deg)',
+        }[len(self.get_scannames(as_list=True)[0])]
         ylabel = 'E(SCF) [kcal/mol]'
 
         def visual(idx):
-            mol_viewer(sdfs[idx - 1], 'sdf').update()
+            mol_viewer(mol, conf_id=idx - 1, **kwargs).update()
             ax = plt.axes()
             ax.plot(x_params, y_params)
             ax.set(xlabel=xlabel, ylabel=ylabel)
             # Print reference line
-            ax.hlines(y=baseline_y,
-                      xmin=x_params.min(),
-                      xmax=x_params.max(),
-                      colors='grey', linestyles='dashed',
-                      label='ref', alpha=0.5)
+            ax.hlines(
+                y=baseline_y,
+                xmin=x_params.min(),
+                xmax=x_params.max(),
+                colors='grey', linestyles='dashed',
+                label='ref', alpha=0.5,
+            )
             ax.plot(x_params[idx - 1], y_params[idx - 1], 'ro')
 
             plt.show()
             print(xyzs[idx - 1])
 
-        slider = IntSlider(value=0,
-                           min=1, max=x_params.shape[0], step=1,
-                           description='Index',
-                           )
+        slider = IntSlider(
+            value=0,
+            min=1, max=x_params.shape[0], step=1,
+            description='Index',
+        )
 
         return interact(visual, idx=slider, continuous_update=continuous_update)
 
