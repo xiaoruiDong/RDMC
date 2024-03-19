@@ -1,6 +1,6 @@
 import pytest
 
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 from rdmc.rdtools.torsion import get_torsional_modes, get_torsion_tops
 
 

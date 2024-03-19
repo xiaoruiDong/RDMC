@@ -1,4 +1,4 @@
-from rdmc.new_mol import Mol
+from rdmc.mol import Mol
 from rdmc.rdtools.fix import saturate_mol
 from rdmc.utils import filter_kwargs
 

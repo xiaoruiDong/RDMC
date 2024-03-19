@@ -2,7 +2,7 @@ import pytest
 
 from rdmc.rdtools.compare import get_match_and_recover_recipe, get_unique_mols, has_matched_mol
 
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 
 
 @pytest.mark.parametrize(

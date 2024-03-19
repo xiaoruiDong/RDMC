@@ -8,7 +8,7 @@ from rdmc.rdtools.atommap import (
     renumber_atoms_by_substruct_match_result,
 )
 
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 
 @pytest.mark.parametrize(
     "smiles, numbers",

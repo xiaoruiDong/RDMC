@@ -11,7 +11,7 @@ from rdmc.rdtools.mol import (
     get_closed_shell_mol,
 )
 
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 
 
 def test_combine_mol_without_conformer():

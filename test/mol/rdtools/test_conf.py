@@ -11,7 +11,7 @@ from rdmc.rdtools.conf import (
 )
 
 from rdkit import Chem
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 
 
 @pytest.mark.parametrize(

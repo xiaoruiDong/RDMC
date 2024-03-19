@@ -8,7 +8,7 @@ from rdmc.rdtools.bond import (
     get_bonds_as_tuples,
 )
 
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 
 
 def test_add_bond():

@@ -1,6 +1,6 @@
 import pytest
 
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 
 from rdmc.rdtools.fix import fix_oxonium_bonds, remedy_manager, saturate_mol, fix_mol
 

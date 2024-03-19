@@ -2,7 +2,7 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 from rdmc.rdtools.dist import get_missing_bonds, has_colliding_atoms
 
 

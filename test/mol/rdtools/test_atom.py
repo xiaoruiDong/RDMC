@@ -13,7 +13,7 @@ from rdmc.rdtools.atom import (
 )
 from rdmc.rdtools.element import electronegativity
 
-from rdmc.new_mol import RDKitMol
+from rdmc.mol import RDKitMol
 
 
 @pytest.mark.parametrize(

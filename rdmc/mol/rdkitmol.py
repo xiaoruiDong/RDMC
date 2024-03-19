@@ -1,10 +1,10 @@
 from rdkit import Chem
 
-from rdmc.new_mol.conf import MolConfMixin
-from rdmc.new_mol.compare import MolCompareMixin
-from rdmc.new_mol.transform import MolTransformMixin
-from rdmc.new_mol.attribute import MolAttrMixin
-from rdmc.new_mol.ops import MolOpsMixin
+from rdmc.mol.conf import MolConfMixin
+from rdmc.mol.compare import MolCompareMixin
+from rdmc.mol.transform import MolTransformMixin
+from rdmc.mol.attribute import MolAttrMixin
+from rdmc.mol.ops import MolOpsMixin
 
 
 class RDKitMol(
