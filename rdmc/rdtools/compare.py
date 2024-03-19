@@ -1,4 +1,5 @@
 from typing import List, Tuple, Union
+import traceback
 
 import numpy as np
 
@@ -7,6 +8,7 @@ from rdkit.Chem.rdMolDescriptors import CalcMolFormula
 
 from rdmc.rdtools.dist import get_shortest_path, get_adjacency_matrix
 from rdmc.rdtools.resonance import generate_resonance_structures
+from rdmc.rdtools.conversion.xyz import mol_to_xyz, mol_from_xyz
 
 
 def has_matched_mol(
@@ -239,3 +241,44 @@ def is_same_connectivity_mol(mol1: "Mol", mol2: "Mol") -> bool:
         get_adjacency_matrix(mol1),
         get_adjacency_matrix(mol2)
     )
+
+
+def is_same_connectivity_conf(
+    mol: Chem.Mol,
+    conf_id: int = 0,
+    backend: str = "openbabel",
+    **kwargs,
+) -> bool:
+    """
+    Check whether the conformer of the molecule (defined by its spacial coordinates)
+    has the same connectivity as the molecule. Useful sanity check when coordinates are changed.
+
+    Args:
+        conf_id (int, optional): The conformer ID. Defaults to ``0``.
+        backend (str, optional): The backend to use for the comparison. Defaults to ``'openbabel'``.
+        **kwargs: The keyword arguments to pass to the backend.
+
+    Returns:
+        bool: Whether the conformer has the same connectivity as the molecule.
+    """
+    # Get the connectivity of ith conformer
+    try:
+        xyz_str = mol_to_xyz(mol, conf_id, header=True)
+        # Sanitization is not applied to account for
+        # special cases like zwitterionic molecules
+        # or molecule complexes
+        new_mol = mol_from_xyz(
+            xyz_str,
+            **{
+                **dict(header=True, backend=backend, sanitize=False),
+                **kwargs,
+            },
+        )
+    except Exception as exc:
+        # Error in preserving the molecule
+        print(f"Error in preserving the molecule: {exc}")
+        traceback.print_exc()
+        return False
+
+    else:
+        return is_same_connectivity_mol(mol, new_mol)
