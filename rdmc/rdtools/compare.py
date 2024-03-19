@@ -223,7 +223,7 @@ def get_match_and_recover_recipe(
     return tuple(match), recipe
 
 
-def has_same_connectivity(mol1: "Mol", mol2: "Mol") -> bool:
+def is_same_connectivity_mol(mol1: "Mol", mol2: "Mol") -> bool:
     """
     Check whether the two molecules has the same connectivity. Note, this is not an
     isomorphic check, and different atom ordering will be treated as "different connectivity".
