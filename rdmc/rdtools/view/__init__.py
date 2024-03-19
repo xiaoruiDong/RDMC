@@ -1,4 +1,4 @@
-from rdmc.rdtools.view.base import grid_viewer
+from rdmc.rdtools.view.base import base_viewer, animation_viewer, grid_viewer
 from rdmc.rdtools.view.mol import mol_viewer, mol_animation, ts_viewer
 from rdmc.rdtools.view.freq import freq_viewer
 from rdmc.rdtools.view.conf import conformer_animation, conformer_viewer
