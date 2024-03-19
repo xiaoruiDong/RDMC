@@ -251,7 +251,7 @@ class MolConfMixin:
 
     def GetConformers(
         self,
-        ids: Union[list, tuple] = [0],
+        ids: Optional[Union[Sequence]] = None,
         editable: bool = False,
     ) -> List["RDKitConf"]:
         """
@@ -269,24 +269,13 @@ class MolConfMixin:
         Returns:
             List[RDKitConf]: A list of conformers corresponding to the IDs.
         """
+        if ids is None and not editable:
+            return super().GetConformers()
+        if ids is None:
+            ids = list(range(self.GetNumConformers()))
         if editable:
             return [self.GetEditableConformer(id) for id in ids]
         return [self.GetConformer(id) for id in ids]
-
-    def GetAllConformers(self, editable: bool = False) -> List["Conformer"]:
-        """
-        Get all of the embedded conformers.
-
-        Args:
-            editable (bool): If return the editable conformer.
-
-        Returns:
-            List['RDKitConf']: A list all of conformers.
-        """
-        return self.GetConformers(
-            list(range(self.GetNumConformers())),
-            editable=editable,
-        )
 
     def HasCollidingAtoms(
         self,
