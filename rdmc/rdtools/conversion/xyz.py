@@ -1,6 +1,7 @@
 import logging
 
 from rdkit import Chem
+import numpy as np
 
 from rdmc.rdtools.obabel import (
     parse_xyz_by_openbabel as xyz_from_openbabel,
@@ -250,3 +251,23 @@ def mol_to_xyz(
             f"{mol.GetNumAtoms()}\n{comment}\n" + "\n".join(xyz.splitlines()[2:]) + "\n"
         )
     return xyz
+
+
+def xyz_to_coords(
+    xyz: str,
+    header: bool = False,
+) -> np.ndarray:
+    """
+    Convert xyz string to coordinates in numpy.
+
+    Args:
+        xyz (str): A XYZ String.
+        header (bool, optional): If lines of the number of atoms and title are included.
+                                 Defaults to ``False.``
+    Returns:
+        np.ndarray: the coordinates
+    """
+    xyz_lines = xyz.splitlines()[2:] if header else coords.splitlines()
+    coords = np.array(
+        [[float(atom) for atom in line.strip().split()[1:4]] for line in xyz_lines]
+    )
