@@ -45,7 +45,7 @@ class MolOpsMixin:
             frags=frags,
             fragsMolAtomMapping=fragsMolAtomMapping,
         )
-        if asMols and not isinstance(self, Chem.RWMol):
+        if asMols and isinstance(self, Chem.RWMol):
             return tuple(self.__class__(mol) for mol in mol_frags)
         return mol_frags
 
