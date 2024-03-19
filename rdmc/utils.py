@@ -871,3 +871,12 @@ CPK_COLOR_PALETTE = {
     "Ts": (1.00, 0.10, 0.00),
     "Og": (1.00, 0.16, 0.00),
 }
+
+import inspect
+
+def filter_kwargs(func, kwargs: dict):
+
+    parameters = inspect.signature(func).parameters
+    valid_kwargs = {k: v for k, v in kwargs.items() if k in parameters}
+
+    return valid_kwargs
