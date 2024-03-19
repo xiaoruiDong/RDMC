@@ -22,4 +22,7 @@ class RDKitMol(
     shortcuts so that users don't need to refer to other RDKit modules.
     """
 
+    def __copy__(self):
+        return RDKitMol(self)
+
 Mol = RDKitMol
