@@ -70,7 +70,7 @@ class MolAttrMixin:
         """
         return get_atomic_nums(self)
 
-    def GetBondAsTuples(self) -> List[tuple]:
+    def GetBondsAsTuples(self) -> List[tuple]:
         """
         Generate a list of length-2 sets indicating the bonding atoms in the molecule.
 
