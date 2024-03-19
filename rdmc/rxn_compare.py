@@ -27,10 +27,10 @@ def is_equivalent_reaction(
     if not equiv:
         return False
 
-    match_r, recipe_r = rxn1.reactant_complex.GetMatchAndRecipe(
+    match_r, recipe_r = rxn1.reactant_complex.GetMatchAndRecoverRecipe(
         rxn2.reactant_complex
     )
-    match_p, recipe_p = rxn1.product_complex.GetSubstructMatchAndRecipe(
+    match_p, recipe_p = rxn1.product_complex.GetMatchAndRecoverRecipe(
         rxn2.product_complex
     )
 
@@ -65,7 +65,7 @@ def is_equivalent_reaction(
         new_rxn2_pcomplex = rxn2.product_complex.RenumberAtoms(recipe_r)
 
     # To check if not recipe is the same
-    _, recipe_r = rxn1.reactant_complex.GetSubstructMatchAndRecipe(new_rxn2_rcomplex)
-    _, recipe_p = rxn1.product_complex.GetSubstructMatchAndRecipe(new_rxn2_pcomplex)
+    _, recipe_r = rxn1.reactant_complex.GetMatchAndRecoverRecipe(new_rxn2_rcomplex)
+    _, recipe_p = rxn1.product_complex.GetMatchAndRecoverRecipe(new_rxn2_pcomplex)
 
     return recipe_r == recipe_p
