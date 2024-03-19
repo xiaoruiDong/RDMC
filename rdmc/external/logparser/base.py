@@ -14,7 +14,8 @@ from rdmc import RDKitMol
 from rdmc.mathlib.curvefit import FourierSeries1D
 from rdmc.ts import guess_rxn_from_normal_mode
 from rdmc.rdtools.element import PERIODIC_TABLE as PT
-from rdmc.rdtools.view import mol_viewer, freq_viewer, mol_animation, animation_viewer, merge_xyz_dxdydz
+from rdmc.rdtools.view import mol_viewer, freq_viewer, conformer_animation, animation_viewer, merge_xyz_dxdydz
+from rdmc.rdtools.fix import saturate_mol
 
 try:
     from ipywidgets import interact, IntSlider, Dropdown, FloatLogSlider
@@ -414,14 +415,15 @@ class CclibLog(BaseLog):
                 xyz_strs[0] = self.cclib_results.writexyz(indices=-self.num_all_geoms)
         return xyz_strs
 
-    def get_mol(self,
-                refid: int = -1,
-                embed_conformers: bool = True,
-                converged: bool = True,
-                neglect_spin: bool = True,
-                backend: str = 'openbabel',
-                sanitize: Optional[bool] = None,
-                ) -> 'RDKitMol':
+    def get_mol(
+        self,
+        refid: int = -1,
+        embed_conformers: bool = True,
+        converged: bool = True,
+        neglect_spin: bool = True,
+        backend: str = 'openbabel',
+        sanitize: Optional[bool] = None,
+    ) -> 'RDKitMol':
         """
         Perceive the xyzs in the file, create a :func:`rdmc.mol.RDKitMol` and convert the geometries to its conformers.
 
@@ -490,7 +492,7 @@ class CclibLog(BaseLog):
 
         # Correct multiplicity if possible
         if mol.GetSpinMultiplicity() != self.multiplicity:
-            mol.SaturateMol(multiplicity=self.multiplicity)
+            saturate_mol(mol, self.multiplicity)
         if mol.GetSpinMultiplicity() != self.multiplicity and not neglect_spin:
             raise RuntimeError('Cannot generate a molecule with the exact multiplicity in the output file')
 
@@ -498,12 +500,12 @@ class CclibLog(BaseLog):
         if embed_conformers and converged:
             mol.EmbedMultipleNullConfs(n=self.num_converged_geoms)
             for i in range(self.num_converged_geoms):
-                mol.SetPositions(coords=self.converged_geometries[i], id=i)
+                mol.SetPositions(coords=self.converged_geometries[i], confId=i)
         elif embed_conformers:
             num_confs = self.num_all_geoms
             mol.EmbedMultipleNullConfs(n=num_confs)
             for i in range(num_confs):
-                mol.SetPositions(coords=self.cclib_results.atomcoords[i], id=i)
+                mol.SetPositions(coords=self.cclib_results.atomcoords[i], confId=i)
         return mol
 
     def view_mol(
@@ -565,7 +567,7 @@ class CclibLog(BaseLog):
         if mol is not None:
             if mol.GetNumConformers() == 1:
                 print('Warning: There is only one geometry in the file.')
-            mol_animation(mol, **kwargs)
+            conformer_animation(mol, **kwargs)
 
         xyzs = self.get_xyzs(converged=converged)
         if len(xyzs) == 1:
@@ -916,11 +918,13 @@ class CclibLog(BaseLog):
         return np.argmax(e_diff) + 1
 
     @BaseLog.require_job_type('irc')
-    def guess_rxn_from_irc(self,
-                           index: int = 0,
-                           as_mol_frags: bool = False,
-                           inverse: bool = False,
-                           backend: str = 'openbabel'):
+    def guess_rxn_from_irc(
+        self,
+        index: int = 0,
+        as_mol_frags: bool = False,
+        inverse: bool = False,
+        backend: str = 'openbabel',
+    ) -> tuple:
         """
         Guess the reactants and products from the IRC path. Note: this
         result is not deterministic depending on the pair of conformes you use.
@@ -945,12 +949,16 @@ class CclibLog(BaseLog):
             idx1, idx2 = conv_idxs[[midpoint - 1, -1]].tolist()
         else:
             idx1, idx2 = conv_idxs[[index, midpoint + index - 1]].tolist()
-        r_mol = RDKitMol.FromXYZ(xyz=self.cclib_results.writexyz(indices=idx1),
-                                 backend=backend)
-        p_mol = RDKitMol.FromXYZ(xyz=self.cclib_results.writexyz(indices=idx2),
-                                 backend=backend)
-        r_mol.SaturateMol(multiplicity=self.multiplicity)
-        p_mol.SaturateMol(multiplicity=self.multiplicity)
+        r_mol = RDKitMol.FromXYZ(
+            xyz=self.cclib_results.writexyz(indices=idx1),
+            backend=backend
+        )
+        p_mol = RDKitMol.FromXYZ(
+            xyz=self.cclib_results.writexyz(indices=idx2),
+            backend=backend
+        )
+        saturate_mol(r_mol, multiplicity=self.multiplicity)
+        saturate_mol(p_mol, multiplicity=self.multiplicity)
 
         if inverse:
             r_mol, p_mol = p_mol, r_mol
@@ -989,7 +997,7 @@ class CclibLog(BaseLog):
                 # Inverse part of the geometry to make the change in geometry 'monotonically'
                 coords[:midpoint] = coords[midpoint - 1::-1]
                 for i in range(num_confs):
-                    mol.SetPositions(coords=coords[i], id=i)
+                    mol.SetPositions(coords=coords[i], confId=i)
         else:
             mol = self.get_mol(converged=converged, backend=backend, sanitize=sanitize)
         return mol
