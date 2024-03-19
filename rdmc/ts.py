@@ -342,7 +342,10 @@ def examine_normal_mode(r_mol: RDKitMol,
     r_copy.SetPositions(xyzs[0])
     p_copy = p_mol.Copy()
     p_copy.SetPositions(xyzs[1])
-    r_conf, p_conf = r_copy.GetConformer(), p_copy.GetConformer()
+    r_conf, p_conf = r_copy.GetEditableConformer(), p_copy.GetEditableConformer()
+    # xiaorui dong Mar 19, 2024
+    # temporarily changes it to editableconformer
+    # should change it back when moving ihis func to rdtools
 
     # Calculate bond distance change
     formed_and_broken_diff = [abs(r_conf.GetBondLength(bond) - p_conf.GetBondLength(bond))
