@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from rdmc.rdtools.compare import get_match_and_recover_recipe, has_same_connectivity, has_matched_mol
+from rdmc.rdtools.compare import get_match_and_recover_recipe, is_same_connectivity_mol, has_matched_mol
 
 
 class MolCompareMixin:
@@ -24,7 +24,7 @@ class MolCompareMixin:
         """
         return get_match_and_recover_recipe(self, mol)
 
-    def HasSameConnectivity(
+    def IsSameConnectivity(
         self,
         mol: "Mol",
     ) -> bool:
@@ -37,7 +37,7 @@ class MolCompareMixin:
         Returns:
             bool: Whether the molecule has the same connectivity as the reference molecule.
         """
-        return has_same_connectivity(self, mol)
+        return is_same_connectivity_mol(self, mol)
 
     def HasMatchedMol(
         self,
