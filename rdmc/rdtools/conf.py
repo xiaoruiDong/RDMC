@@ -1,7 +1,6 @@
 from typing import Optional, Union
 
 import numpy as np
-
 from rdkit import Chem
 
 
@@ -127,3 +126,59 @@ def set_conformer_coordinates(
     """
     for i in range(len(coords)):
         conf.SetAtomPosition(i, coords[i, :])
+
+
+def embed_conformer(
+    mol: Chem.Mol,
+    allow_null: bool = True,
+    **kwargs,
+):
+    """
+    Embed a conformer to the molecule object. This will overwrite current conformers. By default, it
+    will first try embedding a 3D conformer; if fails, it then try to compute 2D coordinates
+    and use that for the conformer structure; if both approaches fail, and embedding a null
+    conformer is allowed, a conformer with all random coordinates will be embedded. The last one is
+    helpful for the case where you can use `SetPositions` to set their positions afterward, or if you want to
+    optimize the geometry using force fields.
+
+    Args:
+        mol (Mol): The molecule object to embed.
+        allow_null (bool, optional): If embedding 3D and 2D coordinates fails, whether to embed a conformer
+                                     with all null coordinates, ``(0, 0, 0)``, for each atom. Defaults to ``True``.
+    """
+    try:
+        return_code = Chem.AllChem.EmbedMolecule(mol, **kwargs)
+    except Chem.AtomValenceException:
+        try:
+            Chem.AllChem.Compute2DCoords(mol)
+            return_code = 0
+        except BaseException:  # To be replaced by a more specific error type
+            return_code = -1
+
+    if return_code == -1:
+        if allow_null:
+            embed_multiple_null_confs(mol, n=1, random=True)
+        else:
+            raise RuntimeError("Cannot embed conformer for this molecule.")
+
+
+def embed_multiple_confs(mol: Chem.Mol, n: int = 10, allow_null: bool = True, **kwargs):
+    """
+    Embed multiple conformers to the ``RDKitMol``. This will overwrite current conformers. By default, it
+    will first try embedding a 3D conformer; if fails, it then try to compute 2D coordinates
+    and use that for the conformer structure; if both approaches fail, and embedding a null
+    conformer is allowed, a conformer with all random coordinates will be embedded. The last one is
+    helpful for the case where you can use `SetPositions` to set their positions afterward, or if you want to
+    optimize the geometry using force fields.
+
+    Args:
+        n (int): The number of conformers to be embedded. The default is ``1``.
+        allow_null (bool): If embedding fails, whether to embed null conformers. Defaults to ``True``.
+    """
+    try:
+        Chem.AllChem.EmbedMultipleConfs(mol, numConfs=n, **kwargs)
+    except Chem.AtomValenceException:
+        if allow_null:
+            embed_multiple_null_confs(mol, n=n, random=True)
+        else:
+            raise RuntimeError("Cannot embed conformer for this molecule!")
