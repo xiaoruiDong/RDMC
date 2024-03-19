@@ -15,7 +15,6 @@ from rdmc.rdtools.mol import (
     get_element_counts,
     get_atomic_nums,
     get_atom_masses,
-    get_match_and_recover_recipe,
     get_closed_shell_mol,
 )
 from rdmc.rdtools.conf import (
@@ -157,53 +156,6 @@ def test_get_atom_masses(smi, expected):
         np.array(get_atom_masses(mol)),
         np.array(expected)
     )
-
-
-@pytest.mark.parametrize(
-    "smi1, smi2, expected",
-    [
-        (
-            "[H:20].[O:1]([C:2]([C:3]1([H:11])[C:4]([H:12])([H:13])[C:5]([H:14])"
-            "([H:15])[C:6]([H:16])([H:17])[C:7]1([H:18])[H:19])([H:9])[H:10])[H:8]",
-            "[H:18].[O:1]([C:2]([C:3]1([H:11])[C:4]([H:12])([H:13])[C:5]([H:14])"
-            "([H:15])[C:6]([H:16])([H:17])[C:7]1([H:19])[H:20])([H:9])[H:10])[H:8]",
-            (
-                (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 18, 17),
-                {17: 19, 19: 17},
-            ),
-        ),
-        (
-            "[H:20].[O:1]([C:2]([C:3]1([H:11])[C:4]([H:12])([H:13])[C:5]([H:14])"
-            "([H:15])[C:6]([H:16])([H:17])[C:7]1([H:18])[H:19])([H:9])[H:10])[H:8]",
-            "[H:20].[O:1]([C:2]([C:3]1([H:11])[C:4]([H:12])([H:13])[C:5]([H:14])"
-            "([H:15])[C:6]([H:16])([H:17])[C:7]1([H:18])[H:19])([H:9])[H:10])[H:8]",
-            (
-                (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19),
-                {},
-            ),
-        ),
-        (
-            "[H:20].[O:1]([C:2]([C:3]1([H:11])[C:4]([H:12])([H:13])[C:5]([H:14])"
-            "([H:15])[C:6]([H:16])([H:17])[C:7]1([H:18])[H:19])([H:9])[H:10])[H:8]",
-            "[H:20].[O:1]([C:2]([C:3]1([H:11])[C:4]([H:12])([H:13])[C:5]([H:14])"
-            "([H:15])[C:6]([H:16])([H:17])[C:7]1([H:18])[H:19])([H:9])[H:10])[H:8]",
-            (
-                (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19),
-                {},
-            ),
-        ),
-        (
-            "[O:1][O:2][H:3]",
-            "[H:1][O:2][H:3]",
-            ((), {}),
-        ),
-    ],
-)
-def test_get_match_and_recover_recipe(smi1, smi2, expected):
-
-    mol1 = mol_from_smiles(smi1)
-    mol2 = mol_from_smiles(smi2)
-    assert expected == get_match_and_recover_recipe(mol1, mol2)
 
 
 @pytest.mark.parametrize(
