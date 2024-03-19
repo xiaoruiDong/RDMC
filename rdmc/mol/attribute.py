@@ -104,7 +104,7 @@ class MolAttrMixin:
         Returns:
             list: A list of atom masses.
         """
-        return get_atom_masses(self.GetAtomicNumbers())
+        return get_atom_masses(self)
 
     def GetDistanceMatrix(self, confId: int = 0) -> "np.ndarray":
         """
