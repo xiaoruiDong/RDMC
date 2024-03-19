@@ -74,6 +74,7 @@ def mol_from_smiles(
     allow_cxsmiles: bool = True,
     keep_atom_map: bool = True,
     assign_atom_map: bool = True,
+    atom_order: str = "atom_map",
 ) -> Chem.Mol:
     """
     Convert a SMILES string to an Chem.Mol molecule object.
@@ -89,6 +90,9 @@ def mol_from_smiles(
                                         Defaults to ``True``.
         assign_atom_map (bool, optional): Whether to assign the atom mapping according to the atom index
                                           if no atom mapping available in the SMILES. Defaults to ``True``.
+        atom_order (str, optional): Whether the atom order in the returned molecule (indexes)
+                                    is according to atom map ("atom_map") or FIFO (RDKit's default, "fifo").
+                                    Defaults to "atom_map".
 
     Returns:
         Chem.Mol: An RDKit molecule object corresponding to the SMILES.
@@ -98,7 +102,7 @@ def mol_from_smiles(
     mol = process_mol_from_smiles(mol, remove_hs, add_hs)
     if not keep_atom_map:
         reset_atom_map_numbers(mol)
-    elif needs_renumber(mol):
+    elif atom_order.lower() == "atom_map" and needs_renumber(mol):
         if has_atom_map_numbers(mol):
             mol = renumber_atoms(mol)
         elif assign_atom_map:

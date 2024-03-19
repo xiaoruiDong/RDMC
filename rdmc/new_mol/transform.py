@@ -182,21 +182,25 @@ class MolFromMixin:
         allowCXSMILES: bool = True,
         keepAtomMap: bool = True,
         assignAtomMap: bool = True,
+        atomOrder: str = "atom_map",
     ):
         """
         Convert a SMILES string to a molecule object.
 
         Args:
             smiles (str): A SMILES representation of the molecule.
-            remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
-            add_hs (bool, optional): Whether to add explicit hydrogen atoms to the molecule. ``True`` to add.
+            removeHs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
+            addHs (bool, optional): Whether to add explicit hydrogen atoms to the molecule. ``True`` to add.
                                     Only functioning when removeHs is False.
             sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
-            allow_cxsmiles (bool, optional): Whether to recognize and parse CXSMILES. Defaults to ``True``.
-            keep_atom_map (bool, optional): Whether to keep the atom mapping contained in the SMILES. Defaults
+            allowCXSMILES (bool, optional): Whether to recognize and parse CXSMILES. Defaults to ``True``.
+            keepAtomMap (bool, optional): Whether to keep the atom mapping contained in the SMILES. Defaults
                                             Defaults to ``True``.
-            assign_atom_map (bool, optional): Whether to assign the atom mapping according to the atom index
+            assignAtomMap (bool, optional): Whether to assign the atom mapping according to the atom index
                                               if no atom mapping available in the SMILES. Defaults to ``True``.
+            atomOrder (str, optional): Whether the atom order in the returned molecule (indexes)
+                                    is according to atom map ("atom_map") or FIFO (RDKit's default, "fifo").
+                                    Defaults to "atom_map".
 
         Returns:
             Mol: A molecule object corresponding to the SMILES.
@@ -210,6 +214,7 @@ class MolFromMixin:
                 allowCXSMILES,
                 keepAtomMap,
                 assignAtomMap,
+                atomOrder,
             )
         )
 
