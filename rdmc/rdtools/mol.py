@@ -1,7 +1,7 @@
 import copy
 from collections import Counter
 from itertools import product as cartesian_product
-from typing import List, Optional, Tuple
+from typing import List, Optional, Union, Sequence
 
 import numpy as np
 
@@ -12,10 +12,12 @@ from rdkit.Geometry.rdGeometry import Point3D
 from rdmc.rdtools.atommap import has_atom_map_numbers
 from rdmc.rdtools.atom import get_element_symbol, get_atom_mass
 from rdmc.rdtools.conf import (
+    add_null_conformer,
     embed_multiple_null_confs,
     reflect as _reflect,
     set_conformer_coordinates,
 )
+from rdmc.rdtools.conversion.xyz import xyz_to_coords
 
 
 def get_spin_multiplicity(mol: Chem.Mol) -> int:
@@ -315,3 +317,33 @@ def get_closed_shell_cheap(
     if sanitize:
         fast_sanitize(mol)
     return mol
+
+
+def set_mol_positions(
+    mol: Chem.Mol,
+    coords: Union[Sequence, str],
+    conf_id: int = 0,
+    header: bool = False,
+):
+    """
+    Set the positions of atoms to one of the conformer.
+
+    Args:
+        mol (Mol): The molecule object to change positions.
+        coords (Union[sequence, str]): A tuple/list/ndarray containing atom positions;
+                                       or a string with the typical XYZ formating.
+        confId (int, optional): Conformer ID to assign the Positions to. Defaults to ``0``.
+        header (bool): Whether the XYZ string has an header, if feeding in XYZ. Defaults to ``False``.
+    """
+    if isinstance(coords, str):
+        coords = xyz_to_coords(coords, header=header)
+    try:
+        conf = mol.GetConformer(conf_id)
+    except ValueError:
+        if conf_id == 0:
+            add_null_conformer(mol, conf_id=0, random=False)
+            set_conformer_coordinates(mol.GetConformer(0), coords)
+        else:
+            raise ValueError(f"Conformer {conf_id} does not exist")
+    else:
+        set_conformer_coordinates(conf, coords)
