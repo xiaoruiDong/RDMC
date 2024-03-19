@@ -176,12 +176,12 @@ class MolFromMixin:
     def FromSmiles(
         cls,
         smiles: str,
-        remove_hs: bool = False,
-        add_hs: bool = True,
+        removeHs: bool = False,
+        addHs: bool = True,
         sanitize: bool = True,
-        allow_cxsmiles: bool = True,
-        keep_atom_map: bool = True,
-        assign_atom_map: bool = True,
+        allowCXSMILES: bool = True,
+        keepAtomMap: bool = True,
+        assignAtomMap: bool = True,
     ):
         """
         Convert a SMILES string to a molecule object.
@@ -201,7 +201,17 @@ class MolFromMixin:
         Returns:
             Mol: A molecule object corresponding to the SMILES.
         """
-        return cls(mol_from_smiles(smiles, remove_hs, add_hs, sanitize, allow_cxsmiles, keep_atom_map, assign_atom_map))
+        return cls(
+            mol_from_smiles(
+                smiles,
+                removeHs,
+                addHs,
+                sanitize,
+                allowCXSMILES,
+                keepAtomMap,
+                assignAtomMap,
+            )
+        )
 
     @classmethod
     def FromXYZFile(
@@ -269,7 +279,6 @@ class MolFromMixin:
 
         if not sameMol:
             return [cls(m) for m in suppl]
-
 
         new_mol = copy(suppl[0])
         for m in suppl:
