@@ -170,7 +170,7 @@ def fix_mol(
     if remedies is None:
         remedies = remedy_manager.default_remedies
 
-    mol = fix_mol_by_remedies(
+    fixed_mol = fix_mol_by_remedies(
         mol,
         remedies,
         max_attempts=max_attempts,
@@ -178,12 +178,16 @@ def fix_mol(
     )
 
     if fix_spin_multiplicity:
-        saturate_mol(mol, multiplicity=mult)
+        saturate_mol(fixed_mol, multiplicity=mult)
 
     if renumber_atoms:
-        mol = renumber_atoms_(mol)
+        fixed_mol = renumber_atoms_(fixed_mol)
 
-    return mol
+    if isinstance(mol, Chem.RWMol):
+        # During fixing, a few operation tends to change the molecule from RWMol to Mol
+        fixed_mol = mol.__class__(fixed_mol)
+
+    return fixed_mol
 
 
 def find_oxonium_bonds(
@@ -246,17 +250,23 @@ def fix_oxonium_bonds(
     if len(oxonium_bonds) == 0:
         return mol
 
-    mol = copy.copy(mol)
+    fixed_mol = copy.copy(mol)
     for aidx1, aidx2 in oxonium_bonds:
-        if aidx1 != aidx2 and mol.GetBondBetweenAtoms(aidx1, aidx2) is None:
-            mol.AddBond(aidx1, aidx2, order=BondType.SINGLE)
+        if aidx1 != aidx2 and fixed_mol.GetBondBetweenAtoms(aidx1, aidx2) is None:
+            fixed_mol.AddBond(aidx1, aidx2, order=BondType.SINGLE)
 
             # Usually the connected atom is a radical site
             # So, update the number of radical electrons afterward
-            rad_atom = mol.GetAtomWithIdx(aidx2)
+            rad_atom = fixed_mol.GetAtomWithIdx(aidx2)
             if rad_atom.GetNumRadicalElectrons() > 0:
                 decrement_radical(rad_atom)
 
-    return fix_mol(
-        mol, remedies=remedy_manager.get_remedies("oxonium"), sanitize=sanitize
+    fixed_mol = fix_mol(
+        fixed_mol, remedies=remedy_manager.get_remedies("oxonium"), sanitize=sanitize
     )
+
+    if isinstance(mol, Chem.RWMol):
+        # During fixing, a few operation tends to change the molecule from RWMol to Mol
+        fixed_mol = mol.__class__(fixed_mol)
+
+    return fixed_mol
