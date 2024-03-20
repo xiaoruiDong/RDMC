@@ -52,7 +52,7 @@ class MolOpsMixin:
     def GetTorsionTops(
         self,
         torsion: Sequence,
-        allowNonBondingPivots: bool = False,
+        allowNonBondPivots: bool = False,
     ) -> tuple:
         """
         Generate tops for the given torsion. Top atoms are defined as atoms on one side of the torsion.
@@ -62,17 +62,14 @@ class MolOpsMixin:
         Args:
             torsion (Sequence): The atom indices of the pivot atoms (length of 2) or
                 a length-4 atom index sequence with the 2nd and 3rd are the pivot of the torsion.
-            allow_non_bonding_pivots (bool, optional): Allow pivots that are not directly bonded.
+            allowNonBondPivots (bool, optional): Allow pivots that are not directly bonded.
                 Defaults to ``False``. There are cases like CC#CC or X...H...Y, where a user may want
                 to define a torsion with a nonbonding pivots.
 
         Returns:
             tuple: Two frags, one of the top of the torsion, and the other top of the torsion.
         """
-        tops = get_torsion_tops(self, torsion, allowNonBondingPivots)
-        if not isinstance(self, Chem.RWMol):
-            return tops
-        return tuple(self.__class__(mol) for mol in tops)
+        return get_torsion_tops(self, torsion, allowNonBondPivots)
 
     def AddBonds(
         self,
