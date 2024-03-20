@@ -354,7 +354,7 @@ def reset_pmol(r_mol: 'RDKitMol',
     obff = OpenBabelFF(force_field="uff")
     obff.setup(p_mol_new)
     broken_bonds = get_broken_bonds(r_mol, p_mol)
-    r_conf = r_mol.GetConformer()
+    r_conf = r_mol.GetEditableConformer()
     current_distances = [r_conf.GetBondLength(b) for b in broken_bonds]
     [obff.add_distance_constraint(b, 1.5 * d)
      for b, d in zip(broken_bonds, current_distances)]

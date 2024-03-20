@@ -259,7 +259,7 @@ class TSEGNNGuesser(TSInitialGuesser):
         # Copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(rp_inputs))
-        [ts_mol.GetConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float))
+        [ts_mol.GetEditableConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float))
          for i in range(len(rp_inputs))]
 
         if save_dir:
@@ -331,7 +331,7 @@ class TSGCNGuesser(TSInitialGuesser):
         # Copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(rp_inputs))
-        [ts_mol.GetConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float))
+        [ts_mol.GetEditableConformer(i).SetPositions(np.array(predicted_ts_coords[i], dtype=float))
          for i in range(len(rp_inputs))]
 
         if save_dir:
@@ -388,7 +388,7 @@ class RMSDPPGuesser(TSInitialGuesser):
 
         # Copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
-        [ts_mol.AddConformer(t.GetConformer().ToConformer(), assignId=True)
+        [ts_mol.AddConformer(t.GetConformer(), assignId=True)
          for t in ts_guesses]
 
         if save_dir:
@@ -520,7 +520,7 @@ class AutoNEBGuesser(TSInitialGuesser):
         # copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
-        [ts_mol.GetConformer(i).SetPositions(p) for i, p in enumerate(ts_guesses)]
+        [ts_mol.GetEditableConformer(i).SetPositions(p) for i, p in enumerate(ts_guesses)]
 
         if save_dir:
             self.save_guesses(save_dir, used_rp_combos, ts_mol.ToRWMol())
@@ -626,7 +626,7 @@ class DEGSMGuesser(TSInitialGuesser):
         # copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
-        [ts_mol.GetConformer(i).SetPositions(p) for i, p in enumerate(ts_guesses)]
+        [ts_mol.GetEditableConformer(i).SetPositions(p) for i, p in enumerate(ts_guesses)]
 
         if save_dir:
             self.save_guesses(save_dir, used_rp_combos, ts_mol.ToRWMol())

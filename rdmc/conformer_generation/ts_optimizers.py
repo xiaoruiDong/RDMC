@@ -329,7 +329,7 @@ class OrcaOptimizer(TSOptimizer):
             if orca_run.returncode == 0:
                 try:
                     new_mol = RDKitMol.FromFile(os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False)
-                    opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
+                    opt_mol.AddConformer(new_mol.GetConformer(), assignId=True)
                     opt_mol.frequency.update({i: self.extract_frequencies(ts_conf_dir, opt_mol.GetNumAtoms())})
                 except Exception as e:
                     opt_mol.AddNullConformer(confId=i)
@@ -448,7 +448,7 @@ class GaussianOptimizer(TSOptimizer):
                     g16_log = GaussianLog(os.path.join(ts_conf_dir, "gaussian_opt.log"))
                     if g16_log.success:
                         new_mol = g16_log.get_mol(embed_conformers=False, sanitize=False)
-                        opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
+                        opt_mol.AddConformer(new_mol.GetConformer(), assignId=True)
                         opt_mol.energy.update({i: g16_log.get_scf_energies(relative=False)[-1]})
                         opt_mol.frequency.update({i: g16_log.freqs})
                 except Exception as e:
@@ -566,7 +566,7 @@ class QChemOptimizer(TSOptimizer):
                     qchem_log = QChemLog(os.path.join(ts_conf_dir, "qchem_opt.log"))
                     if qchem_log.success:
                         new_mol = qchem_log.get_mol(embed_conformers=False, sanitize=False)
-                        opt_mol.AddConformer(new_mol.GetConformer().ToConformer(), assignId=True)
+                        opt_mol.AddConformer(new_mol.GetConformer(), assignId=True)
                         opt_mol.energy.update({i: qchem_log.get_scf_energies(relative=False)[-1]})
                         opt_mol.frequency.update({i: qchem_log.freqs})
                 except Exception as e:
