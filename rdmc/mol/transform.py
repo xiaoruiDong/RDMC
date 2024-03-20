@@ -447,7 +447,7 @@ class MolToMixin:
             writer = Chem.rdmolfiles.SDWriter(str(path))
             for i in confId:
                 writer.write(self, confId=i)
-        except:
+        except BaseException:
             pass
         finally:
             writer.close()

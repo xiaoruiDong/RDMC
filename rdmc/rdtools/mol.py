@@ -110,6 +110,7 @@ def get_atomic_nums(mol: Chem.Mol) -> List[int]:
     """
     return [atom.GetAtomicNum() for atom in mol.GetAtoms()]
 
+
 def get_atom_masses(mol: Chem.Mol) -> List[float]:
     """
     Get atomic masses of a molecule.
@@ -217,10 +218,10 @@ def fast_sanitize(mol: Chem.RWMol):
     Only update the molecule's property and ring perception.
     """
     Chem.SanitizeMol(
-            mol,
-            sanitizeOps=Chem.SanitizeFlags.SANITIZE_PROPERTIES
-            | Chem.SanitizeFlags.SANITIZE_SYMMRINGS,
-        )
+        mol,
+        sanitizeOps=Chem.SanitizeFlags.SANITIZE_PROPERTIES
+        | Chem.SanitizeFlags.SANITIZE_SYMMRINGS,
+    )
 
 
 def get_closed_shell_mol(

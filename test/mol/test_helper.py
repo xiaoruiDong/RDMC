@@ -1,5 +1,6 @@
 from rdmc.mol.helper import parse_xyz_or_smiles_list
 
+
 def test_parse_xyz_or_smiles_list():
     """
     Test the function that parses a list of xyz or smiles strings.

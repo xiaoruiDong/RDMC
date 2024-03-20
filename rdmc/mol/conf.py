@@ -193,12 +193,12 @@ class MolConfMixin:
         for reflect in [False, True]:
             results.append(
                 self.AlignMol(
-                refMol=refMol,
-                prbCid=prbCid,
-                refCid=refCid,
-                atomMaps=atomMaps,
-                maxIters=maxIters,
-                reflect=reflect,
+                    refMol=refMol,
+                    prbCid=prbCid,
+                    refCid=refCid,
+                    atomMaps=atomMaps,
+                    maxIters=maxIters,
+                    reflect=reflect,
                 )
             )
             positions.append(self.GetPositions(confId=prbCid))

@@ -54,6 +54,7 @@ def _create_matrix_with_radii_values(radii: np.array) -> np.array:
     mat = np.zeros((num_atom, num_atom))
     return mat + radii + radii.T
 
+
 @lru_cache()
 def get_vdw_distance_matrix(
     mol: Chem.Mol,

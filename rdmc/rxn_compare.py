@@ -5,6 +5,7 @@
 This module provides methods for comparing molecules.
 """
 
+
 def is_equivalent_reaction(
     rxn1: "Reaction",
     rxn2: "Reaction",

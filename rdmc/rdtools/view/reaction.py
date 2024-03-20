@@ -34,7 +34,7 @@ def reaction_viewer(
                                             Only valid when `only_ts` is `False`.
     """
     # Check if TS is provided
-    grid = ['r', 'p'] if ts_mol is None else ['r', 'ts', 'p'] 
+    grid = ['r', 'p'] if ts_mol is None else ['r', 'ts', 'p']
 
     ts_kwargs = {}
     # Remove the ts_viewer's key from kwargs

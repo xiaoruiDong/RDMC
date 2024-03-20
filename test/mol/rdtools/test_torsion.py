@@ -97,7 +97,7 @@ def test_get_torsion_tops():
     assert set(tops) == {(0, 4, 5, 6), (3, 7, 8, 9)}
 
     smi3 = "[C:1]([H:3])([H:4])([H:5])[H:6].[O:2][H:7]"
-    mol = RDKitMol.FromSmiles(smi3).AddBonds([(1,2)])
+    mol = RDKitMol.FromSmiles(smi3).AddBonds([(1, 2)])
     with pytest.raises(ValueError):
         get_torsion_tops(mol, [3, 0, 1, 6])
     tops = get_torsion_tops(mol, [3, 0, 1, 6], allow_non_bonding_pivots=True)

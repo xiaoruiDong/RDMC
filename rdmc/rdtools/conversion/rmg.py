@@ -5,7 +5,7 @@ from rdmc.rdtools.utils import get_fake_module
 try:
     import rmgpy.molecule.element as elements
     import rmgpy.molecule.molecule as mm
-except:
+except ImportError:
     elements = get_fake_module("elements", "rmgpy")
     mm = get_fake_module("molecule", "rmgpy")
 

@@ -89,7 +89,7 @@ class TestFingerprint:
         Test the ``get_fingerprint`` function get a reproducible count fingerprint for morgan fingerprints.
         """
         fp = get_fingerprint(
-                mol, count=count, num_bits=num_bits, fp_type='morgan', radius=radius, dtype=dtype
+            mol, count=count, num_bits=num_bits, fp_type='morgan', radius=radius, dtype=dtype
         )
         fp_exp = get_allchem_fingerprint(mol, count=count, num_bits=num_bits, fp_type='morgan', radius=radius)
 
@@ -101,7 +101,7 @@ class TestFingerprint:
         Test the ``get_fingerprint`` function get a reproducible count fingerprint for morgan fingerprints.
         """
         fp = get_fingerprint(
-                mol_with_hs, count=count, num_bits=num_bits, fp_type='morgan', radius=radius, dtype=dtype
+            mol_with_hs, count=count, num_bits=num_bits, fp_type='morgan', radius=radius, dtype=dtype
         )
         fp_exp = get_allchem_fingerprint(mol_with_hs, count=count, num_bits=num_bits, fp_type='morgan', radius=radius)
 
@@ -113,7 +113,7 @@ class TestFingerprint:
         Test the ``get_fingerprint`` function get a reproducible count fingerprint for AtomPair and TopologicalTorsion Fingerprints.
         """
         fp = get_fingerprint(
-                mol, count=count, num_bits=num_bits, fp_type='atom_pair', dtype=dtype
+            mol, count=count, num_bits=num_bits, fp_type='atom_pair', dtype=dtype
         )
         fp_exp = get_allchem_fingerprint(mol, count=count, num_bits=num_bits, fp_type='atom_pair')
 
@@ -125,7 +125,7 @@ class TestFingerprint:
         Test the ``get_fingerprint`` function get a reproducible count fingerprint for AtomPair and TopologicalTorsion Fingerprints.
         """
         fp = get_fingerprint(
-                mol_with_hs, count=count, num_bits=num_bits, fp_type='atom_pair', dtype=dtype
+            mol_with_hs, count=count, num_bits=num_bits, fp_type='atom_pair', dtype=dtype
         )
         fp_exp = get_allchem_fingerprint(mol_with_hs, count=count, num_bits=num_bits, fp_type='atom_pair')
 

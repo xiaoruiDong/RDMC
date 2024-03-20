@@ -25,4 +25,5 @@ class RDKitMol(
     def __copy__(self):
         return RDKitMol(self)
 
+
 Mol = RDKitMol

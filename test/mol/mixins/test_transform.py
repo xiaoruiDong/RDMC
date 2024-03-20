@@ -6,6 +6,7 @@ try:
 except ImportError:
     import pybel
 
+
 @pytest.mark.parametrize(
     "inchi",
     [
@@ -211,6 +212,7 @@ def test_smiles_with_atom_mapping_and_hs():
         mol4.ToSmiles(removeHs=False, removeAtomMap=False)
         == "[H:0][C:5]([C:2]([H:4])([H:8])[H:9])[H:3]"
     )
+
 
 def test_generate_mol_from_openbabel_mol():
     """

@@ -81,7 +81,7 @@ def test_get_atom_masses(smi, expected):
     [
         (
             "[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]",
-            ["H", "C", "H","H", "H", "H",],
+            ["H", "C", "H", "H", "H", "H",],
         ),
         (
             "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
@@ -90,7 +90,7 @@ def test_get_atom_masses(smi, expected):
     ],
 )
 def test_get_element_symbols(smi, expected):
-    assert  RDKitMol.FromSmiles(smi).GetElementSymbols() == expected
+    assert RDKitMol.FromSmiles(smi).GetElementSymbols() == expected
 
 
 @pytest.mark.parametrize(

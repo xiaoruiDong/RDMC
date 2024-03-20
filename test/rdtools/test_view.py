@@ -66,6 +66,7 @@ def rmol():
 def pmol():
     return Chem.MolFromSmiles("[H][H].[C][H]", smi_params)
 
+
 @pytest.fixture
 def tsmol(rmol):
     return Chem.RWMol(rmol)
@@ -128,7 +129,7 @@ def test_mol_viewer(smi, atom_index, viewer_size):
 
     # Wrong conf id
     with pytest.raises(ValueError):
-        mol_viewer(mol, n_conf+1, atom_index=atom_index, viewer_size=viewer_size)
+        mol_viewer(mol, n_conf + 1, atom_index=atom_index, viewer_size=viewer_size)
 
 
 @pytest.mark.parametrize("atom_index", [True, False])
@@ -262,6 +263,7 @@ def test_ts_viewer(broken_bonds, formed_bonds, color, width, viewer_size, atom_i
     )
 
     assert isinstance(viewer, py3Dmol.view)
+
 
 @pytest.mark.parametrize(
     "rsmi, psmi",

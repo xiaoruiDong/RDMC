@@ -2,6 +2,7 @@ import pytest
 
 from rdmc import RDKitMol
 
+
 @pytest.mark.parametrize(
     'smi1, smi2, expect_match',
     [

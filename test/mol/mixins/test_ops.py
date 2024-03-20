@@ -151,6 +151,7 @@ def test_renumber_atoms():
     assert renumbered.GetAtomMapNumbers() == (1, 2, 3, 4, 5)
     assert renumbered.GetAtomicNumbers() == [1, 1, 1, 1, 6]
 
+
 def test_combined_mol():
     """
     Test combining molecules using CombineMol.

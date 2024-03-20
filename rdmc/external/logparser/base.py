@@ -553,7 +553,7 @@ class CclibLog(BaseLog):
                 align_scan=align_scan,
                 align_frag_idx=align_frag_idx,
                 backend=backend
-        )
+            )
         elif 'irc' in self.job_type:
             bothway = ('forward' not in self.schemes.get('irc', {})) and ('reverse' not in self.schemes.get('irc', {}))
             mol = self._process_irc_mol(

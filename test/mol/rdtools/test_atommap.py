@@ -10,6 +10,7 @@ from rdmc.rdtools.atommap import (
 
 from rdmc.mol import RDKitMol
 
+
 @pytest.mark.parametrize(
     "smiles, numbers",
     [
@@ -94,6 +95,7 @@ def test_renumber_atoms_by_substruct_match_result(smi1, smi2):
     assert new_mol2.ToSmiles(removeHs=False, removeAtomMap=False) == mol1.ToSmiles(
         removeHs=False, removeAtomMap=False
     )
+
 
 def test_renumber_atoms_for_fragments():
     mol = RDKitMol.FromSmiles("[Cl:2][CH2:4][OH:1]", addHs=False)

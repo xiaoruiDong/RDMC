@@ -85,14 +85,17 @@ def test_has_matched_mol():
         consider_atommap=True,
     )
 
+
 def test_get_unique_mols():
     """
     Test the function that extract unique molecules from a list of molecules.
     """
     list1 = ['C', 'O']
-    list2 = ['C', 'O',
-                '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]',
-                '[C:1]([H:3])([H:4])([H:5])[O:6][H:2]',]
+    list2 = [
+        'C', 'O',
+        '[C:1]([O:2][H:6])([H:3])([H:4])[H:5]',
+        '[C:1]([H:3])([H:4])([H:5])[O:6][H:2]',
+    ]
 
     list1 = [mol_from_smiles(smi) for smi in ["C", "O"]]
     list2 = [
@@ -130,6 +133,7 @@ def test_get_unique_mols():
     assert len(get_unique_mols(
         list2, consider_atommap=False
     )) == 3
+
 
 @pytest.mark.parametrize(
     'smi1, smi2, expect_match',

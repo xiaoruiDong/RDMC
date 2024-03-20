@@ -7,6 +7,7 @@ default_arrow_spec = {
     "radius": 0.08,
 }
 
+
 def freq_viewer(
     xyz: str,
     frames: int = 10,
@@ -31,7 +32,7 @@ def freq_viewer(
         model_extra={"vibrate": {"frames": frames, "amplitude": amplitude}},
         animate={'loop': 'backAndForth'},
         **kwargs,
-        )
+    )
     viewer.vibrate(
         frames,
         amplitude,
