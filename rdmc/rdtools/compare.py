@@ -237,7 +237,7 @@ def is_same_connectivity_mol(mol1: "Mol", mol2: "Mol") -> bool:
     Returns:
         bool: Whether the two molecules has the same connectivity.
     """
-    np.array_equal(
+    return np.array_equal(
         get_adjacency_matrix(mol1),
         get_adjacency_matrix(mol2)
     )

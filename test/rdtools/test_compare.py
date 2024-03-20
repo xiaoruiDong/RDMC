@@ -1,6 +1,6 @@
 import pytest
 
-from rdmc.rdtools.compare import get_match_and_recover_recipe, get_unique_mols, has_matched_mol
+from rdmc.rdtools.compare import get_match_and_recover_recipe, get_unique_mols, has_matched_mol, is_same_connectivity_mol
 from rdmc.rdtools.conversion import mol_from_smiles, mol_to_smiles
 
 
@@ -130,3 +130,16 @@ def test_get_unique_mols():
     assert len(get_unique_mols(
         list2, consider_atommap=False
     )) == 3
+
+@pytest.mark.parametrize(
+    'smi1, smi2, expect_match',
+    [
+        ('[CH3]', 'C', False),
+        ('[O:1]([H:2])[H:3]', '[O:1]([H:2])[H:3]', True),
+        ('[O:1]([H:2])[H:3]', '[O:2]([H:1])[H:3]', False),
+        ('[H:1][C:2](=[O:3])[O:4]', '[H:1][C:2]([O:3])=[O:4]', True)
+    ])
+def test_has_same_connectivity(smi1, smi2, expect_match):
+    mol1 = mol_from_smiles(smi1)
+    mol2 = mol_from_smiles(smi2)
+    assert is_same_connectivity_mol(mol1, mol2) == expect_match
