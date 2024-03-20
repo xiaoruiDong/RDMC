@@ -1,8 +1,10 @@
 import pytest
 
+import numpy as np
 from rdkit import Chem
 
 from rdmc.rdtools.atommap import (
+    reverse_map,
     get_atom_map_numbers,
     has_atom_map_numbers,
     needs_renumber,
@@ -134,3 +136,21 @@ def test_needs_renumber(smiles, if_needs_renumber):
 def test_has_atom_map_numbers(smiles, if_has_numbers):
     mol = Chem.MolFromSmiles(smiles, smi_params)
     assert has_atom_map_numbers(mol) == if_has_numbers
+
+
+def test_reverse_match():
+    """
+    Test the functionality to reverse a mapping.
+    """
+    map = [
+        1, 2, 3, 4, 5, 17, 18, 19, 20, 21, 22, 23, 24, 25, 6, 7, 8,
+        9, 10, 11, 12, 13, 14, 15, 16, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+        35, 36, 37, 38, 39
+    ]
+    r_map = [
+        0, 1, 2, 3, 4, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 5,
+        6, 7, 8, 9, 10, 11, 12, 13, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+        34, 35, 36, 37, 38
+    ]
+
+    np.testing.assert_equal(np.array(r_map), np.array(reverse_map(map)))
