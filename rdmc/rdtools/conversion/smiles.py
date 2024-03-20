@@ -104,7 +104,7 @@ def mol_from_smiles(
         reset_atom_map_numbers(mol)
     elif atom_order.lower() == "atom_map" and needs_renumber(mol):
         if has_atom_map_numbers(mol):
-            mol = renumber_atoms(mol)
+            mol = renumber_atoms(mol, update_atom_map=False)
         elif assign_atom_map:
             reset_atom_map_numbers(mol)
     return mol

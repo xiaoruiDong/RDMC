@@ -30,6 +30,8 @@ def prepare_output_mol(
     """
     if remove_hs:
         mol = Chem.RemoveHs(mol, sanitize=False)
+    else:
+        mol = Chem.Mol(mol)  # make sure it is copied
     if isinstance(sanitize, bool) and sanitize:
         Chem.SanitizeMol(mol)
     elif sanitize:
