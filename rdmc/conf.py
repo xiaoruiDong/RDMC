@@ -10,15 +10,12 @@ from typing import Optional, Sequence, Union
 import numpy as np
 import scipy.cluster.hierarchy as hcluster
 
-from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 from rdkit.Chem.rdchem import Conformer
 from scipy.spatial import distance_matrix
 
-from rdmc.utils import (find_internal_torsions,
-                        find_ring_torsions,
-                        set_rdconf_coordinates,
-                        VDW_RADII)
+from rdmc.rdtools.torsion import find_internal_torsions, find_ring_torsions
+from rdmc.rdtools.conf import set_conformer_coordinates
 
 
 class RDKitConf(object):

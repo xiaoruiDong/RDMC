@@ -14,7 +14,7 @@ import numpy as np
 from collections import defaultdict
 from typing import List, Optional, Union
 
-from rdmc.utils import PERIODIC_TABLE as PT
+from rdmc.rdtools.element import PERIODIC_TABLE as PT
 from rdmc.external.logparser import GaussianLog
 
 
