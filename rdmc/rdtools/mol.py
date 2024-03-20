@@ -173,6 +173,8 @@ def combine_mols(
 
     combined_mol = Chem.CombineMols(mol1, mol2, vector)
     if c_product:
+        if offset is None:
+            offset = np.zeros(3)
         c1s, c2s = mol1.GetConformers(), mol2.GetConformers()
         pos_list = [
             [c1.GetPositions(), c2.GetPositions() + offset]

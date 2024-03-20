@@ -119,7 +119,7 @@ class MolOpsMixin:
     def CombineMol(
         self,
         molFrag: "Mol",
-        offset: Union[list, tuple, float, "np.ndarray"] = 0,
+        offset: Optional["np.ndarray"] = None,
         c_product: bool = False,
     ) -> "Mol":
         """
@@ -128,9 +128,7 @@ class MolOpsMixin:
 
         Args:
             molFrag (RDKitMol or Mol): The molecule or fragment to be combined into the current one.
-            offset:
-                - (list or tuple): A 3-element vector used to define the offset.
-                - (float): Distance in Angstrom between the current mol and the ``molFrag`` along the x axis.
+            offset (np.ndarray, optional): A 3-element vector used to define the offset. Defaults to None, for (0, 0, 0)
             c_product (bool, optional): If ``True``, generate conformers for every possible combination
                                         between the current molecule and the ``molFrag``. E.g.,
                                         (1,1), (1,2), ... (1,n), (2,1), ...(m,1), ... (m,n). :math:`N(conformer) = m \\times n.`
