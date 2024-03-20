@@ -2,15 +2,17 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.rdtools.atommap import clear_atom_map_numbers, get_atom_map_numbers
+from rdmc.rdtools.atommap import get_atom_map_numbers
 from rdmc.rdtools.conversion import mol_from_smiles, mol_from_xyz, mol_to_smiles
-from rdmc.rdtools.fix import fix_oxonium_bonds, remedy_manager, saturate_mol, fix_mol
+from rdmc.rdtools.fix import (
+    fix_oxonium_bonds,
+    remedy_manager,
+    saturate_mol,
+    fix_mol,
+    saturate_biradical_12,
+    saturate_biradical_cdb,
+)
 from rdmc.rdtools.mol import get_spin_multiplicity
-
-
-smi_params = Chem.SmilesParserParams()
-smi_params.removeHs = False
-smi_params.sanitize = True
 
 
 @pytest.mark.parametrize(
@@ -167,3 +169,46 @@ def test_fix_oxonium(xyz, exp_smi):
     mol = mol_from_xyz(xyz, sanitize=False, header=False)
     fixed_mol = fix_oxonium_bonds(mol)
     assert mol_to_smiles(fixed_mol) == exp_smi
+
+
+@pytest.mark.parametrize(
+    "mult_input, mult_exp",
+    [
+        (3, 3),
+        (4, 3),
+        (2, 3),
+        (1, 1),
+    ]
+)
+def test_saturate_biradical_12(mult_input, mult_exp):
+    """
+    Test the function that saturates the adjacent biradical sites.
+    """
+    smi = "[CH2][CH2]"
+    mol = mol_from_smiles(smi)
+    assert get_spin_multiplicity(mol) == 3
+    # Test the case where no action is needed
+    saturate_biradical_12(mol, multiplicity=mult_input)
+    assert get_spin_multiplicity(mol) == mult_exp
+
+
+@pytest.mark.parametrize(
+    "mult_input, mult_exp",
+    [
+        (3, 3),
+        (4, 3),
+        (2, 3),
+        (1, 1),
+    ],
+)
+def test_saturate_biradical_cdb(mult_input, mult_exp):
+    """
+    Test the function that saturates the biradicals that have conjugated double bond.
+    """
+    smi = "[CH2]C=C[CH2]"
+    mol = mol_from_smiles(smi)
+
+    assert get_spin_multiplicity(mol) == 3
+    # Test the case where no action is needed
+    saturate_biradical_cdb(mol, multiplicity=mult_input)
+    assert get_spin_multiplicity(mol) == mult_exp
