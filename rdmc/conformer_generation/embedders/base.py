@@ -1,4 +1,4 @@
-import time
+from time import time
 
 from rdmc import RDKitMol
 from rdmc.conformer_generation.utils import mol_to_dict
