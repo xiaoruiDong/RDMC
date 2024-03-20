@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from functools import cached_property, lru_cache
+from functools import lru_cache
+try:
+    from functools import cached_property
+except:
+    from rdmc.external.logparser.utils import cached_property
+
 import re
 from typing import Optional
 
