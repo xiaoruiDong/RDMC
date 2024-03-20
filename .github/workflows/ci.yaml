@@ -62,7 +62,7 @@ jobs:
         run: python -m pip install --no-deps -vv ./
 
       - name: Install Pytest
-        run: mamba install -y pytest pytest-cov pytest-check
+        run: mamba install -y pytest pytest-cov # temporarily remove "pytest-check"
 
       - name: Mamba info
         run: |
