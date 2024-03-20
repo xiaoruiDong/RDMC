@@ -418,7 +418,7 @@ class Reaction:
         This method assumes that the reactant complex and product complex are atom-mapped
         already.
         """
-        self.ts = self.reactant_complex.AddRedundantBonds(self.formed_bonds)
+        self.ts = self.reactant_complex.AddBonds(self.formed_bonds, inplace=False)
         return self.ts
 
     def _update_ts(self):
