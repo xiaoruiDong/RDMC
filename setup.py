@@ -36,6 +36,6 @@ setup(
     ],
     keywords="chemistry, RDKit, molecule, conformer, reaction, cheminformatics",
     license="MIT License",
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     platforms=["Any."],
 )
