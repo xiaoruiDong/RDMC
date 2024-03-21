@@ -23,6 +23,7 @@ from rdmc.mol import RDKitMol
 from rdmc.conformer_generation.utils import mol_to_dict
 from rdmc.mathlib.greedymin import search_minimum
 from rdmc.ts import get_formed_and_broken_bonds
+from rdmc.rdtools.conf import set_conformer_coordinates
 
 try:
     from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED
@@ -135,8 +136,8 @@ class TorsionalSampler:
         Returns:
             lis: A list of RDKitMol of sampled 3D geometries for each torsional mode.
         """
-        conf = mol.Copy().GetConformer(id=id)
-        origin_coords = mol.GetPositions(id=id)
+        conf = mol.Copy().GetEditableConformer(id=id)
+        origin_coords = mol.GetPositions(confId=id)
         if not torsions:
             torsions = mol.GetTorsionalModes(excludeMethyl=exclude_methyl)
         self.logger.info(f"Number of torsions: {len(torsions)}")
@@ -153,7 +154,7 @@ class TorsionalSampler:
         conformers_by_change_torsions = []
         for torsion_pair in combinations(torsions, n_dimension):
             # Reset the geometry
-            conf.SetPositions(origin_coords)
+            set_conformer_coordinates(conf, origin_coords)
 
             # Get angles
             sampling = [
@@ -193,7 +194,7 @@ class TorsionalSampler:
             mols.SetProp("torsion_pair", str(torsion_pair))
             mols.EmbedMultipleNullConfs(len(bookkeep))
             for i in range(len(bookkeep)):
-                mols.GetConformer(i).SetPositions(bookkeep[i]["coords"])
+                set_conformer_coordinates(mols.GetConformer(i), bookkeep[i]["coords"])
                 mols.GetConformer(i).SetProp("angles", str(bookkeep[i]["angles"]))
                 mols.GetConformer(i).SetProp("colliding_atoms", str(bookkeep[i]["colliding_atoms"]))
             conformers_by_change_torsions.append(mols)
@@ -239,23 +240,22 @@ class TorsionalSampler:
 
         # Use double bond to avoid to be counted as a torsional mode
         # If you want to include it, please use BondType.SINGLE
-        rw_mol = sampler_mol.ToRWMol()
-        sampler_mol.UpdatePropertyCache()
-
         if no_sample_dangling_bonds:
             set_BondType = Chem.BondType.DOUBLE
         else:
             set_BondType = Chem.BondType.SINGLE
 
+        bonds_to_add = []
         for bond_inds in bonds:
-            bond = rw_mol.GetBondBetweenAtoms(bond_inds[0], bond_inds[1])
+            bond = sampler_mol.GetBondBetweenAtoms(bond_inds[0], bond_inds[1])
             if bond:
                 bond.SetBondType(set_BondType)
             else:
-                rw_mol.AddBond(*bond_inds, set_BondType)
+                bonds_to_add.append(bond_inds)
 
-        # Get all the sampled conformers for each torsinal pair
-        sampler_mol = sampler_mol.FromMol(rw_mol)
+        # Get all the sampled conformers for each torsional pair
+        sampler_mol.AddBonds(bonds_to_add, [set_BondType] * len(bonds_to_add))
+
         conformers_by_change_torsions = self.get_conformers_by_change_torsions(
             sampler_mol, id, torsions=torsions, on_the_fly_check=True
         )
@@ -277,7 +277,7 @@ class TorsionalSampler:
                         confs.GetConformer(i).GetProp("colliding_atoms").lower()
                     )
                     if not colliding_atoms:
-                        [minimum_mols.AddConformer(confs.GetConformer(i).ToConformer(), assignId=True)]
+                        [minimum_mols.AddConformer(confs.GetConformer(i), assignId=True)]
 
             if self.n_dimension == -1:
                 n_conformers = minimum_mols.GetNumConformers()
@@ -337,7 +337,7 @@ class TorsionalSampler:
                             ind += nsteps**dimension * value
                         ids.append(ind)
 
-                [minimum_mols.AddConformer(confs.GetConformer(i).ToConformer(), assignId=True) for i in ids]
+                [minimum_mols.AddConformer(confs.GetConformer(i), assignId=True) for i in ids]
 
                 if save_dir and save_plot and len(rescaled_energies.shape) in [1, 2]:
                     torsion_pair = confs.GetProp("torsion_pair")
@@ -423,7 +423,7 @@ class TorsionalSampler:
 
             if opt_minimum_mols.KeepIDs[idx]:
                 self.logger.info(f"Sampler finds conformer with lower energy. The energy decreases {mol.energy[id] - energy} kcal/mol.")
-                mol.GetConformer(id).SetPositions(opt_minimum_mols.GetConformer(idx).GetPositions())
+                set_conformer_coordinates(mol.GetConformer(id), opt_minimum_mols.GetConformer(idx).GetPositions())
                 mol.energy[id] = energy
                 mol.frequency[id] = opt_minimum_mols.frequency[idx]
                 return mol

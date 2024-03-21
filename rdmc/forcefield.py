@@ -19,9 +19,11 @@ except ImportError:
     import openbabel as ob
 
 from rdmc.mol import RDKitMol
-from rdmc.utils import (rdkit_mol_to_openbabel_mol,
-                        get_obmol_coords,
-                        set_rdconf_coordinates)
+from rdmc.rdtools.obabel import (
+    get_obmol_coords,
+    rdkit_mol_to_openbabel_mol,
+)
+from rdmc.rdtools.conf import set_conformer_coordinates
 
 
 ROO_TEMPLATE = Chem.MolFromSmarts('[O;X1]-[O;X2]')
@@ -852,7 +854,7 @@ class OpenBabelFF:
         """
         if self.mol_type == 'rdkit':
             conf = self.mol.GetConformer()
-            set_rdconf_coordinates(conf, get_obmol_coords(self.obmol))
+            set_conformer_coordinates(conf, get_obmol_coords(self.obmol))
 
         return self.mol
 

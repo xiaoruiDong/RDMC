@@ -14,8 +14,9 @@ from rdkit.Chem import rdChemReactions, rdFMCS
 from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
-from rdmc.mol_compare import is_same_complex, is_equivalent_reaction
-from rdmc.resonance import generate_resonance_structures
+from rdmc.rxn_compare import is_equivalent_reaction
+from rdmc.rdtools.compare import is_same_complex
+from rdmc.rdtools.resonance import generate_resonance_structures
 from rdmc.ts import get_all_changing_bonds
 
 
@@ -417,7 +418,7 @@ class Reaction:
         This method assumes that the reactant complex and product complex are atom-mapped
         already.
         """
-        self.ts = self.reactant_complex.AddRedundantBonds(self.formed_bonds)
+        self.ts = self.reactant_complex.AddBonds(self.formed_bonds, inplace=False)
         return self.ts
 
     def _update_ts(self):

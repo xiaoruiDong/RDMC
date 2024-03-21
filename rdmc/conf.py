@@ -10,15 +10,13 @@ from typing import Optional, Sequence, Union
 import numpy as np
 import scipy.cluster.hierarchy as hcluster
 
-from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 from rdkit.Chem.rdchem import Conformer
 from scipy.spatial import distance_matrix
 
-from rdmc.utils import (find_internal_torsions,
-                        find_ring_torsions,
-                        set_rdconf_coordinates,
-                        VDW_RADII)
+from rdmc.rdtools.conf import set_conformer_coordinates
+from rdmc.rdtools.dist import has_colliding_atoms
+from rdmc.rdtools.torsion import find_internal_torsions, find_ring_torsions
 
 
 class RDKitConf(object):
@@ -201,33 +199,19 @@ class RDKitConf(object):
                 self._torsions += find_ring_torsions(self._owning_mol)
             return self._torsions
 
-    def GetVdwMatrix(self, threshold=0.4) -> Optional[np.ndarray]:
-        """
-        Get the derived Van der Waals matrix, which can be used to analyze
-        the collision of atoms. More information can be found from ``generate_vdw_mat``.
-
-        Args:
-            threshold: float indicating the threshold to use in the vdw matrix
-
-        Returns:
-            Optional[np.ndarray]: A 2D array of the derived Van der Waals Matrix, if the
-                                  the matrix exists, otherwise ``None``.
-        """
-        try:
-            return self._vdw_mat
-        except AttributeError:
-            # Try to obtain from its Owning molecule
-            self._vdw_mat = self._owning_mol.GetVdwMatrix(threshold=threshold)
-            return self._vdw_mat
-
     def HasCollidingAtoms(self, threshold=0.4) -> np.ndarray:
         """
+        Whether has atoms are too close together (colliding).
+
         Args:
             threshold: float indicating the threshold to use in the vdw matrix
         """
-        dist_mat = np.triu(self.GetDistanceMatrix())
-        # if the distance is smaller than a threshold, the atom has a high chance of colliding
-        return not np.all(self.GetVdwMatrix(threshold=threshold) <= dist_mat)
+        return has_colliding_atoms(
+            mol=self._owning_mol,
+            conf_id=self.GetId(),
+            threshold=threshold,
+            reference='vdw'
+        )
 
     def HasOwningMol(self):
         """
@@ -266,7 +250,7 @@ class RDKitConf(object):
         Args:
             coords: a list of tuple of atom coordinates.
         """
-        set_rdconf_coordinates(self._conf, coords)
+        set_conformer_coordinates(self._conf, coords)
 
     def SetBondLength(self,
                       atomIds: Sequence[int],

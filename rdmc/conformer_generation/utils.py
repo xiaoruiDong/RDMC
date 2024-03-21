@@ -12,17 +12,22 @@ import os
 import pickle
 import numpy as np
 from collections import defaultdict
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
-from rdmc.utils import PERIODIC_TABLE as PT
+import numpy as np
+
+# from rdmc.rdtools.element import PERIODIC_TABLE as PT
+from rdmc.rdtools.element import get_atom_mass
+from rdmc.rdtools.conf import add_conformer
 from rdmc.external.logparser import GaussianLog
 
 
-def mol_to_dict(mol: 'RDKitMol',
-                copy: bool = True,
-                iter: Optional[int] = None,
-                conf_copy_attrs: Optional[list] = None,
-                ) -> List[dict]:
+def mol_to_dict(
+    mol: 'RDKitMol',
+    copy: bool = True,
+    iter: Optional[int] = None,
+    conf_copy_attrs: Optional[list] = None,
+) -> List[dict]:
     """
     Convert a molecule to a dictionary that stores its conformers object, atom coordinates,
     and iteration numbers for a certain calculation (optional).
@@ -43,7 +48,7 @@ def mol_to_dict(mol: 'RDKitMol',
     if conf_copy_attrs is None:
         conf_copy_attrs = []
     for c_id in range(mol.GetNumConformers()):
-        conf = mol.GetConformer(id=c_id)
+        conf = mol.GetEditableConformer(id=c_id)
         positions = conf.GetPositions()
         mol_data.append({"positions": positions,
                          "conf": conf})
@@ -54,8 +59,10 @@ def mol_to_dict(mol: 'RDKitMol',
     return mol_data
 
 
-def dict_to_mol(mol_data: List[dict],
-                conf_copy_attrs: Optional[list] = None):
+def dict_to_mol(
+    mol_data: List[dict],
+    conf_copy_attrs: Optional[list] = None
+) -> "RDKitMol":
     """
     Convert a dictionary that stores its conformers object, atom coordinates,
     and conformer-level attributes to an RDKitMol. The method assumes that the
@@ -74,13 +81,15 @@ def dict_to_mol(mol_data: List[dict],
     if conf_copy_attrs is None:
         conf_copy_attrs = []
     mol = mol_data[0]["conf"].GetOwningMol().Copy(quickCopy=True, copy_attrs=conf_copy_attrs)
-    [mol.AddConformer(c["conf"].ToConformer(), assignId=True) for c in mol_data]
+    [add_conformer(mol, c["conf"].ToConformer()) for c in mol_data]
+    # [mol.AddConformer(c["conf"].ToConformer(), assignId=True) for c in mol_data]
     return mol
 
 
-def cluster_confs(mol: 'RDKitMol',
-                  cutoff: float = 1.0,
-                  ) -> 'RDKitMol':
+def cluster_confs(
+    mol: 'RDKitMol',
+    cutoff: float = 1.0,
+) -> 'RDKitMol':
     """
     Cluster conformers of a molecule based on RMSD.
 
@@ -91,20 +100,22 @@ def cluster_confs(mol: 'RDKitMol',
     Returns:
         mol ('RDKitMol'): An RDKitMol object with clustered conformers.
     """
-    rmsmat = AllChem.GetConformerRMSMatrix(mol.ToRWMol(), prealigned=False)
+    rmsmat = AllChem.GetConformerRMSMatrix(mol, prealigned=False)
     num = mol.GetNumConformers()
     clusters = Butina.ClusterData(rmsmat, num, cutoff, isDistData=True, reordering=True)
     confs_to_keep = [c[0] for c in clusters]
 
     updated_mol = mol.Copy(quickCopy=True)
-    [updated_mol.AddConformer(c.ToConformer(), assignId=True) for c in mol.GetConformers(confs_to_keep)]
+    [add_conformer(updated_mol, c) for c in mol.GetConformers(confs_to_keep)]
+    # [updated_mol.AddConformer(c.ToConformer(), assignId=True) for c in mol.GetConformers(confs_to_keep)]
 
     return updated_mol
 
 
-def get_conf_failure_mode(rxn_dir: str,
-                          pruner: bool = True,
-                          ) -> dict:
+def get_conf_failure_mode(
+    rxn_dir: str,
+    pruner: bool = True,
+) -> dict:
     """
     Parse a reaction directory for a TS generation run and extract failure modes (which conformer failed the
     full workflow and for what reason).
@@ -152,11 +163,12 @@ def get_conf_failure_mode(rxn_dir: str,
     return failure_dict
 
 
-def get_frames_from_freq(log: GaussianLog,
-                         amplitude: float = 1.0,
-                         num_frames: int = 10,
-                         weights: Union[bool, np.array] = False,
-                         ) -> (np.array, np.array):
+def get_frames_from_freq(
+    log: GaussianLog,
+    amplitude: float = 1.0,
+    num_frames: int = 10,
+    weights: Union[bool, np.array] = False,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Get the reaction mode as frames from a TS optimization log file.
 
@@ -183,7 +195,7 @@ def get_frames_from_freq(log: GaussianLog,
 
     # Generate weights
     if isinstance(weights, bool) and weights:
-        atom_masses = np.array([PT.GetAtomicWeight(int(num)) for num in log.cclib_results.atomnos]).reshape(-1, 1)
+        atom_masses = np.array([get_atom_mass(int(num)) for num in log.cclib_results.atomnos]).reshape(-1, 1)
         weights = np.sqrt(atom_masses)
     elif isinstance(weights, bool) and not weights:
         weights = np.ones((equ_xyz.shape[0], 1))
@@ -193,11 +205,12 @@ def get_frames_from_freq(log: GaussianLog,
     return log.cclib_results.atomnos, xyzs
 
 
-def convert_log_to_mol(log_path: str,
-                       amplitude: float = 1.0,
-                       num_frames: int = 10,
-                       weights: Union[bool, np.array] = False,
-                       ) -> Union[None, 'RDKitMol']:
+def convert_log_to_mol(
+    log_path: str,
+    amplitude: float = 1.0,
+    num_frames: int = 10,
+    weights: Union[bool, np.array] = False,
+) -> Union[None, 'RDKitMol']:
     """
     Convert a TS optimization log file to an RDKitMol object with conformers.
 

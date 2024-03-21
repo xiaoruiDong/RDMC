@@ -9,7 +9,6 @@ Modules for optimizing transition state geometries.
 from rdkit import Chem
 from rdkit.Chem.rdchem import Conformer
 from rdmc import RDKitMol
-from rdmc.utils import set_rdconf_coordinates
 import numpy as np
 import pickle
 
