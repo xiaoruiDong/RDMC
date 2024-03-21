@@ -151,7 +151,7 @@ class NaiveAlign(object):
             broken_bonds (List[tuple]): bonds broken in the reaction.
             conf_id (int, optional): The conformer id to be used in the ``r_complex``. Defaults to ``0``.
         """
-        coords = r_complex.GetPositions(id=conf_id)
+        coords = r_complex.GetPositions(confId=conf_id)
         atom_maps = [list(atom_map) for atom_map in r_complex.GetMolFrags()]
         return cls(coords, atom_maps, formed_bonds, broken_bonds)
 
@@ -171,7 +171,7 @@ class NaiveAlign(object):
             p_complex (RDKitMol): The product complex.
             conf_id (int, optional): The conformer id to be used in the reactant complex ``r_complex``. Defaults to ``0``.
         """
-        coords = r_complex.GetPositions(id=conf_id)
+        coords = r_complex.GetPositions(confId=conf_id)
         atom_maps = [list(atom_map) for atom_map in r_complex.GetMolFrags()]
         formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_complex, p_complex)
         return cls(coords, atom_maps, formed_bonds, broken_bonds)

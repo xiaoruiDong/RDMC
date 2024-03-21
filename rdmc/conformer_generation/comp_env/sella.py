@@ -57,7 +57,7 @@ def run_sella_opt(
         opt.run(fmax, steps)
 
     opt_rdmc_mol = rdmc_mol.Copy(copy_attrs=copy_attrs)
-    opt_rdmc_mol.SetPositions(opt.atoms.positions, id=confId)
+    opt_rdmc_mol.SetPositions(opt.atoms.positions, confId=confId)
     energy = float(pd.read_csv(logfile).iloc[-1].values[0].split()[3])
     opt_rdmc_mol.energy.update({confId: energy})
 
