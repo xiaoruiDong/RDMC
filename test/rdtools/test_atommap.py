@@ -10,6 +10,8 @@ from rdmc.rdtools.atommap import (
     needs_renumber,
     renumber_atoms,
     renumber_atoms_by_substruct_match_result,
+    move_atommaps_to_notes,
+    move_notes_to_atommaps,
 )
 
 # In this module, RDKit's native smiles to mol is used,
@@ -154,3 +156,25 @@ def test_reverse_match():
     ]
 
     np.testing.assert_equal(np.array(r_map), np.array(reverse_map(map)))
+
+
+def test_move_atommaps_to_notes():
+    mol = Chem.MolFromSmiles("[CH3:1][CH2:2][OH:3]")
+    atom_map_numbers_before = get_atom_map_numbers(mol)
+    move_atommaps_to_notes(mol)
+    atom_map_numbers_after = get_atom_map_numbers(mol)
+    assert atom_map_numbers_after == [0] * len(atom_map_numbers_before)
+    assert [int(atom.GetProp('atomNote')) for atom in mol.GetAtoms()] == atom_map_numbers_before
+
+
+def test_move_notes_to_atommaps():
+    mol = Chem.MolFromSmiles("[CH3][CH2][OH]")
+    atom_notes = []
+    for atom in mol.GetAtoms():
+        atom.SetProp('atomNote', str(atom.GetIdx() + 1))
+        atom_notes.append(atom.GetIdx() + 1)
+    atom_map_numbers_before = get_atom_map_numbers(mol)
+    move_notes_to_atommaps(mol)
+    atom_map_numbers_after = get_atom_map_numbers(mol)
+    assert atom_map_numbers_before == [0] * len(atom_map_numbers_before)
+    assert atom_notes == atom_map_numbers_after

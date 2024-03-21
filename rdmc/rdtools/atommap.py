@@ -266,3 +266,30 @@ def update_product_atom_map_after_reaction(
             atom.SetAtomMapNum(ref_mol.GetAtomWithIdx(react_atom_idx).GetAtomMapNum())
 
     return updated_atoms
+
+
+def move_atommaps_to_notes(mol: Chem.Mol):
+    """
+    Move atom map numbers to the `atomNote` property. This helps to make the display slightly cleaner.
+
+    Args:
+        mol (Chem.Mol): The molecule to move atom map numbers to the `atomNote` property.
+    """
+    for atom in mol.GetAtoms():
+        if atom.GetAtomMapNum():
+            atom.SetProp("atomNote", str(atom.GetAtomMapNum()))
+            atom.SetAtomMapNum(0)
+
+
+def move_notes_to_atommaps(mol: Chem.Mol):
+    """
+    Move atom map numbers from `atomNote` to the `atomMap` property. This is only valid if
+    there is no other info in atomNote.
+
+    Args:
+        mol (Chem.Mol): The molecule to move atom map numbers to the `atomMap` property.
+    """
+    for atom in mol.GetAtoms():
+        if atom.HasProp("atomNote"):
+            atom.SetAtomMapNum(int(atom.GetProp("atomNote")))
+            atom.ClearProp("atomNote")
