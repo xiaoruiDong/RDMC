@@ -581,7 +581,7 @@ class RDKitFF(object):
                           force_constant: float = 100,
                           return_xyz: bool = False):
         mol_copy = self.mol.Copy()
-        conf = self.mol.GetConformer()
+        conf = self.mol.GetEditableConformer()
         if not init_angle:
             init_angle = conf.GetTorsionDeg(torsion)
         pos0 = conf.GetPositions()
@@ -605,7 +605,7 @@ class RDKitFF(object):
                                         force_constant=force_constant)
             self.optimize()
             opt_mol = self.get_optimized_mol()
-            angles[i] = opt_mol.GetConformer().GetTorsionDeg(torsion)
+            angles[i] = opt_mol.GetEditableConformer().GetTorsionDeg(torsion)
             energies[i] = self.get_energy()
             if return_xyz:
                 xyzs.append(opt_mol.ToXYZ())
