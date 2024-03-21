@@ -1,11 +1,12 @@
 [run]
 branch = True
-source = rdmc
+source =
+    rdmc
+    rdtools
 omit =
     rdmc/rdtools/conversion/xyz2mol.py
     rdmc/external/GeoMol/*
     rdmc/external/rmg.py
-    rdmc/external/xyz2mol.py
     rdmc/conformer_generation/*
 
 [report]
@@ -18,7 +19,6 @@ omit =
     rdmc/rdtools/conversion/xyz2mol.py
     rdmc/external/GeoMol/*
     rdmc/external/rmg.py
-    rdmc/external/xyz2mol.py
     rdmc/conformer_generation/*
 
 [html]
