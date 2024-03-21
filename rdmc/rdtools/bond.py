@@ -1,5 +1,6 @@
-from typing import List, Tuple, Optional
 import copy
+from functools import lru_cache
+from typing import List, Optional, Set, Tuple
 
 from rdkit import Chem
 from rdkit.Chem import BondType
@@ -109,3 +110,123 @@ def get_bonds_as_tuples(mol: Chem.Mol) -> List[Tuple[int, int]]:
         List[Tuple[int, int]]: The bonds of the molecule as a list of tuples.
     """
     return [tuple(sorted((b.GetBeginAtomIdx(), b.GetEndAtomIdx()))) for b in mol.GetBonds()]
+
+
+@lru_cache(maxsize=10000)
+def _get_bonds_as_sets(
+    *mols: Chem.Mol,
+) -> Tuple[Set[tuple]]:
+    """
+    Get the set of bonds for the provided list of mols.
+
+    Args:
+        mols ('RDKitMol' or 'Mol'): a RDKit Mol object
+
+    Returns
+        Tuple[Set]: (bond set in the reactant, bond set in the product)
+    """
+    return tuple(set(get_bonds_as_tuples(mol)) for mol in mols)
+
+
+def get_formed_bonds(
+    rmol: Chem.Mol,
+    pmol: Chem.Mol,
+) -> List[tuple]:
+    """
+    Get all bonds formed in the reaction. Both reactant and product complexes
+    need to be atom-mapped.
+
+    Args:
+        rmol (Chem.Mol): the reactant complex.
+        pmol (Chem.Mol): the product complex.
+
+    Returns
+        list: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+    """
+    r_bonds, p_bonds = _get_bonds_as_sets(rmol, pmol)
+    return list(p_bonds - r_bonds)
+
+
+def get_broken_bonds(
+    rmol: Chem.Mol,
+    pmol: Chem.Mol,
+) -> List[tuple]:
+    """
+    Get all bonds broken in the reaction. Both reactant and product complexes
+    need to be atom-mapped.
+
+    Args:
+        rmol (Chem.Mol): the reactant complex.
+        pmol (Chem.Mol): the product complex.
+
+    Returns:
+        list: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+    """
+    r_bonds, p_bonds = _get_bonds_as_sets(rmol, pmol)
+    return list(r_bonds - p_bonds)
+
+
+def get_bonds_with_BO_changed(
+    rmol: Chem.Mol,
+    pmol: Chem.Mol,
+) -> List[tuple]:
+    """
+    Get all bonds whose bond order is changed in the reaction. Both reactant and product complexes
+    need to be atom-mapped.
+
+    Args:
+        rmol (Chem.Mol): the reactant complex.
+        pmol (Chem.Mol): the product complex.
+
+    Returns:
+        list: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+    """
+    r_bonds, p_bonds = _get_bonds_as_sets(rmol, pmol)
+    changed_bonds = [
+        bond for bond in (r_bonds & p_bonds)
+        if (
+            rmol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()
+            != pmol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()
+            )
+    ]
+    return changed_bonds
+
+
+def get_formed_and_broken_bonds(
+    rmol: Chem.Mol,
+    pmol: Chem.Mol,
+) -> Tuple[List[tuple], List[tuple]]:
+    """
+    Get all bonds broken in the reaction. Both reactant and product complexes
+    need to be atom-mapped. This function doesn't count bonds whose bond order
+    is lowered but not equal to zero.
+
+    Args:
+        rmol (Chem.Mol): the reactant complex.
+        pmol (Chem.Mol): the product complex.
+
+    Returns:
+        tuple: - formed bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+               - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+    """
+    return get_formed_bonds(rmol, pmol), get_broken_bonds(rmol, pmol)
+
+
+def get_all_changing_bonds(
+    rmol: Chem.Mol,
+    pmol: Chem.Mol,
+) ->  Tuple[List[tuple], List[tuple], List[tuple]]:
+    """
+    Get all bonds changed in the reaction. Both reactant and product complexes
+    need to be atom-mapped.
+
+    Args:
+        rmol (Chem.Mol): the reactant complex.
+        pmol (Chem.Mol): the product complex.
+
+    Returns:
+        tuple: - formed bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+               - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+               - bonds with BO changed: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+    """
+    return get_formed_bonds(rmol, pmol), get_broken_bonds(rmol, pmol), get_bonds_with_BO_changed(rmol, pmol)

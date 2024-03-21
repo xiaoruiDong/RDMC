@@ -17,7 +17,7 @@ from rdmc import RDKitMol
 from rdmc.rxn_compare import is_equivalent_reaction
 from rdmc.rdtools.compare import is_same_complex
 from rdmc.rdtools.resonance import generate_resonance_structures
-from rdmc.ts import get_all_changing_bonds
+from rdmc.rdtools.bond import get_all_changing_bonds
 
 
 class Reaction:
@@ -230,8 +230,8 @@ class Reaction:
                     self._broken_bonds,
                     self._changed_bonds,
                 ) = get_all_changing_bonds(
-                    r_mol=self.reactant_complex,
-                    p_mol=self.product_complex,
+                    rmol=self.reactant_complex,
+                    pmol=self.product_complex,
                 )
                 return func(self, *args, **kwargs)
 

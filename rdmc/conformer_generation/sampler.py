@@ -22,7 +22,7 @@ from matplotlib.patches import Rectangle
 from rdmc.mol import RDKitMol
 from rdmc.conformer_generation.utils import mol_to_dict
 from rdmc.mathlib.greedymin import search_minimum
-from rdmc.ts import get_formed_and_broken_bonds
+from rdmc.rdtools.bond import get_formed_and_broken_bonds
 from rdmc.rdtools.conf import set_conformer_coordinates
 
 try:
