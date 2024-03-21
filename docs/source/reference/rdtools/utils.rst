@@ -1,7 +1,7 @@
-rdmc.mol_compare
+rdtools.utils
 ================
 
-.. automodule:: rdmc.mol_compare
+.. automodule:: rdtools.utils
    :members:
    :undoc-members:
    :show-inheritance:

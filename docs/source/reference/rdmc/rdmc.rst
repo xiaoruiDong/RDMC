@@ -19,11 +19,7 @@ RDMC APIs
    :maxdepth: 4
 
    mol
-   mol_compare
-   fix
    reaction
-   ts
-   view
    conf
    forcefield
    utils

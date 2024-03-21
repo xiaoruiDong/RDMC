@@ -205,10 +205,10 @@ def get_colliding_atoms(
         conf_id (int, optional): The conformer ID of the molecule to get the distance matrix of. Defaults to ``-1``.
         threshold (float): A multiplier applied on the reference matrix . Defaults to ``0.4``.
         reference (str): The reference matrix to use. Defaults to ``"vdw"``.
-                         Options:
-                            - ``"vdw"`` for reference distance based on van de Waals radius
-                            - ``"covalent"`` for reference distance based on covalent radius
-                            - ``"bond"`` for reference distance based on bond radius
+            Options:
+            - ``"vdw"`` for reference distance based on van de Waals radius
+            - ``"covalent"`` for reference distance based on covalent radius
+            - ``"bond"`` for reference distance based on bond radius
 
     Returns:
         list: A list of tuples of the atom indices that are potentially colliding.
@@ -231,10 +231,10 @@ def get_missing_bonds(
         conf_id (int, optional): The conformer ID of the molecule to get the distance matrix of. Defaults to ``-1``.
         threshold (float): A multiplier applied on the reference matrix . Defaults to ``1.5``.
         reference (str): The reference matrix to use. Defaults to ``"covalent"``.
-                         Options:
-                            - ``"vdw"`` for reference distance based on van de Waals radius
-                            - ``"covalent"`` for reference distance based on covalent radius
-                            - ``"bond"`` for reference distance based on bond radius
+            Options:
+            - ``"vdw"`` for reference distance based on van de Waals radius
+            - ``"covalent"`` for reference distance based on covalent radius
+            - ``"bond"`` for reference distance based on bond radius
 
     Returns:
         list: A list of tuples of the atom indices that are potentially missing bonds.
