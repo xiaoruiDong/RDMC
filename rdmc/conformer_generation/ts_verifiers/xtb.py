@@ -3,7 +3,7 @@ import pickle
 
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
 
-from rdmc.external.xtb_tools.opt import run_xtb_calc
+from rdmc.conformer_generation.comp_env.xtb.opt import run_xtb_calc
 
 
 class XTBFrequencyVerifier(TSVerifier):

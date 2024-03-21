@@ -3,7 +3,7 @@ from typing import List
 from rdmc.conformer_generation.utils import dict_to_mol
 from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
 try:
-    from rdmc.external.xtb_tools.opt import run_xtb_calc
+    from rdmc.conformer_generation.comp_env.xtb.opt import run_xtb_calc
 except ImportError:
     pass
 

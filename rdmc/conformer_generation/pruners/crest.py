@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from rdmc.conformer_generation.pruners.base import ConfGenPruner
-from rdmc.external.xtb_tools.crest import run_cre_check
+from rdmc.conformer_generation.comp_env.xtb.crest import run_cre_check
 
 
 class CRESTPruner(ConfGenPruner):
