@@ -7,9 +7,13 @@ A module contains functions to write Gaussian input files.
 
 from typing import Optional, Union
 from rdmc.external.inpwriter._register import register_qm_writer
-from rdmc.external.inpwriter.utils import (_avoid_empty_line,
-                                           _get_mult_and_chrg)
-from rdmc.external.xtb_tools.utils import XTB_GAUSSIAN_PL
+from rdmc.external.inpwriter.utils import (
+    _avoid_empty_line,
+    _get_mult_and_chrg,
+    XTB_GAUSSIAN_PERL_PATH
+    
+)
+
 
 
 def write_gaussian_config(memory: Union[float, int],
@@ -150,7 +154,7 @@ def write_gaussian_opt(mol,
     scheme_str += ' freq' if follow_freq else ''
 
     if method.lower() in ['gfn2-xtb', 'gfn1-xtb']:
-        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PL} --gfn {method[3]} -P"'
+        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PERL_PATH} --gfn {method[3]} -P"'
     else:
         scheme_str += f' {method}'
 
@@ -202,7 +206,7 @@ def write_gaussian_freq(mol,
     scheme_str += ' nosymm' if nosymm else ''
 
     if method.lower() in ['gfn2-xtb', 'gfn1-xtb']:
-        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PL} --gfn {method[3]} -P"'
+        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PERL_PATH} --gfn {method[3]} -P"'
     else:
         scheme_str += f' {method}'
 
@@ -287,7 +291,7 @@ def write_gaussian_irc(mol,
     scheme_str += ' nosymm' if nosymm else ''
 
     if method.lower() in ['gfn2-xtb', 'gfn1-xtb']:
-        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PL} --gfn {method[3]} -P"'
+        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PERL_PATH} --gfn {method[3]} -P"'
     else:
         scheme_str += f' {method}'
 
@@ -324,7 +328,7 @@ def write_gaussian_gsm(method: str = "gfn2-xtb",
 
     scheme_str = '#N force scf=(xqc) nosymm'
     if method.lower() in ['gfn2-xtb', 'gfn1-xtb']:
-        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PL} --gfn {method[3]} -P"'
+        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PERL_PATH} --gfn {method[3]} -P"'
     else:
         scheme_str += f' {method}'
 
