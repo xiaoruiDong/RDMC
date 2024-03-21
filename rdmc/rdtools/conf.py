@@ -124,6 +124,9 @@ def set_conformer_coordinates(
     Raises:
         ValueError: Not a valid ``coords`` input, when giving something else.
     """
+    if isinstance(coords, (tuple, list)):
+        coords = np.array(coords)
+
     for i in range(len(coords)):
         conf.SetAtomPosition(i, coords[i, :])
 
