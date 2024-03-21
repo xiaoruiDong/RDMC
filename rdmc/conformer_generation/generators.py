@@ -9,7 +9,7 @@ import logging
 import os
 import pickle
 from time import time
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 
