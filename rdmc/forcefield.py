@@ -306,13 +306,13 @@ class RDKitFF(object):
             self.mol, self.edits = self.make_optimizable(in_place=True)
 
         if self.type == 'uff':
-            self.ff = rdForceFieldHelpers.UFFGetMoleculeForceField(self.mol.ToRWMol(),
+            self.ff = rdForceFieldHelpers.UFFGetMoleculeForceField(self.mol,
                                                                    confId=conf_id,
                                                                    ignoreInterfragInteractions=ignore_interfrag_interactions)
         else:
-            mmff_properties = rdForceFieldHelpers.MMFFGetMoleculeProperties(self.mol.ToRWMol(),
+            mmff_properties = rdForceFieldHelpers.MMFFGetMoleculeProperties(self.mol,
                                                                             mmffVariant=self.type,)
-            self.ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(self.mol.ToRWMol(),
+            self.ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(self.mol,
                                                                     pyMMFFMolProperties=mmff_properties,
                                                                     confId=conf_id,
                                                                     ignoreInterfragInteractions=ignore_interfrag_interactions)
@@ -348,7 +348,6 @@ class RDKitFF(object):
         """
         if not mol:
             mol = self.mol
-        mol = mol.ToRWMol() if isinstance(mol, RDKitMol) else mol
 
         if self.type == 'uff':
             return rdForceFieldHelpers.UFFHasAllMoleculeParams(mol)
@@ -515,13 +514,13 @@ class RDKitFF(object):
             - float: energy
         """
         if max_step == 0:
-            return rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
+            return rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol,
                                                              self.ff,
                                                              numThreads=num_threads,
                                                              maxIters=0,)
         i = 0
         while i < max_step:
-            results = rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
+            results = rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol,
                                                                 self.ff,
                                                                 numThreads=num_threads,
                                                                 maxIters=step_per_iter,)
@@ -567,7 +566,7 @@ class RDKitFF(object):
         Returns:
             list: Energies of all conformers of the molecule.
         """
-        results = rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
+        results = rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol,
                                                             self.ff,
                                                             numThreads=0,
                                                             maxIters=0)
