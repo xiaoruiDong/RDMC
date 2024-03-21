@@ -14,7 +14,7 @@ import tempfile
 import numpy as np
 
 from rdmc import RDKitMol
-from rdmc.external.xtb_tools.utils import (
+from rdmc.conformer_generation.comp_env.xtb.utils import (
     ATOM_ENERGIES_XTB,
     ATOMNUM_TO_ELEM,
     AU_TO_DEBYE,

@@ -17,7 +17,15 @@ from sella import Sella
 import pandas as pd
 
 
-def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, method="GFN2-xTB", copy_attrs=None):
+def run_sella_opt(
+    rdmc_mol,
+    confId=0,
+    fmax=1e-3,
+    steps=1000,
+    save_dir=None,
+    method="GFN2-xTB",
+    copy_attrs=None,
+):
     temp_dir = tempfile.mkdtemp() if not save_dir else save_dir
     trajfile = os.path.join(temp_dir, "ts.traj")
     logfile = os.path.join(temp_dir, "ts.log")
@@ -31,12 +39,14 @@ def run_sella_opt(rdmc_mol, confId=0, fmax=1e-3, steps=1000, save_dir=None, meth
     if method == "GFN2-xTB":
         atoms.calc = XTB(method="GFN2-xTB")
     elif method == "AM1":
-        atoms.calc = ORCA(label=orca_name, orcasimpleinput='AM1')
+        atoms.calc = ORCA(label=orca_name, orcasimpleinput="AM1")
     elif method == "PM3":
-        atoms.calc = ORCA(label=orca_name, orcasimpleinput='PM3')
+        atoms.calc = ORCA(label=orca_name, orcasimpleinput="PM3")
     else:
-        raise NotImplementedError(f'Method ({method}) is not supported with Sella. Only `GFN2-xTB`, `AM1`, and `PM3` '
-                                  f'are supported.')
+        raise NotImplementedError(
+            f"Method ({method}) is not supported with Sella. Only `GFN2-xTB`, `AM1`, and `PM3` "
+            f"are supported."
+        )
 
     with io.StringIO() as buf, redirect_stdout(buf):
         opt = Sella(
