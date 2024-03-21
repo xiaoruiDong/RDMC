@@ -13,6 +13,8 @@ import random
 
 import numpy as np
 
+from rdmc import RDKitMol
+
 from rdmc.conformer_generation.utils import *
 from rdmc.conformer_generation.generators import StochasticConformerGenerator
 from rdmc.conformer_generation.pruners import *
@@ -145,7 +147,7 @@ class TSConformerGenerator:
 
     def embed_stable_species(self,
                              smiles: str,
-                             ) -> 'rdmc.RDKitMol':
+                             ) -> 'RDKitMol':
         """
         Embed the reactant and product complex according to the SMILES provided.
 
