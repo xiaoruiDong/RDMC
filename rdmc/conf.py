@@ -9,13 +9,19 @@ from typing import Sequence, Union
 
 import numpy as np
 
-from rdkit.Chem import rdMolTransforms as rdMT
-from rdkit.Chem.rdchem import Conformer
 from scipy.spatial import distance_matrix
 
-from rdmc.rdtools.conf import set_conformer_coordinates
+from rdmc.rdtools.conf import (
+    set_conformer_coordinates,
+    get_bond_length,
+    get_angle_deg,
+    get_torsion_deg,
+    set_bond_length,
+    set_angle_deg,
+    set_torsion_deg,
+)
 from rdmc.rdtools.dist import has_colliding_atoms
-from rdmc.rdtools.torsion import find_internal_torsions, find_ring_torsions
+from rdmc.rdtools.torsion import get_torsional_modes
 
 
 class EditableConformer(object):
@@ -32,9 +38,10 @@ class EditableConformer(object):
             if not attr.startswith('_') and not hasattr(self, attr):
                 setattr(self, attr, getattr(self._conf, attr,))
 
-    def GetBondLength(self,
-                      atomIds: Sequence[int],
-                      ) -> float:
+    def GetBondLength(
+        self,
+        atomIds: Sequence[int],
+    ) -> float:
         """
         Get the bond length between atoms in Angstrom.
 
@@ -44,12 +51,12 @@ class EditableConformer(object):
         Returns:
             float: Bond length in Angstrom.
         """
-        assert len(atomIds) == 2, ValueError(f'Invalid atomIds. It should be a sequence with a length of 2. Got {atomIds}')
-        return rdMT.GetBondLength(self._conf, *atomIds)
+        return get_bond_length(self._conf, atomIds)
 
-    def GetAngleDeg(self,
-                    atomIds: Sequence[int],
-                    ) -> float:
+    def GetAngleDeg(
+        self,
+        atomIds: Sequence[int],
+    ) -> float:
         """
         Get the angle between atoms in degrees.
 
@@ -59,12 +66,12 @@ class EditableConformer(object):
         Returns:
             float: Angle value in degrees.
         """
-        assert len(atomIds) == 3, ValueError(f'Invalid atomIds. It should be a sequence with a length of 3. Got {atomIds}.')
-        return rdMT.GetAngleDeg(self._conf, *atomIds)
+        return get_angle_deg(self._conf, atomIds)
 
-    def GetAngleRad(self,
-                    atomIds: Sequence[int],
-                    ) -> float:
+    def GetAngleRad(
+        self,
+        atomIds: Sequence[int],
+    ) -> float:
         """
         Get the angle between atoms in rads.
 
@@ -74,8 +81,7 @@ class EditableConformer(object):
         Returns:
             float: Angle value in rads.
         """
-        assert len(atomIds) == 3, ValueError(f'Invalid atomIds. It should be a sequence with a length of 3. Got {atomIds}')
-        return rdMT.GetAngleRad(self._conf, *atomIds)
+        return self.GetAngleDeg(atomIds) * np.pi / 180.0
 
     def GetAllTorsionsDeg(self) -> list:
         """
@@ -105,9 +111,10 @@ class EditableConformer(object):
         """
         return self._owning_mol
 
-    def GetTorsionDeg(self,
-                      torsion: list,
-                      ) -> float:
+    def GetTorsionDeg(
+        self,
+        torsion: list,
+    ) -> float:
         """
         Get the dihedral angle of the torsion in degrees. The torsion can be defined
         by any atoms in the molecule (not necessarily bonded atoms.)
@@ -118,13 +125,14 @@ class EditableConformer(object):
         Returns:
             float: The dihedral angle of the torsion.
         """
-        return rdMT.GetDihedralDeg(self._conf, *torsion)
+        return get_torsion_deg(self._conf, torsion)
 
-    def GetTorsionalModes(self,
-                          indexed1: bool = False,
-                          excludeMethyl: bool = False,
-                          includeRings: bool = False,
-                          ) -> list:
+    def GetTorsionalModes(
+        self,
+        indexed1: bool = False,
+        excludeMethyl: bool = False,
+        includeRings: bool = False,
+    ) -> list:
         """
         Get all of the torsional modes (rotors) of the Conformer. This information
         is obtained from its owning molecule.
@@ -139,12 +147,15 @@ class EditableConformer(object):
             Optinal[list]: A list of four-atom-indice to indicating the torsional modes.
         """
         try:
-            return self._torsions if not indexed1 \
-                else [[ind + 1 for ind in tor] for tor in self._torsions]
+            if not indexed1:
+                return self._torsions
+            else:
+                return [[ind + 1 for ind in tor] for tor in self._torsions]
         except AttributeError:
-            self._torsions = find_internal_torsions(self._owning_mol, exclude_methyl=excludeMethyl)
-            if includeRings:
-                self._torsions += find_ring_torsions(self._owning_mol)
+            self._torsions = get_torsional_modes(
+                self._owning_mol,
+                exclude_methyl=excludeMethyl,
+                include_ring=includeRings)
             return self._torsions
 
     def HasCollidingAtoms(self, threshold=0.4) -> np.ndarray:
@@ -200,10 +211,11 @@ class EditableConformer(object):
         """
         set_conformer_coordinates(self._conf, coords)
 
-    def SetBondLength(self,
-                      atomIds: Sequence[int],
-                      value: Union[int, float],
-                      ) -> float:
+    def SetBondLength(
+        self,
+        atomIds: Sequence[int],
+        value: Union[int, float],
+    ):
         """
         Set the bond length between atoms in Angstrom.
 
@@ -211,23 +223,13 @@ class EditableConformer(object):
             atomIds (Sequence): A 3-element sequence object containing atom indexes.
             value (int or float, optional): Bond length in Angstrom.
         """
-        assert len(atomIds) == 2, ValueError(f'Invalid atomIds. It should be a sequence with a length of 2. Got {atomIds}')
-        try:
-            return rdMT.SetBondLength(self._conf, *atomIds, value)
-        except ValueError:
-            # RDKit doesn't allow change bonds for non-bonding atoms
-            # A workaround may be form a bond and change the distance
-            try:
-                edit_conf_by_add_bonds(self, 'SetBondLength', atomIds, value)
-            except ValueError:
-                # RDKit doesn't allow change bonds for atoms in a ring
-                # A workaround hasn't been proposed
-                raise NotImplementedError(f'Approach for modifying the bond length of {atomIds} is not available.')
+        set_bond_length(self._conf, atomIds, value)
 
-    def SetAngleDeg(self,
-                    atomIds: Sequence[int],
-                    value: Union[int, float],
-                    ) -> float:
+    def SetAngleDeg(
+        self,
+        atomIds: Sequence[int],
+        value: Union[int, float],
+    ):
         """
         Set the angle between atoms in degrees.
 
@@ -235,23 +237,13 @@ class EditableConformer(object):
             atomIds (Sequence): A 3-element sequence object containing atom indexes.
             value (int or float, optional): Bond angle in degrees.
         """
-        assert len(atomIds) == 3, ValueError(f'Invalid atomIds. It should be a sequence with a length of 3. Got {atomIds}.')
-        try:
-            return rdMT.SetAngleDeg(self._conf, *atomIds, value)
-        except ValueError:
-            try:
-                # RDKit doesn't allow change bonds for non-bonding atoms
-                # A workaround may be form a bond and change the distance
-                edit_conf_by_add_bonds(self, 'SetAngleDeg', atomIds, value)
-            except BaseException:
-                # RDKit doesn't allow change bonds for atoms in a ring
-                # A workaround hasn't been proposed
-                raise NotImplementedError(f'Approach for modifying the bond angle of {atomIds} is not available.')
+        set_angle_deg(self._conf, atomIds, value)
 
-    def SetAngleRad(self,
-                    atomIds: Sequence[int],
-                    value: Union[int, float],
-                    ) -> float:
+    def SetAngleRad(
+        self,
+        atomIds: Sequence[int],
+        value: Union[int, float],
+    ):
         """
         Set the angle between atoms in rads.
 
@@ -259,22 +251,13 @@ class EditableConformer(object):
             atomIds (Sequence): A 3-element sequence object containing atom indexes.
             value (int or float, optional): Bond angle in rads.
         """
-        assert len(atomIds) == 3, ValueError(f'Invalid atomIds. It should be a sequence with a length of 3. Got {atomIds}')
-        try:
-            return rdMT.SetAngleRad(self._conf, *atomIds, value)
-        except ValueError:
-            try:
-                # RDKit doesn't allow change bonds for non-bonding atoms
-                # A workaround may be form a bond and change the distance
-                edit_conf_by_add_bonds(self, 'SetAngleRad', atomIds, value)
-            except BaseException:
-                # RDKit doesn't allow change bonds for atoms in a ring
-                # A workaround hasn't been proposed
-                raise NotImplementedError(f'Approach for modifying the bond angle of {atomIds} is not available.')
+        self.SetAngleDeg(atomIds, value * 180.0 / np.pi)
 
-    def SetTorsionDeg(self,
-                      torsion: list,
-                      degree: Union[float, int]):
+    def SetTorsionDeg(
+        self,
+        torsion: list,
+        degree: Union[float, int]
+    ):
         """
         Set the dihedral angle of the torsion in degrees. The torsion can only be defined
         by a chain of bonded atoms.
@@ -283,17 +266,7 @@ class EditableConformer(object):
             torsion (list): A list of four atom indexes.
             degree (float, int): The dihedral angle of the torsion.
         """
-        try:
-            rdMT.SetDihedralDeg(self._conf, *torsion, degree)
-        except ValueError:
-            try:
-                # RDKit doesn't allow change bonds for non-bonding atoms
-                # A workaround may be form a bond and change the distance
-                edit_conf_by_add_bonds(self, 'SetDihedralDeg', torsion, degree)
-            except BaseException:
-                # RDKit doesn't allow change bonds for atoms in a ring
-                # A workaround hasn't been proposed
-                raise NotImplementedError(f'Approach for modifying the dihedral of {torsion} is not available.')
+        set_torsion_deg(self._conf, torsion, degree)
 
     def SetAllTorsionsDeg(self, angles: list):
         """
@@ -342,32 +315,7 @@ class EditableConformer(object):
         Returns:
             RDKitMol: The new mol generated from the conformer
         """
-        new_mol = self._owning_mol.Copy(quickCopy=True)
+        new_mol = self._owning_mol.__class__(self._owning_mol, True)
         new_mol.RemoveAllConformers()
         new_mol.AddConformer(self._conf, assignId=True)
         return new_mol
-
-
-def edit_conf_by_add_bonds(conf, function_name, atoms, value):
-    """
-    RDKit forbids modifying internal coordinates with non-bonding atoms.
-    This function tries to provide a workaround.
-
-    Args:
-        conf (EditableConformer): The conformer to be modified.
-        function_name (str): The function name of the edit.
-        atoms (list): A list of atoms representing the internal coordinates.
-        value (float): Value to be set.
-    """
-    tmp_mol = conf.GetOwningMol()
-    all_bonds = tmp_mol.GetBondsAsTuples()
-    tmp_atoms = sorted(atoms)
-    bonds_to_add = []
-    for i in range(len(tmp_atoms) - 1):
-        if not (tmp_atoms[i], tmp_atoms[i + 1]) in all_bonds:
-            bonds_to_add.append([tmp_atoms[i], tmp_atoms[i + 1]])
-    tmp_mol = tmp_mol.AddRedundantBonds(bonds_to_add)
-    tmp_mol.SetPositions(conf.GetPositions())
-    tmp_conf = tmp_mol.GetConformer()
-    getattr(rdMT, function_name)(tmp_conf._conf, *atoms, value)
-    conf.SetPositions(tmp_conf.GetPositions())

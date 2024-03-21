@@ -1,7 +1,10 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import numpy as np
 from rdkit import Chem
+from rdkit.Chem import rdMolTransforms as rdMT
+
+from rdmc.rdtools.bond import get_bonds_as_tuples, add_bonds
 
 
 def add_conformer(
@@ -185,3 +188,167 @@ def embed_multiple_confs(mol: Chem.Mol, n: int = 10, allow_null: bool = True, **
             embed_multiple_null_confs(mol, n=n, random=True)
         else:
             raise RuntimeError("Cannot embed conformer for this molecule!")
+
+
+def edit_conf_by_add_bonds(
+    conf: Chem.Conformer,
+    function_name: str,
+    atoms: List[int],
+    value: float,
+):
+    """
+    RDKit forbids modifying internal coordinates with non-bonding atoms.
+    This function tries to provide a workaround.
+
+    Args:
+        conf (Conformer): The conformer to be modified.
+        function_name (str): The function name of the edit, should be a method provided in rdMolTransforms.
+        atoms (list): A list of atoms representing the internal coordinates.
+        value (float): Value to be set.
+    """
+    parent_mol = conf.GetOwningMol()
+    all_bonds = get_bonds_as_tuples(parent_mol)
+    bonds_to_add = [
+        (atoms[i], atoms[i + 1])
+        for i in range(len(atoms) - 1)
+        if not (atoms[i], atoms[i + 1]) in all_bonds
+    ]
+    tmp_mol = add_bonds(tmp_mol, bonds_to_add, inplace=False)
+
+    add_conformer(tmp_mol, conf.GetPositions(), conf_id=0)
+    tmp_conf = tmp_mol.GetConformer()
+    getattr(rdMT, function_name)(tmp_conf, *atoms, value)
+
+    set_conformer_coordinates(conf, tmp_conf.GetPositions())
+
+
+def get_bond_length(
+    conf: Chem.Conformer,
+    atom_ids: List[int],
+) -> float:
+    """
+    Get the distance between two atoms. Although it is called get bond length, the two atoms can be non-bonded.
+
+    Args:
+        conf (Conformer): The conformer to be set.
+        atom_ids (List[int]): The atom IDs to be set.
+
+    Returns:
+        float: The bond length between two atoms.
+    """
+    return rdMT.GetBondLength(conf, *atom_ids)
+
+
+def get_angle_deg(
+    conf: Chem.Conformer,
+    atom_ids: List[int],
+) -> float:
+    """
+    Get the angle between three atoms in degrees.
+
+    Args:
+        conf (Conformer): The conformer to be set.
+        atom_ids (List[int]): The atom IDs to be set.
+
+    Returns:
+        float: The angle between three atoms in degrees.
+    """
+    return rdMT.GetAngleDeg(conf, *atom_ids)
+
+
+def get_torsion_deg(
+    conf: Chem.Conformer,
+    atom_ids: List[int],
+) -> float:
+    """
+    Get the torsion angle between four atoms in degrees.
+
+    Args:
+        conf (Conformer): The conformer to be set.
+        atom_ids (List[int]): The atom IDs to be set.
+
+    Returns:
+        float: The torsion angle between four atoms in degrees.
+    """
+    return rdMT.GetDihedralDeg(conf, *atom_ids)
+
+
+def set_bond_length(
+    conf: Chem.Conformer,
+    atom_ids: List[int],
+    value: float,
+):
+    """
+    Set the distance between two atoms. If the two atoms are not bonded, the function
+    will give it a try by forming the bonds, adjusting the bond length, and then removing
+    the bonds. This is a workaround for RDKit forbidding modifying internal coordinates
+    with non-bonding atoms.
+
+    Args:
+        conf (Conformer): The conformer to be set.
+        atom_ids (List[int]): The atom IDs to be set.
+        value (float): The value to be set.
+    """
+    try:
+        rdMT.SetBondLength(conf, *atom_ids, value)
+    except ValueError:
+        try:
+            edit_conf_by_add_bonds(conf, "SetBondLength", atom_ids, value)
+        except ValueError:
+            # RDKit doesn't allow change bonds for atoms in a ring
+            # A workaround hasn't been proposed
+            raise NotImplementedError(f'Approach for modifying the bond length of {atom_ids} is not available.')
+
+
+def set_angle_deg(
+    conf: Chem.Conformer,
+    atom_ids: List[int],
+    value: float,
+):
+    """
+    Set the angle between three atoms in degrees. If the three atoms are not bonded, the function
+    will give it a try by forming the bonds, adjusting the angle, and then removing
+    the bonds. This is a workaround for RDKit forbidding modifying internal coordinates
+    with non-bonding atoms.
+
+    Args:
+        conf (Conformer): The conformer to be set.
+        atom_ids (List[int]): The atom IDs to be set.
+        value (float): The value to be set.
+    """
+    try:
+        rdMT.SetAngleDeg(conf, *atom_ids, value)
+    except ValueError:
+        try:
+            edit_conf_by_add_bonds(conf, "SetAngleDeg", atom_ids, value)
+        except ValueError:
+            # RDKit doesn't allow change bonds for atoms in a ring
+            # A workaround hasn't been proposed
+            raise NotImplementedError(f'Approach for modifying the angle of {atom_ids} is not available.')
+
+
+def set_torsion_deg(
+    conf: Chem.Conformer,
+    atom_ids: List[int],
+    value: float,
+):
+    """
+    Set the torsion angle between four atoms in degrees. If the four atoms are not bonded, the function
+    will give it a try by forming the bonds, adjusting the torsion, and then removing
+    the bonds. This is a workaround for RDKit forbidding modifying internal coordinates
+    with non-bonding atoms.
+
+    Args:
+        conf (Conformer): The conformer to be set.
+        atom_ids (List[int]): The atom IDs to be set.
+        value (float): The value to be set.
+    """
+    try:
+        rdMT.SetDihedralDeg(conf, *atom_ids, value)
+    except ValueError:
+        try:
+            edit_conf_by_add_bonds(conf, "SetDihedralDeg", atom_ids, value)
+        except ValueError:
+            # RDKit doesn't allow change bonds for atoms in a ring
+            # A workaround hasn't been proposed
+            raise NotImplementedError(f'Approach for modifying the torsion of {atom_ids} is not available.')
