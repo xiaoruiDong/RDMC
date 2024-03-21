@@ -11,13 +11,15 @@ from itertools import chain, product
 from typing import List, Optional, Tuple, Union
 
 from rdkit.Chem import rdChemReactions, rdFMCS
-from rdkit.Chem.Draw import rdMolDraw2D
+
 
 from rdmc import RDKitMol
 from rdmc.rxn_compare import is_equivalent_reaction
 from rdmc.rdtools.compare import is_same_complex
 from rdmc.rdtools.resonance import generate_resonance_structures
 from rdmc.rdtools.bond import get_all_changing_bonds
+from rdmc.rdtools.reaction.draw import draw_reaction
+from rdmc.rdtools.view import reaction_viewer
 
 
 class Reaction:
@@ -459,6 +461,7 @@ class Reaction:
 
     def draw_2d(
         self,
+        figsize: Tuple[int, int] = (800, 300),
         font_scale: float = 1.0,
         highlight_by_reactant: bool = True,
     ) -> str:
@@ -472,27 +475,22 @@ class Reaction:
         Returns:
             str: The SVG string. To display the SVG, use IPython.display.SVG(svg_string).
         """
+        return draw_reaction(
+            self.to_rdkit_reaction(),
+            figsize=figsize,
+            font_scale=font_scale,
+            highlight_by_reactant=highlight_by_reactant,
+        )
 
-        def move_atommaps_to_notes(mol):
-            for atom in mol.GetAtoms():
-                if atom.GetAtomMapNum():
-                    atom.SetProp("atomNote", str(atom.GetAtomMapNum()))
+    def draw_3d(
+        self,
+        **kwargs,
+    ):
+        """
+        Display the reaction in 3D.
+        """
+        return reaction_viewer(self.reactant_complex, self.product_complex, self.ts, **kwargs)
 
-        rxn = self.to_rdkit_reaction()
-
-        # move atom maps to be annotations:
-        for mol in rxn.GetReactants():
-            move_atommaps_to_notes(mol)
-        for mol in rxn.GetProducts():
-            move_atommaps_to_notes(mol)
-
-        d2d = rdMolDraw2D.MolDraw2DSVG(800, 300)
-        d2d.drawOptions().annotationFontScale = font_scale
-        d2d.DrawReaction(rxn, highlightByReactant=highlight_by_reactant)
-
-        d2d.FinishDrawing()
-
-        return d2d.GetDrawingText()
 
     def has_same_reactants(
         self,
