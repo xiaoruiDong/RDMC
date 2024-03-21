@@ -33,57 +33,6 @@ class RDKitConf(object):
             if not attr.startswith('_') and not hasattr(self, attr):
                 setattr(self, attr, getattr(self._conf, attr,))
 
-    @classmethod
-    def FromConformer(cls,
-                      conf: Conformer,
-                      ) -> 'RDKitConf':
-        """
-        Convert a RDKit Chem.rdchem.Conformer to a RDKitConf. This allows a more
-        capable and flexible Conformer class.
-
-        Args:
-            conf (Chem.rdchem.Conformer): A RDKit Conformer instance to be converted.
-
-        Returns:
-            RDKitConf: The conformer corresponding to the RDKit Conformer in RDKitConf
-        """
-        return cls(conf)
-
-    @classmethod
-    def FromMol(cls,
-                mol: Union['RWMol', 'Mol'],
-                id: int = 0,
-                ) -> 'RDkitConf':
-        """
-        Get a RDKitConf instance from a Chem.rdchem.Mol/RWMol instance.
-
-        Args:
-            mol (Union[RWMol, Mol]): a Molecule in RDKit Default format.
-            id (int): The id of the conformer to be extracted from the molecule.
-
-        Returns:
-            RDKitConf: A Conformer in RDKitConf of the given molecule
-        """
-        return cls(mol.GetConformer(id))
-
-    @classmethod
-    def FromRDKitMol(cls,
-                     rdkitmol: 'RDKitMol',
-                     id: int = 0,
-                     ) -> 'RDkitConf':
-        """
-        Get a RDKitConf instance from a RDKitMol instance. The owning molecule
-        of the generated conformer is RDKitMol instead of Chem.rdchem.Mol.
-
-        Args:
-            rdkitmol (RDKitMol): a Molecule in RDKitMol.
-            id (int): The id of the conformer to be extracted from the molecule.
-
-        Returns:
-            RDKitConf: A Conformer in RDKitConf of the given molecule
-        """
-        return rdkitmol.GetConformer(id)
-
     def GetBondLength(self,
                       atomIds: Sequence[int],
                       ) -> float:
