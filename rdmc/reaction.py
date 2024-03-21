@@ -232,8 +232,8 @@ class Reaction:
                     self._broken_bonds,
                     self._changed_bonds,
                 ) = get_all_changing_bonds(
-                    rmol=self.reactant_complex,
-                    pmol=self.product_complex,
+                    self.reactant_complex,
+                    self.product_complex,
                 )
                 return func(self, *args, **kwargs)
 
@@ -248,8 +248,8 @@ class Reaction:
             self._broken_bonds,
             self._changed_bonds,
         ) = get_all_changing_bonds(
-            r_mol=self.reactant_complex,
-            p_mol=self.product_complex,
+            rmol=self.reactant_complex,
+            pmol=self.product_complex,
         )
 
     @property
