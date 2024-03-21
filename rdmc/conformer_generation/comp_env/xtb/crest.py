@@ -10,7 +10,8 @@ import os
 from shutil import rmtree
 import subprocess
 import tempfile
-from rdmc.conformer_generation.comp_env.xtb.utils import CREST_BINARY, XTB_ENV
+from rdmc.conformer_generation.comp_env.software import get_binary
+from rdmc.conformer_generation.comp_env.xtb.utils import XTB_ENV
 
 
 def make_xyz_text(rd_mol,
@@ -69,6 +70,11 @@ def read_unique(job_dir):
 
 
 def run_cre_check(confs, ethr=0.15, rthr=0.125, bthr=0.01, ewin=10000):
+
+    CREST_BINARY = get_binary("crest")
+    if not CREST_BINARY:
+        raise RuntimeError("CREST binary not found.")
+
     temp_dir = tempfile.mkdtemp()
 
     logfile = os.path.join(temp_dir, "xtb.log")

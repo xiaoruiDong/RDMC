@@ -20,10 +20,10 @@ from rdmc.conformer_generation.comp_env.xtb.utils import (
     AU_TO_DEBYE,
     EV_TO_HARTREE,
     UTILS_PATH,
-    XTB_BINARY,
     XTB_ENV,
     TS_PATH_INP,
 )
+from rdmc.conformer_generation.comp_env.software import get_binary
 
 XTB_INPUT_FILE = Path(UTILS_PATH) / "xtb.inp"
 
@@ -126,6 +126,10 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
     """
     if isinstance(mol, list) or isinstance(mol, tuple):
         mol, pmol = mol
+
+    XTB_BINARY = get_binary("xtb")
+    if not XTB_BINARY:
+        raise ValueError("xTB binary not found.")
 
     xtb_command = job
     method = "--" + method

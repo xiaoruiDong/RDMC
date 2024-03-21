@@ -10,10 +10,18 @@ import io
 from contextlib import redirect_stdout
 from shutil import rmtree
 import tempfile
-from ase import Atoms
-from xtb.ase.calculator import XTB
-from ase.calculators.orca import ORCA
-from sella import Sella
+
+from rdmc.conformer_generation.comp_env.software import register_module
+
+with register_module('sella'):
+    from sella import Sella
+
+with register_module('ase'):
+    from ase.calculators.orca import ORCA
+
+with register_module('xtb-python'):
+    from xtb.ase.calculator import XTB
+
 import pandas as pd
 
 
@@ -33,7 +41,7 @@ def run_sella_opt(
 
     coords = rdmc_mol.GetConformer(confId).GetPositions()
     numbers = rdmc_mol.GetAtomicNumbers()
-    atoms = Atoms(positions=coords, numbers=numbers)
+    atoms = rdmc_mol.ToAtoms()
 
     # set calculator; use xtb-python for xtb and orca for everything else
     if method == "GFN2-xTB":

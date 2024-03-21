@@ -7,16 +7,17 @@ Taken from https://github.com/josejimenezluna/delfta/blob/f33dbe4fc2b860cef28788
 """
 
 import os
-import logging
 import numpy as np
 
-# Path handling shortcuts
+from rdmc.conformer_generation.comp_env.software import register_binary
 
+# Path handling shortcuts
 ROOT_PATH = os.path.dirname(__file__)
 TS_PATH_INP = os.path.join(ROOT_PATH, "ts_path.inp")
 UTILS_PATH = os.path.join(ROOT_PATH, "utils")
-XTB_BINARY = os.path.join(os.environ.get("CONDA_PREFIX"), "bin", "xtb")
-CREST_BINARY = os.path.join(os.environ.get("CONDA_PREFIX"), "bin", "crest")
+register_binary("xtb")
+register_binary("crest")
+
 
 XTB_ENV = {
     "OMP_STACKSIZE": "1G",

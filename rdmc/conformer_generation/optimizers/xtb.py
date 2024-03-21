@@ -64,9 +64,9 @@ class XTBOptimizer(ConfGenOptimizer):
                 print(e)
                 continue
 
-            opt_mol.SetAtomMapNumbers(correct_atom_mapping)
+            # opt_mol.SetAtomMapNumbers(correct_atom_mapping)
             # Renumber the molecule based on the atom mapping just set
-            opt_mol.RenumberAtoms()
+            # opt_mol.RenumberAtoms()
             positions = opt_mol.GetPositions()
             conf = new_mol.GetEditableConformer(id=c_id)
             conf.SetPositions(positions)
