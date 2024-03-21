@@ -5,10 +5,9 @@
 This module provides class and methods for dealing with RDKit Conformer.
 """
 
-from typing import Optional, Sequence, Union
+from typing import Sequence, Union
 
 import numpy as np
-import scipy.cluster.hierarchy as hcluster
 
 from rdkit.Chem import rdMolTransforms as rdMT
 from rdkit.Chem.rdchem import Conformer
