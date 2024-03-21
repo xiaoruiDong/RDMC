@@ -118,7 +118,7 @@ def set_conformer_coordinates(
     Set the Positions of atoms of the conformer.
 
     Args:
-        conf (Union[Conformer, 'RDKitConf']): The conformer to be set.
+        conf (Chem.Conformer): The conformer to be set.
         coords (Union[tuple, list, np.ndarray]): The coordinates to be set.
 
     Raises:

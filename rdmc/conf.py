@@ -18,7 +18,7 @@ from rdmc.rdtools.dist import has_colliding_atoms
 from rdmc.rdtools.torsion import find_internal_torsions, find_ring_torsions
 
 
-class RDKitConf(object):
+class EditableConformer(object):
     """
     A wrapper for rdchem.Conformer.
 
@@ -94,7 +94,7 @@ class RDKitConf(object):
         Returns:
             array: n x n distance matrix such that n is the number of atom.
         """
-        return distance_matrix(self._conf.GetPositions(), self._conf.GetPositions())
+        return distance_matrix(self.GetPositions(), self.GetPositions())
 
     def GetOwningMol(self):
         """
@@ -354,7 +354,7 @@ def edit_conf_by_add_bonds(conf, function_name, atoms, value):
     This function tries to provide a workaround.
 
     Args:
-        conf (RDKitConf): The conformer to be modified.
+        conf (EditableConformer): The conformer to be modified.
         function_name (str): The function name of the edit.
         atoms (list): A list of atoms representing the internal coordinates.
         value (float): Value to be set.

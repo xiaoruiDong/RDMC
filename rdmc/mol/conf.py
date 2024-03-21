@@ -4,7 +4,7 @@ from typing import Optional, Union, Sequence, List
 
 from rdkit import Chem
 
-from rdmc.conf import RDKitConf
+from rdmc.conf import EditableConformer
 from rdmc.rdtools.conf import (
     add_null_conformer,
     embed_multiple_null_confs,
@@ -231,7 +231,7 @@ class MolConfMixin:
     def GetEditableConformer(
         self,
         id: int = 0,
-    ) -> "RDKitConf":
+    ) -> "EditableConformer":
         """
         Get the embedded conformer according to ID.
 
@@ -242,18 +242,18 @@ class MolConfMixin:
             ValueError: Bad id assigned.
 
         Returns:
-            RDKitConf: A conformer corresponding to the ID.
+            EditableConformer: A conformer corresponding to the ID.
         """
         conformer = self.GetConformer(id)
-        rdkitconf = RDKitConf(conformer)
-        rdkitconf.SetOwningMol(self)
-        return rdkitconf
+        econf = EditableConformer(conformer)
+        econf.SetOwningMol(self)
+        return econf
 
     def GetConformers(
         self,
-        ids: Optional[Union[Sequence]] = None,
+        ids: Optional[Sequence] = None,
         editable: bool = False,
-    ) -> List["RDKitConf"]:
+    ) -> List[Union["Conformer", "EditableConformer"]]:
         """
         Get the embedded conformers according to IDs.
 
@@ -267,7 +267,7 @@ class MolConfMixin:
             ValueError: Bad id assigned.
 
         Returns:
-            List[RDKitConf]: A list of conformers corresponding to the IDs.
+            List[Union[Conformer, EditableConformer]]: A list of conformers corresponding to the IDs.
         """
         if ids is None and not editable:
             return super().GetConformers()
