@@ -2,9 +2,9 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.rdtools.bond import add_bond
-from rdmc.rdtools.conversion import mol_from_smiles
-from rdmc.rdtools.torsion import get_torsional_modes, get_torsion_tops
+from rdtools.bond import add_bond
+from rdtools.conversion import mol_from_smiles
+from rdtools.torsion import get_torsional_modes, get_torsion_tops
 
 
 @pytest.mark.parametrize(

@@ -16,9 +16,9 @@ from typing import List, Optional, Union, Tuple
 
 import numpy as np
 
-# from rdmc.rdtools.element import PERIODIC_TABLE as PT
-from rdmc.rdtools.element import get_atom_mass
-from rdmc.rdtools.conf import add_conformer
+# from rdtools.element import PERIODIC_TABLE as PT
+from rdtools.element import get_atom_mass
+from rdtools.conf import add_conformer
 from rdmc.external.logparser import GaussianLog
 
 

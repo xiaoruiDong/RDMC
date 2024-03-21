@@ -1,6 +1,6 @@
 import pytest
 
-from rdmc.rdtools.atommap import (
+from rdtools.atommap import (
     get_atom_map_numbers,
     has_atom_map_numbers,
     needs_renumber,

@@ -5,11 +5,11 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 
-from rdmc.rdtools.bond import get_all_changing_bonds, get_bonds_as_tuples
-from rdmc.rdtools.conversion.xyz import mol_from_xyz
-from rdmc.rdtools.conf import add_conformer
-from rdmc.rdtools.element import get_atom_mass
-from rdmc.rdtools.fix import saturate_mol
+from rdtools.bond import get_all_changing_bonds, get_bonds_as_tuples
+from rdtools.conversion.xyz import mol_from_xyz
+from rdtools.conf import add_conformer
+from rdtools.element import get_atom_mass
+from rdtools.fix import saturate_mol
 
 
 def guess_rxn_from_normal_mode(

@@ -2,7 +2,7 @@ from typing import List, Sequence
 
 from rdkit import Chem
 
-from rdmc.rdtools.dist import get_shortest_path
+from rdtools.dist import get_shortest_path
 
 
 # The rotational bond definition in RDkit

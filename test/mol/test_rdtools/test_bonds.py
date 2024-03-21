@@ -2,7 +2,7 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.rdtools.bond import (
+from rdtools.bond import (
     add_bond,
     add_bonds,
     get_bonds_as_tuples,

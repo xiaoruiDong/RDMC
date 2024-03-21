@@ -1,7 +1,7 @@
 import pytest
 
 from rdmc.mol import RDKitMol
-from rdmc.rdtools.torsion import get_torsional_modes, get_torsion_tops
+from rdtools.torsion import get_torsional_modes, get_torsion_tops
 
 
 @pytest.mark.parametrize(

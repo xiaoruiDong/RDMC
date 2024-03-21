@@ -1,6 +1,6 @@
 from rdkit.Chem.Draw import rdMolDraw2D
 
-from rdmc.rdtools.atommap import move_atommaps_to_notes
+from rdtools.atommap import move_atommaps_to_notes
 
 
 def draw_reaction(

@@ -2,10 +2,10 @@ from typing import Dict, List
 
 from rdkit import Chem
 
-from rdmc.rdtools.atommap import get_atom_map_numbers
-from rdmc.rdtools.dist import get_adjacency_matrix, get_distance_matrix
-from rdmc.rdtools.featurizer import get_fingerprint
-from rdmc.rdtools.mol import (
+from rdtools.atommap import get_atom_map_numbers
+from rdtools.dist import get_adjacency_matrix, get_distance_matrix
+from rdtools.featurizer import get_fingerprint
+from rdtools.mol import (
     get_atomic_nums,
     get_atom_masses,
     get_element_counts,
@@ -13,8 +13,8 @@ from rdmc.rdtools.mol import (
     get_heavy_atoms,
     get_spin_multiplicity,
 )
-from rdmc.rdtools.bond import get_bonds_as_tuples
-from rdmc.rdtools.torsion import get_torsional_modes
+from rdtools.bond import get_bonds_as_tuples
+from rdtools.torsion import get_torsional_modes
 
 
 class MolAttrMixin:

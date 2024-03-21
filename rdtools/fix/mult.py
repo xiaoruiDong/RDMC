@@ -4,9 +4,9 @@ import logging
 
 from rdkit import Chem
 
-from rdmc.rdtools.atom import decrement_radical
-from rdmc.rdtools.bond import increment_bond_order, BOND_ORDERS
-from rdmc.rdtools.mol import get_spin_multiplicity
+from rdtools.atom import decrement_radical
+from rdtools.bond import increment_bond_order, BOND_ORDERS
+from rdtools.mol import get_spin_multiplicity
 
 logger = logging.getLogger(__name__)
 

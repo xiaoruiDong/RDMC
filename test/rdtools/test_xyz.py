@@ -4,8 +4,8 @@ import numpy as np
 
 from rdkit import Chem
 
-from rdmc.rdtools.element import get_atomic_num
-from rdmc.rdtools.conversion import mol_from_xyz, mol_to_xyz, mol_to_smiles
+from rdtools.element import get_atomic_num
+from rdtools.conversion import mol_from_xyz, mol_to_xyz, mol_to_smiles
 
 
 mols = {

@@ -9,7 +9,7 @@ import py3Dmol
 import pytest
 
 
-from rdmc.rdtools.view import (
+from rdtools.view import (
     mol_viewer,
     mol_animation,
     freq_viewer,
@@ -22,7 +22,7 @@ from rdmc.rdtools.view import (
 )
 
 
-from rdmc.rdtools.view.utils import get_bonds_as_tuples, get_broken_formed_bonds, clean_ts
+from rdtools.view.utils import get_bonds_as_tuples, get_broken_formed_bonds, clean_ts
 
 
 @pytest.fixture

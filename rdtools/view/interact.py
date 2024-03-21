@@ -4,7 +4,7 @@ except ImportError:
     ipywidgets = None
 
 
-from rdmc.rdtools.view.mol import mol_viewer
+from rdtools.view.mol import mol_viewer
 
 
 def interactive_conformer_viewer(mol: "Mol", **kwargs):

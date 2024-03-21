@@ -2,7 +2,7 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.rdtools.atom import (
+from rdtools.atom import (
     decrement_radical,
     get_electronegativity,
     get_lone_pair,
@@ -11,8 +11,8 @@ from rdmc.rdtools.atom import (
     has_empty_orbitals,
     increment_radical,
 )
-from rdmc.rdtools.conversion import mol_from_smiles
-from rdmc.rdtools.element import electronegativity
+from rdtools.conversion import mol_from_smiles
+from rdtools.element import electronegativity
 
 
 @pytest.mark.parametrize(

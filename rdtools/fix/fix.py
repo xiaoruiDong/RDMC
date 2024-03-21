@@ -15,15 +15,15 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import BondType
 
-from rdmc.rdtools.atom import clear_rxn_prop, decrement_radical
-from rdmc.rdtools.atommap import (
+from rdtools.atom import clear_rxn_prop, decrement_radical
+from rdtools.atommap import (
     update_product_atom_map_after_reaction,
     renumber_atoms as renumber_atoms_,
 )
-from rdmc.rdtools.dist import get_distance_matrix, get_adjacency_matrix
-from rdmc.rdtools.fix.remedy import remedy_manager
-from rdmc.rdtools.fix.mult import saturate_mol
-from rdmc.rdtools.mol import get_heavy_atoms, force_no_implicit
+from rdtools.dist import get_distance_matrix, get_adjacency_matrix
+from rdtools.fix.remedy import remedy_manager
+from rdtools.fix.mult import saturate_mol
+from rdtools.mol import get_heavy_atoms, force_no_implicit
 
 
 def fix_mol_by_remedy(

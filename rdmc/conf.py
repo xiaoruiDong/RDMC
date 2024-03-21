@@ -11,7 +11,7 @@ import numpy as np
 
 from scipy.spatial import distance_matrix
 
-from rdmc.rdtools.conf import (
+from rdtools.conf import (
     set_conformer_coordinates,
     get_bond_length,
     get_angle_deg,
@@ -20,8 +20,8 @@ from rdmc.rdtools.conf import (
     set_angle_deg,
     set_torsion_deg,
 )
-from rdmc.rdtools.dist import has_colliding_atoms
-from rdmc.rdtools.torsion import get_torsional_modes
+from rdtools.dist import has_colliding_atoms
+from rdtools.torsion import get_torsional_modes
 
 
 class EditableConformer(object):

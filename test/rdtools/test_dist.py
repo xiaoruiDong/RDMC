@@ -2,8 +2,8 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.rdtools.conversion import mol_from_smiles, mol_from_xyz
-from rdmc.rdtools.dist import get_missing_bonds, has_colliding_atoms
+from rdtools.conversion import mol_from_smiles, mol_from_xyz
+from rdtools.dist import get_missing_bonds, has_colliding_atoms
 
 
 @pytest.mark.parametrize(

@@ -2,7 +2,7 @@ import pytest
 
 import numpy as np
 
-from rdmc.rdtools.conf import (
+from rdtools.conf import (
     add_null_conformer,
     create_conformer,
     embed_multiple_null_confs,

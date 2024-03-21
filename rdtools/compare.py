@@ -6,9 +6,9 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem.rdMolDescriptors import CalcMolFormula
 
-from rdmc.rdtools.dist import get_shortest_path, get_adjacency_matrix
-from rdmc.rdtools.resonance import generate_resonance_structures
-from rdmc.rdtools.conversion.xyz import mol_to_xyz, mol_from_xyz
+from rdtools.dist import get_shortest_path, get_adjacency_matrix
+from rdtools.resonance import generate_resonance_structures
+from rdtools.conversion.xyz import mol_to_xyz, mol_from_xyz
 
 
 def has_matched_mol(

@@ -2,7 +2,7 @@ import pytest
 
 import numpy as np
 
-from rdmc.rdtools.mol import (
+from rdtools.mol import (
     combine_mols,
     get_element_symbols,
     get_element_counts,

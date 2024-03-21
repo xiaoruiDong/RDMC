@@ -3,13 +3,13 @@ import logging
 from rdkit import Chem
 import numpy as np
 
-from rdmc.rdtools.obabel import (
+from rdtools.obabel import (
     parse_xyz_by_openbabel as xyz_from_openbabel,
     openbabel_mol_to_rdkit_mol,
 )
 
-from rdmc.rdtools.element import PERIODIC_TABLE
-from rdmc.rdtools.conversion.xyz2mol import (
+from rdtools.element import PERIODIC_TABLE
+from rdtools.conversion.xyz2mol import (
     parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc,
 )
 

@@ -1,6 +1,6 @@
 from rdkit import Chem
 
-from rdmc.rdtools.utils import get_fake_module
+from rdtools.utils import get_fake_module
 
 try:
     import rmgpy.molecule.element as elements

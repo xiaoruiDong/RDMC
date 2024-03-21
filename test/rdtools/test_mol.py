@@ -2,14 +2,14 @@ import pytest
 
 import numpy as np
 
-from rdmc.rdtools.conf import (
+from rdtools.conf import (
     add_null_conformer,
 )
-from rdmc.rdtools.conversion import (
+from rdtools.conversion import (
     mol_from_smiles,
     mol_to_smiles,
 )
-from rdmc.rdtools.mol import (
+from rdtools.mol import (
     combine_mols,
     get_element_symbols,
     get_element_counts,
@@ -17,7 +17,7 @@ from rdmc.rdtools.mol import (
     get_atom_masses,
     get_closed_shell_mol,
 )
-from rdmc.rdtools.conf import (
+from rdtools.conf import (
     embed_multiple_null_confs,
 )
 

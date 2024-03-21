@@ -1,4 +1,4 @@
-from rdmc.rdtools.view.base import base_viewer
+from rdtools.view.base import base_viewer
 
 
 # Arrow in freq view indicates the force direction

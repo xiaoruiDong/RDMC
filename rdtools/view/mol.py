@@ -2,8 +2,8 @@ from typing import List
 import logging
 
 from rdkit import Chem
-from rdmc.rdtools.view.base import base_viewer, animation_viewer
-from rdmc.rdtools.view.utils import clean_ts
+from rdtools.view.base import base_viewer, animation_viewer
+from rdtools.view.utils import clean_ts
 
 logger = logging.getLogger(__name__)
 

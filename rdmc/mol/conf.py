@@ -5,15 +5,15 @@ from typing import Optional, Union, Sequence, List
 from rdkit import Chem
 
 from rdmc.conf import EditableConformer
-from rdmc.rdtools.conf import (
+from rdtools.conf import (
     add_null_conformer,
     embed_multiple_null_confs,
     embed_conformer,
     embed_multiple_confs,
 )
-from rdmc.rdtools.dist import has_colliding_atoms
-from rdmc.rdtools.compare import is_same_connectivity_conf
-from rdmc.rdtools.mol import set_mol_positions
+from rdtools.dist import has_colliding_atoms
+from rdtools.compare import is_same_connectivity_conf
+from rdtools.mol import set_mol_positions
 
 
 class MolConfMixin:

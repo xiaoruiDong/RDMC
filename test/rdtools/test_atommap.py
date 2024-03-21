@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 from rdkit import Chem
 
-from rdmc.rdtools.atommap import (
+from rdtools.atommap import (
     reverse_map,
     get_atom_map_numbers,
     has_atom_map_numbers,

@@ -1,7 +1,7 @@
 import pytest
 
-from rdmc.rdtools.conversion import mol_from_smiles, mol_to_smiles
-from rdmc.rdtools.atommap import get_atom_map_numbers
+from rdtools.conversion import mol_from_smiles, mol_to_smiles
+from rdtools.atommap import get_atom_map_numbers
 
 
 @pytest.mark.parametrize(

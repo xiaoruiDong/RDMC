@@ -2,7 +2,7 @@ import math
 
 from rdkit import Chem
 
-from rdmc.rdtools import element
+from rdtools import element
 
 
 def clear_rxn_prop(atom):

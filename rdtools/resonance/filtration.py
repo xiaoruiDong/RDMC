@@ -47,7 +47,7 @@ from itertools import combinations, product
 import logging
 from typing import List, Optional, Union
 
-from rdmc.rdtools.resonance.utils import (
+from rdtools.resonance.utils import (
     get_charge_span,
     get_electronegativity,
     get_lone_pair,

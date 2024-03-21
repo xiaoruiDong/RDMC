@@ -2,7 +2,7 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.rdtools.bond import (
+from rdtools.bond import (
     add_bond,
     add_bonds,
     get_bonds_as_tuples,
@@ -12,7 +12,7 @@ from rdmc.rdtools.bond import (
     get_formed_and_broken_bonds,
     get_all_changing_bonds,
 )
-from rdmc.rdtools.conversion import mol_from_smiles
+from rdtools.conversion import mol_from_smiles
 
 
 def test_add_bond():

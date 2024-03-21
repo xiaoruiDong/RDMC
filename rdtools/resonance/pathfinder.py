@@ -9,7 +9,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Optional, Set, Tuple, Union
 
-from rdmc.rdtools.resonance.utils import (
+from rdtools.resonance.utils import (
     decrement_order,
     decrement_radical,
     get_lone_pair,

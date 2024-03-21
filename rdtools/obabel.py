@@ -2,9 +2,9 @@ import numpy as np
 
 from rdkit import Chem
 
-from rdmc.rdtools.utils import get_fake_module
-from rdmc.rdtools.conf import add_conformer
-from rdmc.rdtools.bond import BOND_ORDERS
+from rdtools.utils import get_fake_module
+from rdtools.conf import add_conformer
+from rdtools.bond import BOND_ORDERS
 
 try:
     # Openbabel 3

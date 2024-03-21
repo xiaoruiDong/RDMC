@@ -1,7 +1,7 @@
 from typing import Optional
 
 from rdkit import Chem
-from rdmc.rdtools.view.base import base_viewer, default_style_spec, animation_viewer
+from rdtools.view.base import base_viewer, default_style_spec, animation_viewer
 
 
 def conformer_viewer(

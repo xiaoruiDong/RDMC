@@ -4,7 +4,7 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 
-from rdmc.rdtools.bond import get_bonds_as_tuples, add_bonds
+from rdtools.bond import get_bonds_as_tuples, add_bonds
 
 
 def add_conformer(

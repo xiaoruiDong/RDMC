@@ -1,8 +1,8 @@
 from typing import Optional, Tuple, Union
 
-from rdmc.rdtools.view.base import grid_viewer
-from rdmc.rdtools.view.mol import mol_viewer, ts_viewer
-from rdmc.rdtools.view.utils import get_broken_formed_bonds
+from rdtools.view.base import grid_viewer
+from rdtools.view.mol import mol_viewer, ts_viewer
+from rdtools.view.utils import get_broken_formed_bonds
 
 
 _ts_viewer_keys = [

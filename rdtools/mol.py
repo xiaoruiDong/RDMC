@@ -9,15 +9,15 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Geometry.rdGeometry import Point3D
 
-from rdmc.rdtools.atommap import has_atom_map_numbers
-from rdmc.rdtools.atom import get_element_symbol, get_atom_mass
-from rdmc.rdtools.conf import (
+from rdtools.atommap import has_atom_map_numbers
+from rdtools.atom import get_element_symbol, get_atom_mass
+from rdtools.conf import (
     add_null_conformer,
     embed_multiple_null_confs,
     reflect as _reflect,
     set_conformer_coordinates,
 )
-from rdmc.rdtools.conversion.xyz import xyz_to_coords
+from rdtools.conversion.xyz import xyz_to_coords
 
 
 def get_spin_multiplicity(mol: Chem.Mol) -> int:

@@ -11,7 +11,7 @@ except ImportError:
     import openbabel as ob
 
 
-from rdmc.rdtools.obabel import (
+from rdtools.obabel import (
     get_obmol_coords,
     openbabel_mol_to_rdkit_mol,
     parse_xyz_by_openbabel,
@@ -20,8 +20,8 @@ from rdmc.rdtools.obabel import (
     set_obmol_coords,
 )
 
-from rdmc.rdtools.conversion import mol_from_smiles
-from rdmc.rdtools.element import get_atomic_num
+from rdtools.conversion import mol_from_smiles
+from rdtools.element import get_atomic_num
 
 
 @pytest.mark.parametrize(

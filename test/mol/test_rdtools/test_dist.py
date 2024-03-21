@@ -3,7 +3,7 @@ import pytest
 from rdkit import Chem
 
 from rdmc.mol import RDKitMol
-from rdmc.rdtools.dist import get_missing_bonds, has_colliding_atoms
+from rdtools.dist import get_missing_bonds, has_colliding_atoms
 
 
 @pytest.mark.parametrize(

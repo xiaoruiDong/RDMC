@@ -14,11 +14,11 @@ from rdkit.Chem import rdChemReactions, rdFMCS
 
 
 from rdmc import RDKitMol
-from rdmc.rdtools.compare import is_same_complex
-from rdmc.rdtools.resonance import generate_resonance_structures
-from rdmc.rdtools.bond import get_all_changing_bonds
-from rdmc.rdtools.reaction.draw import draw_reaction
-from rdmc.rdtools.view import reaction_viewer
+from rdtools.compare import is_same_complex
+from rdtools.resonance import generate_resonance_structures
+from rdtools.bond import get_all_changing_bonds
+from rdtools.reaction.draw import draw_reaction
+from rdtools.view import reaction_viewer
 
 
 class Reaction:

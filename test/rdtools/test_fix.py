@@ -2,9 +2,9 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.rdtools.atommap import get_atom_map_numbers
-from rdmc.rdtools.conversion import mol_from_smiles, mol_from_xyz, mol_to_smiles
-from rdmc.rdtools.fix import (
+from rdtools.atommap import get_atom_map_numbers
+from rdtools.conversion import mol_from_smiles, mol_from_xyz, mol_to_smiles
+from rdtools.fix import (
     fix_oxonium_bonds,
     remedy_manager,
     saturate_mol,
@@ -12,7 +12,7 @@ from rdmc.rdtools.fix import (
     saturate_biradical_12,
     saturate_biradical_cdb,
 )
-from rdmc.rdtools.mol import get_spin_multiplicity
+from rdtools.mol import get_spin_multiplicity
 
 
 @pytest.mark.parametrize(

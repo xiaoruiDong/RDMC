@@ -17,10 +17,10 @@ import pandas as pd
 
 from rdmc import RDKitMol
 from rdmc.mathlib.curvefit import FourierSeries1D
-from rdmc.rdtools.reaction.ts import guess_rxn_from_normal_mode
-from rdmc.rdtools.element import PERIODIC_TABLE as PT
-from rdmc.rdtools.view import mol_viewer, freq_viewer, conformer_animation, animation_viewer, merge_xyz_dxdydz
-from rdmc.rdtools.fix import saturate_mol
+from rdtools.reaction.ts import guess_rxn_from_normal_mode
+from rdtools.element import PERIODIC_TABLE as PT
+from rdtools.view import mol_viewer, freq_viewer, conformer_animation, animation_viewer, merge_xyz_dxdydz
+from rdtools.fix import saturate_mol
 
 try:
     from ipywidgets import interact, IntSlider, Dropdown, FloatLogSlider

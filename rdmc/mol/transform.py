@@ -4,14 +4,14 @@ from typing import Optional, Union
 
 from rdkit import Chem
 
-from rdmc.rdtools.conversion.smiles import mol_from_smiles, mol_to_smiles
-from rdmc.rdtools.conversion.rmg import mol_from_rmg_mol
-from rdmc.rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
-from rdmc.rdtools.obabel import (
+from rdtools.conversion.smiles import mol_from_smiles, mol_to_smiles
+from rdtools.conversion.rmg import mol_from_rmg_mol
+from rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
+from rdtools.obabel import (
     openbabel_mol_to_rdkit_mol as mol_from_openbabel_mol,
     rdkit_mol_to_openbabel_mol as mol_to_openbabel_mol,
 )
-from rdmc.rdtools.utils import get_fake_module
+from rdtools.utils import get_fake_module
 
 try:
     from ase import Atoms

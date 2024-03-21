@@ -22,8 +22,8 @@ from matplotlib.patches import Rectangle
 from rdmc.mol import RDKitMol
 from rdmc.conformer_generation.utils import mol_to_dict
 from rdmc.mathlib.greedymin import search_minimum
-from rdmc.rdtools.bond import get_formed_and_broken_bonds
-from rdmc.rdtools.conf import set_conformer_coordinates
+from rdtools.bond import get_formed_and_broken_bonds
+from rdtools.conf import set_conformer_coordinates
 
 try:
     from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED

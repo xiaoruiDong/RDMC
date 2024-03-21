@@ -1,13 +1,13 @@
 from rdkit import Chem
 
-from rdmc.rdtools.atommap import (
+from rdtools.atommap import (
     clear_atom_map_numbers,
     has_atom_map_numbers,
     needs_renumber,
     renumber_atoms,
     reset_atom_map_numbers,
 )
-from rdmc.rdtools.conversion.utils import prepare_output_mol
+from rdtools.conversion.utils import prepare_output_mol
 
 
 def get_smiles_parser_params(

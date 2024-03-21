@@ -2,7 +2,7 @@ import numpy as np
 
 from rdkit import Chem
 
-from rdmc.rdtools.bond import get_all_changing_bonds
+from rdtools.bond import get_all_changing_bonds
 
 
 def is_DA_rxn_endo(

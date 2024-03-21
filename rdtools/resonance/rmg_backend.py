@@ -16,15 +16,15 @@ from scipy.optimize import milp, Bounds, LinearConstraint
 
 from rdkit import Chem
 
-from rdmc.rdtools.resonance.base import ResonanceAlgoRegistry
-from rdmc.rdtools.resonance.filtration import (
+from rdtools.resonance.base import ResonanceAlgoRegistry
+from rdtools.resonance.filtration import (
     get_octet_deviation,
     get_octet_deviation_list,
     get_charge_span_list,
 )
-from rdmc.rdtools.resonance.filtration import filter_structures as filter_resonance_structures
-from rdmc.rdtools.resonance.pathfinder import PathFinderRegistry
-from rdmc.rdtools.resonance.utils import (
+from rdtools.resonance.filtration import filter_structures as filter_resonance_structures
+from rdtools.resonance.pathfinder import PathFinderRegistry
+from rdtools.resonance.utils import (
     force_no_implicit,
     get_aryne_rings,
     get_charge_span,

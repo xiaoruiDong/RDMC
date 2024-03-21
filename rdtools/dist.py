@@ -4,7 +4,7 @@ from typing import List, Tuple
 import numpy as np
 
 from rdkit import Chem
-from rdmc.rdtools.element import get_vdw_radius, get_covalent_radius, get_bond_radius
+from rdtools.element import get_vdw_radius, get_covalent_radius, get_bond_radius
 
 
 def get_adjacency_matrix(mol: Chem.Mol) -> np.ndarray:
