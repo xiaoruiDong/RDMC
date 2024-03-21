@@ -146,7 +146,7 @@ class GaussianOptimizer(ConfGenOptimizer):
 
         if save_dir:
             self.save_opt_mols(
-                save_dir, opt_mol.ToRWMol(), opt_mol.KeepIDs, opt_mol.energy
+                save_dir, opt_mol, opt_mol.KeepIDs, opt_mol.energy
             )
 
         return opt_mol

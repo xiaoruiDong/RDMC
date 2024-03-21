@@ -4,7 +4,10 @@
 """
 Modules for conformer generation workflows
 """
+
 import logging
+import os
+import pickle
 from time import time
 from typing import Optional
 
@@ -15,6 +18,7 @@ from .embedders import *
 from .pruners import *
 from .optimizers import *
 from .metrics import *
+from .utils import mol_to_dict, dict_to_mol
 
 
 logging.basicConfig(

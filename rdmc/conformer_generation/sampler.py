@@ -367,7 +367,7 @@ class TorsionalSampler:
         minimum_mols.KeepIDs = {i: True for i in range(minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
 
         try:
-            mols = minimum_mols.ToRWMol()
+            mols = minimum_mols
             path = os.path.join(conf_dir, "sampling_confs.sdf")
             writer = Chem.rdmolfiles.SDWriter(path)
             for i in range(mols.GetNumConformers()):

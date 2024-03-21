@@ -243,6 +243,6 @@ def convert_log_to_mol(
 
     # Embed geometries to the mol object for output
     mol.EmbedMultipleNullConfs(xyzs.shape[0])
-    [mol.SetPositions(xyzs[i, :, :], id=i) for i in range(xyzs.shape[0])]
+    [mol.SetPositions(xyzs[i, :, :], confId=i) for i in range(xyzs.shape[0])]
 
     return mol
