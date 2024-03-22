@@ -8,6 +8,11 @@ from rdmc.forcefield import RDKitFF, OpenBabelFF, optimize_mol
 from rdmc.mol import RDKitMol, Mol
 from rdmc.reaction import Reaction
 
+import rdtools
+
+
+__version__ = rdtools.__version__
+
 
 # Mute RDKit's error logs
 # They can be confusing at places where try ... except ... are implemented.
