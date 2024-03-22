@@ -12,7 +12,8 @@ def is_DA_rxn_endo(
 ) -> bool:
     """
     Determine the Diels Alder reaction stereo type (endo or exo),
-    based on the provided reactants and products.
+    based on the provided reactants and products. The two molecules must be atom
+    mapped.
 
     Args:
         r_mol (RDKitMol): the reactant complex.
