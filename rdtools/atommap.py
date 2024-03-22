@@ -268,7 +268,7 @@ def update_product_atom_map_after_reaction(
     return updated_atoms
 
 
-def move_atommaps_to_notes(mol: Chem.Mol):
+def move_atommaps_to_notes(mol: Chem.Mol, clear_atommap=True):
     """
     Move atom map numbers to the `atomNote` property. This helps to make the display slightly cleaner.
 
@@ -278,7 +278,8 @@ def move_atommaps_to_notes(mol: Chem.Mol):
     for atom in mol.GetAtoms():
         if atom.GetAtomMapNum():
             atom.SetProp("atomNote", str(atom.GetAtomMapNum()))
-            atom.SetAtomMapNum(0)
+            if clear_atommap:
+                atom.SetAtomMapNum(0)
 
 
 def move_notes_to_atommaps(mol: Chem.Mol):

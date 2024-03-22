@@ -11,9 +11,9 @@ def draw_reaction(
 ):
     # move atom maps to be annotations:
     for mol in rxn.GetReactants():
-        move_atommaps_to_notes(mol)
+        move_atommaps_to_notes(mol, clear_atommap=False)
     for mol in rxn.GetProducts():
-        move_atommaps_to_notes(mol)
+        move_atommaps_to_notes(mol, clear_atommap=False)
 
     d2d = rdMolDraw2D.MolDraw2DSVG(*figsize)
     draw_options = d2d.drawOptions()
