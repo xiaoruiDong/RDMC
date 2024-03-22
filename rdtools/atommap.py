@@ -1,5 +1,5 @@
 from itertools import permutations
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 
 import numpy as np
 from rdkit import Chem
@@ -78,7 +78,7 @@ def _renumber_atoms(
         mol (Chem.Mol): The molecule to renumber atoms.
         new_order (Iterable): The new ordering the atoms.
         update_atom_map (bool, optional): Whether to update the atom map numbers of the molecule.
-                                          Defaults to ``True``.
+            Defaults to ``True``.
 
     Returns:
         Chem.Mol: The molecule with renumbered atoms.
@@ -102,22 +102,22 @@ def renumber_atoms(
     Args:
         mol (Chem.Mol): The molecule to renumber atoms.
         new_order (Optional[Iterable], optional): The new ordering the atoms.
-                                                   - If provided as a list, it should a list of atom indexes
-                                                   and should have a length of the number of atoms.
-                                                   E.g., if newOrder is ``[3,2,0,1]``, then atom ``3``
-                                                   in the original molecule will be atom ``0`` in the new one.
-                                                   - If provided as a dict, it should be a mapping between atoms. E.g.,
-                                                   if newOrder is ``{0: 3, 1: 1, 2: 2, 3: 0}``, then atom ``0`` in the
-                                                   original molecule will be atom ``3`` in the new one. Unlike the list case,
-                                                   the newOrder can be a partial mapping, but one should make sure all the pairs
-                                                   are consistent. E.g.,``{0: 3}`` and ``{0: 3, 3: 0}`` are also acceptable
-                                                   input for ``{0: 3, 1: 1, 2: 2, 3: 0}``, but you can't have inconsistent ones like
-                                                   ``{0: 3, 3: 2}``.
-                                                   - If no value provided (default), then the molecule
-                                                   will be renumbered based on the current atom map numbers. It is helpful
-                                                   when the sequence of atom map numbers and atom indexes are inconsistent.
+            - If provided as a list, it should a list of atom indexes
+            and should have a length of the number of atoms.
+            E.g., if newOrder is ``[3,2,0,1]``, then atom ``3``
+            in the original molecule will be atom ``0`` in the new one.
+            - If provided as a dict, it should be a mapping between atoms. E.g.,
+            if newOrder is ``{0: 3, 1: 1, 2: 2, 3: 0}``, then atom ``0`` in the
+            original molecule will be atom ``3`` in the new one. Unlike the list case,
+            the newOrder can be a partial mapping, but one should make sure all the pairs
+            are consistent. E.g.,``{0: 3}`` and ``{0: 3, 3: 0}`` are also acceptable
+            input for ``{0: 3, 1: 1, 2: 2, 3: 0}``, but you can't have inconsistent ones like
+            ``{0: 3, 3: 2}``.
+            - If no value provided (default), then the molecule
+            will be renumbered based on the current atom map numbers. It is helpful
+            when the sequence of atom map numbers and atom indexes are inconsistent.
         update_atom_map (bool, optional): Whether to update the atom map numbers of the molecule.
-                                          Defaults to ``True``.
+            Defaults to ``True``.
 
     Returns:
         Chem.Mol: The molecule with renumbered atoms.
@@ -141,9 +141,9 @@ def renumber_atoms_by_atom_map_numbers(
     Args:
         mol (Chem.Mol): The molecule to renumber atoms.
         update_atom_map (bool, optional): Whether to update the atom map numbers of the molecule.
-                                          Defaults to ``True``.
-                                          If ``False``, the atom map numbers will be kept.
-                                          If ``True``, the atom map numbers will be reset be consistent with atomic number.
+            Defaults to ``True``.
+            If ``False``, the atom map numbers will be kept.
+            If ``True``, the atom map numbers will be reset be consistent with atomic number.
 
     Returns:
         Chem.Mol: The molecule with renumbered atoms.
@@ -164,16 +164,16 @@ def renumber_atoms_by_substruct_match_result(
     Args:
         mol (Chem.Mol): The molecule to renumber atoms.
         substruct_match_result (Iterable): The substruct match result. it should be a tuple of
-                                           atom indices. E.g., if the substruct match result is
-                                           ``(0, 2, 3)``, then atom ``0`` in the original molecule
-                                           will be atom ``0`` in the new one, atom ``2`` in the
-                                           original molecule will be atom ``1`` in the new one, and
-                                           atom ``3`` in the original molecule will be atom ``2`` in
-                                           the new one.
+            atom indices. E.g., if the substruct match result is
+            ``(0, 2, 3)``, then atom ``0`` in the original molecule
+            will be atom ``0`` in the new one, atom ``2`` in the
+            original molecule will be atom ``1`` in the new one, and
+            atom ``3`` in the original molecule will be atom ``2`` in
+            the new one.
         as_ref (bool, optional): The molecule to renumber is used as the reference molecule during
-                                 the substructure match (i.e., ``mol`` is the query molecule).
+            the substructure match (i.e., ``mol`` is the query molecule).
         update_atom_map (bool, optional): Whether to update the atom map numbers of the molecule.
-                                           Defaults to ``True``.
+            Defaults to ``True``.
     """
     mapping = substruct_match_result if as_ref else reverse_map(substruct_match_result)
     return _renumber_atoms(mol, mapping, update_atom_map)
@@ -190,14 +190,14 @@ def renumber_atoms_by_map_dict(
     Args:
         mol (Chem.Mol): The molecule to renumber atoms.
         new_order(dict): The dict-based mapping, it should be a mapping between atoms. E.g.,
-                         if newOrder is ``{0: 3, 1: 1, 2: 2, 3: 0}``, then atom ``0`` in the
-                         original molecule will be atom ``3`` in the new one. Unlike the list case,
-                         the newOrder can be a partial mapping, but one should make sure all the pairs
-                         are consistent. E.g.,``{0: 3}`` and ``{0: 3, 3: 0}`` are also acceptable
-                         input for ``{0: 3, 1: 1, 2: 2, 3: 0}``, but you can't have inconsistent ones like
-                         ``{0: 3, 3: 2}``.
+            if newOrder is ``{0: 3, 1: 1, 2: 2, 3: 0}``, then atom ``0`` in the
+            original molecule will be atom ``3`` in the new one. Unlike the list case,
+            the newOrder can be a partial mapping, but one should make sure all the pairs
+            are consistent. E.g.,``{0: 3}`` and ``{0: 3, 3: 0}`` are also acceptable
+            input for ``{0: 3, 1: 1, 2: 2, 3: 0}``, but you can't have inconsistent ones like
+            ``{0: 3, 3: 2}``.
         update_atom_map (bool, optional): Whether to update the atom map numbers of the molecule.
-                                          Defaults to ``True``.
+            Defaults to ``True``.
 
     Returns:
         Chem.Mol: The molecule with renumbered atoms.
@@ -234,7 +234,7 @@ def reverse_map(map: Iterable, as_list: bool = True):
     Args:
         map (Iterable): An atom mapping as a list (1D array).
         as_list (bool, optional): Output result as a `list` object. Otherwise,
-                                  the output is a np.ndarray.
+            the output is a np.ndarray.
 
     Returns:
         An inverted atom map from the given ``match`` atom map
@@ -254,7 +254,7 @@ def update_product_atom_map_after_reaction(
         mol (Chem.Mol): The product molecule after reaction.
         ref_mol (Chem.Mol): The reference molecule (usually the reactant).
         clean_rxn_props (bool, optional): Whether to clean the reaction properties (`"old_mapno"` and `"react_atom_idx"`).
-                                          Defaults to ``True``.
+            Defaults to ``True``.
 
     Returns:
         list: atoms that are updated.
@@ -301,16 +301,19 @@ def move_notes_to_atommaps(mol: Chem.Mol):
 def map_h_atoms_in_reaction(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-):
+) -> Tuple[Chem.Mol, Chem.Mol]:
     """
     Map H atoms in a reaction given that heavy atoms are mapped already. The function
     only applies to the case where each atom in rmol paired to an atom in pmol and vise
     verse. Atom map numbers are assumed to start from 1. This is originally work for the
     results from rxnmapper, and viability to other input is unknown.
 
-    Arg:
+    Args:
         rmol (Chem.Mol): The reactant molecule.
         pmol (Chem.Mol): The product molecule.
+
+    Returns:
+        Tuple[Chem.Mol, Chem.Mol]: The reactant and product molecule with mapped H atoms.
     """
     # Even though the heavy atoms atoms are mapped,
     # there can be cases with unequal number of atoms labeled with atom map index. Known cases:
