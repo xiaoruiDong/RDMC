@@ -12,7 +12,11 @@ from rdtools.atommap import (
     renumber_atoms_by_substruct_match_result,
     move_atommaps_to_notes,
     move_notes_to_atommaps,
+    map_h_atoms_in_reaction,
 )
+
+from rdtools.conversion import mol_from_smiles, mol_to_smiles
+
 
 # In this module, RDKit's native smiles to mol is used,
 # as RDMC's version includes atom mapping change / reordering,
@@ -178,3 +182,54 @@ def test_move_notes_to_atommaps():
     atom_map_numbers_after = get_atom_map_numbers(mol)
     assert atom_map_numbers_before == [0] * len(atom_map_numbers_before)
     assert atom_notes == atom_map_numbers_after
+
+
+@pytest.mark.parametrize(
+    "rsmi, exp_rsmi, psmi, exp_psmi",
+    [
+        (
+            "[CH2:1][CH2:2][CH2:3][CH2:4][CH2:5][OH:6]",
+            "[C:1]([C:2]([C:3]([C:4]([C:5]([O:6][H:15])"
+            "([H:8])[H:14])([H:9])[H:10])([H:11])[H:12])"
+            "([H:7])[H:13])([H:16])[H:17]",
+            "[CH3:1][CH2:2][CH2:3][CH2:4][CH2:5][O:6]",
+            "[C:1]([C:2]([C:3]([C:4]([C:5]([O:6])([H:8])"
+            "[H:14])([H:9])[H:10])([H:11])[H:12])([H:7])"
+            "[H:13])([H:15])([H:16])[H:17]",
+        ),
+        (
+            "[CH:1]1([CH:8]2[CH:7]=[CH:6][CH:10]=[CH:9]2)[CH2:2][CH2:3][CH:4]=[CH:5]1",
+            '[C:1]1([C:8]2([H:20])[C:7]([H:19])=[C:6]([H:18])[C:10]([H:17])=[C:9]2[H:16])'
+            '([H:11])[C:2]([H:14])([H:15])[C:3]([H:12])([H:13])[C:4]([H:22])=[C:5]1[H:21]',
+            "[CH:1]1=[CH:2][CH2:3][CH:4]=[CH:5]1.[CH:6]1=[CH:7][CH2:8][CH:9]=[CH:10]1",
+            '[C:1]1([H:11])=[C:2]([H:15])[C:3]([H:12])([H:13])[C:4]([H:22])=[C:5]1[H:21].'
+            '[C:6]1([H:18])=[C:7]([H:19])[C:8]([H:14])([H:20])[C:9]([H:16])=[C:10]1[H:17]',
+        ),
+        (
+            '[CH3:1][CH2:2][CH2:3][CH2:4][OH:5].[O:6]',
+            '[C:1]([C:2]([C:3]([C:4]([O:5][H:16])([H:14])'
+            '[H:15])([H:12])[H:13])([H:10])[H:11])([H:7])([H:8])[H:9].[O:6]',
+            '[CH2:1][CH2:2][CH2:3][CH2:4][OH:5].[OH:6]',
+            '[C:1]([C:2]([C:3]([C:4]([O:5][H:16])([H:14])'
+            '[H:15])([H:12])[H:13])([H:10])[H:11])([H:7])[H:8].[O:6][H:9]',
+        ),
+        (
+            '[CH3:1][CH3:2]',
+            '[C:1]([C:2]([H:4])([H:7])[H:8])([H:3])([H:5])[H:6]',
+            '[CH2:1]=[CH2:2].[H:3][H:4]',
+            '[C:1](=[C:2]([H:7])[H:8])([H:5])[H:6].[H:3][H:4]'
+        ),
+        (
+            '[CH3:1][CH3:2]',
+            '[C:1]([C:2]([H:6])([H:7])[H:8])([H:3])([H:4])[H:5]',
+            '[CH2:1][CH3:2].[H:3]',
+            '[C:1]([C:2]([H:6])([H:7])[H:8])([H:4])[H:5].[H:3]',
+
+        )
+    ]
+)
+def map_h_atoms_in_reaction(rsmi, exp_rsmi, psmi, exp_psmi):
+    rmol, pmol = mol_from_smiles(rsmi, add_hs=False), mol_from_smiles(psmi, add_hs=false)
+    rmol, pmol = map_h_atoms_in_reaction(rmol, pmol)
+    assert mol_to_smiles(rmol) == exp_rsmi
+    assert mol_to_smiles(pmol) == exp_psmi
