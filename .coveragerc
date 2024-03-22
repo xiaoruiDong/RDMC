@@ -4,8 +4,7 @@ source =
     rdmc
     rdtools
 omit =
-    rdmc/rdtools/conversion/xyz2mol.py
-    rdmc/external/GeoMol/*
+    rdtools/conversion/xyz2mol.py
     rdmc/external/rmg.py
     rdmc/conformer_generation/*
 
@@ -16,8 +15,7 @@ exclude_lines =
     logger.warning
     if __name__ == .__main__.:
 omit =
-    rdmc/rdtools/conversion/xyz2mol.py
-    rdmc/external/GeoMol/*
+    rdtools/conversion/xyz2mol.py
     rdmc/external/rmg.py
     rdmc/conformer_generation/*
 
