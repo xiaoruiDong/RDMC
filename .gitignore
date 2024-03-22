@@ -132,3 +132,6 @@ ipython/*.sdf
 ipython/*.xyz
 ipython/nul
 ipython/*.out
+
+# VS Code
+.vscode/*
