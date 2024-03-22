@@ -5,11 +5,14 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 
-from rdtools.bond import get_all_changing_bonds, get_bonds_as_tuples
+from rdtools.bond import get_formed_and_broken_bonds, get_all_changing_bonds, get_bonds_as_tuples
 from rdtools.conversion.xyz import mol_from_xyz
-from rdtools.conf import add_conformer
-from rdtools.element import get_atom_mass
+from rdtools.conf import add_conformer, set_conformer_coordinates
+from rdtools.compare import is_same_connectivity_mol
+from rdtools.element import get_atom_mass, get_covalent_radius
 from rdtools.fix import saturate_mol
+from rdtools.mathlib import get_magnitude
+from rdtools.mol import get_atom_masses
 
 
 def guess_rxn_from_normal_mode(
@@ -184,3 +187,126 @@ def examine_normal_mode(
         return True
 
     return False
+
+
+def is_valid_habs_ts(
+    rmol: Chem.Mol
+    pmol: Chem.Mol,
+    ts_xyz: str,
+    disp: np.ndarray,
+    single_score: bool = True,
+    **kwargs,
+):
+    """
+    Check if the TS belonging to a H atom abstraction reactions. This function assumes the TS, rmol,
+    and pmol have the same atom order.
+
+    Args:
+        rmol (Chem.Mol): the reactant complex.
+        pmol (Chem.Mol): the product complex.
+        ts_xyz (str): The xyz coordinates of the transition state.
+        disp (np.array): The displacement of the normal mode. It should have a size of
+            N x 3.
+        single_score (bool): If return a single score (True or False). Defaults to ``True``.
+            Otherwise, return the check results (True or False) for both side of the reaction
+
+    Returns:
+        - bool: ``True`` for pass the examination, ``False`` otherwise.
+        - tuple: if the reactant side or the product side pass the examination.
+    """
+
+    def get_well_xyz(
+        atom1_idx: int,
+        atom2_idx: int,
+        positions: np.ndarray,
+        freq_modes: np.ndarray,
+        target: float,
+    ) -> np.ndarray:
+        """
+        Adjust the position by the frequency mode, so that the distance between
+        the H atom and the bonding atom is equal to the target value.
+
+        Args:
+            atom1_idx: atom index of the H atom or its bonding atom
+            atom2_idx: atom index of the other atom
+            positions: xyz coordinates of the atoms of the TS
+            freq_modes: frequency modes of the imaginary frequency
+            target: target distance between the H atom and the bonding atom
+
+        Returns:
+            np.ndarray: new xyz coordinates of the atoms
+        """
+        x_AB = positions[atom1_idx] - positions[atom2_idx]
+        x_dAB = freq_modes[atom1_idx] - freq_modes[atom2_idx]
+        m1, m2 = get_magnitude(x_AB, x_dAB, target)
+        magnitude = m1 if abs(m1) < abs(m2) else m2
+        return positions - freq_modes * magnitude
+
+
+    def check_bond_in_mult_three_member_ring(mol: Chem.Mol, bond: tuple):
+        """
+        Check if the bond is in multiple three member rings. Perception algorithm
+        currently is confused at this condition.
+
+        Args:
+            mol (Chem.Mol): the molecule
+            bond (tuple): the bond
+
+        Returns:
+            bool: ``True`` if the bond is in multiple three member rings, ``False`` otherwise
+        """
+        try:
+            bond_idx = mol.GetBondBetweenAtoms(int(bond[0]), int(bond[1])).GetIdx()
+        except:
+            return False
+        ring_info = mol.GetRingInfo()
+        ring_sizes = [len(ring) for ring in ring_info.AtomRings()]
+        membership = ring_info.BondMembers(bond_idx)
+        num_in_three_member_ring = sum([ring_sizes[mem] == 3 for mem in membership])
+        return num_in_three_member_ring >= 2
+
+
+    formed, broken = get_formed_and_broken_bonds(rmol, pmol)
+    assert len(formed) == 1 and len(broken) == 1, "The TS should be b1f1."
+    formed, broken = set(formed), set(broken)
+    H_index = list(formed & broken)[0]
+    atom1_idx = list(formed - {H_index})[0]  # the radical site in reactant
+    atom2_idx = list(broken - {H_index})[0]  # the radical site in product
+
+    mol = mol_from_xyz(xyz_str, **{**{'sanitize': False}, **kwargs})
+    weights = np.sqrt(get_atom_masses(mol)).reshape(-1, 1)
+    positions = mol.GetConformer().GetPositions()
+    freq_modes = disp * weights
+
+    # Check 1. change position to have H-atom1 == covalent length, see if the
+    # molecule is isomorphic to the product
+    target1_dist = get_covalent_radius(
+        mol.GetAtomWithIdx(atom1_idx).GetAtomicNum()
+    ) + get_covalent_radius(1)
+    new_pos = get_well_xyz(H_index, atom1_idx, positions, freq_modes, target1_dist)
+    set_conformer_coordinates(mol.GetConformer(), new_pos)
+    pmol_fake = mol_from_xyz(mol.ToXYZ(), **{**{'sanitize':False, 'header': True}, **kwargs})
+    check1 = is_same_connectivity_mol(pmol, pmol_fake)
+    if not check1:
+        diff = list(zip(*np.where(pmol.GetAdjacencyMatrix() - pmol_fake.GetAdjacencyMatrix())))
+        if len(diff) == 2:  # one bond difference (note, diff is symmetric)
+            check1 = check_bond_in_mult_three_member_ring(pmol_fake, diff[0])
+
+    # Check 2. change position to have H-atom2 == covalent length, see if the
+    # molecule is isomorphic to the reactant
+    target2_dist = get_covalent_radius(
+        mol.GetAtomWithIdx(atom2_idx).GetAtomicNum()
+    ) + get_covalent_radius(1)
+    new_pos = get_well_xyz(H_index, atom2_idx, positions, freq_modes, target2_dist)
+    set_conformer_coordinates(mol.GetConformer(), new_pos)
+    rmol_fake = mol_from_xyz(mol.ToXYZ(), **{**{'sanitize':False, 'header': True}, **kwargs})
+    # print(mol2.GetConformer().GetBondLength([H_index, atom2_idx]), target2_dist)
+    check2 = is_same_connectivity_mol(rmol, rmol_fake)
+    if not check2:
+        diff = list(zip(*np.where(rmol.GetAdjacencyMatrix() - rmol_fake.GetAdjacencyMatrix())))
+        if len(diff) == 2:  # one bond difference (note, diff is symmetric)
+            check1 = check_bond_in_mult_three_member_ring(rmol_fake, diff[0])
+
+    if single_score:
+        return check1 and check2
+    return check1, check2
