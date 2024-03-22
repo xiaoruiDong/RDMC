@@ -165,9 +165,16 @@ def test_reverse_match():
 def test_move_atommaps_to_notes():
     mol = Chem.MolFromSmiles("[CH3:1][CH2:2][OH:3]")
     atom_map_numbers_before = get_atom_map_numbers(mol)
-    move_atommaps_to_notes(mol)
+    move_atommaps_to_notes(mol, clear_atommap=True)
     atom_map_numbers_after = get_atom_map_numbers(mol)
     assert atom_map_numbers_after == [0] * len(atom_map_numbers_before)
+    assert [int(atom.GetProp('atomNote')) for atom in mol.GetAtoms()] == atom_map_numbers_before
+
+    mol = Chem.MolFromSmiles("[CH3:1][CH2:2][OH:3]")
+    atom_map_numbers_before = get_atom_map_numbers(mol)
+    move_atommaps_to_notes(mol, clear_atommap=False)
+    atom_map_numbers_after = get_atom_map_numbers(mol)
+    assert atom_map_numbers_after == atom_map_numbers_before
     assert [int(atom.GetProp('atomNote')) for atom in mol.GetAtoms()] == atom_map_numbers_before
 
 
