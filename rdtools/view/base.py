@@ -3,12 +3,14 @@ from typing import Optional, Union
 try:
     import py3Dmol
 except ImportError:
-    py3DMol = None
+    from rdtools.utils import get_fake_module
+
+    py3Dmol = get_fake_module("py3Dmol")
 
 
 default_style_spec = {
-    'stick': {'radius': 0.05, 'color': '#f2f2f2'},
-    'sphere': {'scale': 0.25},
+    "stick": {"radius": 0.05, "color": "#f2f2f2"},
+    "sphere": {"scale": 0.25},
 }
 
 
@@ -66,16 +68,16 @@ def _set_atom_index_hoverable(viewer):
 
 def base_viewer(
     obj: Union[str, list],
-    model: str = 'xyz',
+    model: str = "xyz",
     model_extra: Optional[dict] = None,
     animate: Optional[dict] = None,
     atom_index: bool = True,
     style_spec: Optional[dict] = None,
-    viewer: Optional['py3Dmol.view'] = None,
+    viewer: Optional["py3Dmol.view"] = None,
     viewer_size: tuple = (400, 400),
     viewer_loc: Optional[tuple] = None,
     as_frames: bool = False,
-) -> 'py3Dmol.view':
+) -> "py3Dmol.view":
     """
     This is the most general function to view a molecule powered by py3Dmol and its backend 3Dmol.js.
     This allows you to visualize molecules in 3D with a javascript object or in IPython notebooks. This
@@ -113,10 +115,7 @@ def base_viewer(
         py3Dmol.view: The molecule viewer.
     """
     if not viewer:
-        try:
-            viewer = py3Dmol.view(width=viewer_size[0], height=viewer_size[1])
-        except TypeError:
-            raise RuntimeError("py3Dmol is not installed. Please install py3Dmol with conda or pip. ")
+        viewer = py3Dmol.view(width=viewer_size[0], height=viewer_size[1])
 
     if as_frames:
         if model_extra:
@@ -126,7 +125,9 @@ def base_viewer(
     else:
         if model_extra:
             if not isinstance(obj, str):
-                raise NotImplemented("Passing multiple objs with model_extra is currently not supported.")
+                raise NotImplemented(
+                    "Passing multiple objs with model_extra is currently not supported."
+                )
             viewer.addModel(obj, model, model_extra, viewer=viewer_loc)
         else:  # Most common usage
             obj = [obj] if isinstance(obj, str) else obj
@@ -153,7 +154,7 @@ def grid_viewer(
     viewer_grid: tuple,
     linked: bool = False,
     viewer_size: Optional[tuple] = None,
-) -> py3Dmol.view:
+) -> "py3Dmol.view":
     """
     Create a empty grid viewer. You can then fill in each blank by passing this viewer and viewer_loc
     to desired viewer functions.
@@ -184,7 +185,7 @@ def animation_viewer(
     interval: int = 60,
     atom_index: bool = False,
     **kwargs,
-) -> py3Dmol.view:
+) -> "py3Dmol.view":
     """
     Create a viewer for animation. The only viable input the RDMC authors know is a xyz string of
     multiple molecules.
