@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RDMC"
+dynamic = ["version"]
+authors = [
+    { name = "Xiaorui Dong", email = "xiaorui@mit.com" },
+    { name = "Lagnajit Pattanaik" },
+    { name = "Shih-Cheng Li" },
+    { name = "Kevin Spiekermann" },
+    { name = "Hao-Wei Pang" },
+    { name = "Jonathan Zheng" },
+    { name = "William H. Green", email = "whgreen@mit.edu" },
+]
+description = "A light-weight software package with expertise in handling Reaction Data and Molecular (including transitions states) Conformers."
+keywords = [
+    "chemistry",
+    "RDKit",
+    "molecule",
+    "conformer",
+    "reaction",
+    "cheminformatics",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+urls = { Homepage = "https://github.com/xiaoruiDong/RDMC" }
+requires-python = ">=3.7"
+dependencies = [
+    "rdkit>=2021.03.1",
+    "numpy",
+    "scipy",
+    "openbabel-wheel>=3.1.1",
+    "networkx",
+    "matplotlib",
+    "cclib",
+    "py3Dmol",
+    "ipywidgets",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+    "pycodestyle",
+    "pytest-cov",
+    "pytest",
+    "sphinx",
+    "pydata-sphinx-theme",
+    "sphinx-favicon",
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.license]
+file = "LICENSE"
+
+[tool.isort]
+profile = "black"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rdmc*", "rdtools*"]
+exclude = ["docs*", "ipython*", "test*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "rdmc.__version__" }
