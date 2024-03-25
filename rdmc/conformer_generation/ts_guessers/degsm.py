@@ -1,8 +1,14 @@
 import os
-import subrprocess
-imoprt tempfile
+import subprocess
+import tempfile
+from typing import Optional
 
+import numpy as np
+
+
+from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
 from rdmc.external.inpwriter import write_gaussian_gsm
+
 
 class DEGSMGuesser(TSInitialGuesser):
     """
