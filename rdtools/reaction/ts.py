@@ -6,7 +6,11 @@ from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 
 from rdtools.atommap import reset_atom_map_numbers
-from rdtools.bond import get_formed_and_broken_bonds, get_all_changing_bonds, get_bonds_as_tuples
+from rdtools.bond import (
+    get_formed_and_broken_bonds,
+    get_all_changing_bonds,
+    get_bonds_as_tuples,
+)
 from rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
 from rdtools.conf import add_conformer, set_conformer_coordinates
 from rdtools.compare import is_same_connectivity_mol
@@ -23,8 +27,8 @@ def guess_rxn_from_normal_mode(
     disp: np.ndarray,
     amplitude: Union[float, List[float]] = 0.25,
     weights: Union[bool, np.ndarray] = True,
-    backend: str = 'openbabel',
-    multiplicity: int = 1
+    backend: str = "openbabel",
+    multiplicity: int = 1,
 ) -> Tuple[list, list]:
     """
     Guess reaction according to the normal mode analysis for a transition state.
@@ -52,21 +56,25 @@ def guess_rxn_from_normal_mode(
     """
     # Generate weights
     if isinstance(weights, bool) and weights:
-        atom_masses = np.array([get_atom_mass(symbol) for symbol in symbols]).reshape(-1, 1)
+        atom_masses = np.array([get_atom_mass(symbol) for symbol in symbols]).reshape(
+            -1, 1
+        )
         weights = np.sqrt(atom_masses)
     elif isinstance(weights, bool) and not weights:
         weights = np.ones((xyz.shape[0], 1))
 
-    mols = {'r': [], 'p': []}
+    mols = {"r": [], "p": []}
     amplitude = [amplitude] if isinstance(amplitude, float) else amplitude
     for amp in amplitude:
         xyzs = xyz - amp * disp * weights, xyz + amp * disp * weights
 
         # Create the reactant complex and the product complex
-        for xyz_mod, side in zip(xyzs, ['r', 'p']):
-            xyz_str = ''
+        for xyz_mod, side in zip(xyzs, ["r", "p"]):
+            xyz_str = ""
             for symbol, coords in zip(symbols, xyz_mod):
-                xyz_str += f'{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n'
+                xyz_str += (
+                    f"{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n"
+                )
             try:
                 mols[side].append(mol_from_xyz(xyz_str, header=False, backend=backend))
                 reset_atom_map_numbers(mols[side][-1])
@@ -174,13 +182,13 @@ def examine_normal_mode(
 
     if verbose:
         print(
-            f'The min. bond distance change for bonds that are broken or formed'
-            f' is {np.min(formed_and_broken_diff)} A and is {larger_factor:.1f} STD off the baseline.'
+            f"The min. bond distance change for bonds that are broken or formed"
+            f" is {np.min(formed_and_broken_diff)} A and is {larger_factor:.1f} STD off the baseline."
         )
         if changed_diff:
             print(
-                f'The min. bond distance change for bonds that are changed'
-                f' is {np.min(changed_diff)} A and is {smaller_factor:.1f} STD off the baseline.'
+                f"The min. bond distance change for bonds that are changed"
+                f" is {np.min(changed_diff)} A and is {smaller_factor:.1f} STD off the baseline."
             )
 
     if as_factors:
@@ -260,7 +268,7 @@ def is_valid_habs_ts(
         """
         try:
             bond_idx = mol.GetBondBetweenAtoms(int(bond[0]), int(bond[1])).GetIdx()
-        except:
+        except TypeError:
             return False
         ring_info = mol.GetRingInfo()
         ring_sizes = [len(ring) for ring in ring_info.AtomRings()]
@@ -276,11 +284,11 @@ def is_valid_habs_ts(
     atom2_idx = (broken - {H_index}).pop()  # the radical site in product
 
     symbols = get_element_symbols(rmol)
-    xyz_str = ''
+    xyz_str = ""
     for symbol, coords in zip(symbols, ts_xyz):
-        xyz_str += f'{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n'
+        xyz_str += f"{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n"
 
-    mol = mol_from_xyz(xyz_str, **{**{'sanitize': False, 'header': False}, **kwargs})
+    mol = mol_from_xyz(xyz_str, **{**{"sanitize": False, "header": False}, **kwargs})
     weights = np.sqrt(get_atom_masses(mol)).reshape(-1, 1)
     positions = mol.GetConformer().GetPositions()
     freq_modes = disp * weights
@@ -292,7 +300,9 @@ def is_valid_habs_ts(
     ) + get_covalent_radius(1)
     new_pos = get_well_xyz(H_index, atom1_idx, positions, freq_modes, target1_dist)
     set_conformer_coordinates(mol.GetConformer(), new_pos)
-    pmol_fake = mol_from_xyz(mol_to_xyz(mol), **{**{'sanitize':False, 'header': True}, **kwargs})
+    pmol_fake = mol_from_xyz(
+        mol_to_xyz(mol), **{**{"sanitize": False, "header": True}, **kwargs}
+    )
     check1 = is_same_connectivity_mol(pmol, pmol_fake)
     if not check1:
         diff = list(
@@ -308,7 +318,9 @@ def is_valid_habs_ts(
     ) + get_covalent_radius(1)
     new_pos = get_well_xyz(H_index, atom2_idx, positions, freq_modes, target2_dist)
     set_conformer_coordinates(mol.GetConformer(), new_pos)
-    rmol_fake = mol_from_xyz(mol_to_xyz(mol), **{**{'sanitize':False, 'header': True}, **kwargs})
+    rmol_fake = mol_from_xyz(
+        mol_to_xyz(mol), **{**{"sanitize": False, "header": True}, **kwargs}
+    )
     # print(mol2.GetConformer().GetBondLength([H_index, atom2_idx]), target2_dist)
     check2 = is_same_connectivity_mol(rmol, rmol_fake)
     if not check2:

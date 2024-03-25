@@ -109,7 +109,9 @@ def get_bonds_as_tuples(mol: Chem.Mol) -> List[Tuple[int, int]]:
     Returns:
         List[Tuple[int, int]]: The bonds of the molecule as a list of tuples.
     """
-    return [tuple(sorted((b.GetBeginAtomIdx(), b.GetEndAtomIdx()))) for b in mol.GetBonds()]
+    return [
+        tuple(sorted((b.GetBeginAtomIdx(), b.GetEndAtomIdx()))) for b in mol.GetBonds()
+    ]
 
 
 @lru_cache(maxsize=10000)
@@ -183,11 +185,12 @@ def get_bonds_with_BO_changed(
     """
     r_bonds, p_bonds = _get_bonds_as_sets(rmol, pmol)
     changed_bonds = [
-        bond for bond in (r_bonds & p_bonds)
+        bond
+        for bond in (r_bonds & p_bonds)
         if (
             rmol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()
             != pmol.GetBondBetweenAtoms(*bond).GetBondTypeAsDouble()
-            )
+        )
     ]
     return changed_bonds
 
@@ -215,7 +218,7 @@ def get_formed_and_broken_bonds(
 def get_all_changing_bonds(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-) ->  Tuple[List[tuple], List[tuple], List[tuple]]:
+) -> Tuple[List[tuple], List[tuple], List[tuple]]:
     """
     Get all bonds changed in the reaction. Both reactant and product complexes
     need to be atom-mapped.
@@ -229,4 +232,8 @@ def get_all_changing_bonds(
                - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
                - bonds with BO changed: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
-    return get_formed_bonds(rmol, pmol), get_broken_bonds(rmol, pmol), get_bonds_with_BO_changed(rmol, pmol)
+    return (
+        get_formed_bonds(rmol, pmol),
+        get_broken_bonds(rmol, pmol),
+        get_bonds_with_BO_changed(rmol, pmol),
+    )

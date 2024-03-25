@@ -22,7 +22,6 @@ from rdtools.view import reaction_viewer
 
 
 class Reaction:
-
     """
     The Reaction class that stores the reactant, product, and transition state information.
     """
@@ -336,7 +335,7 @@ class Reaction:
         """
         Whether the reaction is resonance corrected.
         """
-        return getattr(self, '_is_resonance_corrected', False)
+        return getattr(self, "_is_resonance_corrected", False)
 
     def apply_resonance_correction(
         self,
@@ -488,8 +487,9 @@ class Reaction:
         """
         Display the reaction in 3D.
         """
-        return reaction_viewer(self.reactant_complex, self.product_complex, self.ts, **kwargs)
-
+        return reaction_viewer(
+            self.reactant_complex, self.product_complex, self.ts, **kwargs
+        )
 
     def has_same_reactants(
         self,
@@ -596,9 +596,11 @@ def is_equivalent_reaction(
     Returns:
         bool: Whether the two reactions are equivalent.
     """
-    equiv = (rxn1.num_formed_bonds == rxn2.num_formed_bonds) \
-        and (rxn1.num_broken_bonds == rxn2.num_broken_bonds) \
+    equiv = (
+        (rxn1.num_formed_bonds == rxn2.num_formed_bonds)
+        and (rxn1.num_broken_bonds == rxn2.num_broken_bonds)
         and (rxn1.num_changed_bonds == rxn2.num_changed_bonds)
+    )
 
     if not equiv:
         return False
