@@ -17,7 +17,7 @@ jobs:
     name: Check Formatting Errors
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         run: |
           python -m pip install pycodestyle
@@ -45,21 +45,17 @@ jobs:
         shell: bash -l {0}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }} Subtest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
+          miniforge-version: latest
+          use-mamba: true
+          mamba-version: "*"
+          python-version: ${{ matrix.python-version }}
           activate-environment: rdmc_env
           environment-file: environment.yml
-          miniforge-variant: mambaforge
-          miniforge-version: latest
-          python-version: ${{ matrix.python-version }}
-          auto-activate-base: true
-          use-mamba: true
-
-      - name: Install RDMC
-        run: python -m pip install --no-deps -vv -e ./
 
       - name: Install Pytest
         run: mamba install -y pytest pytest-cov # temporarily remove "pytest-check"
@@ -69,11 +65,14 @@ jobs:
           mamba info
           mamba list
 
+      - name: Install RDMC
+        run: python -m pip install --no-deps -vv -e ./
+
       - name: Run Unit Tests
         run: pytest
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11' }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
