@@ -11,7 +11,7 @@ from rdmc.reaction import Reaction
 import rdtools
 
 
-__version__ = rdtools.__version__
+__version__ = "1.0.0"
 
 
 # Mute RDKit's error logs
