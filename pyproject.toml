@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "RDMC"
-dynamic = ["version"]
+version = "1.0.0"
+
 authors = [
     { name = "Xiaorui Dong", email = "xiaorui@mit.com" },
     { name = "Lagnajit Pattanaik" },
@@ -69,6 +70,3 @@ profile = "black"
 where = ["."]
 include = ["rdmc*", "rdtools*"]
 exclude = ["docs*", "ipython*", "test*"]
-
-[tool.setuptools.dynamic]
-version = { attr = "rdmc.__version__" }
