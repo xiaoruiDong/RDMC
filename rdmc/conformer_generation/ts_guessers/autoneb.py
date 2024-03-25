@@ -22,6 +22,8 @@ except BaseException:
         "XTB cannot be used for AutoNEBGuesser as its ASE interface imported incorrectly. Skipping import..."
     )
 
+from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
+
 
 class AutoNEBGuesser(TSInitialGuesser):
     """

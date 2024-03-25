@@ -1,5 +1,7 @@
 import os
 import pickle
+from typing import Optional
+
 
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
 
