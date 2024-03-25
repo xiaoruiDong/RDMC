@@ -1,0 +1,1 @@
+from rdmc.conformer_generation.ts_verifiers.qchem import QChemIRCVerifier
