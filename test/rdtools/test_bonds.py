@@ -2,12 +2,17 @@ import pytest
 
 from rdkit import Chem
 
-from rdmc.rdtools.bond import (
+from rdtools.bond import (
     add_bond,
     add_bonds,
     get_bonds_as_tuples,
+    _get_bonds_as_sets,
+    get_formed_bonds,
+    get_broken_bonds,
+    get_formed_and_broken_bonds,
+    get_all_changing_bonds,
 )
-from rdmc.rdtools.conversion import mol_from_smiles
+from rdtools.conversion import mol_from_smiles
 
 
 def test_add_bond():
@@ -61,3 +66,80 @@ def test_get_bond_as_tuples(smi, exp_bonds):
     mol = mol_from_smiles(smi)
     bonds = get_bonds_as_tuples(mol)
     assert set(bonds) == set(exp_bonds)
+
+
+def test_get_bonds_as_sets():
+    """
+    Test get bonds for multiple mols.
+    """
+    mol1 = mol_from_smiles("[C:1]([c:2]1[n:3][o:4][n:5][n:6]1)([H:7])([H:8])[H:9]")
+    mol2 = mol_from_smiles("[C:1]([N:3]=[C:2]=[N:6][N:5]=[O:4])([H:7])([H:8])[H:9]")
+    mol3 = mol_from_smiles("[C:1]2([C:2]1[N:3]2[O:4][N:5][N:6]1)([H:7])([H:8])[H:9]", sanitize=False)
+
+    assert _get_bonds_as_sets(mol1) \
+        == ({(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},)
+    assert _get_bonds_as_sets(mol1, mol2) \
+        == ({(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
+            {(0, 2), (1, 2), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)})
+    assert _get_bonds_as_sets(mol1, mol2, mol3) \
+        == ({(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
+            {(0, 2), (1, 2), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
+            {(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5), (0, 2)})
+
+
+def test_get_formed_bonds():
+    """
+    Test get formed bonds between the reactant complex and the product complex.
+    """
+    mol1 = mol_from_smiles("[C:1]([c:2]1[n:3][o:4][n:5][n:6]1)([H:7])([H:8])[H:9]")
+    mol2 = mol_from_smiles("[C:1]([N:3]=[C:2]=[N:6][N:5]=[O:4])([H:7])([H:8])[H:9]")
+
+    # The backend molecule should be the same as the input RWMol object
+    assert set(get_formed_bonds(mol1, mol2)) == {(0, 2)}
+    assert set(get_formed_bonds(mol2, mol1)) == {(0, 1), (2, 3)}
+
+
+def test_get_broken_bonds():
+    """
+    Test get broken bonds between the reactant complex and the product complex.
+    """
+    mol1 = mol_from_smiles("[C:1]([c:2]1[n:3][o:4][n:5][n:6]1)([H:7])([H:8])[H:9]")
+    mol2 = mol_from_smiles("[C:1]([N:3]=[C:2]=[N:6][N:5]=[O:4])([H:7])([H:8])[H:9]")
+
+    # The backend molecule should be the same as the input RWMol object
+    assert set(get_broken_bonds(mol1, mol2)) == {(0, 1), (2, 3)}
+    assert set(get_broken_bonds(mol2, mol1)) == {(0, 2)}
+
+
+def test_get_formed_and_broken_bonds() -> None:
+    """
+    Test get formed and broken bonds between the reactant complex and the product complex.
+    """
+    mol1 = mol_from_smiles("[C:1]([c:2]1[n:3][o:4][n:5][n:6]1)([H:7])([H:8])[H:9]")
+    mol2 = mol_from_smiles("[C:1]([N:3]=[C:2]=[N:6][N:5]=[O:4])([H:7])([H:8])[H:9]")
+
+    # The backend molecule should be the same as the input RWMol object
+    assert [set(blist) for blist in get_formed_and_broken_bonds(mol1, mol2)] \
+        == [{(0, 2)},
+            {(0, 1), (2, 3)}]
+    assert [set(blist) for blist in get_formed_and_broken_bonds(mol2, mol1)] \
+        == [{(0, 1), (2, 3)},
+            {(0, 2)}]
+
+
+def test_get_all_changing_bonds() -> None:
+    """
+    Test get formed and broken bonds between the reactant complex and the product complex.
+    """
+    mol1 = mol_from_smiles("[C:1]([c:2]1[n:3][o:4][n:5][n:6]1)([H:7])([H:8])[H:9]")
+    mol2 = mol_from_smiles("[C:1]([N:3]=[C:2]=[N:6][N:5]=[O:4])([H:7])([H:8])[H:9]")
+
+    # The backend molecule should be the same as the input RWMol object
+    assert [set(blist) for blist in get_all_changing_bonds(mol1, mol2)] \
+        == [{(0, 2)},
+            {(0, 1), (2, 3)},
+            {(1, 2), (4, 5), (1, 5), (3, 4)}]
+    assert [set(blist) for blist in get_all_changing_bonds(mol2, mol1)] \
+        == [{(0, 1), (2, 3)},
+            {(0, 2)},
+            {(1, 2), (4, 5), (1, 5), (3, 4)}]

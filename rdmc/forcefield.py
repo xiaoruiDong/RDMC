@@ -11,51 +11,69 @@ import numpy as np
 
 from rdkit import Chem
 from rdkit.Chem import rdForceFieldHelpers
+
 try:
     # Openbabel 3
     from openbabel import openbabel as ob
 except ImportError:
     # Openbabel 2
-    import openbabel as ob
+    try:
+        import openbabel as ob
+    except ImportError:
+        from rdtools.utils import get_fake_module
+
+        ob = get_fake_module("openbabel")
 
 from rdmc.mol import RDKitMol
-from rdmc.rdtools.obabel import (
+from rdtools.obabel import (
     get_obmol_coords,
     rdkit_mol_to_openbabel_mol,
 )
-from rdmc.rdtools.conf import set_conformer_coordinates
+from rdtools.conf import set_conformer_coordinates
 
 
-ROO_TEMPLATE = Chem.MolFromSmarts('[O;X1]-[O;X2]')
+ROO_TEMPLATE = Chem.MolFromSmarts("[O;X1]-[O;X2]")
 ROO_TEMPLATE.GetAtoms()[0].SetNumRadicalElectrons(1)
-ROO_MOD = {'edit': {'SetAtomicNum': 9,
-                    'SetNumRadicalElectrons': 0},
-           'remedy': {'SetAtomicNum': 8,
-                      'SetNumRadicalElectrons': 1}}
+ROO_MOD = {
+    "edit": {"SetAtomicNum": 9, "SetNumRadicalElectrons": 0},
+    "remedy": {"SetAtomicNum": 8, "SetNumRadicalElectrons": 1},
+}
 
-H_RAD_TEMP = Chem.MolFromSmiles('[H]')
-H_RAD_MOD = {'edit': {'SetAtomicNum': 17,
-                      'SetNumRadicalElectrons': 1},
-             'remedy': {'SetAtomicNum': 1,
-                        'SetNumRadicalElectrons': 1}}
+H_RAD_TEMP = Chem.MolFromSmiles("[H]")
+H_RAD_MOD = {
+    "edit": {"SetAtomicNum": 17, "SetNumRadicalElectrons": 1},
+    "remedy": {"SetAtomicNum": 1, "SetNumRadicalElectrons": 1},
+}
 
-O_RAD_TEMP = Chem.MolFromSmiles('[O]')
-O_RAD_MOD = {'edit': {'SetAtomicNum': 9,
-                      'SetNumRadicalElectrons': 1},
-             'remedy': {'SetAtomicNum': 8,
-                        'SetNumRadicalElectrons': 2}}
+O_RAD_TEMP = Chem.MolFromSmiles("[O]")
+O_RAD_MOD = {
+    "edit": {"SetAtomicNum": 9, "SetNumRadicalElectrons": 1},
+    "remedy": {"SetAtomicNum": 8, "SetNumRadicalElectrons": 2},
+}
 
 # Match O2 molecule
-O2_TEMP = Chem.MolFromSmarts('[O;X1]-,=[O;X1]')
+O2_TEMP = Chem.MolFromSmarts("[O;X1]-,=[O;X1]")
 O2_TEMP.GetAtoms()[0].SetNumRadicalElectrons(1)
 O2_TEMP.GetAtoms()[1].SetNumRadicalElectrons(1)
-O2_MOD = {'edit': {'SetAtomicNum': 9, },
-          'remedy': {'SetAtomicNum': 8, }}
+O2_MOD = {
+    "edit": {
+        "SetAtomicNum": 9,
+    },
+    "remedy": {
+        "SetAtomicNum": 8,
+    },
+}
 
 # Match H2 molecule
-H2_TEMP = Chem.MolFromSmiles('[H][H]')
-H2_MOD = {'edit': {'SetAtomicNum': 17, },
-          'remedy': {'SetAtomicNum': 1, }}
+H2_TEMP = Chem.MolFromSmiles("[H][H]")
+H2_MOD = {
+    "edit": {
+        "SetAtomicNum": 17,
+    },
+    "remedy": {
+        "SetAtomicNum": 1,
+    },
+}
 
 
 class RDKitFF(object):
@@ -63,9 +81,9 @@ class RDKitFF(object):
     A wrapper to deal with Force field in RDKit.
     """
 
-    available_force_field = ['mmff94s', 'mmff94', 'uff']
+    available_force_field = ["mmff94s", "mmff94", "uff"]
 
-    def __init__(self, force_field: str = 'mmff94s'):
+    def __init__(self, force_field: str = "mmff94s"):
         """
         Initiate the ``RDKitFF`` by given the name of the force field.
 
@@ -97,17 +115,18 @@ class RDKitFF(object):
         """
         force_field = force_field.lower()
         if force_field not in self.available_force_field:
-            raise ValueError(f'RDKit does not support {force_field}')
+            raise ValueError(f"RDKit does not support {force_field}")
         self._type = force_field
 
-    def add_distance_constraint(self,
-                                atoms: Sequence,
-                                value: Optional[Union[int, float]] = None,
-                                min_len: Optional[Union[int, float]] = None,
-                                max_len: Optional[Union[int, float]] = None,
-                                relative: bool = False,
-                                force_constant: Union[int, float] = 1e5,
-                                ):
+    def add_distance_constraint(
+        self,
+        atoms: Sequence,
+        value: Optional[Union[int, float]] = None,
+        min_len: Optional[Union[int, float]] = None,
+        max_len: Optional[Union[int, float]] = None,
+        relative: bool = False,
+        force_constant: Union[int, float] = 1e5,
+    ):
         """
         Add a distance constraint to the force field. You should set either ``value``
         or ``min_len`` and ``max_len``.
@@ -123,14 +142,14 @@ class RDKitFF(object):
             force_constant (int or float, optional): the constant in optimization.
         """
         if (value is None) and ((min_len is None) or (max_len is None)):
-            raise ValueError('You should set either value or min_len and max_len')
+            raise ValueError("You should set either value or min_len and max_len")
         if len(atoms) != 2:
-            raise ValueError('Invalid `atoms` arguments. Should have a length of 2.')
-        if not hasattr(self, 'ff'):
-            raise ValueError('You need to setup the molecule first to set constraints.')
+            raise ValueError("Invalid `atoms` arguments. Should have a length of 2.")
+        if not hasattr(self, "ff"):
+            raise ValueError("You need to setup the molecule first to set constraints.")
 
         atoms = self.update_atom_idx(atoms)
-        if self.type == 'uff':
+        if self.type == "uff":
             add_distance_constraint = self.ff.UFFAddDistanceConstraint
         else:
             add_distance_constraint = self.ff.MMFFAddDistanceConstraint
@@ -139,18 +158,23 @@ class RDKitFF(object):
             min_len = value
             max_len = value + 0.000001
 
-        add_distance_constraint(*atoms, relative=relative,
-                                minLen=min_len, maxLen=max_len,
-                                forceConstant=force_constant)
+        add_distance_constraint(
+            *atoms,
+            relative=relative,
+            minLen=min_len,
+            maxLen=max_len,
+            forceConstant=force_constant,
+        )
 
-    def add_angle_constraint(self,
-                             atoms: Sequence,
-                             value: Optional[Union[int, float]] = None,
-                             min_angle: Optional[Union[int, float]] = None,
-                             max_angle: Optional[Union[int, float]] = None,
-                             relative: bool = False,
-                             force_constant: Union[int, float] = 1e5,
-                             ):
+    def add_angle_constraint(
+        self,
+        atoms: Sequence,
+        value: Optional[Union[int, float]] = None,
+        min_angle: Optional[Union[int, float]] = None,
+        max_angle: Optional[Union[int, float]] = None,
+        relative: bool = False,
+        force_constant: Union[int, float] = 1e5,
+    ):
         """
         Add a angle constraint to the force field. You should set either ``value``
         or ``min_angle`` and ``max_angle``.
@@ -166,14 +190,14 @@ class RDKitFF(object):
             force_constant (int or float, optional): the constant in optimization.
         """
         if (value is None) and ((min_angle is None) or (max_angle is None)):
-            raise ValueError('You should set either value or min_angle and max_angle')
+            raise ValueError("You should set either value or min_angle and max_angle")
         if len(atoms) != 3:
-            raise ValueError('Invalid `atoms` arguments. Should have a length of 3.')
-        if not hasattr(self, 'ff'):
-            raise ValueError('You need to setup the molecule first to set constraints.')
+            raise ValueError("Invalid `atoms` arguments. Should have a length of 3.")
+        if not hasattr(self, "ff"):
+            raise ValueError("You need to setup the molecule first to set constraints.")
 
         atoms = self.update_atom_idx(atoms)
-        if self.type == 'uff':
+        if self.type == "uff":
             add_angle_constraint = self.ff.UFFAddAngleConstraint
         else:
             add_angle_constraint = self.ff.MMFFAddAngleConstraint
@@ -182,18 +206,23 @@ class RDKitFF(object):
             min_angle = value
             max_angle = value + 0.000001
 
-        add_angle_constraint(*atoms, relative=relative,
-                             minAngleDeg=min_angle, maxAngleDeg=max_angle,
-                             forceConstant=force_constant)
+        add_angle_constraint(
+            *atoms,
+            relative=relative,
+            minAngleDeg=min_angle,
+            maxAngleDeg=max_angle,
+            forceConstant=force_constant,
+        )
 
-    def add_torsion_constraint(self,
-                               atoms: Sequence,
-                               value: Optional[Union[int, float]] = None,
-                               min_angle: Optional[Union[int, float]] = None,
-                               max_angle: Optional[Union[int, float]] = None,
-                               relative: bool = False,
-                               force_constant: Union[int, float] = 1e2,
-                               ):
+    def add_torsion_constraint(
+        self,
+        atoms: Sequence,
+        value: Optional[Union[int, float]] = None,
+        min_angle: Optional[Union[int, float]] = None,
+        max_angle: Optional[Union[int, float]] = None,
+        relative: bool = False,
+        force_constant: Union[int, float] = 1e2,
+    ):
         """
         Add a torsion constraint to the force field. You should set either ``value``
         or ``min_angle`` and ``max_angle``.
@@ -209,14 +238,14 @@ class RDKitFF(object):
             force_constant (int or float, optional): the constant in optimization.
         """
         if (value is None) and ((min_angle is None) or (max_angle is None)):
-            raise ValueError('You should set either value or min_angle and max_angle')
+            raise ValueError("You should set either value or min_angle and max_angle")
         if len(atoms) != 4:
-            raise ValueError('Invalid `atoms` arguments. Should have a length of 4.')
-        if not hasattr(self, 'ff'):
-            raise ValueError('You need to setup the molecule first to set constraints.')
+            raise ValueError("Invalid `atoms` arguments. Should have a length of 4.")
+        if not hasattr(self, "ff"):
+            raise ValueError("You need to setup the molecule first to set constraints.")
 
         atoms = self.update_atom_idx(atoms)
-        if self.type == 'uff':
+        if self.type == "uff":
             add_torsion_constraint = self.ff.UFFAddTorsionConstraint
         else:
             add_torsion_constraint = self.ff.MMFFAddTorsionConstraint
@@ -225,12 +254,15 @@ class RDKitFF(object):
             min_angle = value
             max_angle = value + 0.000001
 
-        add_torsion_constraint(*atoms, relative=relative,
-                               minDihedralDeg=min_angle, maxDihedralDeg=max_angle,
-                               forceConstant=force_constant)
+        add_torsion_constraint(
+            *atoms,
+            relative=relative,
+            minDihedralDeg=min_angle,
+            maxDihedralDeg=max_angle,
+            forceConstant=force_constant,
+        )
 
-    def fix_atom(self,
-                 atom_idx: int):
+    def fix_atom(self, atom_idx: int):
         """
         Fix the coordinates of an atom given by its index.
 
@@ -248,8 +280,7 @@ class RDKitFF(object):
         return self._mol
 
     @mol.setter
-    def mol(self,
-            mol: Union['Mol', 'RDKitMol']):
+    def mol(self, mol: Union["Mol", "RDKitMol"]):
         """
         Set the molecule to be optimized.
 
@@ -258,33 +289,35 @@ class RDKitFF(object):
                                      it supports RDKit Mol and OBMol.
         """
         if isinstance(mol, (Chem.Mol, RDKitMol)):
-            self.mol_type = 'rdkit'
+            self.mol_type = "rdkit"
             self._mol = mol
         else:
             raise NotImplementedError
 
-    def update_atom_idx(self,
-                        atoms: Sequence,
-                        ) -> list:
+    def update_atom_idx(
+        self,
+        atoms: Sequence,
+    ) -> list:
         """
         Update_atom_idx if a rdkit mol atom index is provided.
 
         Args:
             atoms (Sequence):
         """
-        if not hasattr(self, 'mol_type'):
+        if not hasattr(self, "mol_type"):
             return atoms
 
-        if self.mol_type == 'rdkit':
+        if self.mol_type == "rdkit":
             return atoms
         else:
             raise NotImplementedError
 
-    def setup(self,
-              mol: Optional[Union['Mol', 'RDKitMol']] = None,
-              conf_id: int = -1,
-              ignore_interfrag_interactions=False,
-              ):
+    def setup(
+        self,
+        mol: Optional[Union["Mol", "RDKitMol"]] = None,
+        conf_id: int = -1,
+        ignore_interfrag_interactions=False,
+    ):
         """
         Setup the force field and get ready to be optimized.
 
@@ -297,46 +330,56 @@ class RDKitFF(object):
         """
         if mol:
             self.mol = mol
-        elif not hasattr(self, 'mol') or not self.mol:
-            RuntimeError('You need to set up a molecule to optimize first! '
-                         'Either by `RDKitFF.mol = <molecule>`, or '
-                         'by `RDKitFF.setup(mol = <molecule>`.')
+        elif not hasattr(self, "mol") or not self.mol:
+            RuntimeError(
+                "You need to set up a molecule to optimize first! "
+                "Either by `RDKitFF.mol = <molecule>`, or "
+                "by `RDKitFF.setup(mol = <molecule>`."
+            )
 
         if not self.is_optimizable():
             self.mol, self.edits = self.make_optimizable(in_place=True)
 
-        if self.type == 'uff':
-            self.ff = rdForceFieldHelpers.UFFGetMoleculeForceField(self.mol.ToRWMol(),
-                                                                   confId=conf_id,
-                                                                   ignoreInterfragInteractions=ignore_interfrag_interactions)
+        if self.type == "uff":
+            self.ff = rdForceFieldHelpers.UFFGetMoleculeForceField(
+                self.mol,
+                confId=conf_id,
+                ignoreInterfragInteractions=ignore_interfrag_interactions,
+            )
         else:
-            mmff_properties = rdForceFieldHelpers.MMFFGetMoleculeProperties(self.mol.ToRWMol(),
-                                                                            mmffVariant=self.type,)
-            self.ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(self.mol.ToRWMol(),
-                                                                    pyMMFFMolProperties=mmff_properties,
-                                                                    confId=conf_id,
-                                                                    ignoreInterfragInteractions=ignore_interfrag_interactions)
+            mmff_properties = rdForceFieldHelpers.MMFFGetMoleculeProperties(
+                self.mol,
+                mmffVariant=self.type,
+            )
+            self.ff = rdForceFieldHelpers.MMFFGetMoleculeForceField(
+                self.mol,
+                pyMMFFMolProperties=mmff_properties,
+                confId=conf_id,
+                ignoreInterfragInteractions=ignore_interfrag_interactions,
+            )
         self.ff.Initialize()
 
-    def optimize(self,
-                 max_step: int = 100000,
-                 tol: float = 1e-8,
-                 step_per_iter: int = 5):
+    def optimize(
+        self, max_step: int = 100000, tol: float = 1e-8, step_per_iter: int = 5
+    ):
         """
         Optimize the RDKit molecule.
         """
         n, success = 0, 1
         while (n < max_step) and (success != 0):
-            success = self.ff.Minimize(maxIts=step_per_iter,
-                                       energyTol=tol,)
+            success = self.ff.Minimize(
+                maxIts=step_per_iter,
+                energyTol=tol,
+            )
             n = n + step_per_iter
 
         if success == 0:
             return True
 
-    def is_optimizable(self,
-                       mol: Optional['Mol'] = None,
-                       ) -> bool:
+    def is_optimizable(
+        self,
+        mol: Optional["Mol"] = None,
+    ) -> bool:
         """
         Check if RDKit has the parameters for all atom type in the molecule.
 
@@ -348,17 +391,17 @@ class RDKitFF(object):
         """
         if not mol:
             mol = self.mol
-        mol = mol.ToRWMol() if isinstance(mol, RDKitMol) else mol
 
-        if self.type == 'uff':
+        if self.type == "uff":
             return rdForceFieldHelpers.UFFHasAllMoleculeParams(mol)
         else:
             return rdForceFieldHelpers.MMFFHasAllMoleculeParams(mol)
 
-    def make_optimizable(self,
-                         mol: Optional['RDKitMol'] = None,
-                         in_place: bool = False,
-                         ) -> tuple:
+    def make_optimizable(
+        self,
+        mol: Optional["RDKitMol"] = None,
+        in_place: bool = False,
+    ) -> tuple:
         """
         Make the molecule able to be optimized by the force field. Known problematic molecules:
 
@@ -401,7 +444,7 @@ class RDKitFF(object):
         for idx in roo:
             atom = mol_copy.GetAtomWithIdx(idx)
             edits[idx] = ROO_MOD
-            for attr, value in ROO_MOD['edit'].items():
+            for attr, value in ROO_MOD["edit"].items():
                 getattr(atom, attr)(value)
 
         # Convert [O] to [F] and [H] to [Cl]
@@ -409,14 +452,14 @@ class RDKitFF(object):
         for idx in Hs:
             atom = mol_copy.GetAtomWithIdx(idx[0])
             edits[idx[0]] = H_RAD_MOD
-            for attr, value in H_RAD_MOD['edit'].items():
+            for attr, value in H_RAD_MOD["edit"].items():
                 getattr(atom, attr)(value)
 
         Os = mol_copy.GetSubstructMatches(O_RAD_TEMP)
         for idx in Os:
             atom = mol_copy.GetAtomWithIdx(idx[0])
             edits[idx[0]] = O_RAD_MOD
-            for attr, value in O_RAD_MOD['edit'].items():
+            for attr, value in O_RAD_MOD["edit"].items():
                 getattr(atom, attr)(value)
 
         # Convert [H][H] to ClCl
@@ -424,7 +467,7 @@ class RDKitFF(object):
         for idx in H2s:
             atom = mol_copy.GetAtomWithIdx(idx)
             edits[idx] = H2_MOD
-            for attr, value in H2_MOD['edit'].items():
+            for attr, value in H2_MOD["edit"].items():
                 getattr(atom, attr)(value)
 
         # Convert O2 to ClCl
@@ -432,19 +475,20 @@ class RDKitFF(object):
         for idx in O2s:
             atom = mol_copy.GetAtomWithIdx(idx)
             edits[idx] = O2_MOD
-            for attr, value in O2_MOD['edit'].items():
+            for attr, value in O2_MOD["edit"].items():
                 getattr(atom, attr)(value)
 
         # Check if optimizable
         if not self.is_optimizable(mol_copy):
-            raise NotImplementedError('Strategies of making this molecule optimizable has '
-                                      'not been implemented.')
+            raise NotImplementedError(
+                "Strategies of making this molecule optimizable has "
+                "not been implemented."
+            )
         return mol_copy, edits
 
-    def recover_mol(self,
-                    mol: Optional['Mol'] = None,
-                    edits: dict = {},
-                    in_place: bool = True):
+    def recover_mol(
+        self, mol: Optional["Mol"] = None, edits: dict = {}, in_place: bool = True
+    ):
         """
         Recover the molecule from modifications.
 
@@ -473,7 +517,7 @@ class RDKitFF(object):
 
         for idx, approach in edits.items():
             atom = mol_copy.GetAtomWithIdx(idx)
-            for attr, value in approach['remedy'].items():
+            for attr, value in approach["remedy"].items():
                 getattr(atom, attr)(value)
 
         # Adjust H-H bond to 74 pm
@@ -490,10 +534,9 @@ class RDKitFF(object):
 
         return mol_copy
 
-    def optimize_confs(self,
-                       max_step: int = 100000,
-                       num_threads: int = 0,
-                       step_per_iter: int = 5):
+    def optimize_confs(
+        self, max_step: int = 100000, num_threads: int = 0, step_per_iter: int = 5
+    ):
         """
         A wrapper for force field optimization for multiple conformers simultaneously.
 
@@ -515,16 +558,20 @@ class RDKitFF(object):
             - float: energy
         """
         if max_step == 0:
-            return rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
-                                                             self.ff,
-                                                             numThreads=num_threads,
-                                                             maxIters=0,)
+            return rdForceFieldHelpers.OptimizeMoleculeConfs(
+                self.mol,
+                self.ff,
+                numThreads=num_threads,
+                maxIters=0,
+            )
         i = 0
         while i < max_step:
-            results = rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
-                                                                self.ff,
-                                                                numThreads=num_threads,
-                                                                maxIters=step_per_iter,)
+            results = rdForceFieldHelpers.OptimizeMoleculeConfs(
+                self.mol,
+                self.ff,
+                numThreads=num_threads,
+                maxIters=step_per_iter,
+            )
             not_converged = [result[0] for result in results]
             if 1 not in not_converged:
                 return results
@@ -534,10 +581,12 @@ class RDKitFF(object):
         except UnboundLocalError:
             # It will only happends when users assign a negative value
             # and the variable `results` therefore is not created.
-            raise ValueError(f'An invalid max_step {max_step} was assigned. It should be an'
-                             f' integer >= 0.')
+            raise ValueError(
+                f"An invalid max_step {max_step} was assigned. It should be an"
+                f" integer >= 0."
+            )
 
-    def get_optimized_mol(self) -> 'Mol':
+    def get_optimized_mol(self) -> "Mol":
         """
         Clean up the optimized molecule and return it. Please call this function once you believe
         the optimization is done, and ready to get the optimized molecule.
@@ -545,11 +594,13 @@ class RDKitFF(object):
         Returns:
             Mol: The optimized RDKitMol molecule
         """
-        if hasattr(self, 'edits'):
+        if hasattr(self, "edits"):
             self.recover_mol(edits=self.edits)
         return self.mol
 
-    def get_energy(self,):
+    def get_energy(
+        self,
+    ):
         """
         Get the energy of the first conformer of the molecule in kcal/mol.
 
@@ -558,7 +609,9 @@ class RDKitFF(object):
         """
         return self.ff.CalcEnergy()
 
-    def get_conformer_energies(self,):
+    def get_conformer_energies(
+        self,
+    ):
         """
         Get the energy of all conformers of the molecule. Surprisingly, there is no such a handy
         function built in the RDKit. The built-in function is CalcEnergy which you can only get the
@@ -567,22 +620,23 @@ class RDKitFF(object):
         Returns:
             list: Energies of all conformers of the molecule.
         """
-        results = rdForceFieldHelpers.OptimizeMoleculeConfs(self.mol.ToRWMol(),
-                                                            self.ff,
-                                                            numThreads=0,
-                                                            maxIters=0)
+        results = rdForceFieldHelpers.OptimizeMoleculeConfs(
+            self.mol, self.ff, numThreads=0, maxIters=0
+        )
         # results is a list of (convergence, energy value)
         return [item[1] for item in results]
 
-    def torsional_scan_1d(self,
-                          torsion,
-                          num_points: int = 45,
-                          rigid: bool = True,
-                          init_angle: Optional[float] = None,
-                          force_constant: float = 100,
-                          return_xyz: bool = False):
+    def torsional_scan_1d(
+        self,
+        torsion,
+        num_points: int = 45,
+        rigid: bool = True,
+        init_angle: Optional[float] = None,
+        force_constant: float = 100,
+        return_xyz: bool = False,
+    ):
         mol_copy = self.mol.Copy()
-        conf = self.mol.GetConformer()
+        conf = self.mol.GetEditableConformer()
         if not init_angle:
             init_angle = conf.GetTorsionDeg(torsion)
         pos0 = conf.GetPositions()
@@ -602,11 +656,12 @@ class RDKitFF(object):
                 if return_xyz:
                     xyzs.append(self.mol.ToXYZ())
                 continue
-            self.add_torsion_constraint(torsion, value=angle_val,
-                                        force_constant=force_constant)
+            self.add_torsion_constraint(
+                torsion, value=angle_val, force_constant=force_constant
+            )
             self.optimize()
             opt_mol = self.get_optimized_mol()
-            angles[i] = opt_mol.GetConformer().GetTorsionDeg(torsion)
+            angles[i] = opt_mol.GetEditableConformer().GetTorsionDeg(torsion)
             energies[i] = self.get_energy()
             if return_xyz:
                 xyzs.append(opt_mol.ToXYZ())
@@ -625,10 +680,10 @@ class OpenBabelFF:
     as input. We suggest to use this class for small scale calculations, due to its slowness.
     """
 
-    available_force_field = ['mmff94s', 'mmff94', 'uff', 'gaff']
-    available_solver = ['ConjugateGradients', 'SteepestDescent']
+    available_force_field = ["mmff94s", "mmff94", "uff", "gaff"]
+    available_solver = ["ConjugateGradients", "SteepestDescent"]
 
-    def __init__(self, force_field: str = 'mmff94s'):
+    def __init__(self, force_field: str = "mmff94s"):
         """
         Initiate the ``OpenbabelFF`` by given the name of the force field.
 
@@ -641,7 +696,7 @@ class OpenBabelFF:
         """
         self.type = force_field
         self.ff = ob.OBForceField.FindForceField(self.type)
-        self.solver_type = 'ConjugateGradients'
+        self.solver_type = "ConjugateGradients"
         self.constraints = None
 
     @property
@@ -664,7 +719,7 @@ class OpenBabelFF:
         """
         force_field = force_field.lower()
         if force_field not in self.available_force_field:
-            raise ValueError(f'Openbabel does not support {force_field}')
+            raise ValueError(f"Openbabel does not support {force_field}")
         self._type = force_field
 
     def _initialize_constraints(self):
@@ -674,9 +729,7 @@ class OpenBabelFF:
         if not self.constraints:
             self.constraints = ob.OBFFConstraints()
 
-    def add_distance_constraint(self,
-                                atoms: Sequence,
-                                value: Union[int, float]):
+    def add_distance_constraint(self, atoms: Sequence, value: Union[int, float]):
         """
         Add a distance constraint to the force field.
 
@@ -685,14 +738,12 @@ class OpenBabelFF:
             value (int or float): The distance value in Angstrom.
         """
         if len(atoms) != 2:
-            raise ValueError('Invalid `atoms` arguments. Should have a length of 2.')
+            raise ValueError("Invalid `atoms` arguments. Should have a length of 2.")
         self._initialize_constraints()
         atoms = self.update_atom_idx(atoms)
         self.constraints.AddDistanceConstraint(*atoms, value)
 
-    def add_angle_constraint(self,
-                             atoms: Sequence,
-                             angle: Union[int, float]):
+    def add_angle_constraint(self, atoms: Sequence, angle: Union[int, float]):
         """
         Add a angle constraint to the force field.
 
@@ -701,14 +752,12 @@ class OpenBabelFF:
             value (int or float): The degree value of the bond angle.
         """
         if len(atoms) != 3:
-            raise ValueError('Invalid `atoms` arguments. Should have a length of 3.')
+            raise ValueError("Invalid `atoms` arguments. Should have a length of 3.")
         self._initialize_constraints()
         atoms = self.update_atom_idx(atoms)
         self.constraints.AddAngleConstraint(*atoms, angle)
 
-    def add_torsion_constraint(self,
-                               atoms: Sequence,
-                               angle: Union[int, float]):
+    def add_torsion_constraint(self, atoms: Sequence, angle: Union[int, float]):
         """
         Add torsion constraint to the force field.
 
@@ -717,13 +766,12 @@ class OpenBabelFF:
             value (int or float): The degree value of the torsion angle.
         """
         if len(atoms) != 4:
-            raise ValueError('Invalid `atoms` arguments. Should have a length of 4.')
+            raise ValueError("Invalid `atoms` arguments. Should have a length of 4.")
         self._initialize_constraints()
         atoms = self.update_atom_idx(atoms)
         self.constraints.AddTorsionConstraint(*atoms, angle)
 
-    def fix_atom(self,
-                 atom_idx: int):
+    def fix_atom(self, atom_idx: int):
         """
         Fix the coordinates of an atom given by its index.
 
@@ -742,8 +790,7 @@ class OpenBabelFF:
         return self._mol
 
     @mol.setter
-    def mol(self,
-            mol: Union['Mol', 'RDKitMol', 'OBMol']):
+    def mol(self, mol: Union["Mol", "RDKitMol", "OBMol"]):
         """
         Set the molecule to be optimized.
 
@@ -752,38 +799,40 @@ class OpenBabelFF:
                                               it supports RDKit Mol and OBMol.
         """
         if isinstance(mol, (Chem.Mol, RDKitMol)):
-            self.mol_type = 'rdkit'
+            self.mol_type = "rdkit"
             self.obmol = rdkit_mol_to_openbabel_mol(mol)
             self._mol = mol
         elif isinstance(mol, ob.OBMol):
-            self.mol_type = 'openbabel'
+            self.mol_type = "openbabel"
             self.obmol = mol
             self._mol = self.obmol
         else:
             raise NotImplementedError
 
-    def update_atom_idx(self,
-                        atoms: Sequence,
-                        ) -> list:
+    def update_atom_idx(
+        self,
+        atoms: Sequence,
+    ) -> list:
         """
         Update_atom_idx if a rdkit mol atom index is provided.
 
         Args:
             atoms (Sequence):
         """
-        if not hasattr(self, 'mol_type'):
+        if not hasattr(self, "mol_type"):
             return atoms
 
-        if self.mol_type == 'rdkit':
+        if self.mol_type == "rdkit":
             return [idx + 1 for idx in atoms]
-        elif self.mol_type == 'openbabel':
+        elif self.mol_type == "openbabel":
             return atoms
         else:
             raise NotImplementedError
 
-    def is_optimizable(self,
-                       mol: Optional['Mol'] = None,
-                       ) -> bool:
+    def is_optimizable(
+        self,
+        mol: Optional["Mol"] = None,
+    ) -> bool:
         """
         Check if Openbabel has the parameters for all atom type in the molecule.
 
@@ -801,33 +850,36 @@ class OpenBabelFF:
 
         return ff.Setup(mol)
 
-    def setup(self,
-              mol: Optional[Union['Mol', 'RDKitMol', 'OBMol']] = None,
-              constraints: Optional['ob.OBFFConstraints'] = None,
-              ):
+    def setup(
+        self,
+        mol: Optional[Union["Mol", "RDKitMol", "OBMol"]] = None,
+        constraints: Optional["ob.OBFFConstraints"] = None,
+    ):
         """
         Setup the force field and get ready to be optimized.
         """
         if mol:
             self.mol = mol
-        elif not hasattr(self, 'mol') or not self.mol:
-            RuntimeError('You need to set up a molecule to optimize first! '
-                         'Either by `OpenBabelFF.mol = <molecule>`, or '
-                         'by `OpenbabelFF.setup(mol = <molecule>`.')
+        elif not hasattr(self, "mol") or not self.mol:
+            RuntimeError(
+                "You need to set up a molecule to optimize first! "
+                "Either by `OpenBabelFF.mol = <molecule>`, or "
+                "by `OpenbabelFF.setup(mol = <molecule>`."
+            )
 
         if constraints:
             self.constraints = constraints
 
-    def set_solver(self,
-                   solver_type: str):
+    def set_solver(self, solver_type: str):
         if solver_type not in self.available_solver:
-            raise ValueError(f'Invalid solver. Got {solver_type}. '
-                             f'Should be chose from {self.available_solver}')
+            raise ValueError(
+                f"Invalid solver. Got {solver_type}. "
+                f"Should be chose from {self.available_solver}"
+            )
 
-    def optimize(self,
-                 max_step: int = 100000,
-                 tol: float = 1e-8,
-                 step_per_iter: int = 5):
+    def optimize(
+        self, max_step: int = 100000, tol: float = 1e-8, step_per_iter: int = 5
+    ):
         """
         Optimize the openbabel molecule.
         """
@@ -835,8 +887,8 @@ class OpenBabelFF:
             self.ff.Setup(self.obmol, self.constraints)
         else:
             self.ff.Setup(self.obmol)
-        initial_fun = getattr(self.ff, self.solver_type + 'Initialize')
-        take_n_step_fun = getattr(self.ff, self.solver_type + 'TakeNSteps')
+        initial_fun = getattr(self.ff, self.solver_type + "Initialize")
+        take_n_step_fun = getattr(self.ff, self.solver_type + "TakeNSteps")
 
         initial_fun(max_step, tol)
         while take_n_step_fun(step_per_iter):
@@ -844,7 +896,7 @@ class OpenBabelFF:
 
         self.ff.GetCoordinates(self.obmol)
 
-    def get_optimized_mol(self) -> 'Mol':
+    def get_optimized_mol(self) -> "Mol":
         """
         Clean up the optimized molecule and return it. Please call this function once you believe
         the optimization is done, and ready to get the optimized molecule.
@@ -852,14 +904,14 @@ class OpenBabelFF:
         Returns:
             Mol: The optimized molecule
         """
-        if self.mol_type == 'rdkit':
+        if self.mol_type == "rdkit":
             conf = self.mol.GetConformer()
             set_conformer_coordinates(conf, get_obmol_coords(self.obmol))
 
         return self.mol
 
 
-def get_roo_radical_atoms(mol: 'Mol') -> tuple:
+def get_roo_radical_atoms(mol: "Mol") -> tuple:
     """
     Find the oxygen radical site of peroxide groups in the RDKit molecules.
     This atomtype is currently not optimizable by RDKit built-in MMFF algorithm.
@@ -879,14 +931,16 @@ def get_roo_radical_atoms(mol: 'Mol') -> tuple:
     return tuple(set(O_idx))
 
 
-def optimize_mol(mol: 'RDKitMol',
-                 force_field: str = "MMFF94s",
-                 tol: float = 1e-8,
-                 step_size: int = 5,
-                 max_step: int = 10000,
-                 ignore_interfrag_interaction=False,
-                 frozen_bonds: list = [],
-                 frozen_non_bondings: list = []):
+def optimize_mol(
+    mol: "RDKitMol",
+    force_field: str = "MMFF94s",
+    tol: float = 1e-8,
+    step_size: int = 5,
+    max_step: int = 10000,
+    ignore_interfrag_interaction=False,
+    frozen_bonds: list = [],
+    frozen_non_bondings: list = [],
+):
     """
     A helper function to quickly launch forcefield optimization, and
     automatically retry Openbabel force field if RDKit force field fails.

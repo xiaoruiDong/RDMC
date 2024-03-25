@@ -13,7 +13,7 @@ from scipy.spatial import distance
 
 from rdmc import RDKitMol
 from rdmc.mathlib.geom import get_centroid, get_max_distance_from_center, rotate, translate, translate_centroid
-from rdmc.ts import get_broken_bonds, get_formed_and_broken_bonds
+from rdtools.bond import get_broken_bonds, get_formed_and_broken_bonds
 from rdmc.forcefield import OpenBabelFF
 
 

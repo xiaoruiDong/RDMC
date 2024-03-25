@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from rdmc.rdtools.compare import get_match_and_recover_recipe, is_same_connectivity_mol, has_matched_mol
+from rdtools.compare import get_match_and_recover_recipe, is_same_connectivity_mol, has_matched_mol
 
 
 class MolCompareMixin:

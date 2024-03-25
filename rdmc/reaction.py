@@ -11,17 +11,17 @@ from itertools import chain, product
 from typing import List, Optional, Tuple, Union
 
 from rdkit.Chem import rdChemReactions, rdFMCS
-from rdkit.Chem.Draw import rdMolDraw2D
+
 
 from rdmc import RDKitMol
-from rdmc.rxn_compare import is_equivalent_reaction
-from rdmc.rdtools.compare import is_same_complex
-from rdmc.rdtools.resonance import generate_resonance_structures
-from rdmc.ts import get_all_changing_bonds
+from rdtools.compare import is_same_complex
+from rdtools.resonance import generate_resonance_structures
+from rdtools.bond import get_all_changing_bonds
+from rdtools.reaction.draw import draw_reaction
+from rdtools.view import reaction_viewer
 
 
 class Reaction:
-
     """
     The Reaction class that stores the reactant, product, and transition state information.
     """
@@ -230,8 +230,8 @@ class Reaction:
                     self._broken_bonds,
                     self._changed_bonds,
                 ) = get_all_changing_bonds(
-                    r_mol=self.reactant_complex,
-                    p_mol=self.product_complex,
+                    self.reactant_complex,
+                    self.product_complex,
                 )
                 return func(self, *args, **kwargs)
 
@@ -246,8 +246,8 @@ class Reaction:
             self._broken_bonds,
             self._changed_bonds,
         ) = get_all_changing_bonds(
-            r_mol=self.reactant_complex,
-            p_mol=self.product_complex,
+            rmol=self.reactant_complex,
+            pmol=self.product_complex,
         )
 
     @property
@@ -335,7 +335,7 @@ class Reaction:
         """
         Whether the reaction is resonance corrected.
         """
-        return getattr(self, '_is_resonance_corrected', False)
+        return getattr(self, "_is_resonance_corrected", False)
 
     def apply_resonance_correction(
         self,
@@ -459,6 +459,7 @@ class Reaction:
 
     def draw_2d(
         self,
+        figsize: Tuple[int, int] = (800, 300),
         font_scale: float = 1.0,
         highlight_by_reactant: bool = True,
     ) -> str:
@@ -472,27 +473,23 @@ class Reaction:
         Returns:
             str: The SVG string. To display the SVG, use IPython.display.SVG(svg_string).
         """
+        return draw_reaction(
+            self.to_rdkit_reaction(),
+            figsize=figsize,
+            font_scale=font_scale,
+            highlight_by_reactant=highlight_by_reactant,
+        )
 
-        def move_atommaps_to_notes(mol):
-            for atom in mol.GetAtoms():
-                if atom.GetAtomMapNum():
-                    atom.SetProp("atomNote", str(atom.GetAtomMapNum()))
-
-        rxn = self.to_rdkit_reaction()
-
-        # move atom maps to be annotations:
-        for mol in rxn.GetReactants():
-            move_atommaps_to_notes(mol)
-        for mol in rxn.GetProducts():
-            move_atommaps_to_notes(mol)
-
-        d2d = rdMolDraw2D.MolDraw2DSVG(800, 300)
-        d2d.drawOptions().annotationFontScale = font_scale
-        d2d.DrawReaction(rxn, highlightByReactant=highlight_by_reactant)
-
-        d2d.FinishDrawing()
-
-        return d2d.GetDrawingText()
+    def draw_3d(
+        self,
+        **kwargs,
+    ):
+        """
+        Display the reaction in 3D.
+        """
+        return reaction_viewer(
+            self.reactant_complex, self.product_complex, self.ts, **kwargs
+        )
 
     def has_same_reactants(
         self,
@@ -582,3 +579,71 @@ class Reaction:
             equiv = is_equivalent_reaction(tmp_reaction, reaction)
 
         return equiv
+
+
+def is_equivalent_reaction(
+    rxn1: "Reaction",
+    rxn2: "Reaction",
+) -> bool:
+    """
+    If two reactions has equivalent transformation regardless of atom mapping. This can be useful when filtering
+    out duplicate reactions that are generated from different atom mapping.
+
+    Args:
+        rxn1 (Reaction): The first reaction.
+        rxn2 (Reaction): The second reaction.
+
+    Returns:
+        bool: Whether the two reactions are equivalent.
+    """
+    equiv = (
+        (rxn1.num_formed_bonds == rxn2.num_formed_bonds)
+        and (rxn1.num_broken_bonds == rxn2.num_broken_bonds)
+        and (rxn1.num_changed_bonds == rxn2.num_changed_bonds)
+    )
+
+    if not equiv:
+        return False
+
+    match_r, recipe_r = rxn1.reactant_complex.GetMatchAndRecoverRecipe(
+        rxn2.reactant_complex
+    )
+    match_p, recipe_p = rxn1.product_complex.GetMatchAndRecoverRecipe(
+        rxn2.product_complex
+    )
+
+    if not match_r or not match_p:
+        # Reactant and product not matched
+        return False
+
+    elif recipe_r == recipe_p:
+        # Both can match and can be recovered with the same recipe,
+        # meaning we can simply recover the other reaction by swapping the index of these reactions
+        # Note, this also includes the case recipes are empty, meaning things are perfectly matched
+        # and no recovery operation is needed.
+        return True
+
+    elif not recipe_r:
+        # The reactants are perfectly matched
+        # Then we need to see if r/p match after the r/p are renumbered based on the product recipe,
+        new_rxn2_rcomplex = rxn2.reactant_complex.RenumberAtoms(recipe_p)
+        new_rxn2_pcomplex = rxn2.product_complex.RenumberAtoms(recipe_p)
+
+    elif not recipe_p:
+        # The products are perfectly matched
+        # Then we need to see if r/p match after the r/p are renumbered based on the reactant recipe,
+        new_rxn2_rcomplex = rxn2.reactant_complex.RenumberAtoms(recipe_r)
+        new_rxn2_pcomplex = rxn2.product_complex.RenumberAtoms(recipe_r)
+
+    else:
+        # TODO: this condition hasn't been fully investigated and tested yet.
+        # TODO: Usually this will results in a non-equivalent reaction.
+        # TODO: for now, we just renumber based on recipe_r
+        new_rxn2_rcomplex = rxn2.reactant_complex.RenumberAtoms(recipe_r)
+        new_rxn2_pcomplex = rxn2.product_complex.RenumberAtoms(recipe_r)
+
+    # To check if not recipe is the same
+    _, recipe_r = rxn1.reactant_complex.GetMatchAndRecoverRecipe(new_rxn2_rcomplex)
+    _, recipe_p = rxn1.product_complex.GetMatchAndRecoverRecipe(new_rxn2_pcomplex)
+
+    return recipe_r == recipe_p

@@ -14,18 +14,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
+          miniforge-version: latest
+          use-mamba: true
+          mamba-version: "*"
+          python-version: "3.11"
           activate-environment: rdmc_env
           environment-file: environment.yml
-          miniforge-variant: mambaforge
-          miniforge-version: latest
-          python-version: 3.7
-          auto-activate-base: true
-          use-mamba: true
 
       - name: Conda info
         run: |

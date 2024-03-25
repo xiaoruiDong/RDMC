@@ -3,10 +3,10 @@ from typing import Optional, Sequence, List, Tuple, Union
 
 from rdkit import Chem
 
-from rdmc.rdtools.torsion import get_torsion_tops
-from rdmc.rdtools.atommap import renumber_atoms
-from rdmc.rdtools.bond import add_bonds
-from rdmc.rdtools.mol import get_closed_shell_mol, combine_mols
+from rdtools.torsion import get_torsion_tops
+from rdtools.atommap import renumber_atoms
+from rdtools.bond import add_bonds
+from rdtools.mol import get_closed_shell_mol, combine_mols
 
 
 class MolOpsMixin:
