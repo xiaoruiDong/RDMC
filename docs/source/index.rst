@@ -60,7 +60,7 @@ It can be regarded as a midware between RDKit/``rdtools`` basic operations and c
 We provide examples of how to combine ``rdtools`` and ``rdmc`` with other dependencies to build useful tools. Python native interactive Log file parsers in ``rdmc.external.logparse`` are a good show case
 where ``rdmc`` and ``cclib`` are combined. We also provide solutions to pipelining tasks to achieve high-throughput generating and processing of large amount of molecule/reaction data in ``rdmc.conformer_generation``.
 
-Dependencies
+Requirements
 ------------
 ``RDMC`` is written in Python (>= 3.7) and has dependencies only on popular packages.
 
