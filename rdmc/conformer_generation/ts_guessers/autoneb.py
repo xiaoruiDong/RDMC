@@ -1,6 +1,7 @@
 import os
-import numpy as np
 from typing import Optional
+
+import numpy as np
 
 from rdmc.conformer_generation.comp_env.ase import (
     AutoNEB,
@@ -22,8 +23,6 @@ class AutoNEBGuesser(TSInitialGuesser):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = package_available["ase"]
-
     def __init__(
         self,
         optimizer: "Calculator" = xtb_calculator,
@@ -36,8 +35,14 @@ class AutoNEBGuesser(TSInitialGuesser):
             optimizer (ase.calculator.calculator.Calculator): ASE calculator. Defaults to the XTB implementation ``xtb.ase.calculator.XTB``.
             track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
-        super(AutoNEBGuesser, self).__init__(track_stats)
+        super().__init__(track_stats)
         self.optimizer = optimizer
+
+    def is_available(self):
+        """
+        Check if the AutoNEB method is available.
+        """
+        return package_available["ase"]
 
     @property
     def attach_calculators(self):
@@ -75,7 +80,7 @@ class AutoNEBGuesser(TSInitialGuesser):
             )
         self._optimizer = optimizer
 
-    def generate_ts_guesses(
+    def run(
         self, mols, multiplicity: Optional[int] = None, save_dir: Optional[str] = None
     ):
         """
@@ -93,24 +98,16 @@ class AutoNEBGuesser(TSInitialGuesser):
         ts_guesses, used_rp_combos = {}, []
         for i, (r_mol, p_mol) in enumerate(mols):
 
-            # TODO: Need to clean the logic here, `ts_conf_dir` is used no matter `save_dir` being true
-            if save_dir:
-                ts_conf_dir = os.path.join(save_dir, f"neb_conf{i}")
-                if not os.path.exists(ts_conf_dir):
-                    os.makedirs(ts_conf_dir)
+            ts_conf_dir = self.work_dir / f"neb_conf{i}"
 
-            r_traj = os.path.join(ts_conf_dir, "ts000.traj")
-            p_traj = os.path.join(ts_conf_dir, "ts001.traj")
+            r_traj = ts_conf_dir / "ts000.traj"
+            p_traj = ts_conf_dir / "ts001.traj"
 
-            r_coords = r_mol.GetConformer().GetPositions()
-            r_numbers = r_mol.GetAtomicNumbers()
             r_atoms = r_mol.ToAtoms()
             r_atoms.set_calculator(self.optimizer())
             qn = QuasiNewton(r_atoms, trajectory=r_traj, logfile=None)
             qn.run(fmax=0.05)
 
-            p_coords = p_mol.GetConformer().GetPositions()
-            p_numbers = p_mol.GetAtomicNumbers()
             p_atoms = p_mol.ToAtoms()
             p_atoms.set_calculator(self.optimizer())
             qn = QuasiNewton(p_atoms, trajectory=p_traj, logfile=None)
@@ -154,7 +151,9 @@ class AutoNEBGuesser(TSInitialGuesser):
             if ts_guesses[i] is not None
         ]
 
-        if save_dir:
-            self.save_guesses(save_dir, used_rp_combos, ts_mol)
+        if self.save_dir:
+            self.save_guesses(used_rp_combos, ts_mol)
+
+        ts_mol.KeepIDs = {i: val is not None for i, val in ts_guesses.items()}
 
         return ts_mol
