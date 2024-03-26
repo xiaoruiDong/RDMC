@@ -9,15 +9,20 @@ import os
 from time import time
 from typing import List, Optional
 
-from ase import Atoms
+from rdmc.conformer_generation.comp_env.ase import Atoms
+from rdmc.conformer_generation.comp_env.torch import torch
+from rdmc.conformer_generation.comp_env.software import try_import
 
-try:
-    import torch
-    from conf_solv.trainer import LitConfSolvModule
-    from conf_solv.dataloaders.collate import Collater
-    from conf_solv.dataloaders.loader import create_pairdata, MolGraph
-except BaseException:
-    print("No ConfSolv installation detected. Skipping import...")
+package_name = "ConfSolv"
+namespace = globals()
+modules = [
+    "conf_solv.trainer.LitConfSolvModule",
+    "conf_solv.dataloaders.collate.Collater",
+    "conf_solv.dataloaders.loader.create_pairdata",
+    "conf_solv.dataloaders.loader.MolGraph",
+]
+for module in modules:
+    try_import(module, namespace=namespace, package_name=package_name)
 
 
 class Estimator:
