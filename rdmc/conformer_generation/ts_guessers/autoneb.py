@@ -2,26 +2,13 @@ import os
 import numpy as np
 from typing import Optional
 
-# Use ASE for the AutoNEB method
-_ase_avail = True
-try:
-    from ase import Atoms
-    from ase.autoneb import AutoNEB
-    from ase.calculators.calculator import CalculationFailed, Calculator
-    from ase.optimize import QuasiNewton
-except BaseException:
-    _ase_avail = False
-    print("No ASE installation detected. Skipping import...")
-
-# Use xtb ase calculator defined in the xtb-python module
-try:
-    from xtb.ase.calculator import XTB
-except BaseException:
-    XTB = "xtb-python not installed"  # Defined to provide informative error message.
-    print(
-        "XTB cannot be used for AutoNEBGuesser as its ASE interface imported incorrectly. Skipping import..."
-    )
-
+from rdmc.conformer_generation.comp_env.ase import (
+    AutoNEB,
+    Calculator,
+    CalculationFailed,
+    QuasiNewton,
+)
+from rdmc.conformer_generation.comp_env.xtb import xtb_calculator
 from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
 
 
@@ -37,7 +24,9 @@ class AutoNEBGuesser(TSInitialGuesser):
     _avail = _ase_avail
 
     def __init__(
-        self, optimizer: "Calculator" = XTB, track_stats: Optional[bool] = False
+        self,
+        optimizer: "Calculator" = xtb_calculator,
+        track_stats: Optional[bool] = False,
     ):
         """
         Initialize the AutoNEB TS initial guesser.
@@ -109,14 +98,14 @@ class AutoNEBGuesser(TSInitialGuesser):
 
             r_coords = r_mol.GetConformer().GetPositions()
             r_numbers = r_mol.GetAtomicNumbers()
-            r_atoms = Atoms(positions=r_coords, numbers=r_numbers)
+            r_atoms = r_mol.ToAtoms()
             r_atoms.set_calculator(self.optimizer())
             qn = QuasiNewton(r_atoms, trajectory=r_traj, logfile=None)
             qn.run(fmax=0.05)
 
             p_coords = p_mol.GetConformer().GetPositions()
             p_numbers = p_mol.GetAtomicNumbers()
-            p_atoms = Atoms(positions=p_coords, numbers=p_numbers)
+            p_atoms = p_mol.ToAtoms()
             p_atoms.set_calculator(self.optimizer())
             qn = QuasiNewton(p_atoms, trajectory=p_traj, logfile=None)
             qn.run(fmax=0.05)
