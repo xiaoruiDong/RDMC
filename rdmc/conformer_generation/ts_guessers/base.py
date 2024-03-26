@@ -1,6 +1,6 @@
-import os
-from time import time
+from abc import abstractmethod
 from typing import Optional
+
 
 from rdkit import Chem
 from rdmc.conformer_generation.task.basetask import BaseTask
@@ -14,8 +14,6 @@ class TSInitialGuesser(BaseTask):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail_ = True
-
     def __init__(
         self,
         track_stats: Optional[bool] = False,
@@ -26,19 +24,12 @@ class TSInitialGuesser(BaseTask):
         Args:
             track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
-        assert (
-            self._avail
-        ), f"The dependency requirement needs to be fulfilled to use {self.__class__.__name__}. Please install the relevant dependencies and try again.."
-        self.track_stats = track_stats
+        super().__init__(track_stats)
         self.n_success = None
         self.percent_success = None
-        self.stats = []
 
-    def generate_ts_guesses(
-        self,
-        mols: list,
-        save_dir: Optional[str] = None,
-    ) -> "RDKitMol":
+    @abstractmethod
+    def run(self):
         """
         The key function used to generate TS guesses. It varies by the actual classes and need to implemented inside each class.
         The function should at least take mols and save_dir as input arguments. The returned value should be a RDKitMol with TS
@@ -56,7 +47,7 @@ class TSInitialGuesser(BaseTask):
         """
         raise NotImplementedError
 
-    def save_guesses(self, save_dir: str, rp_combos: list, ts_mol: "RDKitMol"):
+    def save_guesses(self, str, rp_combos: list, ts_mol: "RDKitMol"):
         """
         Save the generated guesses into the given ``save_dir``.
 
@@ -66,68 +57,43 @@ class TSInitialGuesser(BaseTask):
             ts_mol (RDKitMol): The TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
 
+        save_dir = self.save_dir
+
         # Save reactants and products into SDF format
-        r_path = os.path.join(save_dir, "reactant_confs.sdf")
-        p_path = os.path.join(save_dir, "product_confs.sdf")
+        r_path = save_dir / "reactant_confs.sdf"
+        p_path = save_dir / "product_confs.sdf"
         try:
-            r_writer = Chem.rdmolfiles.SDWriter(r_path)
-            p_writer = Chem.rdmolfiles.SDWriter(p_path)
+            r_writer = Chem.rdmolfiles.SDWriter(str(r_path))
+            p_writer = Chem.rdmolfiles.SDWriter(str(p_path))
 
-            for r, p in rp_combos:
+            for reactant, product in rp_combos:
 
-                if r.GetProp("Identity") == "reactant":
-                    reactant = r
-                    product = p
-                elif r.GetProp("Identity") == "product":
-                    reactant = p
-                    product = r
+                try:
+                    if reactant.GetProp("Identity") == "product":
+                        reactant, product = product, reactant
+                except KeyError:
+                    # No identity prop
+                    reactant.SetProp("Identity", "reactant")
+                    product.SetProp("Identity", "product")
 
-                reactant, product = reactant, product
                 reactant.SetProp("_Name", f"{Chem.MolToSmiles(reactant)}")
                 product.SetProp("_Name", f"{Chem.MolToSmiles(product)}")
                 r_writer.write(reactant)
                 p_writer.write(product)
 
-        except Exception:
-            raise
+        except BaseException:
+            raise RuntimeError("Unknown Error when saving TS guess into SDF files.")
         finally:
             r_writer.close()
             p_writer.close()
 
         # save TS initial guesses
-        ts_path = os.path.join(save_dir, "ts_initial_guess_confs.sdf")
+        ts_path = save_dir / "ts_initial_guess_confs.sdf"
         try:
-            ts_writer = Chem.rdmolfiles.SDWriter(ts_path)
+            ts_writer = Chem.rdmolfiles.SDWriter(str(ts_path))
             for i in range(ts_mol.GetNumConformers()):
                 ts_writer.write(ts_mol, confId=i)
         except Exception:
-            raise
+            raise RuntimeError("Unknown Error when saving TS guess into SDF files.")
         finally:
             ts_writer.close()
-
-    def __call__(
-        self,
-        mols: list,
-        multiplicity: Optional[int] = None,
-        save_dir: Optional[str] = None,
-    ):
-        """
-        The workflow to generate TS initial guesses.
-
-        Args:
-            mols (list): A list of molecules.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None`` for not setting.
-            save_dir (str, optional): The path to save results. Defaults to ``None`` for not saving.
-
-        Returns:
-            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
-        """
-        time_start = time()
-        ts_mol_data = self.generate_ts_guesses(mols, multiplicity, save_dir)
-
-        if self.track_stats:
-            time_end = time()
-            stats = {"time": time_end - time_start}
-            self.stats.append(stats)
-
-        return ts_mol_data
