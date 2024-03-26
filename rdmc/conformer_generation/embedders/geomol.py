@@ -2,19 +2,21 @@ from pathlib import Path
 
 import numpy as np
 from rdmc.conformer_generation.embedders.base import ConfGenEmbedder
+from rdmc.conformer_generation.comp_env.torch import torch
+from rdmc.conformer_generation.comp_env.software import try_import
 
-try:
-    import torch
-    from geomol.model import GeoMol
-    from geomol.featurization import featurize_mol_from_smiles, from_data_list
-    from geomol.inference import construct_conformers
-    from geomol.utils import model_path as geomol_model_path
-    import yaml  # only used to load GeoMol parameters
-except ImportError as e:
-    GeoMol = None
-    print(e)
-    print("No GeoMol installation detected. Skipping import...")
-    print("Please install the GeoMol fork at https://github.com/xiaoruiDong/GeoMol")
+package_name = "github.com/xiaoruiDong/GeoMol"
+namespace = globals()
+modules = [
+    "geomol.model.GeoMol",
+    "geomol.featurization.featurize_mol_from_smiles",
+    "geomol.featurization.from_data_list",
+    "geomol.inference.construct_conformers",
+    "geomol.utils.model_path",
+]
+for module in modules:
+    try_import(module, namespace=namespace, package_name=package_name)
+try_import("yaml", namespace=namespace, package_name="pyyaml")
 
 
 class GeoMolEmbedder(ConfGenEmbedder):
@@ -47,7 +49,7 @@ class GeoMolEmbedder(ConfGenEmbedder):
         self.device = device
 
         trained_model_dir = (
-            geomol_model_path / dataset
+            model_path / dataset
             if trained_model_dir is None
             else Path(trained_model_dir)
         )
