@@ -11,18 +11,13 @@ from contextlib import redirect_stdout
 from shutil import rmtree
 import tempfile
 
-from rdmc.conformer_generation.comp_env.software import register_module
-
-with register_module('sella'):
-    from sella import Sella
-
-with register_module('ase'):
-    from ase.calculators.orca import ORCA
-
-with register_module('xtb-python'):
-    from xtb.ase.calculator import XTB
-
+from rdmc.conformer_generation.comp_env.software import try_import
+from rdmc.conformer_generation.comp_env.ase import ORCA
+from rdmc.conformer_generation.comp_env.xtb import xtb_calculator
 import pandas as pd
+
+
+try_import("sella.Sella", namespace=globals())
 
 
 def run_sella_opt(
