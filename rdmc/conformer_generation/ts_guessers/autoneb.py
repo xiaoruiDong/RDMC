@@ -59,13 +59,18 @@ class AutoNEBGuesser(TSInitialGuesser):
 
     @optimizer.setter
     def optimizer(self, optimizer: "Calculator"):
-        try:
-            assert isinstance(
-                optimizer, Calculator
-            ), f"Invalid optimizer used ('{optimizer}'). Please use ASE calculators."
-        except NameError:
-            print(
-                "ASE.Calculator was not correctly imported, thus AutoNEBGuesser can not be used."
+        if isinstance(optimizer, Calculator):
+            self._optimizer = optimizer
+        elif hasattr(optimizer, "calculate"):
+            # For some exterior calculator, they might be a chance that
+            # the optimzier's parent class is not consistent with installed
+            # ase Calculator
+            # However, in such case, as long as the API is consistent, it
+            # is fine.
+            self._optimizer = optimizer
+        else:
+            raise NotImplementedError(
+                "The optimizer is not supported, please double check the input optimizer."
             )
         self._optimizer = optimizer
 
