@@ -1,8 +1,10 @@
 from time import time
 from typing import List, Optional
 
+from rdmc.conformer_generation.task.basetask import BaseTask
 
-class ConfGenPruner:
+
+class ConfGenPruner(BaseTask):
     """
     Base class for conformer pruning.
 

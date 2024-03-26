@@ -1,8 +1,10 @@
 from time import time
 from typing import List
 
+from rdmc.conformer_generation.task.basetask import BaseTask
 
-class ConfGenOptimizer:
+
+class ConfGenOptimizer(BaseTask):
     """
     Base class for the geometry optimizers used in conformer generation.
 

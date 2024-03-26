@@ -2,9 +2,10 @@ from time import time
 
 from rdmc import RDKitMol
 from rdmc.conformer_generation.utils import mol_to_dict
+from rdmc.conformer_generation.task.basetask import BaseTask
 
 
-class ConfGenEmbedder:
+class ConfGenEmbedder(BaseTask):
     """
     Base class for conformer generation embedders.
     """

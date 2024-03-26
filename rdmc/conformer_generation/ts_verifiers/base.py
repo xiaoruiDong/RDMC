@@ -1,8 +1,10 @@
 from time import time
 from typing import Optional
 
+from rdmc.conformer_generation.task.basetask import BaseTask
 
-class TSVerifier:
+
+class TSVerifier(BaseTask):
     """
     The abstract class for TS verifiers.
 

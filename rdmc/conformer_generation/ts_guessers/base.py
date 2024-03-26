@@ -3,9 +3,10 @@ from time import time
 from typing import Optional
 
 from rdkit import Chem
+from rdmc.conformer_generation.task.basetask import BaseTask
 
 
-class TSInitialGuesser:
+class TSInitialGuesser(BaseTask):
     """
     The abstract class for TS initial Guesser.
 

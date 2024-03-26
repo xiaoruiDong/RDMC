@@ -6,8 +6,10 @@ from time import time
 
 from rdkit import Chem
 
+from rdmc.conformer_generation.task.basetask import BaseTask
 
-class TSOptimizer:
+
+class TSOptimizer(BaseTask):
     """
     The abstract class for TS optimizer.
 
