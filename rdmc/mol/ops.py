@@ -172,13 +172,15 @@ class MolOpsMixin:
             Mol: The copied molecule.
         """
         if not quickCopy and confId == -1:
-            return copy.deepcopy(self) if deep else copy.copy(self)
-
-        mol_copy = self.__class__(self, quickCopy, confId)
+            mol_copy = copy.deepcopy(self) if deep else copy.copy(self)
+        else:
+            mol_copy = self.__class__(self, quickCopy, confId)
         if copy_attrs is not None:
             for attr in copy_attrs:
                 if deep:
-                    mol_copy.__setattr__(attr, copy.deepcopy(self.__getattribute__(attr)))
+                    mol_copy.__setattr__(
+                        attr, copy.deepcopy(self.__getattribute__(attr))
+                    )
                 else:
                     mol_copy.__setattr__(attr, copy.copy(self.__getattribute__(attr)))
         return mol_copy

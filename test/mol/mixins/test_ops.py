@@ -39,6 +39,13 @@ def test_copy_method():
     assert mol.GetAtomicNumbers() == mol_copy.GetAtomicNumbers()
     assert mol_copy.GetNumConformers() == 0
 
+    mol_copy = mol.Copy()
+    mol_copy.KeepIDs = {1: True, 2: False}
+    mol_copy2 = mol_copy.Copy(copy_attrs=["KeepIDs"])
+
+    assert hasattr(mol_copy2, "KeepIDs")
+    assert mol_copy2.KeepIDs == mol_copy.KeepIDs
+
 
 def test_get_torsion_tops():
     """
