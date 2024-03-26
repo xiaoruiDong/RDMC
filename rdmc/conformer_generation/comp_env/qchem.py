@@ -1,3 +1,4 @@
-from rdmc.conformer_generation.comp_env.software import register_binary
+from rdmc.conformer_generation.comp_env.software import has_binary
 
-register_binary("qchem")
+
+qchem_available = has_binary("qchem")

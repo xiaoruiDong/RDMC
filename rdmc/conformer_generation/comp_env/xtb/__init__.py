@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from rdmc.conformer_generation.comp_env.software import register_binary, try_import
+from rdmc.conformer_generation.comp_env.software import has_binary, try_import
 
-register_binary("xtb")
-register_binary("crest")
+
+xtb_available = has_binary("xtb")
+crest_available = has_binary("crest")
 
 try_import("xtb.ase.calculator.XTB", "xtb_calculator", globals(), "xtb-python")

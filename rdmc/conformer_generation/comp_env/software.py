@@ -126,3 +126,16 @@ def get_binary(binary: str) -> str:
     if binary not in binary_available:
         register_binary(binary)
     return binary_available.get(binary, None)
+
+
+def has_binary(binary: str) -> str:
+    """
+    Check if the binary is available.
+
+    Args:
+        binary (str): Name of the binary.
+
+    Returns:
+        bool: True if the binary is available, otherwise False.
+    """
+    return get_binary(binary) != None
