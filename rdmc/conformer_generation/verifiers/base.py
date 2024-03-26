@@ -28,7 +28,7 @@ class Verifier:
         mol: "RDKitMol",
         multiplicity: int = 1,
         save_dir: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         The abstract method for verifying guesses (or optimized stable species geometries). The method need to take
@@ -50,7 +50,7 @@ class Verifier:
         mol: "RDKitMol",
         multiplicity: int = 1,
         save_dir: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Run the workflow for verifying the stable species guessers (or optimized stable species conformers).

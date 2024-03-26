@@ -14,8 +14,7 @@ from rdmc.conformer_generation.comp_env.software import get_binary
 from rdmc.conformer_generation.comp_env.xtb.utils import XTB_ENV
 
 
-def make_xyz_text(rd_mol,
-                  comment):
+def make_xyz_text(rd_mol, comment):
     atoms = [i for i in rd_mol.GetAtoms()]
     num_atoms = len(atoms)
     pos = rd_mol.GetConformers()[0].GetPositions()
@@ -23,8 +22,12 @@ def make_xyz_text(rd_mol,
     lines = [str(num_atoms), comment]
 
     for atom, this_pos in zip(atoms, pos):
-        line = "%s %.8f %.8f %.8f " % (atom.GetSymbol(),
-                                       this_pos[0], this_pos[1], this_pos[2])
+        line = "%s %.8f %.8f %.8f " % (
+            atom.GetSymbol(),
+            this_pos[0],
+            this_pos[1],
+            this_pos[2],
+        )
         lines.append(line)
 
     text = "\n".join(lines)
@@ -38,20 +41,19 @@ def write_confs_xyz(confs, path):
         energy = conf["energy"]
         comment = "%.8f !CONF%d" % (energy, i + 1)
 
-        this_text = make_xyz_text(rd_mol=rd_mol,
-                                  comment=comment)
+        this_text = make_xyz_text(rd_mol=rd_mol, comment=comment)
 
         if i != 0:
             text += "\n"
         text += this_text
 
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         f.write(text)
 
 
 def read_unique(job_dir):
     path = os.path.join(job_dir, "enso.tags")
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         lines = f.readlines()
     unique_idx = []
     for line in lines:
@@ -92,7 +94,15 @@ def run_cre_check(confs, ethr=0.15, rthr=0.125, bthr=0.01, ewin=10000):
                 conf_0_path,
                 "--cregen",
                 confs_path,
-                "--ethr", str(ethr), "--rthr", str(rthr), "--bthr", str(bthr), "--ewin", str(ewin), "--enso",
+                "--ethr",
+                str(ethr),
+                "--rthr",
+                str(rthr),
+                "--bthr",
+                str(bthr),
+                "--ewin",
+                str(ewin),
+                "--enso",
                 ">",
                 cregen_out,
             ],

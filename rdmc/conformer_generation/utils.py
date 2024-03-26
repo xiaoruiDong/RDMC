@@ -23,7 +23,7 @@ from rdmc.external.logparser import GaussianLog
 
 
 def mol_to_dict(
-    mol: 'RDKitMol',
+    mol: "RDKitMol",
     copy: bool = True,
     iter: Optional[int] = None,
     conf_copy_attrs: Optional[list] = None,
@@ -37,7 +37,7 @@ def mol_to_dict(
         copy (bool, optional): Use a copy of the molecule to process data. Defaults to ``True``.
         iter (int, optional): Number of iterations. Defaults to ``None``.
         conf_copy_attrs (list, optional): Conformer-level attributes to copy to the dictionary.
-                                          Defaults to ``None``, which means no attributes will be copied.
+            Defaults to ``None``, which means no attributes will be copied.
 
     Returns:
         list: mol data as a list of dict; each dict corresponds to a conformer.
@@ -50,8 +50,7 @@ def mol_to_dict(
     for c_id in range(mol.GetNumConformers()):
         conf = mol.GetEditableConformer(id=c_id)
         positions = conf.GetPositions()
-        mol_data.append({"positions": positions,
-                         "conf": conf})
+        mol_data.append({"positions": positions, "conf": conf})
         if iter is not None:
             mol_data[c_id].update({"iter": iter})
         for attr in conf_copy_attrs:
@@ -60,8 +59,7 @@ def mol_to_dict(
 
 
 def dict_to_mol(
-    mol_data: List[dict],
-    conf_copy_attrs: Optional[list] = None
+    mol_data: List[dict], conf_copy_attrs: Optional[list] = None
 ) -> "RDKitMol":
     """
     Convert a dictionary that stores its conformers object, atom coordinates,
@@ -73,23 +71,27 @@ def dict_to_mol(
     Args:
         mol_data (list): A list containing dictionaries of data entries for each conformer.
         conf_copy_attrs (list, optional): Conformer-level attributes to copy to the mol.
-                                          Defaults to ``None``, which means no attributes will be copied.
+            Defaults to ``None``, which means no attributes will be copied.
 
     Returns:
         mol ('RDKitMol'): An RDKitMol object.
     """
     if conf_copy_attrs is None:
         conf_copy_attrs = []
-    mol = mol_data[0]["conf"].GetOwningMol().Copy(quickCopy=True, copy_attrs=conf_copy_attrs)
+    mol = (
+        mol_data[0]["conf"]
+        .GetOwningMol()
+        .Copy(quickCopy=True, copy_attrs=conf_copy_attrs)
+    )
     [add_conformer(mol, c["conf"].ToConformer()) for c in mol_data]
     # [mol.AddConformer(c["conf"].ToConformer(), assignId=True) for c in mol_data]
     return mol
 
 
 def cluster_confs(
-    mol: 'RDKitMol',
+    mol: "RDKitMol",
     cutoff: float = 1.0,
-) -> 'RDKitMol':
+) -> "RDKitMol":
     """
     Cluster conformers of a molecule based on RMSD.
 
@@ -146,17 +148,30 @@ def get_conf_failure_mode(
     workflow_check_file = os.path.join(rxn_dir, "workflow_check_ids.pkl")
 
     opt_check_ids = pickle.load(open(opt_check_file, "rb"))
-    prune_check_ids = pickle.load(open(prune_check_file, "rb")) if pruner else {i: True for i in range(len(opt_check_ids))}
+    prune_check_ids = (
+        pickle.load(open(prune_check_file, "rb"))
+        if pruner
+        else {i: True for i in range(len(opt_check_ids))}
+    )
     freq_check_ids = pickle.load(open(freq_check_file, "rb"))
     irc_check_ids = pickle.load(open(irc_check_file, "rb"))
     workflow_check_ids = pickle.load(open(workflow_check_file, "rb"))
 
     all_checks = defaultdict(list)
-    for d in [opt_check_ids, prune_check_ids, freq_check_ids, irc_check_ids, workflow_check_ids]:
+    for d in [
+        opt_check_ids,
+        prune_check_ids,
+        freq_check_ids,
+        irc_check_ids,
+        workflow_check_ids,
+    ]:
         for k, v in d.items():
             all_checks[k].append(v)
 
-    all_checks = np.concatenate([np.array([*all_checks.values()]), np.array([[False]] * len(all_checks))], axis=1)
+    all_checks = np.concatenate(
+        [np.array([*all_checks.values()]), np.array([[False]] * len(all_checks))],
+        axis=1,
+    )
     modes = np.argmax(~all_checks, axis=1)
     failure_dict = {i: failure_modes[m] for i, m in enumerate(modes)}
 
@@ -195,12 +210,14 @@ def get_frames_from_freq(
 
     # Generate weights
     if isinstance(weights, bool) and weights:
-        atom_masses = np.array([get_atom_mass(int(num)) for num in log.cclib_results.atomnos]).reshape(-1, 1)
+        atom_masses = np.array(
+            [get_atom_mass(int(num)) for num in log.cclib_results.atomnos]
+        ).reshape(-1, 1)
         weights = np.sqrt(atom_masses)
     elif isinstance(weights, bool) and not weights:
         weights = np.ones((equ_xyz.shape[0], 1))
 
-    xyzs = equ_xyz - np.einsum('i,jk->ijk', amp_factors, weights * disp)
+    xyzs = equ_xyz - np.einsum("i,jk->ijk", amp_factors, weights * disp)
 
     return log.cclib_results.atomnos, xyzs
 
@@ -210,7 +227,7 @@ def convert_log_to_mol(
     amplitude: float = 1.0,
     num_frames: int = 10,
     weights: Union[bool, np.array] = False,
-) -> Union[None, 'RDKitMol']:
+) -> Union[None, "RDKitMol"]:
     """
     Convert a TS optimization log file to an RDKitMol object with conformers.
 
@@ -239,7 +256,9 @@ def convert_log_to_mol(
 
     # Get TS mol object and construct geometries as numpy arrays for all frames
     mol = glog.get_mol(converged=True, embed_conformers=False, sanitize=False)
-    _, xyzs = get_frames_from_freq(glog, amplitude=amplitude, num_frames=num_frames, weights=weights)
+    _, xyzs = get_frames_from_freq(
+        glog, amplitude=amplitude, num_frames=num_frames, weights=weights
+    )
 
     # Embed geometries to the mol object for output
     mol.EmbedMultipleNullConfs(xyzs.shape[0])

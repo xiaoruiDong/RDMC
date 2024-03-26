@@ -104,8 +104,17 @@ def get_wbo(wbo_file):
     return wbo_dict
 
 
-def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", level="normal",
-                 pconfId=0, save_dir=None, uhf=0):
+def run_xtb_calc(
+    mol,
+    confId=0,
+    job="",
+    return_optmol=False,
+    method="gfn2",
+    level="normal",
+    pconfId=0,
+    save_dir=None,
+    uhf=0,
+):
     """Runs xTB single-point calculation with optional geometry optimization.
     Parameters
     ----------
@@ -135,7 +144,9 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
     method = "--" + method
     input_file = TS_PATH_INP if job == "--path" else ""
 
-    temp_dir = Path(save_dir).absolute() if save_dir else Path(tempfile.mkdtemp()).absolute()
+    temp_dir = (
+        Path(save_dir).absolute() if save_dir else Path(tempfile.mkdtemp()).absolute()
+    )
     logfile = temp_dir / "xtb.log"
     xtb_out = temp_dir / "xtbout.json"
     xtb_wbo = temp_dir / "wbo"
@@ -158,7 +169,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
         "true",
         "--parallel",
         "--input",
-        input_file
+        input_file,
     ]
 
     if job == "--path":
@@ -187,7 +198,12 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
                 log_data = f.readlines()
                 try:
                     n_opt_cycles = int(
-                        [line for line in log_data if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line][-1].split()[-3])
+                        [
+                            line
+                            for line in log_data
+                            if "GEOMETRY OPTIMIZATION CONVERGED AFTER" in line
+                        ][-1].split()[-3]
+                    )
                 except IndexError:
                     # logfile doesn't exist for [H]
                     if not (temp_dir / "xtbopt.sdf").exists():
@@ -200,7 +216,10 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
         if job == "--hess":
             with open(xtb_g98) as f:
                 data = f.readlines()
-            frequencies = np.array([line.split()[-3:] for line in data if "Frequencies" in line], dtype=float).ravel()
+            frequencies = np.array(
+                [line.split()[-3:] for line in data if "Frequencies" in line],
+                dtype=float,
+            ).ravel()
             props.update({"frequencies": frequencies})
             not save_dir and rmtree(temp_dir)
             return props
@@ -220,7 +239,7 @@ def run_xtb_calc(mol, confId=0, job="", return_optmol=False, method="gfn2", leve
                 with open(temp_dir / "gfnff_lists.json", "r") as f:
                     props["total energy"] = json.load(f)["total energy"]
             except FileNotFoundError:
-                props["total energy"] = 0.
+                props["total energy"] = 0.0
             not save_dir and rmtree(temp_dir)
             return (props, opt_mol) if return_optmol else props
 
@@ -256,10 +275,14 @@ def update_rdkit_mol_format(path):
     else:
         n_0s = 7 - n_bond_props
 
-    new_lines = lines[:4 + n_atoms] + [
-        line[:-1] + "  0" * n_0s + "\n"
-        for line in lines[4 + n_atoms: 4 + n_atoms + n_bonds]
-    ] + lines[4 + n_atoms + n_bonds:]
+    new_lines = (
+        lines[: 4 + n_atoms]
+        + [
+            line[:-1] + "  0" * n_0s + "\n"
+            for line in lines[4 + n_atoms : 4 + n_atoms + n_bonds]
+        ]
+        + lines[4 + n_atoms + n_bonds :]
+    )
 
     with open(path, "w") as f:
         f.writelines(new_lines)

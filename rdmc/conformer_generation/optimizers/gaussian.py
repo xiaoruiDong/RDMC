@@ -148,9 +148,7 @@ class GaussianOptimizer(ConfGenOptimizer):
                 opt_mol.KeepIDs[i] = False
 
         if save_dir:
-            self.save_opt_mols(
-                save_dir, opt_mol, opt_mol.KeepIDs, opt_mol.energy
-            )
+            self.save_opt_mols(save_dir, opt_mol, opt_mol.KeepIDs, opt_mol.energy)
 
         return opt_mol
 

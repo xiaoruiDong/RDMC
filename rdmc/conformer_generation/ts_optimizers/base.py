@@ -6,6 +6,7 @@ from time import time
 
 from rdkit import Chem
 
+
 class TSOptimizer:
     """
     The abstract class for TS optimizer.

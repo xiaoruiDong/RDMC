@@ -90,7 +90,9 @@ class MolOpsMixin:
         Returns:
             Mol: The molecule with bonds added.
         """
-        return add_bonds(self, bonds, bondTypes, UpdateProperties, inplace)  # use copy.copy inside
+        return add_bonds(
+            self, bonds, bondTypes, UpdateProperties, inplace
+        )  # use copy.copy inside
 
     def GetClosedShellMol(
         self,

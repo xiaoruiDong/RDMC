@@ -6,14 +6,15 @@ from rdmc import RDKitMol
 
 
 @pytest.mark.parametrize(
-    'rad_smi, expect_smi',
+    "rad_smi, expect_smi",
     [
-        ('[CH3]', 'C'),
-        ('c1[c]cccc1', 'c1ccccc1'),
-        ('C[NH2]', 'CN'),
-        ('[CH2]C[CH2]', 'CCC')
-    ])
-@pytest.mark.parametrize('cheap', [(True,), (False,)])
+        ("[CH3]", "C"),
+        ("c1[c]cccc1", "c1ccccc1"),
+        ("C[NH2]", "CN"),
+        ("[CH2]C[CH2]", "CCC"),
+    ],
+)
+@pytest.mark.parametrize("cheap", [(True,), (False,)])
 def test_get_closed_shell_mol(rad_smi, expect_smi, cheap):
 
     rad_mol = RDKitMol.FromSmiles(rad_smi)

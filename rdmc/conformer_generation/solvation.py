@@ -33,8 +33,7 @@ class Estimator:
         track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
     """
 
-    def __init__(self,
-                 track_stats: Optional[bool] = False):
+    def __init__(self, track_stats: Optional[bool] = False):
         """
         Initialize the TS optimizer.
 
@@ -44,9 +43,7 @@ class Estimator:
         self.track_stats = track_stats
         self.stats = []
 
-    def predict_energies(self,
-                         mol_data: List[dict],
-                         **kwargs):
+    def predict_energies(self, mol_data: List[dict], **kwargs):
         """
         The abstract method for predicting energies. It will be implemented in actual classes.
         The method needs to take ``mol_data`` which is a dictionary containing info about the
@@ -61,10 +58,11 @@ class Estimator:
         """
         raise NotImplementedError
 
-    def __call__(self,
-                 mol_data: List[dict],
-                 **kwargs,
-                 ) -> List[dict]:
+    def __call__(
+        self,
+        mol_data: List[dict],
+        **kwargs,
+    ) -> List[dict]:
         """
         Run the workflow to predict solvation energies.
 
@@ -114,12 +112,15 @@ class ConfSolv(Estimator):
             checkpoint_path=os.path.join(trained_model_dir, "best_model.ckpt"),
         )
         self.module.model.eval()
-        self.collater = Collater(follow_batch=["x_solvent", "x_solute"], exclude_keys=None)
+        self.collater = Collater(
+            follow_batch=["x_solvent", "x_solute"], exclude_keys=None
+        )
 
-    def predict_energies(self,
-                         mol_data: List[dict],
-                         **kwargs,
-                         ) -> List[dict]:
+    def predict_energies(
+        self,
+        mol_data: List[dict],
+        **kwargs,
+    ) -> List[dict]:
         """
         Predict conformer free energies in a given solvent.
 
@@ -130,10 +131,10 @@ class ConfSolv(Estimator):
             mol_data (List[dict]): A list of molecule dictionaries with energy values updated.
         """
         # prepare inputs
-        syms = [a.GetSymbol() for a in mol_data[0]['conf'].ToMol().GetAtoms()]
-        positions = [x['positions'] for x in mol_data]
+        syms = [a.GetSymbol() for a in mol_data[0]["conf"].ToMol().GetAtoms()]
+        positions = [x["positions"] for x in mol_data]
         mols = [Atoms(symbols=syms, positions=pos) for pos in positions]
-        solvent_molgraph = MolGraph(kwargs['solvent_smi'])
+        solvent_molgraph = MolGraph(kwargs["solvent_smi"])
         pair_data = create_pairdata(solvent_molgraph, mols, len(mols))
         data = self.collater([pair_data])
 
@@ -143,6 +144,6 @@ class ConfSolv(Estimator):
         rel_energies = abs_energies - abs_energies.min()
 
         # update mol data
-        [mol_data[i].update({'energy': rel_energies[i]}) for i in range(len(mols))]
+        [mol_data[i].update({"energy": rel_energies[i]}) for i in range(len(mols))]
 
         return mol_data

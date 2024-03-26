@@ -12,7 +12,13 @@ from scipy import optimize
 from scipy.spatial import distance
 
 from rdmc import RDKitMol
-from rdmc.mathlib.geom import get_centroid, get_max_distance_from_center, rotate, translate, translate_centroid
+from rdmc.mathlib.geom import (
+    get_centroid,
+    get_max_distance_from_center,
+    rotate,
+    translate,
+    translate_centroid,
+)
 from rdtools.bond import get_broken_bonds, get_formed_and_broken_bonds
 from rdmc.forcefield import OpenBabelFF
 
@@ -41,12 +47,13 @@ class NaiveAlign(object):
 
     dist = 2.0
 
-    def __init__(self,
-                 coords: np.array,
-                 atom_maps: List[List],
-                 formed_bonds: List[tuple],
-                 broken_bonds: List[tuple],
-                 ) -> 'NaiveAlign':
+    def __init__(
+        self,
+        coords: np.array,
+        atom_maps: List[List],
+        formed_bonds: List[tuple],
+        broken_bonds: List[tuple],
+    ) -> "NaiveAlign":
         """
         Initialize the alignment algorithm.
 
@@ -64,26 +71,40 @@ class NaiveAlign(object):
         self.atom_maps = atom_maps
         self.formed_bonds = formed_bonds
         self.broken_bonds = broken_bonds
-        self.reacting_atoms, self.non_reacting_atoms = self.get_reacting_atoms_in_fragments()
+        self.reacting_atoms, self.non_reacting_atoms = (
+            self.get_reacting_atoms_in_fragments()
+        )
         # `interaction` is not used in the current scheme, but can be helpful when dealing with
         # multiple mol alignemnt problems
         self.interactions = [0] * len(atom_maps)
         for formed_bond in self.formed_bonds:
             for i, reacting_atom in enumerate(self.reacting_atoms):
-                if (formed_bond[0] in reacting_atom and formed_bond[1] not in reacting_atom) \
-                        or (formed_bond[0] not in reacting_atom and formed_bond[0] not in reacting_atom):
+                if (
+                    formed_bond[0] in reacting_atom
+                    and formed_bond[1] not in reacting_atom
+                ) or (
+                    formed_bond[0] not in reacting_atom
+                    and formed_bond[0] not in reacting_atom
+                ):
                     self.interactions[i] += 1
 
-    def get_fragment_radii(self,) -> List[float]:
+    def get_fragment_radii(
+        self,
+    ) -> List[float]:
         """
         Get the radius of each fragment defined by the distance between the centroid to the farthest element.
 
         Returns:
             list: A list of radius.
         """
-        return [get_max_distance_from_center(self.coords[atom_map, :]) for atom_map in self.atom_maps]
+        return [
+            get_max_distance_from_center(self.coords[atom_map, :])
+            for atom_map in self.atom_maps
+        ]
 
-    def get_reacting_atoms_in_fragments(self,) -> List[list]:
+    def get_reacting_atoms_in_fragments(
+        self,
+    ) -> List[list]:
         """
         Get the reacting atoms in each reactant.
 
@@ -103,16 +124,25 @@ class NaiveAlign(object):
                     break
         self.formed_bonds = new_formed_bonds
         reacting_atoms = set([i for bond in self.formed_bonds for i in bond])
-        return ([[i for i in atom_map if i in reacting_atoms] for atom_map in self.atom_maps],
-                [[i for i in atom_map if i not in reacting_atoms] for atom_map in self.atom_maps])
+        return (
+            [
+                [i for i in atom_map if i in reacting_atoms]
+                for atom_map in self.atom_maps
+            ],
+            [
+                [i for i in atom_map if i not in reacting_atoms]
+                for atom_map in self.atom_maps
+            ],
+        )
 
     @classmethod
-    def from_reactants(cls,
-                       mols: List['RDKitMol'],
-                       formed_bonds: List[tuple],
-                       broken_bonds: List[tuple],
-                       conf_ids: List[int] = None,
-                       ):
+    def from_reactants(
+        cls,
+        mols: List["RDKitMol"],
+        formed_bonds: List[tuple],
+        broken_bonds: List[tuple],
+        conf_ids: List[int] = None,
+    ):
         """
         Create a complex in place by stacking the molecules together.
 
@@ -126,9 +156,13 @@ class NaiveAlign(object):
         if conf_ids is None:
             conf_ids == [0] * len(mols)
         elif len(conf_ids) != len(mols):
-            raise ValueError(f'The conf_ids\'s length (currently {len(conf_ids)}) should be '
-                             f'the same as the length of moles (currently {len(mols)}.')
-        coord_list = [mol.GetPostions(id=conf_id) for mol, conf_id in zip(mols, conf_ids)]
+            raise ValueError(
+                f"The conf_ids's length (currently {len(conf_ids)}) should be "
+                f"the same as the length of moles (currently {len(mols)}."
+            )
+        coord_list = [
+            mol.GetPostions(id=conf_id) for mol, conf_id in zip(mols, conf_ids)
+        ]
         coords = np.concatenate(coord_list, axis=0)
         atom_maps, counter = [], 0
         for mol in mols:
@@ -137,11 +171,13 @@ class NaiveAlign(object):
         return cls(coords, atom_maps, formed_bonds, broken_bonds)
 
     @classmethod
-    def from_complex(cls,
-                     r_complex: 'RDKitMol',
-                     formed_bonds: List[tuple],
-                     broken_bonds: List[tuple],
-                     conf_id: int = 0):
+    def from_complex(
+        cls,
+        r_complex: "RDKitMol",
+        formed_bonds: List[tuple],
+        broken_bonds: List[tuple],
+        conf_id: int = 0,
+    ):
         """
         Initialize from a reactant complex.
 
@@ -156,11 +192,12 @@ class NaiveAlign(object):
         return cls(coords, atom_maps, formed_bonds, broken_bonds)
 
     @classmethod
-    def from_r_and_p_complex(cls,
-                             r_complex: 'RDKitMol',
-                             p_complex: 'RDKitMol',
-                             conf_id: int = 0,
-                             ):
+    def from_r_and_p_complex(
+        cls,
+        r_complex: "RDKitMol",
+        p_complex: "RDKitMol",
+        conf_id: int = 0,
+    ):
         """
         Initialize from the reactant complex and the product complex. The product complex
         does not need to have conformers embedded, however, it should be atom mapped with
@@ -176,10 +213,11 @@ class NaiveAlign(object):
         formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_complex, p_complex)
         return cls(coords, atom_maps, formed_bonds, broken_bonds)
 
-    def rotate_fragment_separately(self,
-                                   *angles: np.array,
-                                   about_reacting: bool = False,
-                                   ) -> np.array:
+    def rotate_fragment_separately(
+        self,
+        *angles: np.array,
+        about_reacting: bool = False,
+    ) -> np.array:
         """
         Rotate the molecule fragments in the complex by angles. The length of angles should be same as the length of
         `self.atom_maps`.
@@ -196,17 +234,16 @@ class NaiveAlign(object):
         for i in range(len(angles)):
             atom_map = self.atom_maps[i]
             if about_reacting:
-                kwargs = {'about': get_centroid(coords[self.reacting_atoms[i], :])}
+                kwargs = {"about": get_centroid(coords[self.reacting_atoms[i], :])}
             else:
-                kwargs = {'about_center': True}
-            coords[atom_map, :] = rotate(self.coords[atom_map, :],
-                                         angles[i],
-                                         **kwargs)
+                kwargs = {"about_center": True}
+            coords[atom_map, :] = rotate(self.coords[atom_map, :], angles[i], **kwargs)
         return coords
 
-    def initialize_align(self,
-                         dist: float = None,
-                         ):
+    def initialize_align(
+        self,
+        dist: float = None,
+    ):
         """
         Initialize the alignment for the reactants. Currently only available for 1 reactant and 2 reactant systems.
 
@@ -218,22 +255,26 @@ class NaiveAlign(object):
             self.dist = dist
 
         if len(self.atom_maps) == 1:
-            self.coords = translate_centroid(self.coords,
-                                             np.zeros(3))
+            self.coords = translate_centroid(self.coords, np.zeros(3))
         elif len(self.atom_maps) == 2:
-            pos = [np.zeros(3), np.array([self.dist, 0., 0.])]
+            pos = [np.zeros(3), np.array([self.dist, 0.0, 0.0])]
             for i in [0, 1]:
                 atom_map = self.atom_maps[i]
                 # Make the first fragment centered at (0, 0, 0)
                 # Make the second fragment centered at (R1 + R2 + dist)
-                self.coords[atom_map, :] = translate(self.coords[atom_map, :],
-                                                     -get_centroid(self.coords[self.reacting_atoms[i], :] + pos[i]))
+                self.coords[atom_map, :] = translate(
+                    self.coords[atom_map, :],
+                    -get_centroid(self.coords[self.reacting_atoms[i], :] + pos[i]),
+                )
         else:
-            raise NotImplementedError('Hasn\'t been implemented for 3 and 4 reactant systems.')
+            raise NotImplementedError(
+                "Hasn't been implemented for 3 and 4 reactant systems."
+            )
 
-    def score_bimolecule(self,
-                         angles: np.array,
-                         ) -> float:
+    def score_bimolecule(
+        self,
+        angles: np.array,
+    ) -> float:
         """
         Calculate the score of bimolecular reaction alignment.
 
@@ -254,20 +295,26 @@ class NaiveAlign(object):
         # This is motivated by the fact that when computing the distance between a point and two points
         # while fixing the distance between their centroid. The two points always favor a normal alignment
         # if min d^1 or no favor over any alignment if min d^2
-        score1 = 0.
-        v1 = np.array([1., 0., 0.])
+        score1 = 0.0
+        v1 = np.array([1.0, 0.0, 0.0])
         if len(self.reacting_atoms[0]) == 2:
-            v2 = coords[self.reacting_atoms[0][0], :] - coords[self.reacting_atoms[0][1], :]
+            v2 = (
+                coords[self.reacting_atoms[0][0], :]
+                - coords[self.reacting_atoms[0][1], :]
+            )
             v2_norm = np.linalg.norm(v2, ord=2)
             score1 += (v1 @ v2 / v2_norm) ** 2  # range from 0 - 1
         if len(self.reacting_atoms[1]) == 2:
-            v2 = coords[self.reacting_atoms[1][0], :] - coords[self.reacting_atoms[1][1], :]
+            v2 = (
+                coords[self.reacting_atoms[1][0], :]
+                - coords[self.reacting_atoms[1][1], :]
+            )
             v2_norm = np.linalg.norm(v2, ord=2)
             score1 += (v1 @ v2 / v2_norm) ** 2  # range from 0 - 1
 
         # An bonding related score. This makes the atoms that are forming bonds tend to get closer.
         # Square euclideans distance is used as score for each bond.
-        score2 = 0.
+        score2 = 0.0
         for bond in self.formed_bonds:
             # Only bonds form between fragments will help decrease this score3
             # Bonds formed inside a fragment will not change this score since molecules are rigid and the distances are fixed
@@ -276,23 +323,29 @@ class NaiveAlign(object):
 
         # An interaction related score. Briefly, it (may) be more favorable to have non-reacting atoms in one fragment
         # being away from the reacting fragment. Use a coulomb like interaction as the score 1/r^2. This calculation scales with N.
-        score3 = 0.
+        score3 = 0.0
         # Get the centroids of reacting centers
-        react_atom_center = [get_centroid(coords[self.reacting_atoms[i], :]) for i in range(2)]
+        react_atom_center = [
+            get_centroid(coords[self.reacting_atoms[i], :]) for i in range(2)
+        ]
         for i in [0, 1]:
             if len(self.non_reacting_atoms[i]):
                 score3 += np.sum(
-                    1 / distance.cdist(
+                    1
+                    / distance.cdist(
                         coords[self.non_reacting_atoms[i], :],
                         react_atom_center[i - 1].reshape(1, -1),
-                        'sqeuclidean') ** 2
+                        "sqeuclidean",
+                    )
+                    ** 2
                 )
 
         return score1 + score2 + score3
 
-    def get_alignment_coords(self,
-                             dist: float = None,
-                             ) -> np.array:
+    def get_alignment_coords(
+        self,
+        dist: float = None,
+    ) -> np.array:
         """
         Get coordinates of the alignment.
 
@@ -303,21 +356,30 @@ class NaiveAlign(object):
         Returns:
             np.array: The coordinates of the alignment.
         """
-        self.initialize_align(dist=dist,)
+        self.initialize_align(
+            dist=dist,
+        )
 
         if len(self.atom_maps) == 1:
             return self.coords
         elif len(self.atom_maps) == 2:
-            result = optimize.minimize(self.score_bimolecule,
-                                       2 * np.pi * (np.random.rand(6) - 0.5),
-                                       method='BFGS',
-                                       options={'maxiter': 5000, 'disp': False})
+            result = optimize.minimize(
+                self.score_bimolecule,
+                2 * np.pi * (np.random.rand(6) - 0.5),
+                method="BFGS",
+                options={"maxiter": 5000, "disp": False},
+            )
             angles = result.x[:3].reshape(1, -1), result.x[3:].reshape(1, -1)
             return self.rotate_fragment_separately(*angles, about_reacting=True)
         else:
-            raise NotImplementedError('Hasn\'t been implemented for 3 and 4 reactant systems.')
+            raise NotImplementedError(
+                "Hasn't been implemented for 3 and 4 reactant systems."
+            )
 
-    def __call__(self, dist: float = None,):
+    def __call__(
+        self,
+        dist: float = None,
+    ):
         """
         Get coordinates of the alignment. Equivalent to calling :obj:`get_alignment`.
 
@@ -331,9 +393,10 @@ class NaiveAlign(object):
         return self.get_alignment_coords(dist=dist)
 
 
-def reset_pmol(r_mol: 'RDKitMol',
-               p_mol: 'RDKitMol',
-               ) -> 'RDKitMol':
+def reset_pmol(
+    r_mol: "RDKitMol",
+    p_mol: "RDKitMol",
+) -> "RDKitMol":
     """
     Reset the product mol to best align with the reactant. This procedure consists of initializing the product 3D
     structure with the reactant coordinates and then 1) minimizing the product structure with constraints for broken
@@ -356,8 +419,10 @@ def reset_pmol(r_mol: 'RDKitMol',
     broken_bonds = get_broken_bonds(r_mol, p_mol)
     r_conf = r_mol.GetEditableConformer()
     current_distances = [r_conf.GetBondLength(b) for b in broken_bonds]
-    [obff.add_distance_constraint(b, 1.5 * d)
-     for b, d in zip(broken_bonds, current_distances)]
+    [
+        obff.add_distance_constraint(b, 1.5 * d)
+        for b, d in zip(broken_bonds, current_distances)
+    ]
     obff.optimize(max_step=2000)
 
     # second minimization without constraints
@@ -373,10 +438,11 @@ def reset_pmol(r_mol: 'RDKitMol',
     return obff.get_optimized_mol()
 
 
-def prepare_mols(r_mol: 'RDKitMol',
-                 p_mol: 'RDKitMol',
-                 align_bimolecular: bool = True,
-                 ) -> Tuple['RDKitMol', 'RDKitMol']:
+def prepare_mols(
+    r_mol: "RDKitMol",
+    p_mol: "RDKitMol",
+    align_bimolecular: bool = True,
+) -> Tuple["RDKitMol", "RDKitMol"]:
     """
     Prepare mols for reaction path analysis. If reactant has multiple fragments, first orient reactants in reacting
     orientation. Then, reinitialize coordinates of product using :obj:`reset_pmol` function.
@@ -398,9 +464,10 @@ def prepare_mols(r_mol: 'RDKitMol',
     return r_mol, p_mol_new
 
 
-def align_reactant_fragments(r_mol: 'RDKitMol',
-                             p_mol: 'RDKitMol',
-                             ) -> 'RDKitMol':
+def align_reactant_fragments(
+    r_mol: "RDKitMol",
+    p_mol: "RDKitMol",
+) -> "RDKitMol":
     """
     Given reactant and product mols, find details of formed and broken bonds and generate reacting reactant complex.
 
@@ -413,7 +480,9 @@ def align_reactant_fragments(r_mol: 'RDKitMol',
     """
     formed_bonds, broken_bonds = get_formed_and_broken_bonds(r_mol, p_mol)
     if len(formed_bonds + broken_bonds) == 0:
-        print("Careful! No broken or formed bonds in this reaction! Returning input reactants")
+        print(
+            "Careful! No broken or formed bonds in this reaction! Returning input reactants"
+        )
         return r_mol
     naive_align = NaiveAlign.from_complex(r_mol, formed_bonds, broken_bonds)
     r_mol_naive_align = r_mol.Copy(quickCopy=True)
