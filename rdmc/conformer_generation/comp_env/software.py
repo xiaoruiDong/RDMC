@@ -128,7 +128,7 @@ def get_binary(binary: str) -> str:
     return binary_available.get(binary, None)
 
 
-def has_binary(binary: str) -> str:
+def has_binary(binary: str) -> bool:
     """
     Check if the binary is available.
 
