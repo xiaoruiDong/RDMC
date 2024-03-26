@@ -2,6 +2,8 @@ from typing import List
 
 from rdmc.conformer_generation.utils import dict_to_mol
 from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
+from rdmc.conformer_generation.comp_env import xtb_available
+
 try:
     from rdmc.conformer_generation.comp_env.xtb.opt import run_xtb_calc
 except ImportError:
@@ -17,6 +19,8 @@ class XTBOptimizer(ConfGenOptimizer):
         level (str, optional): The level of theory. Defaults to ``"normal"``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
+    _avail = xtb_available
 
     def __init__(
         self, method: str = "gff", level: str = "normal", track_stats: bool = False

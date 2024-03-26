@@ -7,6 +7,7 @@ import numpy as np
 from rdmc import RDKitMol
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
 from rdmc.external.inpwriter import write_orca_opt
+from rdmc.conformer_generation.comp_env import orca_available
 
 
 class OrcaOptimizer(TSOptimizer):
@@ -21,6 +22,8 @@ class OrcaOptimizer(TSOptimizer):
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
+    _avail = orca_available
 
     def __init__(
         self,

@@ -7,6 +7,7 @@ from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
 from rdmc.conformer_generation.comp_env.pyg import Batch
 from rdmc.conformer_generation.comp_env.torch import torch
 from rdmc.conformer_generation.comp_env.ts_ml import LitTSModule, TSDataset
+from rdmc.conformer_generation.comp_env import package_available
 
 
 def get_test_dataset(config):
@@ -36,7 +37,7 @@ class TSEGNNGuesser(TSInitialGuesser):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = _ts_egnn_avail
+    _avail = package_available["TS-ML"]
 
     def __init__(self, trained_model_dir: str, track_stats: Optional[bool] = False):
         """

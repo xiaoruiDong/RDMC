@@ -8,6 +8,7 @@ import numpy as np
 
 from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
 from rdmc.external.inpwriter import write_gaussian_gsm
+from rdmc.conformer_generation.comp_env import gsm_available
 
 
 class DEGSMGuesser(TSInitialGuesser):
@@ -18,7 +19,7 @@ class DEGSMGuesser(TSInitialGuesser):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = True
+    _avail = gsm_available
 
     def __init__(
         self,

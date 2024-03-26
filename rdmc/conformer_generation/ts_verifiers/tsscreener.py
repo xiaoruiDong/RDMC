@@ -8,6 +8,7 @@ from rdmc import RDKitMol
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
 from rdmc.conformer_generation.comp_env.pyg import Batch
 from rdmc.conformer_generation.comp_env.ts_ml import LitScreenerModule, mol2data
+from rdmc.conformer_generation.comp_env.software import package_available
 from rdmc.conformer_generation.utils import convert_log_to_mol
 
 
@@ -20,6 +21,8 @@ class TSScreener(TSVerifier):
         threshold (float): Threshold prediction at which we classify a failure/success. Defaults to ``0.95``.
         track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
     """
+
+    _avail = package_available["TS-ML"]
 
     def __init__(
         self,

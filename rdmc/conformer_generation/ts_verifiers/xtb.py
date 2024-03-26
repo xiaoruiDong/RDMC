@@ -6,6 +6,7 @@ from typing import Optional
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
 
 from rdmc.conformer_generation.comp_env.xtb.opt import run_xtb_calc
+from rdmc.conformer_generation.comp_env import xtb_available
 
 
 class XTBFrequencyVerifier(TSVerifier):
@@ -18,6 +19,8 @@ class XTBFrequencyVerifier(TSVerifier):
                                             Defaults to ``-100.`` cm-1
         track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
     """
+
+    _avail = xtb_available
 
     def __init__(self, cutoff_frequency: float = -100.0, track_stats: bool = False):
         """

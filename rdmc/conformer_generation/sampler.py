@@ -24,19 +24,22 @@ from rdmc.conformer_generation.utils import mol_to_dict
 from rdmc.mathlib.greedymin import search_minimum
 from rdtools.bond import get_formed_and_broken_bonds
 from rdtools.conf import set_conformer_coordinates
+from rdmc.conformer_generation.comp_env.xtb import (
+    VERBOSITY_FULL,
+    VERBOSITY_MINIMAL,
+    VERBOSITY_MUTED,
+    get_method,
+    _methods,
+    Calculator,
+)
+from rdmc.conformer_generation.comp_env.software import try_import, package_available
 
-try:
-    from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED
-    from xtb.utils import get_method, _methods
-    from xtb.interface import Calculator
-except ImportError:
-    print("No xtb-python installation detected. Skipping import...")
 
-try:
-    import scine_sparrow
-    import scine_utilities as su
-except BaseException:
-    print("No scine_sparrow installation detected. Skipping import...")
+try_import("scine_sparrow", namespace=globals())
+try_import(
+    "scine_utilities", alias="su", namespace=globals(), package_name="scine_sparrow"
+)
+try_import("seaborn", alias="sns", namespace=globals(), package_name="seaborn")
 
 
 class TorsionalSampler:
@@ -66,19 +69,21 @@ class TorsionalSampler:
                                                                                               :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.ts_verifiers.XTBFrequencyVerifier>`.
     """
 
-    def __init__(self,
-                 method: str = "GFN2-xTB",
-                 nprocs: int = 1,
-                 memory: int = 1,
-                 n_point_each_torsion: int = 45,
-                 n_dimension: int = 2,
-                 optimizer: Optional[Union["ConfGenOptimizer", "TSOptimizer"]] = None,
-                 pruner: Optional["ConfGenPruner"] = None,
-                 verifiers: Optional[Union["TSVerifier",
-                                           "Verifier",
-                                           List["TSVerifier"],
-                                           List["Verifier"]]] = None,
-                 ):
+    _avail = package_available["scine_sparrow"] or package_available["xtb-python"]
+
+    def __init__(
+        self,
+        method: str = "GFN2-xTB",
+        nprocs: int = 1,
+        memory: int = 1,
+        n_point_each_torsion: int = 45,
+        n_dimension: int = 2,
+        optimizer: Optional[Union["ConfGenOptimizer", "TSOptimizer"]] = None,
+        pruner: Optional["ConfGenPruner"] = None,
+        verifiers: Optional[
+            Union["TSVerifier", "Verifier", List["TSVerifier"], List["Verifier"]]
+        ] = None,
+    ):
         """
         Initiate the TorsionalSampler class object.
 

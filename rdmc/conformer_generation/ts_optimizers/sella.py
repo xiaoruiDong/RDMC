@@ -4,10 +4,7 @@ from typing import Optional
 import numpy as np
 
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
-try:
-    from rdmc.conformer_generation.comp_env.sella import run_sella_opt
-except BaseException:
-    print("No Sella installation deteced. Skipping import...")
+from rdmc.conformer_generation.comp_env.sella import run_sella_opt, sella_available
 
 
 class SellaOptimizer(TSOptimizer):
@@ -22,6 +19,8 @@ class SellaOptimizer(TSOptimizer):
         steps (int, optional): Max number of steps allowed in the optimization. Defaults to ``1000``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
+    _avail = sella_available
 
     def __init__(
         self,

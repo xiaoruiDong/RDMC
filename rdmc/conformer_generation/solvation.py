@@ -11,7 +11,7 @@ from typing import List, Optional
 
 from rdmc.conformer_generation.comp_env.ase import Atoms
 from rdmc.conformer_generation.comp_env.torch import torch
-from rdmc.conformer_generation.comp_env.software import try_import
+from rdmc.conformer_generation.comp_env.software import try_import, package_available
 
 package_name = "ConfSolv"
 namespace = globals()
@@ -97,9 +97,9 @@ class ConfSolv(Estimator):
         track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
     """
 
-    def __init__(self,
-                 trained_model_dir: str,
-                 track_stats: Optional[bool] = False):
+    _avail = package_available["ConfSolv"]
+
+    def __init__(self, trained_model_dir: str, track_stats: Optional[bool] = False):
         """
         Initialize the ConfSolv model.
 

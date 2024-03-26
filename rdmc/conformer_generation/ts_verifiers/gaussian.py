@@ -8,6 +8,7 @@ from rdmc import RDKitMol
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
 from rdmc.external.inpwriter import write_gaussian_irc
 from rdmc.external.logparser import GaussianLog
+from rdmc.conformer_generation.comp_env import gaussain_available
 
 
 class GaussianIRCVerifier(TSVerifier):
@@ -23,6 +24,8 @@ class GaussianIRCVerifier(TSVerifier):
         fc_kw (str, optional): Keyword specifying how often to compute force constants Defaults to ``"calcall"``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
+    _avail = gaussain_available
 
     def __init__(
         self,

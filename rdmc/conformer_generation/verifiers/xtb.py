@@ -4,6 +4,7 @@ from typing import Optional
 
 from rdmc.conformer_generation.verifiers.base import Verifier
 from rdmc.conformer_generation.comp_env.xtb.opt import run_xtb_calc
+from rdmc.conformer_generation.comp_env import xtb_available
 
 
 class XTBFrequencyVerifier(Verifier):
@@ -16,6 +17,8 @@ class XTBFrequencyVerifier(Verifier):
                                             Defaults to ``-100.`` cm-1.
         track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
     """
+
+    _avail = xtb_available
 
     def __init__(self, cutoff_frequency: float = -100.0, track_stats: bool = False):
         """
@@ -36,7 +39,7 @@ class XTBFrequencyVerifier(Verifier):
         mol: "RDKitMol",
         multiplicity: int = 1,
         save_dir: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Verifying stable species guesses (or optimized stable species geometries).

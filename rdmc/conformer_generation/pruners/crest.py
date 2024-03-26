@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from rdmc.conformer_generation.pruners.base import ConfGenPruner
 from rdmc.conformer_generation.comp_env.xtb.crest import run_cre_check
+from rdmc.conformer_generation.comp_env import crest_available
 
 
 class CRESTPruner(ConfGenPruner):
@@ -15,6 +16,8 @@ class CRESTPruner(ConfGenPruner):
         ewin (int, optional): Energy window. Defaults to ``10000``.
         track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
     """
+
+    _available = crest_available
 
     def __init__(
         self,

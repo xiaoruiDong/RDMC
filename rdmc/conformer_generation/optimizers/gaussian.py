@@ -8,6 +8,7 @@ import numpy as np
 from rdkit import Chem
 
 from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
+from rdmc.conformer_generation.comp_env import gaussian_available
 from rdmc.external.logparser import GaussianLog
 from rdmc.external.inpwriter import write_gaussian_opt
 
@@ -23,6 +24,8 @@ class GaussianOptimizer(ConfGenOptimizer):
         memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
+    _avail = gaussian_available()
 
     def __init__(
         self,

@@ -7,6 +7,7 @@ import numpy as np
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
 from rdmc.external.inpwriter import write_qchem_opt
 from rdmc.external.logparser import QChemLog
+from rdmc.conformer_generation.comp_env import qchem_available
 
 
 class QChemOptimizer(TSOptimizer):
@@ -22,6 +23,8 @@ class QChemOptimizer(TSOptimizer):
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
+    _avail = qchem_available
 
     def __init__(
         self,

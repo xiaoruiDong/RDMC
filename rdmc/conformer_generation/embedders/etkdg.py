@@ -6,6 +6,8 @@ class ETKDGEmbedder(ConfGenEmbedder):
     Embed conformers using ETKDG.
     """
 
+    _avail = True
+
     def embed_conformers(self, n_conformers: int):
         """
         Embed conformers according to the molecule graph.

@@ -8,6 +8,7 @@ from rdmc import RDKitMol
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
 from rdmc.external.inpwriter import write_qchem_irc
 from rdmc.external.logparser import QChemLog
+from rdmc.conformer_generation.comp_env import qchem_available
 
 
 class QChemIRCVerifier(TSVerifier):
@@ -22,6 +23,8 @@ class QChemIRCVerifier(TSVerifier):
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
+
+    _avail = qchem_available
 
     def __init__(
         self,

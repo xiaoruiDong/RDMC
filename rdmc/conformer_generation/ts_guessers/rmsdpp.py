@@ -1,6 +1,7 @@
 from typing import Optional
 
 from rdmc.conformer_generation.comp_env.xtb.opt import run_xtb_calc
+from rdmc.conformer_generation.comp_env import xtb_available
 from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
 
 
@@ -12,7 +13,7 @@ class RMSDPPGuesser(TSInitialGuesser):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = True
+    _avail = xtb_available
 
     def __init__(self, track_stats: Optional[bool] = False):
         """

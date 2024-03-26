@@ -3,9 +3,9 @@ from pathlib import Path
 import numpy as np
 from rdmc.conformer_generation.embedders.base import ConfGenEmbedder
 from rdmc.conformer_generation.comp_env.torch import torch
-from rdmc.conformer_generation.comp_env.software import try_import
+from rdmc.conformer_generation.comp_env.software import try_import, package_available
 
-package_name = "github.com/xiaoruiDong/GeoMol"
+package_name = "geomol"
 namespace = globals()
 modules = [
     "geomol.model.GeoMol",
@@ -30,6 +30,8 @@ class GeoMolEmbedder(ConfGenEmbedder):
             track_stats (bool, optional): Whether to track the statistics of the conformer generation. Defaults to ``False``.
     """
 
+    _avail = package_available[package_name]
+
     def __init__(
         self,
         trained_model_dir: str = None,
@@ -38,11 +40,7 @@ class GeoMolEmbedder(ConfGenEmbedder):
         track_stats: bool = False,
         device: str = "cpu",
     ):
-        if GeoMol is None:
-            raise ImportError(
-                "No GeoMol installation detected. Please install the GeoMol fork at https://github.com/xiaoruiDong/GeoMol."
-            )
-        super(GeoMolEmbedder, self).__init__(track_stats)
+        super().__init__(track_stats)
 
         # TODO: add option of pre-pruning geometries using alpha values
         # TODO: investigate option of changing "temperature" each iteration to sample diverse geometries
