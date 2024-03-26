@@ -8,7 +8,7 @@ from rdmc import RDKitMol
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
 from rdmc.external.inpwriter import write_gaussian_irc
 from rdmc.external.logparser import GaussianLog
-from rdmc.conformer_generation.comp_env import gaussain_available
+from rdmc.conformer_generation.comp_env import gaussian_available
 
 
 class GaussianIRCVerifier(TSVerifier):
@@ -25,7 +25,7 @@ class GaussianIRCVerifier(TSVerifier):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = gaussain_available
+    _avail = gaussian_available
 
     def __init__(
         self,

@@ -7,7 +7,7 @@ from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
 from rdmc.conformer_generation.comp_env.torch import torch
 from rdmc.conformer_generation.comp_env.pyg import Batch
 from rdmc.conformer_generation.comp_env.ts_ml import LitTSGCNModule, TSGCNDataset
-from rdmc.conformer_generation.comp_env import package_available
+from rdmc.conformer_generation.comp_env.software import package_available
 
 
 def get_test_dataset(config):

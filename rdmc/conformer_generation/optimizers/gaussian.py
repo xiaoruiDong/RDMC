@@ -25,7 +25,7 @@ class GaussianOptimizer(ConfGenOptimizer):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = gaussian_available()
+    _avail = gaussian_available
 
     def __init__(
         self,

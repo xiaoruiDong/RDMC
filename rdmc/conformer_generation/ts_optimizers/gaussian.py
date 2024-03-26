@@ -7,7 +7,7 @@ import numpy as np
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
 from rdmc.external.inpwriter import write_gaussian_opt
 from rdmc.external.logparser import GaussianLog
-from rdmc.conformer_generation.comp_env import gaussain_available
+from rdmc.conformer_generation.comp_env import gaussian_available
 
 
 class GaussianOptimizer(TSOptimizer):
@@ -24,7 +24,7 @@ class GaussianOptimizer(TSOptimizer):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = gaussain_available
+    _avail = gaussian_available
 
     def __init__(
         self,
