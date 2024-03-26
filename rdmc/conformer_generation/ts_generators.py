@@ -368,9 +368,6 @@ class TSConformerGenerator:
         ts_mol = self.embedder(
             seed_mols, multiplicity=self.multiplicity, save_dir=self.save_dir
         )
-        ts_mol.KeepIDs = {
-            i: True for i in range(ts_mol.GetNumConformers())
-        }  # map ids of generated guesses thru workflow
 
         self.logger.info("Optimizing TS guesses...")
         opt_ts_mol = self.optimizer(

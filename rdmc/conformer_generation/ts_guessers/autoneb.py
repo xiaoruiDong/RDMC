@@ -90,7 +90,7 @@ class AutoNEBGuesser(TSInitialGuesser):
             RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """
 
-        ts_guesses, used_rp_combos = [], []
+        ts_guesses, used_rp_combos = {}, []
         for i, (r_mol, p_mol) in enumerate(mols):
 
             # TODO: Need to clean the logic here, `ts_conf_dir` is used no matter `save_dir` being true
@@ -135,24 +135,23 @@ class AutoNEBGuesser(TSInitialGuesser):
                 )
 
                 autoneb.run()
-                os.chdir(cwd)
 
-                used_rp_combos.append((r_mol, p_mol))
                 ts_guess_idx = np.argmax(autoneb.get_energies())
-                ts_guesses.append(autoneb.all_images[ts_guess_idx].positions)
+                ts_guesses[i] = autoneb.all_images[ts_guess_idx].positions
 
             except (CalculationFailed, AssertionError) as e:
+                ts_guesses[i] = None
+            finally:
+                used_rp_combos.append((r_mol, p_mol))
                 os.chdir(cwd)
-
-        if len(ts_guesses) == 0:
-            return None
 
         # copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
         ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
         [
             ts_mol.GetEditableConformer(i).SetPositions(p)
-            for i, p in enumerate(ts_guesses)
+            for i, p in ts_guesses.items()
+            if ts_guesses[i] is not None
         ]
 
         if save_dir:

@@ -106,4 +106,8 @@ class TSEGNNGuesser(TSInitialGuesser):
         if save_dir:
             self.save_guesses(save_dir, mols, ts_mol)
 
+        ts_mol.KeepIDs = {
+            i: True for i in range(ts_mol.GetNumConformers())
+        }  # As long as the workflow runs successfully, it will create geometries for all conformers
+
         return ts_mol

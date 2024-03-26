@@ -59,4 +59,8 @@ class RMSDPPGuesser(TSInitialGuesser):
         if save_dir:
             self.save_guesses(save_dir, used_rp_combos, ts_mol)
 
+        ts_mol.KeepIDs = {
+            i: True for i in range(ts_mol.GetNumConformers())
+        }  # todo: need to change
+
         return ts_mol
