@@ -8,6 +8,7 @@ from rdmc.conformer_generation.comp_env.ase import (
     CalculationFailed,
     QuasiNewton,
 )
+from rdmc.conformer_generation.comp_env.software import package_available
 from rdmc.conformer_generation.comp_env.xtb import xtb_calculator
 from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
 
@@ -21,7 +22,7 @@ class AutoNEBGuesser(TSInitialGuesser):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = _ase_avail
+    _avail = package_available["ase"]
 
     def __init__(
         self,
