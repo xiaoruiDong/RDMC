@@ -6,7 +6,14 @@ class ETKDGEmbedder(ConfGenEmbedder):
     Embed conformers using ETKDG.
     """
 
-    _avail = True
+    def is_available(self):
+        """
+        Check if ETKDG embedder is available. Always True under the RDMC Framework
+
+        Returns:
+            bool: True
+        """
+        return True
 
     def embed_conformers(self, n_conformers: int):
         """

@@ -6,7 +6,14 @@ class RandomEmbedder(ConfGenEmbedder):
     Embed conformers with coordinates of random numbers.
     """
 
-    _avail = True
+    def is_available(self):
+        """
+        Check if Random embedder is available. Always True under the RDMC Framework.
+
+        Returns:
+            bool: True
+        """
+        return True
 
     def embed_conformers(self, n_conformers: int):
         """

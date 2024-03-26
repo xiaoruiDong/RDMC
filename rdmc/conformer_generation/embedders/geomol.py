@@ -30,8 +30,6 @@ class GeoMolEmbedder(ConfGenEmbedder):
             track_stats (bool, optional): Whether to track the statistics of the conformer generation. Defaults to ``False``.
     """
 
-    _avail = package_available[package_name]
-
     def __init__(
         self,
         trained_model_dir: str = None,
@@ -66,6 +64,15 @@ class GeoMolEmbedder(ConfGenEmbedder):
         self.std = model_parameters["hyperparams"]["random_vec_std"]
         self.temp_schedule = temp_schedule
         self.dataset = dataset
+
+    def is_available(self):
+        """
+        Check if GeoMol embedder is available.
+
+        Returns:
+            bool
+        """
+        return package_available[package_name]
 
     def to(self, device: str):
         self.device = device
