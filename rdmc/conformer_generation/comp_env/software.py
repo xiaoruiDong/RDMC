@@ -1,25 +1,85 @@
+import importlib
 from pathlib import Path
 import shutil
-from contextlib import contextmanager
+from typing import Optional
+
+from rdtools.utils import FakeModule
 
 
-module_available = {}
+package_available = {}
 binary_available = {}
 
 
-@contextmanager
-def register_module(software):
+def try_import(
+    full_module_name: str,
+    alias: Optional[str] = None,
+    namespace: Optional[dict] = None,
+    package_name: Optional[str] = None,
+):
     """
-    Register the availability of external software.
+    A helper function to import a module, function, or class. If the module is not available,
+    a fake module will be created.
+
+    Args:
+        full_module_name (str): The full name of the module, function, or class.
+        alias (str, optional): The alias of the module, function, or class. Defaults to ``None``.
+        namespace (dict, optional): The namespace where the module, function, or class will be
+            imported. Defaults to ``None``.
+        package_name (str, optional): The name of the package. Defaults to ``None``. This is used
+            in providing instructions if the module is not available.
+
+    Examples:
+        >>> from rdtools.software import try_import
+        >>> try_import("rdmc.conformer_generation.ts_guessers.TSEGNNGuesser")
+        >>> try_import("ase.Atoms")
     """
-    if module_available.get(software) is False:
-        return
-    try:
-        yield
-    except ImportError:
-        module_available[software] = False
+
+    if namespace is None:
+        namespace = globals()
+
+    module_name, _, attribute = full_module_name.rpartition(".")
+    # rdmc.conformer_generation.ts_guessers => "rdmc.conformer_generation", "ts_guessers"
+    # ase => "", "ase"
+    # rdkit.Chem => "rdkit", "Chem"
+
+    if not module_name:
+        module_name, attribute = attribute, module_name
+        package_name = package_name or module_name
     else:
-        module_available[software] = True
+        package_name = package_name or module_name.split(".")[0]
+
+    try:
+        if module_name and attribute:
+            module = importlib.import_module(module_name)
+            try:
+                attr = getattr(module, attribute)
+                namespace[alias or attribute] = attr
+
+                package_available[package_name] = (
+                    package_available.get(package_name) or True
+                )
+
+            except AttributeError:
+                namespace[alias or attribute] = FakeModule(
+                    full_module_name, package_name
+                )
+
+                # Not overwriting it, it is possible a module no longer available
+                # but the software is installed
+                package_available[package_name] = (
+                    package_available.get(package_name) or False
+                )
+        else:
+            module = importlib.import_module(full_module_name)
+            namespace[alias or module_name] = module
+    except ImportError:
+        namespace[alias or attribute or module_name] = FakeModule(
+            full_module_name, package_name
+        )
+
+        # Not overwriting it, it is possible a module no longer available
+        # but the software is installed
+        package_available[package_name] = package_available.get(package_name) or False
 
 
 def register_binary(binary: str) -> str:
@@ -32,8 +92,8 @@ def register_binary(binary: str) -> str:
     Returns:
         str: Path to the binary if available, otherwise an empty string.
     """
-    path = shutil.which(binary) or ''
-    binary_available[binary] = path if path != '' else None
+    path = shutil.which(binary) or ""
+    binary_available[binary] = path if path != "" else None
     return path
 
 
