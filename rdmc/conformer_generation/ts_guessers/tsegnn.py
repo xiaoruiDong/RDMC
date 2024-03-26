@@ -4,16 +4,12 @@ from typing import Optional
 import numpy as np
 
 from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
+from rdmc.conformer_generation.comp_env.pyg import Batch
+from rdmc.conformer_generation.comp_env.torch import torch
+from rdmc.conformer_generation.comp_env.ts_ml import LitTSModule, TSDataset
 
 
-_ts_egnn_avail = True
-
-
-try:
-    import torch
-    from torch_geometric.data import Batch
-    from ts_ml.trainers.ts_egnn_trainer import LitTSModule
-    from ts_ml.dataloaders.ts_egnn_loader import TSDataset
+def get_test_dataset(config):
 
     class EvalTSDataset(TSDataset):
         def __init__(self, config):
@@ -28,9 +24,7 @@ try:
                 "prod_feat"
             ]  # whether product features include distance or adjacency
 
-except ImportError:
-    _ts_egnn_avail = False
-    print("No TS-EGNN installation detected. Skipping import...")
+    return EvalTSDataset(config)
 
 
 class TSEGNNGuesser(TSInitialGuesser):
@@ -52,7 +46,7 @@ class TSEGNNGuesser(TSInitialGuesser):
             trained_model_dir (str): The path to the directory storing the trained TS-EGNN model.
             track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
-        super(TSEGNNGuesser, self).__init__(track_stats)
+        super().__init__(track_stats)
 
         # Load the TS-EGNN model
         checkpoint_path = os.path.join(trained_model_dir, "best_model.ckpt")
@@ -66,7 +60,7 @@ class TSEGNNGuesser(TSInitialGuesser):
         # Setup TS-EGNN configuration
         self.config = self.module.config
         self.module.model.eval()
-        self.test_dataset = EvalTSDataset(self.config)
+        self.test_dataset = get_test_dataset(self.config)
 
     def generate_ts_guesses(
         self,

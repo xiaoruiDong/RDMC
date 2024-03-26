@@ -4,24 +4,28 @@ from typing import Optional
 import numpy as np
 
 from rdmc.conformer_generation.ts_guessers.base import TSInitialGuesser
+from rdmc.conformer_generation.comp_env.torch import torch
+from rdmc.conformer_generation.comp_env.pyg import Batch
+from rdmc.conformer_generation.comp_env.ts_ml import LitTSGCNModule, TSGCNDataset
 
 
-# Import TS_GCN
-_ts_gcn_avail = True
-try:
-    import torch
-    from torch_geometric.data import Batch
-    from ts_ml.trainers.ts_gcn_trainer import LitTSModule as LitTSGCNModule
-    from ts_ml.dataloaders.ts_gcn_loader import TSGCNDataset
+def get_test_dataset(config):
+    """
+    Get the test dataset for TS-GCN.
+
+    Args:
+        config (dict): The configuration of the TS-GCN model.
+
+    Returns:
+        torch.utils.data.Dataset: The test dataset for TS-GCN.
+    """
 
     class EvalTSGCNDataset(TSGCNDataset):
         def __init__(self, config):
             self.no_shuffle_mols = True  # randomize which is reactant/product
             self.no_mol_prep = False  # prep as if starting from SMILES
 
-except ImportError:
-    _ts_gcn_avail = False
-    print("No TS-GCN installation detected. Skipping import...")
+    return EvalTSGCNDataset(config)
 
 
 class TSGCNGuesser(TSInitialGuesser):
@@ -43,7 +47,7 @@ class TSGCNGuesser(TSInitialGuesser):
             trained_model_dir (str): The path to the directory storing the trained TS-GCN model.
             track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
         """
-        super(TSGCNGuesser, self).__init__(track_stats)
+        super().__init__(track_stats)
 
         # Load the TS-GCN model
         self.module = LitTSGCNModule.load_from_checkpoint(
@@ -56,7 +60,7 @@ class TSGCNGuesser(TSInitialGuesser):
         self.module.model.eval()
         self.config["shuffle_mols"] = False
         self.config["prep_mols"] = False  # ts_generator class takes care of prep
-        self.test_dataset = EvalTSGCNDataset(self.config)
+        self.test_dataset = get_test_dataset(self.config)
 
     def generate_ts_guesses(
         self,

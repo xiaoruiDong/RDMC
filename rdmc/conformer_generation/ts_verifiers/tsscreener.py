@@ -6,17 +6,10 @@ import pickle
 from rdmc import RDKitMol
 
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
-
-
-try:
-    from ts_ml.trainers.ts_screener_trainer import LitScreenerModule
-    from ts_ml.dataloaders.ts_screener_loader import mol2data
-    from torch_geometric.data import Batch
-
-except ImportError:
-    print("No TS-ML installation detected. Skipping import...")
-
+from rdmc.conformer_generation.comp_env.pyg import Batch
+from rdmc.conformer_generation.comp_env.ts_ml import LitScreenerModule, mol2data
 from rdmc.conformer_generation.utils import convert_log_to_mol
+
 
 class TSScreener(TSVerifier):
     """
