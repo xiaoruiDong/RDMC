@@ -32,12 +32,11 @@ class TSInitialGuesser(BaseTask):
     def run(self):
         """
         The key function used to generate TS guesses. It varies by the actual classes and need to implemented inside each class.
-        The function should at least take mols and save_dir as input arguments. The returned value should be a RDKitMol with TS
+        The function should at least take mols and multiplicity as input arguments. The returned value should be a RDKitMol with TS
         geometries.
 
         Args:
             mols (list): A list of reactant and product pairs.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None`` for not saving.
 
         Returns:
             RDKitMol: The TS molecule in ``RDKitMol`` with 3D conformer saved with the molecule.
@@ -47,12 +46,11 @@ class TSInitialGuesser(BaseTask):
         """
         raise NotImplementedError
 
-    def save_guesses(self, str, rp_combos: list, ts_mol: "RDKitMol"):
+    def save_guesses(self, rp_combos: list, ts_mol: "RDKitMol"):
         """
-        Save the generated guesses into the given ``save_dir``.
+        Save the generated guesses into the ``self.save_dir``.
 
         Args:
-            save_dir (str): The path to the directory to save the results.
             rp_combos (list): A list of reactant and product complex pairs used to generate transition states.
             ts_mol (RDKitMol): The TS molecule in RDKitMol with 3D conformer saved with the molecule.
         """

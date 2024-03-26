@@ -80,9 +80,7 @@ class AutoNEBGuesser(TSInitialGuesser):
             )
         self._optimizer = optimizer
 
-    def run(
-        self, mols, multiplicity: Optional[int] = None, save_dir: Optional[str] = None
-    ):
+    def run(self, mols, multiplicity: Optional[int] = None):
         """
         Generate TS guesser.
 
