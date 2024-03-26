@@ -14,10 +14,16 @@ import tempfile
 from rdmc.conformer_generation.comp_env.software import try_import
 from rdmc.conformer_generation.comp_env.ase import ORCA
 from rdmc.conformer_generation.comp_env.xtb import xtb_calculator
+from rdmc.conformer_generation.comp_env.software import has_binary, package_available
 import pandas as pd
 
 
 try_import("sella.Sella", namespace=globals())
+
+sella_available = package_available["sella"] and (
+    (has_binary("xtb") and package_available["xtb-python"])
+    or (has_binary("orca") and package_available["ase"])
+)
 
 
 def run_sella_opt(
