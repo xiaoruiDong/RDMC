@@ -9,15 +9,10 @@ Taken from https://github.com/josejimenezluna/delfta/blob/f33dbe4fc2b860cef28788
 import os
 import numpy as np
 
-from rdmc.conformer_generation.comp_env.software import register_binary
-
 # Path handling shortcuts
 ROOT_PATH = os.path.dirname(__file__)
 TS_PATH_INP = os.path.join(ROOT_PATH, "ts_path.inp")
 UTILS_PATH = os.path.join(ROOT_PATH, "utils")
-register_binary("xtb")
-register_binary("crest")
-
 
 XTB_ENV = {
     "OMP_STACKSIZE": "1G",
