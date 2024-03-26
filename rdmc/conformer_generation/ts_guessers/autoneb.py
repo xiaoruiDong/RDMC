@@ -99,6 +99,7 @@ class AutoNEBGuesser(TSInitialGuesser):
         for i, (r_mol, p_mol) in enumerate(mols):
 
             ts_conf_dir = self.work_dir / f"neb_conf{i}"
+            ts_conf_dir.mkdir(parents=True, exist_ok=True)
 
             r_traj = ts_conf_dir / "ts000.traj"
             p_traj = ts_conf_dir / "ts001.traj"
