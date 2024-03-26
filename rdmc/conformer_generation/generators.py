@@ -36,36 +36,38 @@ class StochasticConformerGenerator:
     Args:
         smiles (str): SMILES input for which to generate conformers.
         embedder (ConfGenEmbedder, optional): Instance of a :obj:`ConfGenEmbedder <rdmc.conformer_generation.embedders.ConfGenEmbedder>`.
-                                              Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
-                                              :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
-                                              :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
+            Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
+            :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
+            :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
         optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
                                                 Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
                                                 :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
                                                 :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
         estimator (Estimator, optional): Instance of an :obj:`Estimator <rdmc.conformer_generation.solvation.Estimator>`. Available option is
-                                         :obj:`ConfSolv <rdmc.conformer_generation.solvation.ConfSolv>`.
+            :obj:`ConfSolv <rdmc.conformer_generation.solvation.ConfSolv>`.
         pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
-                                          :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
-                                          :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+            :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+            :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
         metric (SCGMetric, optional): The available option is `SCGMetric <rdmc.conformer_generation.metrics.SCGMetric>`.
         min_iters (int, optional): Minimum number of iterations for which to run the module.
         max_iters (int, optional}: Maximum number of iterations for which to run the module.
         final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete.
     """
 
-    def __init__(self,
-                 smiles,
-                 embedder: Optional['ConfGenEmbedder'] = None,
-                 optimizer: Optional['ConfGenOptimizer'] = None,
-                 estimator: Optional['Estimator'] = None,
-                 pruner: Optional['ConfGenPruner'] = None,
-                 metric: Optional['SCGMetric'] = None,
-                 min_iters: Optional[int] = None,
-                 max_iters: Optional[int] = None,
-                 final_modules: Optional[list] = None,
-                 config: Optional[dict] = None,
-                 track_stats: bool = False):
+    def __init__(
+        self,
+        smiles,
+        embedder: Optional["ConfGenEmbedder"] = None,
+        optimizer: Optional["ConfGenOptimizer"] = None,
+        estimator: Optional["Estimator"] = None,
+        pruner: Optional["ConfGenPruner"] = None,
+        metric: Optional["SCGMetric"] = None,
+        min_iters: Optional[int] = None,
+        max_iters: Optional[int] = None,
+        final_modules: Optional[list] = None,
+        config: Optional[dict] = None,
+        track_stats: bool = False,
+    ):
         """
         Initialize the StochasticConformerGenerator module.
 
@@ -102,12 +104,25 @@ class StochasticConformerGenerator:
         self.track_stats = track_stats
 
         if config:
-            self.logger.info(f"Config specified: using default settings for {config} config")
-            self.set_config(config, embedder, optimizer, pruner, metric, final_modules, min_iters, max_iters)
+            self.logger.info(
+                f"Config specified: using default settings for {config} config"
+            )
+            self.set_config(
+                config=config,
+                embedder=embedder,
+                optimizer=optimizer,
+                pruner=pruner,
+                metric=metric,
+                min_iters=min_iters,
+                max_iters=max_iters,
+                final_modules=final_modules,
+            )
 
         if not self.optimizer:
             self.metric.metric = "total conformers"
-            self.logger.info("No optimizer selected: termination criteria set to total conformers")
+            self.logger.info(
+                "No optimizer selected: termination criteria set to total conformers"
+            )
 
         self.mol = RDKitMol.FromSmiles(smiles)
         self.unique_mol_data = []
@@ -119,10 +134,11 @@ class StochasticConformerGenerator:
         if isinstance(self.pruner, TorsionPruner):
             self.pruner.initialize_torsions_list(smiles)
 
-    def __call__(self,
-                 n_conformers_per_iter: int,
-                 **kwargs,
-                 ) -> List[dict]:
+    def __call__(
+        self,
+        n_conformers_per_iter: int,
+        **kwargs,
+    ) -> List[dict]:
         """
         Run the workflow for stochastic conformer generation.
 
@@ -137,20 +153,24 @@ class StochasticConformerGenerator:
         for _ in range(self.max_iters):
             self.iter += 1
 
-            self.logger.info(f"\nIteration {self.iter}: embedding {n_conformers_per_iter} initial guesses...")
+            self.logger.info(
+                f"\nIteration {self.iter}: embedding {n_conformers_per_iter} initial guesses..."
+            )
             initial_mol_data = self.embedder(self.smiles, n_conformers_per_iter)
 
             if self.optimizer:
-                self.logger.info(f"Iteration {self.iter}: optimizing initial guesses...")
+                self.logger.info(
+                    f"Iteration {self.iter}: optimizing initial guesses..."
+                )
                 opt_mol_data = self.optimizer(initial_mol_data)
             else:
                 opt_mol_data = []
                 for c_id in range(len(initial_mol_data)):
                     conf = initial_mol_data[c_id]["conf"]
                     positions = conf.GetPositions()
-                    opt_mol_data.append({"positions": positions,
-                                         "conf": conf,
-                                         "energy": np.nan})
+                    opt_mol_data.append(
+                        {"positions": positions, "conf": conf, "energy": np.nan}
+                    )
 
             # check for failures
             if len(opt_mol_data) == 0:
@@ -158,11 +178,21 @@ class StochasticConformerGenerator:
                 continue
 
             self.logger.info(f"Iteration {self.iter}: pruning conformers...")
-            unique_mol_data = self.pruner(opt_mol_data, self.unique_mol_data) if self.pruner else opt_mol_data
-            unique_mol_data = self.estimator(unique_mol_data, **kwargs) if self.estimator else unique_mol_data
+            unique_mol_data = (
+                self.pruner(opt_mol_data, self.unique_mol_data)
+                if self.pruner
+                else opt_mol_data
+            )
+            unique_mol_data = (
+                self.estimator(unique_mol_data, **kwargs)
+                if self.estimator
+                else unique_mol_data
+            )
             self.metric.calculate_metric(unique_mol_data)
             self.unique_mol_data = unique_mol_data
-            self.logger.info(f"Iteration {self.iter}: kept {len(unique_mol_data)} unique conformers")
+            self.logger.info(
+                f"Iteration {self.iter}: kept {len(unique_mol_data)} unique conformers"
+            )
 
             if self.iter < self.min_iters:
                 continue
@@ -180,23 +210,25 @@ class StochasticConformerGenerator:
 
         if self.track_stats:
             time_end = time()
-            stats = {"iter": self.iter,
-                     "time": time_end - time_start,
-                     }
+            stats = {
+                "iter": self.iter,
+                "time": time_end - time_start,
+            }
             self.stats.append(stats)
 
         return unique_mol_data
 
-    def set_config(self,
-                   config: str,
-                   embedder: Optional['ConfGenEmbedder'] = None,
-                   optimizer: Optional['ConfGenOptimizer'] = None,
-                   pruner: Optional['ConfGenPruner'] = None,
-                   metric: Optional['SCGMetric'] = None,
-                   min_iters: Optional[int] = None,
-                   max_iters: Optional[int] = None,
-                   final_modules: Optional[list] = None,
-                   ):
+    def set_config(
+        self,
+        config: str,
+        embedder: Optional["ConfGenEmbedder"] = None,
+        optimizer: Optional["ConfGenOptimizer"] = None,
+        pruner: Optional["ConfGenPruner"] = None,
+        metric: Optional["SCGMetric"] = None,
+        min_iters: Optional[int] = None,
+        max_iters: Optional[int] = None,
+        final_modules: Optional[list] = None,
+    ):
         """
         Set the configuration for the conformer generator with pre-defined options: ``"loose"`` and ``"normal"``.
 
@@ -230,22 +262,48 @@ class StochasticConformerGenerator:
         if config == "loose":
             self.embedder = ETKDGEmbedder() if not embedder else embedder
             self.optimizer = XTBOptimizer(method="gff") if not optimizer else optimizer
-            self.pruner = TorsionPruner(mean_chk_threshold=20, max_chk_threshold=30) if not pruner else pruner
-            self.metric = SCGMetric(metric="entropy", window=3, threshold=0.05) if not metric else metric
+            self.pruner = (
+                TorsionPruner(mean_chk_threshold=20, max_chk_threshold=30)
+                if not pruner
+                else pruner
+            )
+            self.metric = (
+                SCGMetric(metric="entropy", window=3, threshold=0.05)
+                if not metric
+                else metric
+            )
             self.final_modules = [] if not final_modules else final_modules
             self.min_iters = 3 if not min_iters else min_iters
             self.max_iters = 20 if not max_iters else max_iters
 
         elif config == "normal":
-            self.embedder = ETKDGEmbedder(track_stats=self.track_stats) if not embedder else embedder
-            self.optimizer = XTBOptimizer(method="gff", track_stats=self.track_stats) if not optimizer else optimizer
+            self.embedder = (
+                ETKDGEmbedder(track_stats=self.track_stats)
+                if not embedder
+                else embedder
+            )
+            self.optimizer = (
+                XTBOptimizer(method="gff", track_stats=self.track_stats)
+                if not optimizer
+                else optimizer
+            )
             self.pruner = CRESTPruner(track_stats=self.track_stats)
-            self.metric = SCGMetric(metric="entropy", window=5, threshold=0.01) if not metric else metric
-            self.final_modules = [
-                CRESTPruner(ewin=12, track_stats=self.track_stats),
-                XTBOptimizer(method="gfn2", level="vtight", track_stats=self.track_stats),
-                CRESTPruner(ewin=6, track_stats=self.track_stats)
-            ] if not final_modules else final_modules
+            self.metric = (
+                SCGMetric(metric="entropy", window=5, threshold=0.01)
+                if not metric
+                else metric
+            )
+            self.final_modules = (
+                [
+                    CRESTPruner(ewin=12, track_stats=self.track_stats),
+                    XTBOptimizer(
+                        method="gfn2", level="vtight", track_stats=self.track_stats
+                    ),
+                    CRESTPruner(ewin=6, track_stats=self.track_stats),
+                ]
+                if not final_modules
+                else final_modules
+            )
             self.min_iters = 5 if not min_iters else min_iters
             self.max_iters = 100 if not max_iters else max_iters
 
@@ -273,16 +331,17 @@ class ConformerGenerator:
         save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
     """
 
-    def __init__(self,
-                 smiles: str,
-                 multiplicity: Optional[int] = None,
-                 optimizer: Optional['ConfGenOptimizer'] = None,
-                 pruner: Optional['ConfGenPruner'] = None,
-                 verifiers: Optional[Union['Verifier', List['Verifier']]] = None,
-                 sampler: Optional['TorisonalSampler'] = None,
-                 final_modules: Optional[Union['ConfGenOptimizer', 'Verifier']] = None,
-                 save_dir: Optional[str] = None,
-                 ) -> 'ConformerGenerator':
+    def __init__(
+        self,
+        smiles: str,
+        multiplicity: Optional[int] = None,
+        optimizer: Optional["ConfGenOptimizer"] = None,
+        pruner: Optional["ConfGenPruner"] = None,
+        verifiers: Optional[Union["Verifier", List["Verifier"]]] = None,
+        sampler: Optional["TorisonalSampler"] = None,
+        final_modules: Optional[Union["ConfGenOptimizer", "Verifier"]] = None,
+        save_dir: Optional[str] = None,
+    ) -> "ConformerGenerator":
         """
         Initiate the conformer generator object. The best practice is set all information here.
 
@@ -321,10 +380,11 @@ class ConformerGenerator:
         self.final_modules = [] if not final_modules else final_modules
         self.save_dir = save_dir
 
-    def embed_stable_species(self,
-                             smiles: str,
-                             n_conformers: int = 20,
-                             ) -> 'RDKitMol':
+    def embed_stable_species(
+        self,
+        smiles: str,
+        n_conformers: int = 20,
+    ) -> "RDKitMol":
         """
         Embed the well conformer according to the SMILES provided.
 
@@ -360,15 +420,16 @@ class ConformerGenerator:
         )
 
         confs = scg(n_conformers_per_iter)
-        energies = [data['energy'] for data in confs]
+        energies = [data["energy"] for data in confs]
         sort_index = np.argsort(energies)
         mol = dict_to_mol([confs[i] for i in sort_index[:n_conformers]])
         return mol
 
-    def set_filter(self,
-                   mol: RDKitMol,
-                   n_conformers: int,
-                   ) -> list:
+    def set_filter(
+        self,
+        mol: RDKitMol,
+        n_conformers: int,
+    ) -> list:
         """
         Assign the indices of conformers to track whether the conformers are passed to the following steps.
 
@@ -382,18 +443,22 @@ class ConformerGenerator:
         energy_dict = mol.energy
         KeepIDs = mol.KeepIDs
 
-        sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
+        sorted_index = [
+            k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])
+        ]  # Order by energy
         filter_index = [k for k in sorted_index if KeepIDs[k]][:n_conformers]
         for i in range(mol.GetNumConformers()):
             if i not in filter_index:
                 mol.KeepIDs[i] = False
         return mol
 
-    def __call__(self,
-                 n_conformers: int = 20,
-                 n_verifies: int = 20,
-                 n_sampling: int = 1,
-                 n_refines: int = 1):
+    def __call__(
+        self,
+        n_conformers: int = 20,
+        n_verifies: int = 20,
+        n_sampling: int = 1,
+        n_refines: int = 1,
+    ):
         """
         Run the workflow of well conformer generation.
 
@@ -411,17 +476,26 @@ class ConformerGenerator:
         self.logger.info("Embedding stable species conformers...")
         mol = self.embed_stable_species(self.smiles, n_conformers)
 
-        mol.KeepIDs = {i: True for i in range(mol.GetNumConformers())}  # map ids of generated guesses thru workflow
+        mol.KeepIDs = {
+            i: True for i in range(mol.GetNumConformers())
+        }  # map ids of generated guesses thru workflow
 
         self.logger.info("Optimizing stable species guesses...")
-        opt_mol = self.optimizer(mol, multiplicity=self.multiplicity, save_dir=self.save_dir)
+        opt_mol = self.optimizer(
+            mol, multiplicity=self.multiplicity, save_dir=self.save_dir
+        )
 
         if self.pruner:
             self.logger.info("Pruning stable species guesses...")
-            _, unique_ids = self.pruner(mol_to_dict(opt_mol, conf_copy_attrs=["KeepIDs", "energy"]),
-                                        sort_by_energy=False, return_ids=True)
+            _, unique_ids = self.pruner(
+                mol_to_dict(opt_mol, conf_copy_attrs=["KeepIDs", "energy"]),
+                sort_by_energy=False,
+                return_ids=True,
+            )
             self.logger.info(f"Pruned {self.pruner.n_pruned_confs} well conformers")
-            opt_mol.KeepIDs = {k: k in unique_ids and v for k, v in opt_mol.KeepIDs.items()}
+            opt_mol.KeepIDs = {
+                k: k in unique_ids and v for k, v in opt_mol.KeepIDs.items()
+            }
             with open(os.path.join(self.save_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_mol.KeepIDs, f)
 
@@ -435,9 +509,13 @@ class ConformerGenerator:
             self.logger.info("Running torsional sampling...")
             energy_dict = opt_mol.energy
             KeepIDs = opt_mol.KeepIDs
-            sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])]  # Order by energy
+            sorted_index = [
+                k for k, v in sorted(energy_dict.items(), key=lambda item: item[1])
+            ]  # Order by energy
             filter_index = [k for k in sorted_index if KeepIDs[k]][:n_sampling]
-            found_lower_energy_index = {i: False for i in range(opt_mol.GetNumConformers())}
+            found_lower_energy_index = {
+                i: False for i in range(opt_mol.GetNumConformers())
+            }
             for id in filter_index:
                 original_energy = opt_mol.energy[id]
                 new_mol = self.sampler(opt_mol, id, save_dir=self.save_dir)
@@ -459,7 +537,12 @@ class ConformerGenerator:
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
             for module in self.final_modules:
-                opt_mol = module(opt_mol, multiplicity=self.multiplicity, save_dir=save_dir, smiles=self.smiles)
+                opt_mol = module(
+                    opt_mol,
+                    multiplicity=self.multiplicity,
+                    save_dir=save_dir,
+                    smiles=self.smiles,
+                )
 
         # save which stable species passed full workflow
         with open(os.path.join(self.save_dir, "workflow_check_ids.pkl"), "wb") as f:
