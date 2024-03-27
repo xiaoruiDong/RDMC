@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from time import time
 
 from rdmc import RDKitMol
@@ -34,7 +35,8 @@ class ConfGenEmbedder(BaseTask):
             # Copy the graph but remove conformers
             self.mol = self.mol.Copy(quickCopy=True)
 
-    def embed_conformers(self, n_conformers: int):
+    @abstractmethod
+    def run(self, n_conformers: int):
         """
         Embed conformers according to the molecule graph.
 
@@ -92,7 +94,7 @@ class ConfGenEmbedder(BaseTask):
         self.iter += 1
         time_start = time()
         self.update_mol(smiles)
-        self.embed_conformers(n_conformers)
+        self.run(n_conformers)
         mol_data = self.write_mol_data()
 
         if not self.track_stats:

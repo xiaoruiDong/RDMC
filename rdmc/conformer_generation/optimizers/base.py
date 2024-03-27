@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from time import time
 from typing import List
 
@@ -20,7 +21,8 @@ class ConfGenOptimizer(BaseTask):
         self.percent_failures = None
         self.n_opt_cycles = None
 
-    def optimize_conformers(self, mol_data: List[dict]):
+    @abstractmethod
+    def run(self, mol_data: List[dict]):
         """
         Optimize the conformers.
 
@@ -48,7 +50,7 @@ class ConfGenOptimizer(BaseTask):
 
         self.iter += 1
         time_start = time()
-        mol_data = self.optimize_conformers(mol_data)
+        mol_data = self.run(mol_data)
 
         if not self.track_stats:
             return mol_data

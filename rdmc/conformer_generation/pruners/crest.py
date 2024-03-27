@@ -45,7 +45,7 @@ class CRESTPruner(ConfGenPruner):
     def is_available(self):
         return crest_available
 
-    def prune_conformers(
+    def run(
         self,
         current_mol_data: List[dict],
         unique_mol_data: Optional[List[dict]] = None,

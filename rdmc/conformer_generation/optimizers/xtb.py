@@ -23,7 +23,7 @@ class XTBOptimizer(ConfGenOptimizer, XTBTask):
         self.method = method
         self.level = level
 
-    def optimize_conformers(
+    def run(
         self,
         mol_data: List[dict],
     ) -> List[dict]:

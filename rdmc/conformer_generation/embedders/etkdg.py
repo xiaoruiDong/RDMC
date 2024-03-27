@@ -15,7 +15,7 @@ class ETKDGEmbedder(ConfGenEmbedder):
         """
         return True
 
-    def embed_conformers(self, n_conformers: int):
+    def run(self, n_conformers: int):
         """
         Embed conformers according to the molecule graph.
 

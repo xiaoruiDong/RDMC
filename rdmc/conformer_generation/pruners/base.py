@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from time import time
 from typing import List, Optional
 
@@ -20,7 +21,8 @@ class ConfGenPruner(BaseTask):
         self.n_pruned_confs = None
         self.n_output_confs = None
 
-    def prune_conformers(
+    @abstractmethod
+    def run(
         self,
         current_mol_data: List[dict],
         unique_mol_data: Optional[List[dict]] = None,
@@ -39,7 +41,6 @@ class ConfGenPruner(BaseTask):
         Raises:
             NotImplementedError: This method should be implemented in the subclass.
         """
-        raise NotImplementedError
 
     def __call__(
         self,
@@ -62,7 +63,7 @@ class ConfGenPruner(BaseTask):
         """
         self.iter += 1
         time_start = time()
-        mol_data = self.prune_conformers(
+        mol_data = self.run(
             current_mol_data, unique_mol_data, sort_by_energy, return_ids
         )
 

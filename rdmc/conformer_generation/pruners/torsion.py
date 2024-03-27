@@ -154,7 +154,7 @@ class TorsionPruner(ConfGenPruner):
         # compare two lists of torsions in radians
         return [TorsionPruner.rad_angle_compare(t1, t2) for t1, t2 in zip(c1_ts, c2_ts)]
 
-    def prune_conformers(
+    def run(
         self,
         current_mol_data: List[dict],
         unique_mol_data: Optional[List[dict]] = None,

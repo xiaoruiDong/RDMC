@@ -26,7 +26,7 @@ class MMFFOptimizer(ConfGenOptimizer):
     def is_available(self):
         return True
 
-    def optimize_conformers(
+    def run(
         self,
         mol_data: List[dict],
     ) -> List[dict]:
