@@ -20,7 +20,7 @@ class SellaOptimizer(TSOptimizer):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = sella_available
+    path_prefix = "sella_opt"
 
     def __init__(
         self,
@@ -38,49 +38,34 @@ class SellaOptimizer(TSOptimizer):
             steps (int, optional): Max number of steps allowed in the optimization. Defaults to 1000.
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
-        super(SellaOptimizer, self).__init__(track_stats)
+        super().__init__(track_stats)
 
         self.method = method
         self.fmax = fmax
         self.steps = steps
 
-    def optimize_ts_guesses(
-        self, mol: "RDKitMol", save_dir: Optional[str] = None, **kwargs
-    ):
+    def is_available(self):
+        return sella_available
+
+    def run_opt(self, mol: "RDKitMol", conf_id: int, **kwargs):
         """
         Optimize the TS guesses.
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            save_dir (str, optional): The path to save results. Defaults to ``None``.
+            conf_id (int): The index of the TS guess to optimize.
 
         Returns:
-            RDKitMol: The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
+            tuple: pos, success, energy, freq
         """
-        opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
-        opt_mol.energy = {}
-        opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
-        for i in range(mol.GetNumConformers()):
+        work_dir = self.work_dir / f"{self.path_prefix}{conf_id}"
+        work_dir.mkdir(parents=True, exist_ok=True)
 
-            if not opt_mol.KeepIDs[i]:
-                opt_mol.AddNullConformer(confId=i)
-                opt_mol.energy.update({i: np.nan})
-                continue
-
-            if save_dir:
-                ts_conf_dir = os.path.join(save_dir, f"sella_opt{i}")
-                os.makedirs(ts_conf_dir, exist_ok=True)
-
-            opt_mol = run_sella_opt(
-                opt_mol,
-                method=self.method,
-                confId=i,
-                fmax=self.fmax,
-                steps=self.steps,
-                save_dir=ts_conf_dir,
-                copy_attrs=["KeepIDs", "energy", "frequency"],
-            )
-        if save_dir:
-            self.save_opt_mols(save_dir, opt_mol, opt_mol.KeepIDs, opt_mol.energy)
-
-        return opt_mol
+        return run_sella_opt(
+            mol,
+            conf_id=conf_id,
+            method=self.method,
+            fmax=self.fmax,
+            steps=self.steps,
+            save_dir=work_dir,
+        )

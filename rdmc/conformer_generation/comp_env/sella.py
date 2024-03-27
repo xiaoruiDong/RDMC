@@ -5,10 +5,9 @@
 Transition state initial guess optimization with ASE optimizers (requires xtb-python).
 """
 
-import os
-import io
 from contextlib import redirect_stdout
-from shutil import rmtree
+import io
+from pathlib import Path
 import tempfile
 
 from rdmc.conformer_generation.comp_env.software import try_import
@@ -18,7 +17,7 @@ from rdmc.conformer_generation.comp_env.software import has_binary, package_avai
 import pandas as pd
 
 
-try_import("sella.Sella", namespace=globals())
+try_import("sella.Sella", namespace=globals())  # from sella import Sella
 
 sella_available = package_available["sella"] and (
     (has_binary("xtb") and package_available["xtb-python"])
@@ -27,26 +26,23 @@ sella_available = package_available["sella"] and (
 
 
 def run_sella_opt(
-    rdmc_mol,
-    confId=0,
-    fmax=1e-3,
-    steps=1000,
-    save_dir=None,
-    method="GFN2-xTB",
-    copy_attrs=None,
-):
-    temp_dir = tempfile.mkdtemp() if not save_dir else save_dir
-    trajfile = os.path.join(temp_dir, "ts.traj")
-    logfile = os.path.join(temp_dir, "ts.log")
-    orca_name = os.path.join(temp_dir, "ts")
+    mol: "RDKitMol",
+    conf_id: int = 0,
+    method: str = "GFN2-xTB",
+    fmax: float = 1e-3,
+    steps: int = 1000,
+    save_dir: Optional[str] = None,
+) -> tuple:
+    work_dir = Path(save_dir or tempfile.mkdtemp())
+    trajfile = work_dir / "ts.traj"
+    logfile = work_dir / "ts.log"
+    orca_name = work_dir / "ts"
 
-    coords = rdmc_mol.GetConformer(confId).GetPositions()
-    numbers = rdmc_mol.GetAtomicNumbers()
-    atoms = rdmc_mol.ToAtoms()
+    atoms = mol.ToAtoms(confId=conf_id)
 
     # set calculator; use xtb-python for xtb and orca for everything else
-    if method == "GFN2-xTB":
-        atoms.calc = XTB(method="GFN2-xTB")
+    if method.lower() == "GFN2-xTB":
+        atoms.calc = xtb_calculator(method="GFN2-xTB")
     elif method == "AM1":
         atoms.calc = ORCA(label=orca_name, orcasimpleinput="AM1")
     elif method == "PM3":
@@ -65,12 +61,7 @@ def run_sella_opt(
         )
         opt.run(fmax, steps)
 
-    opt_rdmc_mol = rdmc_mol.Copy(copy_attrs=copy_attrs)
-    opt_rdmc_mol.SetPositions(opt.atoms.positions, confId=confId)
+    pos = opt.atoms.positions
     energy = float(pd.read_csv(logfile).iloc[-1].values[0].split()[3])
-    opt_rdmc_mol.energy.update({confId: energy})
 
-    if not save_dir:
-        rmtree(temp_dir)
-
-    return opt_rdmc_mol
+    return pos, True, energy, None  # positions, success, energy, freq
