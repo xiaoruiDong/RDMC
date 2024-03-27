@@ -12,11 +12,10 @@ class ConfGenEmbedder(BaseTask):
 
     def __init__(self, track_stats=False):
 
+        super().__init__(track_stats)
         self.iter = 0
-        self.track_stats = track_stats
         self.n_success = None
         self.percent_success = None
-        self.stats = []
         self.smiles = None
 
     def update_mol(self, smiles: str):

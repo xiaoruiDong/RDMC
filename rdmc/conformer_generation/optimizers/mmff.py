@@ -17,7 +17,7 @@ class MMFFOptimizer(ConfGenOptimizer):
     """
 
     def __init__(self, method: str = "rdkit", track_stats: bool = False):
-        super(MMFFOptimizer, self).__init__(track_stats)
+        super().__init__(track_stats)
         if method == "rdkit":
             self.ff = RDKitFF()
         elif method == "openbabel":
