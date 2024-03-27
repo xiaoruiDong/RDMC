@@ -7,10 +7,10 @@ import numpy as np
 from rdmc import RDKitMol
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
 from rdmc.external.inpwriter import write_orca_opt
-from rdmc.conformer_generation.comp_env import orca_available
+from rdmc.conformer_generation.task.orca import OrcaTask
 
 
-class OrcaOptimizer(TSOptimizer):
+class OrcaOptimizer(OrcaTask, TSOptimizer):
     """
     The class to optimize TS geometries using the Berny algorithm built in Orca.
     You have to have the Orca package installed to run this optimizer.
@@ -22,35 +22,6 @@ class OrcaOptimizer(TSOptimizer):
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
-
-    _avail = orca_available
-
-    def __init__(
-        self,
-        method: str = "XTB2",
-        nprocs: int = 1,
-        track_stats: bool = False,
-    ):
-        """
-        Initiate the Orca berny optimizer.
-
-        Args:
-            method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Orca.
-                                    If you want to use XTB methods, you need to put the xtb binary into the Orca directory.
-                                    Defaults to ``"XTB2"``.
-            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
-            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
-        """
-        super(OrcaOptimizer, self).__init__(track_stats)
-
-        self.method = method
-        self.nprocs = nprocs
-
-        ORCA_BINARY = os.environ.get("ORCA")
-        if not ORCA_BINARY:
-            raise RuntimeError("No Orca binary is found in the PATH.")
-        else:
-            self.orca_binary = ORCA_BINARY
 
     def extract_frequencies(self, save_dir: str, n_atoms: int):
         """
@@ -131,7 +102,7 @@ class OrcaOptimizer(TSOptimizer):
             # Run the optimization using subprocess
             with open(os.path.join(ts_conf_dir, "orca_opt.log"), "w") as f:
                 orca_run = subprocess.run(
-                    [self.orca_binary, orca_input_file],
+                    [self.binary_path, orca_input_file],
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=os.getcwd(),

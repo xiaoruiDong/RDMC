@@ -7,10 +7,10 @@ from rdmc import RDKitMol
 
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
 from rdmc.external.inpwriter import write_orca_irc
-from rdmc.conformer_generation.comp_env import orca_available
+from rdmc.conformer_generation.task.orca import OrcaTask
 
 
-class OrcaIRCVerifier(TSVerifier):
+class OrcaIRCVerifier(OrcaTask, TSVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Orca.
 
@@ -21,32 +21,6 @@ class OrcaIRCVerifier(TSVerifier):
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
-
-    _avail = orca_available
-
-    def __init__(
-        self, method: str = "XTB2", nprocs: int = 1, track_stats: bool = False
-    ):
-        """
-        Initiate the Orca IRC verifier.
-
-        Args:
-            method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Orca.
-                                    If you want to use XTB methods, you need to put the xtb binary into the Orca directory.
-                                    Defaults to ``"XTB2"``.
-            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
-            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
-        """
-        super(OrcaIRCVerifier, self).__init__(track_stats)
-
-        self.method = method
-        self.nprocs = nprocs
-
-        ORCA_BINARY = os.environ.get("ORCA")
-        if not ORCA_BINARY:
-            raise RuntimeError("No Orca binary is found in the PATH.")
-        else:
-            self.orca_binary = ORCA_BINARY
 
     def verify_ts_guesses(
         self,
@@ -87,7 +61,7 @@ class OrcaIRCVerifier(TSVerifier):
                 # Run the Orca IRC using subprocess
                 with open(os.path.join(orca_dir, "orca_irc.log"), "w") as f:
                     orca_run = subprocess.run(
-                        [self.orca_binary, orca_input_file],
+                        [self.binary_path, orca_input_file],
                         stdout=f,
                         stderr=subprocess.STDOUT,
                         cwd=os.getcwd(),
