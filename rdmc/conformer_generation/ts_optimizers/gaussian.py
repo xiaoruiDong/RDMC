@@ -4,13 +4,13 @@ from typing import Optional
 
 import numpy as np
 
+from rdmc.conformer_generation.task.gaussian_task import GaussianTask
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
 from rdmc.external.inpwriter import write_gaussian_opt
 from rdmc.external.logparser import GaussianLog
-from rdmc.conformer_generation.comp_env import gaussian_available
 
 
-class GaussianOptimizer(TSOptimizer):
+class GaussianOptimizer(GaussianTask, TSOptimizer):
     """
     The class to optimize TS geometries using the Berny algorithm built in Gaussian.
     You have to have the Gaussian package installed to run this optimizer
@@ -23,41 +23,6 @@ class GaussianOptimizer(TSOptimizer):
         memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
-
-    _avail = gaussian_available
-
-    def __init__(
-        self,
-        method: str = "GFN2-xTB",
-        nprocs: int = 1,
-        memory: int = 1,
-        track_stats: bool = False,
-    ):
-        """
-        Initiate the Gaussian berny optimizer.
-
-        Args:
-            method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
-                                    We provided a script to run XTB using Gaussian, but there are some extra steps to do.
-                                    Defaults to ``"GFN2-xTB"``.
-            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
-            memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
-            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
-        """
-        super(GaussianOptimizer, self).__init__(track_stats)
-
-        self.method = method
-        self.nprocs = nprocs
-        self.memory = memory
-
-        for version in ["g16", "g09", "g03"]:
-            GAUSSIAN_ROOT = os.environ.get(f"{version}root")
-            if GAUSSIAN_ROOT:
-                break
-        else:
-            raise RuntimeError("No Gaussian installation found.")
-
-        self.gaussian_binary = os.path.join(GAUSSIAN_ROOT, version, version)
 
     def optimize_ts_guesses(
         self,
@@ -108,7 +73,7 @@ class GaussianOptimizer(TSOptimizer):
             # Run the gaussian via subprocess
             with open(os.path.join(ts_conf_dir, "gaussian_opt.log"), "w") as f:
                 gaussian_run = subprocess.run(
-                    [self.gaussian_binary, gaussian_input_file],
+                    [self.binary_task, gaussian_input_file],
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=os.getcwd(),

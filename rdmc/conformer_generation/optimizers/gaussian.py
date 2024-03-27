@@ -8,12 +8,13 @@ import numpy as np
 from rdkit import Chem
 
 from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
-from rdmc.conformer_generation.comp_env import gaussian_available
+from rdmc.conformer_generation.task.gaussian import GaussianTask
+
 from rdmc.external.logparser import GaussianLog
 from rdmc.external.inpwriter import write_gaussian_opt
 
 
-class GaussianOptimizer(ConfGenOptimizer):
+class GaussianOptimizer(GaussianTask, ConfGenOptimizer):
     """
     Optimizer using the Gaussian.
 
@@ -25,40 +26,7 @@ class GaussianOptimizer(ConfGenOptimizer):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = gaussian_available
-
-    def __init__(
-        self,
-        method: str = "GFN2-xTB",
-        nprocs: int = 1,
-        memory: int = 1,
-        track_stats: bool = False,
-    ):
-        """
-        Initiate the Gaussian optimizer.
-
-        Args:
-            method (str, optional): The method to be used for stable species optimization. you can use the level of theory available in Gaussian.
-                                    We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
-            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
-            memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
-            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
-        """
-        super(GaussianOptimizer, self).__init__(track_stats)
-        self.method = method
-        self.nprocs = nprocs
-        self.memory = memory
-
-        for version in ["g16", "g09", "g03"]:
-            GAUSSIAN_ROOT = os.environ.get(f"{version}root")
-            if GAUSSIAN_ROOT:
-                break
-        else:
-            raise RuntimeError("No Gaussian installation found.")
-
-        self.gaussian_binary = os.path.join(GAUSSIAN_ROOT, version, version)
-
-    def optimize_conformers(
+    def run(
         self,
         mol: "RDKitMol",
         multiplicity: int = 1,
@@ -107,7 +75,7 @@ class GaussianOptimizer(ConfGenOptimizer):
             # Run the gaussian via subprocess
             with open(os.path.join(conf_dir, "gaussian_opt.log"), "w") as f:
                 gaussian_run = subprocess.run(
-                    [self.gaussian_binary, gaussian_input_file],
+                    [self.binary_path, gaussian_input_file],
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=os.getcwd(),
@@ -183,24 +151,3 @@ class GaussianOptimizer(ConfGenOptimizer):
         # save ids
         with open(os.path.join(save_dir, "opt_check_ids.pkl"), "wb") as f:
             pickle.dump(keep_ids, f)
-
-    def __call__(self, mol: "RDKitMol", save_dir: str, **kwargs):
-        """
-        Run the workflow to generate optimize stable species guesses.
-
-        Args:
-            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            save_dir (str, optional): The path to save results. Defaults to ``None``.
-
-        Returns:
-            'RDKitMol': The optimized molecule as RDKitMol with 3D geometries embedded.
-        """
-        time_start = time()
-        opt_mol = self.optimize_conformers(mol=mol, save_dir=save_dir, **kwargs)
-
-        if self.track_stats:
-            time_end = time()
-            stats = {"time": time_end - time_start}
-            self.stats.append(stats)
-
-        return opt_mol

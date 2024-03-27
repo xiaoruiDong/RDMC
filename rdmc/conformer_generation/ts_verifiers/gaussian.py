@@ -6,12 +6,12 @@ import pickle
 from rdmc import RDKitMol
 
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
+from rdmc.conformer_generation.task.gaussian_task import GaussianTask
 from rdmc.external.inpwriter import write_gaussian_irc
 from rdmc.external.logparser import GaussianLog
-from rdmc.conformer_generation.comp_env import gaussian_available
 
 
-class GaussianIRCVerifier(TSVerifier):
+class GaussianIRCVerifier(GaussianTask, TSVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Gaussian.
 
@@ -24,8 +24,6 @@ class GaussianIRCVerifier(TSVerifier):
         fc_kw (str, optional): Keyword specifying how often to compute force constants Defaults to ``"calcall"``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
-
-    _avail = gaussian_available
 
     def __init__(
         self,
@@ -46,21 +44,10 @@ class GaussianIRCVerifier(TSVerifier):
             fc_kw (str, optional): Keyword specifying how often to compute force constants Defaults to "calcall".
             track_stats (bool, optional): Whether to track the status. Defaults to False.
         """
-        super(GaussianIRCVerifier, self).__init__(track_stats)
-
-        self.method = method
-        self.nprocs = nprocs
-        self.memory = memory
+        super().__init__(
+            method=method, nprocs=nprocs, memory=memory, track_stats=track_stats
+        )
         self.fc_kw = fc_kw
-
-        for version in ["g16", "g09", "g03"]:
-            GAUSSIAN_ROOT = os.environ.get(f"{version}root")
-            if GAUSSIAN_ROOT:
-                break
-        else:
-            raise RuntimeError("No Gaussian installation found.")
-
-        self.gaussian_binary = os.path.join(GAUSSIAN_ROOT, version, version)
 
     def verify_ts_guesses(
         self,
@@ -116,7 +103,7 @@ class GaussianIRCVerifier(TSVerifier):
                     # Run IRC using subprocess
                     with open(gaussian_output_file, "w") as f:
                         gaussian_run = subprocess.run(
-                            [self.gaussian_binary, gaussian_input_file],
+                            [self.binary_task, gaussian_input_file],
                             stdout=f,
                             stderr=subprocess.STDOUT,
                             cwd=os.getcwd(),
