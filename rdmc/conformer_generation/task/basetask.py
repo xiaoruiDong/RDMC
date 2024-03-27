@@ -56,6 +56,7 @@ class BaseTask(ABC):
 
         if self.save_dir is None and self.work_dir is None:
             self.work_dir = Path(tempfile.mkdtemp())
+
         elif self.save_dir is not None and self.work_dir is None:
             self.work_dir = self.save_dir
 
@@ -91,3 +92,4 @@ class BaseTask(ABC):
             self.work_dir.resolve() != self.save_dir.resolve()
         ):
             shutil.copytree(self.work_dir, self.save_dir, dirs_exist_ok=True)
+            shutil.rmtree(self.work_dir)
