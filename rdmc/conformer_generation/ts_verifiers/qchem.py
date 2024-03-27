@@ -6,12 +6,12 @@ import pickle
 from rdmc import RDKitMol
 
 from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
+from rdmc.conformer_generation.task.qchem import QChemTask
 from rdmc.external.inpwriter import write_qchem_irc
 from rdmc.external.logparser import QChemLog
-from rdmc.conformer_generation.comp_env import qchem_available
 
 
-class QChemIRCVerifier(TSVerifier):
+class QChemIRCVerifier(QChemTask, TSVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using QChem.
 
@@ -23,38 +23,6 @@ class QChemIRCVerifier(TSVerifier):
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
-
-    _avail = qchem_available
-
-    def __init__(
-        self,
-        method: str = "wB97x-d3",
-        basis: str = "def2-tzvp",
-        nprocs: int = 1,
-        track_stats: bool = False,
-    ):
-        """
-        Initiate the QChem IRC verifier.
-
-        Args:
-            method (str, optional): The method to be used for TS optimization. you can use the method available in QChem.
-                                    Defaults to ``"wB97x-d3"``.
-            basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem.
-                                    Defaults to ``"def2-tzvp"``.
-            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
-            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
-        """
-        super(QChemIRCVerifier, self).__init__(track_stats)
-
-        self.method = method
-        self.basis = basis
-        self.nprocs = nprocs
-
-        QCHEM_BINARY = os.environ.get("qchem")
-        if not QCHEM_BINARY:
-            raise RuntimeError("No QChem binary is found in the PATH.")
-        else:
-            self.qchem_binary = QCHEM_BINARY
 
     def verify_ts_guesses(
         self,
@@ -101,7 +69,7 @@ class QChemIRCVerifier(TSVerifier):
                 # Run IRC using subprocess
                 with open(qchem_output_file, "w") as f:
                     qchem_run = subprocess.run(
-                        [self.qchem_binary, "-nt", str(self.nprocs), qchem_input_file],
+                        [self.binary_path, "-nt", str(self.nprocs), qchem_input_file],
                         stdout=f,
                         stderr=subprocess.STDOUT,
                         cwd=os.getcwd(),

@@ -5,12 +5,12 @@ from typing import Optional
 import numpy as np
 
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
+from rdmc.conformer_generation.task.qchem import QChemTask
 from rdmc.external.inpwriter import write_qchem_opt
 from rdmc.external.logparser import QChemLog
-from rdmc.conformer_generation.comp_env import qchem_available
 
 
-class QChemOptimizer(TSOptimizer):
+class QChemOptimizer(QChemTask, TSOptimizer):
     """
     The class to optimize TS geometries using the Baker's eigenvector-following (EF) algorithm built in QChem.
     You have to have the QChem package installed to run this optimizer.
@@ -23,38 +23,6 @@ class QChemOptimizer(TSOptimizer):
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
-
-    _avail = qchem_available
-
-    def __init__(
-        self,
-        method: str = "wB97x-d3",
-        basis: str = "def2-tzvp",
-        nprocs: int = 1,
-        track_stats: bool = False,
-    ):
-        """
-        Initiate the QChem EF optimizer.
-
-        Args:
-            method (str, optional): The method to be used for TS optimization. you can use the method available in QChem.
-                                    Defaults to ``"wB97x-d3"``.
-            basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem.
-                                    Defaults to ``"def2-tzvp"``.
-            nprocs (int, optional): The number of processors to use. Defaults to ``1``.
-            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
-        """
-        super(QChemOptimizer, self).__init__(track_stats)
-
-        self.method = method
-        self.basis = basis
-        self.nprocs = nprocs
-
-        QCHEM_BINARY = os.environ.get("qchem")
-        if not QCHEM_BINARY:
-            raise RuntimeError("No QChem binary is found in the PATH.")
-        else:
-            self.qchem_binary = QCHEM_BINARY
 
     def optimize_ts_guesses(
         self,
@@ -106,7 +74,7 @@ class QChemOptimizer(TSOptimizer):
             # Run the qchem via subprocess
             with open(os.path.join(ts_conf_dir, "qchem_opt.log"), "w") as f:
                 qchem_run = subprocess.run(
-                    [self.qchem_binary, "-nt", str(self.nprocs), qchem_input_file],
+                    [self.binary_path, "-nt", str(self.nprocs), qchem_input_file],
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=os.getcwd(),
