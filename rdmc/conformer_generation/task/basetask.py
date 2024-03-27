@@ -54,7 +54,7 @@ class BaseTask(ABC):
         self.work_dir = Path(work_dir).absolute() if work_dir is not None else None
 
         if self.save_dir is None and self.work_dir is None:
-            self.work_dir = tempfile.mkdtemp()
+            self.work_dir = Path(tempfile.mkdtemp())
         elif self.save_dir is not None and self.work_dir is None:
             self.work_dir = self.save_dir
 
