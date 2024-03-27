@@ -15,20 +15,6 @@ class TSInitialGuesser(BaseTask):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def __init__(
-        self,
-        track_stats: bool = False,
-    ):
-        """
-        Initialize the TS initial guesser.
-
-        Args:
-            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
-        """
-        super().__init__(track_stats)
-        self.n_success = None
-        self.percent_success = None
-
     def run(self, mols, **kwargs):
         """
         Generate TS guesser.
