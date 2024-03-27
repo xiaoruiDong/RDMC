@@ -1,6 +1,5 @@
 import os
 import pickle
-from time import time
 from typing import Optional
 import subprocess
 
@@ -14,7 +13,10 @@ from rdmc.external.logparser import GaussianLog
 from rdmc.external.inpwriter import write_gaussian_opt
 
 
-class GaussianOptimizer(GaussianTask, ConfGenOptimizer):
+class GaussianOptimizer(
+    ConfGenOptimizer,
+    GaussianTask,
+):
     """
     Optimizer using the Gaussian.
 
