@@ -22,11 +22,10 @@ class OrcaIRCVerifier(OrcaTask, TSVerifier):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def verify_ts_guesses(
+    def run(
         self,
         ts_mol: "RDKitMol",
         multiplicity: int = 1,
-        save_dir: Optional[str] = None,
         **kwargs,
     ) -> "RDKitMol":
         """
@@ -51,7 +50,7 @@ class OrcaIRCVerifier(OrcaTask, TSVerifier):
                     mult=multiplicity,
                     nprocs=self.nprocs,
                 )
-                orca_dir = os.path.join(save_dir, f"orca_irc{i}")
+                orca_dir = os.path.join(self.save_dir, f"orca_irc{i}")
                 os.makedirs(orca_dir)
 
                 orca_input_file = os.path.join(orca_dir, "orca_irc.inp")
@@ -107,8 +106,8 @@ class OrcaIRCVerifier(OrcaTask, TSVerifier):
             else:
                 ts_mol.KeepIDs[i] = False
 
-        if save_dir:
-            with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
+        if self.save_dir:
+            with open(os.path.join(self.save_dir, "irc_check_ids.pkl"), "wb") as f:
                 pickle.dump(ts_mol.KeepIDs, f)
 
         return ts_mol

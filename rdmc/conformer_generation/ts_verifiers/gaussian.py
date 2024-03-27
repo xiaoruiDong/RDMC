@@ -49,11 +49,10 @@ class GaussianIRCVerifier(GaussianTask, TSVerifier):
         )
         self.fc_kw = fc_kw
 
-    def verify_ts_guesses(
+    def run(
         self,
         ts_mol: "RDKitMol",
         multiplicity: int = 1,
-        save_dir: Optional[str] = None,
         **kwargs,
     ) -> RDKitMol:
         """
@@ -71,7 +70,7 @@ class GaussianIRCVerifier(GaussianTask, TSVerifier):
             if ts_mol.KeepIDs[i]:
 
                 # Create folder to save Gaussian IRC input and output files
-                gaussian_dir = os.path.join(save_dir, f"gaussian_irc{i}")
+                gaussian_dir = os.path.join(self.save_dir, f"gaussian_irc{i}")
                 os.makedirs(gaussian_dir, exist_ok=True)
 
                 irc_check = True
@@ -156,8 +155,8 @@ class GaussianIRCVerifier(GaussianTask, TSVerifier):
             else:
                 ts_mol.KeepIDs[i] = False
 
-        if save_dir:
-            with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
+        if self.save_dir:
+            with open(os.path.join(self.save_dir, "irc_check_ids.pkl"), "wb") as f:
                 pickle.dump(ts_mol.KeepIDs, f)
 
         return ts_mol

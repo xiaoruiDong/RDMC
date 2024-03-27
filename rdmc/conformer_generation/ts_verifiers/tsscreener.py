@@ -22,8 +22,6 @@ class TSScreener(TSVerifier):
         track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
     """
 
-    _avail = package_available["TS-ML"]
-
     def __init__(
         self,
         trained_model_dir: str,
@@ -38,7 +36,7 @@ class TSScreener(TSVerifier):
             threshold (float): Threshold prediction at which we classify a failure/success. Defaults to ``0.95``.
             track_stats (bool, optional): Whether to track timing stats. Defaults to ``False``.
         """
-        super(TSScreener, self).__init__(track_stats)
+        super().__init__(track_stats)
 
         # Load the TS-Screener model
         self.module = LitScreenerModule.load_from_checkpoint(
@@ -50,11 +48,18 @@ class TSScreener(TSVerifier):
         self.module.model.eval()
         self.threshold = threshold
 
-    def verify_ts_guesses(
+    def is_available(self) -> bool:
+        """
+        Check if the TS-Screener model is available.
+
+        Returns:
+            bool: Whether the TS-Screener model is available.
+        """
+        return package_available["TS-ML"]
+
+    def run(
         self,
         ts_mol: "RDKitMol",
-        multiplicity: int = 1,
-        save_dir: Optional[str] = None,
         **kwargs,
     ) -> "RDKitMol":
         """
@@ -73,7 +78,7 @@ class TSScreener(TSVerifier):
 
         # parse all optimization folders (which hold the frequency jobs)
         for log_dir in sorted(
-            [d for d in glob(os.path.join(save_dir, "*opt*")) if os.path.isdir(d)],
+            [d for d in glob(os.path.join(self.save_dir, "*opt*")) if os.path.isdir(d)],
             key=lambda x: int(x.split("opt")[-1]),
         ):
 
@@ -105,7 +110,7 @@ class TSScreener(TSVerifier):
         ts_mol.KeepIDs.update(updated_keep_ids)
 
         # write ids to file
-        with open(os.path.join(save_dir, "screener_check_ids.pkl"), "wb") as f:
+        with open(os.path.join(self.save_dir, "screener_check_ids.pkl"), "wb") as f:
             pickle.dump(ts_mol.KeepIDs, f)
 
         return ts_mol

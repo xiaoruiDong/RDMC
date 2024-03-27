@@ -24,11 +24,10 @@ class QChemIRCVerifier(QChemTask, TSVerifier):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def verify_ts_guesses(
+    def run(
         self,
         ts_mol: "RDKitMol",
         multiplicity: int = 1,
-        save_dir: Optional[str] = None,
         **kwargs,
     ):
         """
@@ -46,7 +45,7 @@ class QChemIRCVerifier(QChemTask, TSVerifier):
             if ts_mol.KeepIDs[i]:
 
                 # Create folder to save QChem IRC input and output files
-                qchem_dir = os.path.join(save_dir, f"qchem_irc{i}")
+                qchem_dir = os.path.join(self.save_dir, f"qchem_irc{i}")
                 os.makedirs(qchem_dir, exist_ok=True)
 
                 irc_check = True
@@ -127,8 +126,8 @@ class QChemIRCVerifier(QChemTask, TSVerifier):
             else:
                 ts_mol.KeepIDs[i] = False
 
-        if save_dir:
-            with open(os.path.join(save_dir, "irc_check_ids.pkl"), "wb") as f:
+        if self.save_dir:
+            with open(os.path.join(self.save_dir, "irc_check_ids.pkl"), "wb") as f:
                 pickle.dump(ts_mol.KeepIDs, f)
 
         return ts_mol
