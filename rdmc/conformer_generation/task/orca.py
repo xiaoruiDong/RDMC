@@ -1,11 +1,15 @@
 from typing import Optional
 
-from rdmc.conformer_generation.task.basetask import BaseTask
 from rdmc.conformer_generation.comp_env.orca import orca_available
 from rdmc.conformer_generation.comp_env.software import get_binary
+from rdmc.conformer_generation.task.basetask import BaseTask
+from rdmc.conformer_generation.utils import subprocess_runner
+from rdmc.external.logparser import ORCALog
 
 
 class OrcaTask(BaseTask):
+
+    logparser = ORCALog
 
     def __init__(
         self,
@@ -41,3 +45,25 @@ class OrcaTask(BaseTask):
             bool
         """
         return orca_available
+
+    def subprocess_runner(
+        self,
+        input_path: str,
+        output_path: str,
+        work_dir: Optional[str] = None,
+        command: Optional[list] = None,
+    ):
+        """
+        Run the Orca task with the subprcoess module.
+
+        Args:
+            input_path (str): The input file.
+            output_path (str): The output file.
+            work_dir (str, optional): The working directory. Defaults to ``None``, the current working directory will be used.
+            command (list, optional): The command to run. Defaults to ``None``, the command will be ``[self.binary_path, input_path]``.
+        """
+        # Run the job via subprocess
+        if command is None:
+            command = [self.binary_path, input_path]
+
+        return subprocess_runner(command, output_path, work_dir)

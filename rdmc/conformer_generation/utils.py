@@ -8,10 +8,10 @@ Utilities for conformer generation modules.
 from rdkit.Chem import AllChem
 from rdkit.ML.Cluster import Butina
 
+from collections import defaultdict
 import os
 import pickle
-import numpy as np
-from collections import defaultdict
+import subprocess
 from typing import List, Optional, Union, Tuple
 
 import numpy as np
@@ -265,3 +265,31 @@ def convert_log_to_mol(
     [mol.SetPositions(xyzs[i, :, :], confId=i) for i in range(xyzs.shape[0])]
 
     return mol
+
+
+def subprocess_runner(
+    command: list,
+    log_path: str,
+    work_dir: Optional[str] = None,
+):
+    """
+    Run the Gaussian task with the subprcoess module.
+
+    Args:
+        command (list, optional): The command to run. Defaults to ``None``, the command will be ``[self.binary_path, input_path]``.
+        work_dir (str, optional): The working directory. Defaults to ``None``, the current working directory will be used.
+
+    """
+    # Run the job via subprocess
+    if work_dir is None:
+        work_dir = os.getcwd()
+
+    with open(log_path, "w") as f:
+        subprocess_run = subprocess.run(
+            command,
+            stdout=f,
+            stderr=subprocess.STDOUT,
+            cwd=work_dir,
+        )
+
+    return subprocess_run
