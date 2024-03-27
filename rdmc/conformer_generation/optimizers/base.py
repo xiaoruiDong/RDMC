@@ -12,14 +12,13 @@ class ConfGenOptimizer(BaseTask):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def __init__(self, track_stats=False):
+    def __init__(self, track_stats: bool = False):
 
+        super().__init__(track_stats)
         self.iter = 0
-        self.track_stats = track_stats
         self.n_failures = None
         self.percent_failures = None
         self.n_opt_cycles = None
-        self.stats = []
 
     def optimize_conformers(self, mol_data: List[dict]):
         """
