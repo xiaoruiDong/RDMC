@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 from typing import Optional
 import tempfile
 from time import time
@@ -58,6 +59,12 @@ class BaseTask(ABC):
         elif self.save_dir is not None and self.work_dir is None:
             self.work_dir = self.save_dir
 
+        if self.save_dir:
+            self.save_dir.mkdir(parents=True, exist_ok=True)
+
+        if self.work_dir and not self.work_dir.is_dir():
+            self.work_dir.mkdir(parents=True, exist_ok=True)
+
     def __call__(self, *args, **kwargs):
         time_start = time()
 
@@ -74,3 +81,10 @@ class BaseTask(ABC):
             self.stats.append(stats)
 
         return results
+
+    def copy_work_dir_to_save_dir(self):
+
+        if self.save_dir is not None and (
+            self.work_dir.resolve() != self.save_dir.resolve()
+        ):
+            shutil.copytree(self.work_dir, self.save_dir, dirs_exist_ok=True)
