@@ -5,13 +5,13 @@ import pickle
 
 from rdmc import RDKitMol
 
-from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
-from rdmc.conformer_generation.task.gaussian_task import GaussianTask
+from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
+from rdmc.conformer_generation.task.gaussian import GaussianTask
 from rdmc.external.inpwriter import write_gaussian_irc
 from rdmc.external.logparser import GaussianLog
 
 
-class GaussianIRCVerifier(GaussianTask, TSVerifier):
+class GaussianIRCVerifier(GaussianTask, IRCVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Gaussian.
 

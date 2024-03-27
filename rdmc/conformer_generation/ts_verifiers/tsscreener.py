@@ -5,14 +5,14 @@ import pickle
 
 from rdmc import RDKitMol
 
-from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
+from rdmc.conformer_generation.task.basetask import BaseTask
 from rdmc.conformer_generation.comp_env.pyg import Batch
 from rdmc.conformer_generation.comp_env.ts_ml import LitScreenerModule, mol2data
 from rdmc.conformer_generation.comp_env.software import package_available
 from rdmc.conformer_generation.utils import convert_log_to_mol
 
 
-class TSScreener(TSVerifier):
+class TSScreener(BaseTask):
     """
     The class for screening TS guesses using graph neural networks.
 
@@ -26,7 +26,7 @@ class TSScreener(TSVerifier):
         self,
         trained_model_dir: str,
         threshold: float = 0.95,
-        track_stats: Optional[bool] = False,
+        track_stats: bool = False,
     ):
         """
         Initialize the TS-Screener model.

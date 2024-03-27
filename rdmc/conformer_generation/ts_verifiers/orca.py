@@ -5,12 +5,12 @@ import pickle
 
 from rdmc import RDKitMol
 
-from rdmc.conformer_generation.ts_verifiers.base import TSVerifier
+from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
 from rdmc.external.inpwriter import write_orca_irc
 from rdmc.conformer_generation.task.orca import OrcaTask
 
 
-class OrcaIRCVerifier(OrcaTask, TSVerifier):
+class OrcaIRCVerifier(OrcaTask, IRCVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Orca.
 
