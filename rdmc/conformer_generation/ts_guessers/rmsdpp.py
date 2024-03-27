@@ -13,19 +13,19 @@ class RMSDPPGuesser(TSInitialGuesser):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = xtb_available
-
-    def __init__(self, track_stats: Optional[bool] = False):
+    def is_available(self):
         """
-        Initialize the RMSD-PP initial guesser.
+        Check if the RMSD-PP method is available.
 
-        Args:
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
+        Returns:
+            bool: ``True`` if the RMSD-PP method is available, ``False`` otherwise.
         """
-        super(RMSDPPGuesser, self).__init__(track_stats)
+        return xtb_available
 
-    def generate_ts_guesses(
-        self, mols, multiplicity: Optional[int] = None, save_dir: Optional[str] = None
+    def run(
+        self,
+        mols,
+        multiplicity: Optional[int] = None,
     ):
         """
         Generate TS guesser.
@@ -33,7 +33,6 @@ class RMSDPPGuesser(TSInitialGuesser):
         Args:
             mols (list): A list of reactant and product pairs.
             multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to None.
 
         Returns:
             RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
@@ -41,26 +40,29 @@ class RMSDPPGuesser(TSInitialGuesser):
         ts_guesses, used_rp_combos = [], []
         multiplicity = multiplicity or 1
         for r_mol, p_mol in mols:
+            used_rp_combos.append((r_mol, p_mol))
+
             _, ts_guess = run_xtb_calc(
                 (r_mol, p_mol), return_optmol=True, job="--path", uhf=multiplicity - 1
             )
+
             if ts_guess:
                 ts_guesses.append(ts_guess)
-                used_rp_combos.append((r_mol, p_mol))
-
-        if len(ts_guesses) == 0:
-            # TODO: Need to think about catching this in the upper level
-            return None
+            else:
+                ts_guesses.append(None)
 
         # Copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
-        [ts_mol.AddConformer(t.GetConformer(), assignId=True) for t in ts_guesses]
+        ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
+        [
+            ts_mol.GetEditableConformer(i).SetPositions(p)
+            for i, p in enumerate(ts_guesses)
+            if p is not None
+        ]
 
-        if save_dir:
-            self.save_guesses(save_dir, used_rp_combos, ts_mol)
+        if self.save_dir:
+            self.save_guesses(used_rp_combos, ts_mol)
 
-        ts_mol.KeepIDs = {
-            i: True for i in range(ts_mol.GetNumConformers())
-        }  # todo: need to change
+        ts_mol.KeepIDs = {i: p is not None for i, p in enumerate(ts_guesses)}
 
         return ts_mol
