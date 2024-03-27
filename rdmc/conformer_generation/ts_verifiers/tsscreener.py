@@ -1,6 +1,4 @@
 import os
-from glob import glob
-from typing import Optional
 import pickle
 
 from rdmc import RDKitMol
@@ -60,6 +58,7 @@ class TSScreener(BaseTask):
     def run(
         self,
         ts_mol: "RDKitMol",
+        rxn_smiles: str,
         **kwargs,
     ) -> "RDKitMol":
         """
@@ -67,50 +66,52 @@ class TSScreener(BaseTask):
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
-            multiplicity (int, optional): The spin multiplicity of the TS. Defaults to 1.
-            save_dir (str, optional): The directory path to save the results. Defaults to None.
+            rxn_smiles: The reaction SMILES.
 
         Returns:
             RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
-        rxn_smiles = kwargs["rxn_smiles"]
         mol_data, ids = [], []
 
         # parse all optimization folders (which hold the frequency jobs)
-        for log_dir in sorted(
-            [d for d in glob(os.path.join(self.save_dir, "*opt*")) if os.path.isdir(d)],
-            key=lambda x: int(x.split("opt")[-1]),
-        ):
+        # Currently harded coded to get freq from opt and asssume opt are in save_dir
+        log_dirs = sorted(
+            [d for d in self.save_dir.glob("*opt*") if d.is_dir()],
+            key=lambda d: int(d.name.split("opt")[-1]),
+        )
+        for log_dir in log_dirs:
 
-            idx = int(log_dir.split("opt")[-1])
+            idx = int(log_dir.name.split("opt")[-1])
             if ts_mol.KeepIDs[idx]:
-                freq_log_path = glob(os.path.join(log_dir, "*opt.log"))[0]
-                ts_freq_mol = convert_log_to_mol(freq_log_path)
+
+                log_path = next(log_dir.glob("*opt.log"))
+                ts_freq_mol = convert_log_to_mol(log_path)
 
                 if ts_freq_mol is None:
-                    ts_mol.KeepIDs.update({idx: False})
+                    ts_mol.KeepIDs[idx] = False
                     continue
 
+                # TSScreener needs rxn_smiles to prepare CGR
                 ts_freq_mol.SetProp("Name", rxn_smiles)
+                # Convert RDKitMol to TS-Screener input
                 data = mol2data(ts_freq_mol, self.module.config, eval_mode=True)
 
                 mol_data.append(data)
                 ids.append(idx)
 
-        # return if nothing to screen
         if len(mol_data) == 0:
-            return
+            return ts_mol
 
         # create data batch and run screener model
         batch_data = Batch.from_data_list(mol_data)
         preds = self.module.model(batch_data) > self.threshold
 
         # update which TSs to keep
-        updated_keep_ids = {idx: pred.item() for idx, pred in zip(ids, preds)}
-        ts_mol.KeepIDs.update(updated_keep_ids)
+        for idx, pred in zip(ids, preds):
+            ts_mol.KeepIDs[ids] = bool(pred.item())
 
         # write ids to file
-        with open(os.path.join(self.save_dir, "screener_check_ids.pkl"), "wb") as f:
+        with open(self.save_dir / "screener_check_ids.pkl", "wb") as f:
             pickle.dump(ts_mol.KeepIDs, f)
 
         return ts_mol
