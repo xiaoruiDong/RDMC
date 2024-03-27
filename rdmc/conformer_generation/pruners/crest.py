@@ -35,7 +35,7 @@ class CRESTPruner(ConfGenPruner):
             ewin (int, optional): Energy window. Defaults to ``10000``.
             track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
         """
-        super(CRESTPruner, self).__init__(track_stats)
+        super().__init__(track_stats)
 
         self.ethr = ethr
         self.rthr = rthr

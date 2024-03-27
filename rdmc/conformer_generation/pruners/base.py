@@ -14,12 +14,11 @@ class ConfGenPruner(BaseTask):
 
     def __init__(self, track_stats: bool = False):
 
+        super().__init__(track_stats=track_stats)
         self.iter = 0
-        self.track_stats = track_stats
         self.n_input_confs = None
         self.n_pruned_confs = None
         self.n_output_confs = None
-        self.stats = []
 
     def prune_conformers(
         self,

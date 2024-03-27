@@ -29,7 +29,7 @@ class TorsionPruner(ConfGenPruner):
         max_chk_threshold: float = 20.0,
         track_stats: bool = False,
     ):
-        super(TorsionPruner, self).__init__(track_stats)
+        super().__init__(track_stats)
 
         self.mean_chk_threshold = mean_chk_threshold
         self.max_chk_threshold = max_chk_threshold
