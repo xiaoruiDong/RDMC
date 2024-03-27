@@ -22,47 +22,29 @@ class RMSDPPGuesser(TSInitialGuesser):
         """
         return xtb_available
 
-    def run(
-        self,
-        mols,
-        multiplicity: Optional[int] = None,
+    def generate_ts_guess(
+        self, rmol, pmol, multiplicity: Optional[int] = None, **kwargs
     ):
         """
-        Generate TS guesser.
+        Generate a single TS guess.
 
         Args:
-            mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to None.
+            rmol (RDKitMol): The reactant molecule in RDKitMol with 3D conformer saved with the molecule.
+            pmol (RDKitMol): The product molecule in RDKitMol with 3D conformer saved with the molecule.
+            multiplicity(int, optional): The multiplicity of the molecule. Defaults to 1.
 
         Returns:
-            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
+            Tuple[np.ndarray, bool]: The generated guess positions and the success status.
         """
-        ts_guesses, used_rp_combos = [], []
-        multiplicity = multiplicity or 1
-        for r_mol, p_mol in mols:
-            used_rp_combos.append((r_mol, p_mol))
+        multiplicity = multiplicity if multiplicity is not None else 1
 
-            _, ts_guess = run_xtb_calc(
-                (r_mol, p_mol), return_optmol=True, job="--path", uhf=multiplicity - 1
-            )
+        _, ts_guess = run_xtb_calc(
+            (rmol, pmol),
+            return_optmol=True,
+            job="--path",
+            uhf=multiplicity,
+        )
 
-            if ts_guess:
-                ts_guesses.append(ts_guess)
-            else:
-                ts_guesses.append(None)
-
-        # Copy data to mol
-        ts_mol = mols[0][0].Copy(quickCopy=True)
-        ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
-        [
-            ts_mol.GetEditableConformer(i).SetPositions(p)
-            for i, p in enumerate(ts_guesses)
-            if p is not None
-        ]
-
-        if self.save_dir:
-            self.save_guesses(used_rp_combos, ts_mol)
-
-        ts_mol.KeepIDs = {i: p is not None for i, p in enumerate(ts_guesses)}
-
-        return ts_mol
+        if ts_guess:
+            return ts_guess.GetPositions(), True
+        return None, False

@@ -24,7 +24,7 @@ class DEGSMGuesser(TSInitialGuesser):
         nprocs: int = 1,
         memory: int = 1,
         gsm_args: Optional[str] = "",
-        track_stats: Optional[bool] = False,
+        track_stats: bool = False,
     ):
         """
         Initialize the DE-GSM TS initial guesser.
@@ -47,77 +47,65 @@ class DEGSMGuesser(TSInitialGuesser):
         """
         return gsm_available
 
-    def run(
-        self,
-        mols: list,
-        multiplicity: Optional[int] = None,
+    def generate_ts_guess(
+        self, rmol, pmol, multiplicity: Optional[int] = None, conf_id: int = 0, **kwargs
     ):
         """
-        Generate TS guesser.
+        Generate a single TS guess.
 
         Args:
-            mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None``.
+            rmol (RDKitMol): The reactant molecule in RDKitMol with 3D conformer saved with the molecule.
+            pmol (RDKitMol): The product molecule in RDKitMol with 3D conformer saved with the molecule.
+            multiplicity(int, optional): The multiplicity of the molecule. Defaults to 1.
+            conf_id (int, optional): The id of the TS guess job.
 
         Returns:
-            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
+            Tuple[np.ndarray, bool]: The generated guess positions and the success status.
         """
-        # #TODO: May add a support for scratch directory
-        # currently use the save directory as the working directory
-        # This may not be ideal for some QM software, and whether to add a support
-        # for scratch directory is left for future decision
+        ts_conf_dir = self.work_dir / f"degsm_conf{conf_id}"
+        ts_conf_dir.mkdir(parents=True, exist_ok=True)
 
-        lot_inp_file = self.work_dir / "qstart.inp"
+        lot_inp_file = ts_conf_dir / "qstart.inp"
         lot_inp_str = write_gaussian_gsm(self.method, self.memory, self.nprocs)
         with open(lot_inp_file, "w") as f:
             f.writelines(lot_inp_str)
 
-        ts_guesses, used_rp_combos = {}, []
-        for i, (r_mol, p_mol) in enumerate(mols):
+        xyz_file = ts_conf_dir / f"degsm_conf{conf_id}.xyz"
+        rxyz, pxyz = rmol.ToXYZ(), pmol.ToXYZ()
+        with open(xyz_file, "w") as f:
+            f.write(rxyz)
+            f.write(pxyz)
 
-            # TODO: Need to clean the logic here, `ts_conf_dir` is used no matter `save_dir` being true
-            ts_conf_dir = self.work_dir / f"degsm_conf{i}"
-            ts_conf_dir.mkdir(parents=True, exist_ok=True)
+        multiplicity = multiplicity if multiplicity is not None else 1
 
-            xyz_file = ts_conf_dir / f"degsm_conf{i}.xyz"
-            with open(xyz_file, "w") as f:
-                f.write(r_mol.ToXYZ())
-                f.write(p_mol.ToXYZ())
-            used_rp_combos.append((r_mol, p_mol))
+        command = (
+            f"{get_binary('gsm')} "
+            f"-xyzfile {xyz_file} "
+            f"-nproc {self.nprocs} "
+            f"-multiplicity {multiplicity} "
+            f"-mode DE_GSM "
+            f"-package Gaussian "
+            f"-lot_inp_file {lot_inp_file} "
+            f"{self.gsm_args}"
+        )
 
-            try:
-                command = f"{get_binary('gsm')} -xyzfile {xyz_file} -nproc {self.nprocs} -multiplicity {multiplicity} -mode DE_GSM -package Gaussian -lot_inp_file {lot_inp_file} {self.gsm_args}"
-                with open(ts_conf_dir / "degsm.log", "w") as f:
-                    subprocess.run(
-                        [command],
-                        stdout=f,
-                        stderr=subprocess.STDOUT,
-                        cwd=ts_conf_dir,
-                        shell=True,
-                    )
+        try:
+            with open(ts_conf_dir / "degsm.log", "w") as f:
+                subprocess.run(
+                    [command],
+                    stdout=f,
+                    stderr=subprocess.STDOUT,
+                    cwd=ts_conf_dir,
+                    shell=True,
+                )
 
-                tsnode_path = ts_conf_dir / "TSnode_0.xyz"
-                with open(tsnode_path) as f:
-                    positions = f.read().splitlines()[2:]
-                    positions = np.array(
-                        [line.split()[1:] for line in positions], dtype=float
-                    )
-                ts_guesses[i] = positions
-            except FileNotFoundError:
-                ts_guesses[i] = None
+            tsnode_path = ts_conf_dir / "TSnode_0.xyz"
+            with open(tsnode_path) as f:
+                positions = f.read().splitlines()[2:]
+            pos = np.array([line.split()[1:] for line in positions], dtype=float)
+            success = True
 
-        # copy data to mol
-        ts_mol = mols[0][0].Copy(quickCopy=True)
-        ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
-        [
-            ts_mol.GetEditableConformer(i).SetPositions(p)
-            for i, p in ts_guesses.items()
-            if ts_guesses is not None
-        ]
+        except FileNotFoundError:
+            pos, success = None, False
 
-        if self.save_dir:
-            self.save_guesses(used_rp_combos, ts_mol)
-
-        ts_mol.KeepIDs = {i: val is not None for i, val in ts_guesses.items()}
-
-        return ts_mol
+        return pos, success

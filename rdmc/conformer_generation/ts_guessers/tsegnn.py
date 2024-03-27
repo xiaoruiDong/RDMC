@@ -70,21 +70,15 @@ class TSEGNNGuesser(TSInitialGuesser):
         """
         return package_available["TS-ML"]
 
-    def generate_ts_guesses(
-        self,
-        mols: list,
-        multiplicity: Optional[int] = None,
-    ):
+    def generate_ts_guesses(self, mols: list, **kwargs):
         """
-        Generate TS guesser.
+        Generate TS guesses.
 
         Args:
             mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None``.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol: The TS molecule in ``RDKitMol`` with 3D conformer saved with the molecule.
+            Tuple[dict, dict]: The generated guesses positions and the success status. The keys are the conformer IDs. The values are the positions and the success status.
         """
         # Generate the input for the TS-EGNN model
         n_confs = len(mols)
@@ -100,21 +94,8 @@ class TSEGNNGuesser(TSInitialGuesser):
         )
         predicted_ts_coords = np.array_split(predicted_ts_coords, n_confs)
 
-        # Copy data to mol
-        ts_mol = mols[0][0].Copy(quickCopy=True)
-        ts_mol.EmbedMultipleNullConfs(n_confs)
-        [
-            ts_mol.GetEditableConformer(i).SetPositions(
-                np.array(predicted_ts_coords[i], dtype=float)
-            )
-            for i in range(n_confs)
-        ]
-
-        if self.save_dir:
-            self.save_guesses(mols, ts_mol)
-
-        ts_mol.KeepIDs = {
-            i: True for i in range(n_confs)
-        }  # As long as the workflow runs successfully, it will create geometries for all conformers
-
-        return ts_mol
+        positions = {
+            i: np.array(predicted_ts_coords[i], dtype=float) for i in range(n_confs)
+        }
+        successes = {i: True for i in range(n_confs)}
+        return positions, successes

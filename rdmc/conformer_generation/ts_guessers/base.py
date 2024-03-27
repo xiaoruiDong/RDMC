@@ -1,6 +1,7 @@
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, Tuple
 
+import numpy as np
 
 from rdkit import Chem
 from rdmc.conformer_generation.task.basetask import BaseTask
@@ -16,7 +17,7 @@ class TSInitialGuesser(BaseTask):
 
     def __init__(
         self,
-        track_stats: Optional[bool] = False,
+        track_stats: bool = False,
     ):
         """
         Initialize the TS initial guesser.
@@ -28,21 +29,76 @@ class TSInitialGuesser(BaseTask):
         self.n_success = None
         self.percent_success = None
 
-    @abstractmethod
-    def run(self):
+    def run(self, mols, **kwargs):
         """
-        The key function used to generate TS guesses. It varies by the actual classes and need to implemented inside each class.
-        The function should at least take mols and multiplicity as input arguments. The returned value should be a RDKitMol with TS
-        geometries.
+        Generate TS guesser.
 
         Args:
             mols (list): A list of reactant and product pairs.
 
         Returns:
-            RDKitMol: The TS molecule in ``RDKitMol`` with 3D conformer saved with the molecule.
+            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
+        """
+        n_conf = len(mols)
 
-        Raises:
-            NotImplementedError: This method needs to be implemented in the subclass.
+        try:
+            positions, successes = self.generate_ts_guesses(mols, **kwargs)
+        except BaseException:
+            # todo: add a log
+            positions = {i: None for i in range(n_conf)}
+            positions = {i: False for i in range(n_conf)}
+
+        # copy data to mol
+        ts_mol = mols[0][0].Copy(quickCopy=True)
+        ts_mol.EmbedMultipleNullConfs(n_conf)
+        [
+            ts_mol.GetEditableConformer(i).SetPositions(p)
+            for i, p in positions.items()
+            if p is not None
+        ]
+
+        if self.save_dir:
+            self.save_guesses(mols, ts_mol)
+
+        ts_mol.KeepIDs = successes
+
+        return ts_mol
+
+    def generate_ts_guesses(self, mols, **kwargs) -> Tuple[dict, dict]:
+        """
+        Generate TS guesses. This method includes a workflow to sequentially generate TS guess for each pair of reactant and product.
+        You can either `implement generate_ts_guess` or choose to re-implement this method in the child class.
+
+        Args:
+            mols (list): A list of reactant and product pairs.
+
+        Returns:
+            Tuple[dict, dict]: The generated guesses positions and the success status. The keys are the conformer IDs. The values are the positions and the success status.
+        """
+        positions, successes = {}, {}
+        for i, (r_mol, p_mol) in enumerate(mols):
+
+            try:
+                pos, success = self.generate_ts_guess(r_mol, p_mol, conf_id=i, **kwargs)
+                positions[i] = pos
+                successes[i] = success
+            except BaseException:
+                positions[i] = None
+                successes[i] = False
+        return positions, successes
+
+    def generate_ts_guess(
+        self, r_mol, p_mol, conf_id: int = 0, **kwargs
+    ) -> Tuple[np.ndarray, bool]:
+        """
+        Generate a single TS guess.
+
+        Args:
+            rmol (RDKitMol): The reactant molecule in RDKitMol with 3D conformer saved with the molecule.
+            pmol (RDKitMol): The product molecule in RDKitMol with 3D conformer saved with the molecule.
+
+        Returns:
+            Tuple[np.ndarray, bool]: The generated guess positions and the success status.
         """
         raise NotImplementedError
 

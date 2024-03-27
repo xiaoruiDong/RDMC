@@ -26,7 +26,7 @@ class AutoNEBGuesser(TSInitialGuesser):
     def __init__(
         self,
         optimizer: "Calculator" = xtb_calculator,
-        track_stats: Optional[bool] = False,
+        track_stats: bool = False,
     ):
         """
         Initialize the AutoNEB TS initial guesser.
@@ -80,79 +80,59 @@ class AutoNEBGuesser(TSInitialGuesser):
             )
         self._optimizer = optimizer
 
-    def run(self, mols, multiplicity: Optional[int] = None):
+    def generate_ts_guess(self, rmol, pmol, conf_id: int = 0, **kwargs):
         """
-        Generate TS guesser.
+        Generate a single TS guess.
 
         Args:
-            mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None``.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
+            rmol (RDKitMol): The reactant molecule in RDKitMol with 3D conformer saved with the molecule.
+            pmol (RDKitMol): The product molecule in RDKitMol with 3D conformer saved with the molecule.
+            conf_id (int, optional): The id of the TS guess job.
 
         Returns:
-            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
+            Tuple[np.ndarray, bool]: The generated guess positions and the success status.
         """
+        ts_conf_dir = self.work_dir / f"neb_conf{conf_id}"
+        ts_conf_dir.mkdir(parents=True, exist_ok=True)
 
-        ts_guesses, used_rp_combos = {}, []
-        for i, (r_mol, p_mol) in enumerate(mols):
+        r_traj = ts_conf_dir / "ts000.traj"
+        p_traj = ts_conf_dir / "ts001.traj"
 
-            ts_conf_dir = self.work_dir / f"neb_conf{i}"
-            ts_conf_dir.mkdir(parents=True, exist_ok=True)
+        r_atoms = rmol.ToAtoms()
+        r_atoms.set_calculator(self.optimizer())
+        qn = QuasiNewton(r_atoms, trajectory=r_traj, logfile=None)
+        qn.run(fmax=0.05)
 
-            r_traj = ts_conf_dir / "ts000.traj"
-            p_traj = ts_conf_dir / "ts001.traj"
+        p_atoms = pmol.ToAtoms()
+        p_atoms.set_calculator(self.optimizer())
+        qn = QuasiNewton(p_atoms, trajectory=p_traj, logfile=None)
+        qn.run(fmax=0.05)
 
-            r_atoms = r_mol.ToAtoms()
-            r_atoms.set_calculator(self.optimizer())
-            qn = QuasiNewton(r_atoms, trajectory=r_traj, logfile=None)
-            qn.run(fmax=0.05)
+        # need to change dirs bc autoneb path settings are messed up
+        cwd = os.getcwd()
+        os.chdir(ts_conf_dir)
 
-            p_atoms = p_mol.ToAtoms()
-            p_atoms.set_calculator(self.optimizer())
-            qn = QuasiNewton(p_atoms, trajectory=p_traj, logfile=None)
-            qn.run(fmax=0.05)
+        try:
+            autoneb = AutoNEB(
+                self.attach_calculators,
+                prefix="ts",
+                optimizer="BFGS",
+                n_simul=3,
+                n_max=7,
+                fmax=0.05,
+                k=0.5,
+                parallel=False,
+                maxsteps=[50, 1000],
+            )
 
-            # need to change dirs bc autoneb path settings are messed up
-            cwd = os.getcwd()
+            autoneb.run()
+        except (CalculationFailed, AssertionError) as e:
+            pos, success = None, False
+        else:
+            ts_guess_idx = np.argmax(autoneb.get_energies())
+            pos = autoneb.all_images[ts_guess_idx].positions
+            success = True
 
-            try:
-                os.chdir(ts_conf_dir)
+        os.chdir(cwd)
 
-                autoneb = AutoNEB(
-                    self.attach_calculators,
-                    prefix="ts",
-                    optimizer="BFGS",
-                    n_simul=3,
-                    n_max=7,
-                    fmax=0.05,
-                    k=0.5,
-                    parallel=False,
-                    maxsteps=[50, 1000],
-                )
-
-                autoneb.run()
-
-                ts_guess_idx = np.argmax(autoneb.get_energies())
-                ts_guesses[i] = autoneb.all_images[ts_guess_idx].positions
-
-            except (CalculationFailed, AssertionError) as e:
-                ts_guesses[i] = None
-            finally:
-                used_rp_combos.append((r_mol, p_mol))
-                os.chdir(cwd)
-
-        # copy data to mol
-        ts_mol = mols[0][0].Copy(quickCopy=True)
-        ts_mol.EmbedMultipleNullConfs(len(ts_guesses))
-        [
-            ts_mol.GetEditableConformer(i).SetPositions(p)
-            for i, p in ts_guesses.items()
-            if ts_guesses[i] is not None
-        ]
-
-        if self.save_dir:
-            self.save_guesses(used_rp_combos, ts_mol)
-
-        ts_mol.KeepIDs = {i: val is not None for i, val in ts_guesses.items()}
-
-        return ts_mol
+        return pos, success

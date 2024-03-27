@@ -38,7 +38,7 @@ class TSGCNGuesser(TSInitialGuesser):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def __init__(self, trained_model_dir: str, track_stats: Optional[bool] = False):
+    def __init__(self, trained_model_dir: str, track_stats: bool = False):
         """
         Initialize the TS-EGNN guesser.
 
@@ -70,29 +70,26 @@ class TSGCNGuesser(TSInitialGuesser):
         """
         return package_available["TS-ML"]
 
-    def generate_ts_guesses(
-        self,
-        mols: list,
-        multiplicity: Optional[int] = None,
-    ):
+    def generate_ts_guesses(self, mols: list, **kwargs):
         """
-        Generate TS guesser.
+        Generate TS guesses.
 
         Args:
             mols (list): A list of reactant and product pairs.
-            multiplicity (int, optional): The spin multiplicity of the reaction. Defaults to ``None``.
 
         Returns:
-            RDKitMol: The TS molecule in RDKitMol with 3D conformer saved with the molecule.
+            Tuple[dict, dict]: The generated guesses positions and the success status. The keys are the conformer IDs. The values are the positions and the success status.
         """
         # Prepare the input for the TS-GCN model
         n_confs = len(mols)
-        rp_inputs = [(x[0], None, x[1]) for x in mols]
+        rp_inputs = [
+            (x[0], None, x[1]) for x in mols
+        ]  # reactant, None (for TS), product
         rp_data = [self.test_dataset.process_mols(m, no_ts=True) for m in rp_inputs]
         batch_data = Batch.from_data_list(rp_data)
 
         # Use TS-GCN to make initial guesses
-        _ = self.module.model(batch_data)
+        self.module.model(batch_data)
         predicted_ts_coords = torch.vstack(
             [
                 c[: m[0].GetNumAtoms()]
@@ -103,21 +100,8 @@ class TSGCNGuesser(TSInitialGuesser):
             predicted_ts_coords.cpu().detach().numpy(), n_confs
         )
 
-        # Copy data to mol
-        ts_mol = mols[0][0].Copy(quickCopy=True)
-        ts_mol.EmbedMultipleNullConfs(n_confs)
-        [
-            ts_mol.GetEditableConformer(i).SetPositions(
-                np.array(predicted_ts_coords[i], dtype=float)
-            )
-            for i in range(n_confs)
-        ]
-
-        if self.save_dir:
-            self.save_guesses(mols, ts_mol)
-
-        ts_mol.KeepIDs = {
-            i: True for i in range(n_confs)
-        }  # As long as the workflow runs successfully, it will create geometries for all conformers
-
-        return ts_mol
+        positions = {
+            i: np.array(predicted_ts_coords[i], dtype=float) for i in range(n_confs)
+        }
+        successes = {i: True for i in range(n_confs)}
+        return positions, successes
