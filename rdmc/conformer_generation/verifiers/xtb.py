@@ -1,39 +1,35 @@
-import os
-import pickle
+from typing import Optional
 
-from rdmc.conformer_generation.verifiers.base import Verifier
+from rdmc.conformer_generation.verifiers.base import FreqVerifier
 from rdmc.conformer_generation.comp_env.xtb.opt import run_xtb_calc
 from rdmc.conformer_generation.task.xtb import XTBTask
 
 
-class XTBFrequencyVerifier(XTBTask, Verifier):
+class XTBFrequencyVerifier(
+    FreqVerifier,
+    XTBTask,
+):
     """
     The class for verifying the stable species by calculating and checking its frequencies using XTB.
 
     Args:
         cutoff_frequency (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
-                                            imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations
-                                            Defaults to ``-100.`` cm-1.
+                                            imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations.
+                                            Defaults to ``0.0`` cm-1.
         track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
     """
 
-    allowed_num_neg_freqs = 0
+    def __init__(
+        self, cutoff_frequency: Optional[float] = None, track_stats: bool = False
+    ):
+        # Unnecessary for XTBTask, but as an example for future tasks e.g., GaussianFreqVerifier
+        super(XTBFrequencyVerifier, self).__init__(cutoff_frequency, track_stats)
+        super(FreqVerifier, self).__init__()
 
-    def __init__(self, cutoff_frequency: float = 0.0, track_stats: bool = False):
-        """
-        Initiate the XTB frequency verifier.
-
-        Args:
-            cutoff_frequency (float, optional): Cutoff frequency used to determine if the molecules has an imaginary frequency mode.
-                Defaults to ``0.0`` cm-1.
-            track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
-        """
-        super().__init__(track_stats)
-        self.cutoff_frequency = cutoff_frequency
-
-    def run(
+    def calc_freq(
         self,
         mol: "RDKitMol",
+        conf_id: int,
         multiplicity: int = 1,
         **kwargs,
     ):
@@ -48,25 +44,5 @@ class XTBFrequencyVerifier(XTBTask, Verifier):
         Returns:
             RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
-        if mol.GetNumAtoms() != 1:
-            for i in range(mol.GetNumConformers()):
-                if mol.KeepIDs[i]:
-                    if mol.frequency[i] is None:
-                        props = run_xtb_calc(
-                            mol, confId=i, job="--hess", uhf=multiplicity - 1
-                        )
-                        frequencies = props["frequencies"]
-                    else:
-                        frequencies = mol.frequency[i]
-
-                    freq_check = (
-                        sum(frequencies < self.cutoff_frequency)
-                        == self.allowed_num_neg_freqs
-                    )
-                    mol.KeepIDs[i] = freq_check
-
-        if self.save_dir:
-            with open(os.path.join(self.save_dir, "freq_check_ids.pkl"), "wb") as f:
-                pickle.dump(mol.KeepIDs, f)
-
-        return mol
+        props = run_xtb_calc(mol, confId=conf_id, job="--hess", uhf=multiplicity - 1)
+        return props["frequencies"]
