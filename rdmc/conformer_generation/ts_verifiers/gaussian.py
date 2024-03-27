@@ -103,7 +103,7 @@ class GaussianIRCVerifier(GaussianTask, TSVerifier):
                     # Run IRC using subprocess
                     with open(gaussian_output_file, "w") as f:
                         gaussian_run = subprocess.run(
-                            [self.binary_task, gaussian_input_file],
+                            [self.binary_path, gaussian_input_file],
                             stdout=f,
                             stderr=subprocess.STDOUT,
                             cwd=os.getcwd(),

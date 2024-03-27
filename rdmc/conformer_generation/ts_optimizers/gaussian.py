@@ -73,7 +73,7 @@ class GaussianOptimizer(GaussianTask, TSOptimizer):
             # Run the gaussian via subprocess
             with open(os.path.join(ts_conf_dir, "gaussian_opt.log"), "w") as f:
                 gaussian_run = subprocess.run(
-                    [self.binary_task, gaussian_input_file],
+                    [self.binary_path, gaussian_input_file],
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=os.getcwd(),
