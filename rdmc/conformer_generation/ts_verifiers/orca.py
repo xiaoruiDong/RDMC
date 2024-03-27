@@ -10,7 +10,7 @@ from rdmc.external.inpwriter import write_orca_irc
 from rdmc.conformer_generation.task.orca import OrcaTask
 
 
-class OrcaIRCVerifier(OrcaTask, IRCVerifier):
+class OrcaIRCVerifier(IRCVerifier, OrcaIRCVerifier):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Orca.
 
@@ -22,92 +22,69 @@ class OrcaIRCVerifier(OrcaTask, IRCVerifier):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def run(
+    path_prefix = "orca_irc"
+
+    def __init__(self, **kwargs):
+        super(IRCVerifier).__init__(**kwargs)
+
+    def run_irc(
         self,
         ts_mol: "RDKitMol",
+        conf_id: int,
         multiplicity: int = 1,
         **kwargs,
-    ) -> "RDKitMol":
+    ) -> list:
         """
-        Verifying TS guesses (or optimized TS geometries).
+        Verifying a single TS guess or optimized TS geometry.
 
         Args:
-            ts_mol (RDKitMol): The TS in RDKitMol object with 3D geometries embedded.
+            ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
+            conf_id (int): The conformer ID.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
-            save_dir (str, optional): The directory path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
+            list: the adjacency matrix of the forward and reverse end.
         """
-        for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i]:
 
-                # Create and save the Orca input file
-                orca_str = write_orca_irc(
-                    ts_mol,
-                    conf_id=i,
-                    method=self.method,
-                    mult=multiplicity,
-                    nprocs=self.nprocs,
+        # Create folder to save IRC input and output files
+        work_dir = self.work_dir / f"{self.path_prefix}{conf_id}"
+        work_dir.mkdir(parents=True, exist_ok=True)
+
+        input_file = work_dir / f"{self.path_prefix}.inp"
+        output_file = work_dir / f"{self.path_prefix}.log"
+
+        # Create and save the Orca input file
+        input_content = write_orca_irc(
+            ts_mol,
+            conf_id=conf_id,
+            method=self.method,
+            mult=multiplicity,
+            nprocs=self.nprocs,
+        )
+        with open(input_file, "w") as f:
+            f.writelines(input_content)
+
+        # Run the Orca IRC using subprocess
+        with open(output_file, "w") as f:
+            subprocess_run = subprocess.run(
+                [self.binary_path, input_file],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                cwd=os.getcwd(),
+            )
+        if subprocess_run.returncode != 0:
+            print(f"Run into error when running Orca IRC.")
+            return []
+
+        adj_mats = []
+        for direction in ["F", "B"]:
+            xyz_file = work_dir / f"orca_irc_IRC_{direction}.xyz"
+            try:
+                irc_mol = RDKitMol.FromFile(xyz_file, sanitize=False)
+                adj_mats.append(irc_mol.GetAdjacencyMatrix())
+            except BaseException as e:
+                raise RuntimeError(
+                    f"Run into error when obtaining adjacency matrix from IRC output file ({xyz_file}). Got: {e}"
                 )
-                orca_dir = os.path.join(self.save_dir, f"orca_irc{i}")
-                os.makedirs(orca_dir)
 
-                orca_input_file = os.path.join(orca_dir, "orca_irc.inp")
-                with open(orca_input_file, "w") as f:
-                    f.writelines(orca_str)
-
-                # Run the Orca IRC using subprocess
-                with open(os.path.join(orca_dir, "orca_irc.log"), "w") as f:
-                    orca_run = subprocess.run(
-                        [self.binary_path, orca_input_file],
-                        stdout=f,
-                        stderr=subprocess.STDOUT,
-                        cwd=os.getcwd(),
-                    )
-                if orca_run.returncode != 0:
-                    ts_mol.KeepIDs[i] = False
-                    continue
-
-                # Generate the adjacency matrix from the SMILES
-                r_smi, p_smi = kwargs["rxn_smiles"].split(">>")
-                r_adj = RDKitMol.FromSmiles(r_smi).GetAdjacencyMatrix()
-                p_adj = RDKitMol.FromSmiles(p_smi).GetAdjacencyMatrix()
-
-                # Read the terminal geometries from the IRC analysis into RDKitMol
-                try:
-                    irc_f_mol = RDKitMol.FromFile(
-                        os.path.join(orca_dir, "orca_irc_IRC_F.xyz"), sanitize=False
-                    )
-                    irc_b_mol = RDKitMol.FromFile(
-                        os.path.join(orca_dir, "orca_irc_IRC_B.xyz"), sanitize=False
-                    )
-                except FileNotFoundError:
-                    ts_mol.KeepIDs[i] = False
-                    continue
-
-                # Generate the adjacency matrix from the mols in the IRC analysis
-                f_adj = irc_f_mol.GetAdjacencyMatrix()
-                b_adj = irc_b_mol.GetAdjacencyMatrix()
-
-                # Comparing the adjacency matrix
-                rf_pb_check, rb_pf_check = False, False
-                try:
-                    rf_pb_check = (r_adj == f_adj).all() and (p_adj == b_adj).all()
-                    rb_pf_check = (r_adj == b_adj).all() and (p_adj == f_adj).all()
-                except AttributeError:
-                    print(
-                        "Error! Likely that the reaction smiles doesn't correspond to this reaction."
-                    )
-
-                irc_check = rf_pb_check or rb_pf_check
-                ts_mol.KeepIDs[i] = irc_check
-
-            else:
-                ts_mol.KeepIDs[i] = False
-
-        if self.save_dir:
-            with open(os.path.join(self.save_dir, "irc_check_ids.pkl"), "wb") as f:
-                pickle.dump(ts_mol.KeepIDs, f)
-
-        return ts_mol
+        return adj_mats

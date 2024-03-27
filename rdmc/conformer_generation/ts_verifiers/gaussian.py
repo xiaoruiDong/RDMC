@@ -11,7 +11,7 @@ from rdmc.external.inpwriter import write_gaussian_irc
 from rdmc.external.logparser import GaussianLog
 
 
-class GaussianIRCVerifier(GaussianTask, IRCVerifier):
+class GaussianIRCVerifier(IRCVerifier, GaussianTask):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Gaussian.
 
@@ -25,6 +25,8 @@ class GaussianIRCVerifier(GaussianTask, IRCVerifier):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
+    path_prefix = "gaussian_irc"
+
     def __init__(
         self,
         method: str = "GFN2-xTB",
@@ -33,130 +35,81 @@ class GaussianIRCVerifier(GaussianTask, IRCVerifier):
         fc_kw: str = "calcall",
         track_stats: bool = False,
     ):
-        """
-        Initiate the Gaussian IRC verifier.
-
-        Args:
-            method (str, optional): The method to be used for TS optimization. you can use the level of theory available in Gaussian.
-                                    We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
-            nprocs (int, optional): The number of processors to use. Defaults to 1.
-            memory (int, optional): Memory in GB used by Gaussian. Defaults to 1.
-            fc_kw (str, optional): Keyword specifying how often to compute force constants Defaults to "calcall".
-            track_stats (bool, optional): Whether to track the status. Defaults to False.
-        """
-        super().__init__(
+        super(IRCVerifier).__init__(
             method=method, nprocs=nprocs, memory=memory, track_stats=track_stats
         )
         self.fc_kw = fc_kw
 
-    def run(
+    def run_irc(
         self,
         ts_mol: "RDKitMol",
+        conf_id: int,
         multiplicity: int = 1,
         **kwargs,
-    ) -> RDKitMol:
+    ) -> list:
         """
-        Verifying TS guesses (or optimized TS geometries).
+        Verifying a single TS guess or optimized TS geometry.
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
+            conf_id (int): The conformer ID.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
-            save_dir (str, optional): The directory path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
+            list: the adjacency matrix of the forward and reverse end.
         """
-        for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i]:
 
-                # Create folder to save Gaussian IRC input and output files
-                gaussian_dir = os.path.join(self.save_dir, f"gaussian_irc{i}")
-                os.makedirs(gaussian_dir, exist_ok=True)
+        # Create folder to save IRC input and output files
+        work_dir = self.work_dir / f"{self.path_prefix}{conf_id}"
+        work_dir.mkdir(parents=True, exist_ok=True)
 
-                irc_check = True
-                adj_mat = []
-                # Conduct forward and reverse IRCs
-                for direction in ["forward", "reverse"]:
+        adj_mats = []
+        # Conduct forward and reverse IRCs
+        for direction in ["forward", "reverse"]:
 
-                    gaussian_input_file = os.path.join(
-                        gaussian_dir, f"gaussian_irc_{direction}.gjf"
-                    )
-                    gaussian_output_file = os.path.join(
-                        gaussian_dir, f"gaussian_irc_{direction}.log"
-                    )
+            input_file = work_dir / f"{self.path_prefix}{direction}.gjf"
+            output_file = work_dir / f"{self.path_prefix}{direction}.log"
 
-                    # Generate and save input file
-                    gaussian_str = write_gaussian_irc(
-                        ts_mol,
-                        conf_id=i,
-                        method=self.method,
-                        direction=direction,
-                        mult=multiplicity,
-                        nprocs=self.nprocs,
-                        memory=self.memory,
-                        hess=self.fc_kw,
-                    )
-                    with open(gaussian_input_file, "w") as f:
-                        f.writelines(gaussian_str)
+            # Generate and save input file
+            input_content = write_gaussian_irc(
+                ts_mol,
+                conf_id=conf_id,
+                method=self.method,
+                direction=direction,
+                charge=0,  # temporarily hardcoded
+                mult=multiplicity,
+                nprocs=self.nprocs,
+                memory=self.memory,
+                hess=self.fc_kw,
+            )
+            with open(input_file, "w") as f:
+                f.writelines(input_content)
 
-                    # Run IRC using subprocess
-                    with open(gaussian_output_file, "w") as f:
-                        gaussian_run = subprocess.run(
-                            [self.binary_path, gaussian_input_file],
-                            stdout=f,
-                            stderr=subprocess.STDOUT,
-                            cwd=os.getcwd(),
-                        )
+            # Run IRC using subprocess
+            with open(output_file, "w") as f:
+                subprocess.run(
+                    [self.binary_path, input_file],
+                    stdout=f,
+                    stderr=subprocess.STDOUT,
+                    cwd=os.getcwd(),
+                )
 
-                    # Extract molecule adjacency matrix from IRC results
-                    # TBD: We can stop running IRC if one side of IRC fails
-                    # I personally think it is worth to continue to run the other IRC just to provide more sights
-                    try:
-                        glog = GaussianLog(gaussian_output_file)
-                        adj_mat.append(
-                            glog.get_mol(
-                                refid=glog.num_all_geoms
-                                - 1,  # The last geometry in the job
-                                converged=False,
-                                sanitize=False,
-                                backend="openbabel",
-                            ).GetAdjacencyMatrix()
-                        )
-                    except Exception as e:
-                        print(
-                            f"Run into error when obtaining adjacency matrix from IRC output file. Got: {e}"
-                        )
-                        ts_mol.KeepIDs[i] = False
-                        irc_check = False
+            # Extract molecule adjacency matrix from IRC results
+            # TBD: We can stop running IRC if one side of IRC fails
+            # I personally think it is worth to continue to run the other IRC just to provide more sights
+            try:
+                glog = GaussianLog(output_file)
+                adj_mats.append(
+                    glog.get_mol(
+                        refid=glog.num_all_geoms - 1,  # The last geometry in the job
+                        converged=False,
+                        sanitize=False,
+                        backend="openbabel",
+                    ).GetAdjacencyMatrix()
+                )
+            except BaseException as e:
+                raise RuntimeError(
+                    f"Run into error when obtaining adjacency matrix from IRC output file ({output_file}). Got: {e}"
+                )
 
-                # Bypass the further steps if IRC job fails
-                if not irc_check and len(adj_mat) != 2:
-                    ts_mol.KeepIDs[i] = False
-                    continue
-
-                # Generate the adjacency matrix from the SMILES
-                r_smi, p_smi = kwargs["rxn_smiles"].split(">>")
-                r_adj = RDKitMol.FromSmiles(r_smi).GetAdjacencyMatrix()
-                p_adj = RDKitMol.FromSmiles(p_smi).GetAdjacencyMatrix()
-                f_adj, b_adj = adj_mat
-
-                rf_pb_check, rb_pf_check = False, False
-                try:
-                    rf_pb_check = (r_adj == f_adj).all() and (p_adj == b_adj).all()
-                    rb_pf_check = (r_adj == b_adj).all() and (p_adj == f_adj).all()
-                except AttributeError:
-                    print(
-                        "Error! Likely that the reaction smiles doesn't correspond to this reaction."
-                    )
-
-                check = rf_pb_check or rb_pf_check
-                ts_mol.KeepIDs[i] = check
-
-            else:
-                ts_mol.KeepIDs[i] = False
-
-        if self.save_dir:
-            with open(os.path.join(self.save_dir, "irc_check_ids.pkl"), "wb") as f:
-                pickle.dump(ts_mol.KeepIDs, f)
-
-        return ts_mol
+        return adj_mats

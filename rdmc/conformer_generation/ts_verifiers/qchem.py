@@ -1,7 +1,5 @@
 import os
-from typing import Optional
 import subprocess
-import pickle
 
 from rdmc import RDKitMol
 
@@ -24,110 +22,72 @@ class QChemIRCVerifier(QChemTask, IRCVerifier):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def run(
+    path_prefix = "qchem_irc"
+
+    def __init__(self, **kwargs):
+        super(IRCVerifier).__init__(**kwargs)
+
+    def run_irc(
         self,
         ts_mol: "RDKitMol",
+        conf_id: int,
         multiplicity: int = 1,
         **kwargs,
-    ):
+    ) -> list:
         """
-        Verifying TS guesses (or optimized TS geometries).
+        Verifying a single TS guess or optimized TS geometry.
 
         Args:
             ts_mol ('RDKitMol'): The TS in RDKitMol object with 3D geometries embedded.
+            conf_id (int): The conformer ID.
             multiplicity (int, optional): The spin multiplicity of the TS. Defaults to ``1``.
-            save_dir (_type_, optional): The directory path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
+            list: the adjacency matrix of the forward and reverse end.
         """
-        for i in range(ts_mol.GetNumConformers()):
-            if ts_mol.KeepIDs[i]:
 
-                # Create folder to save QChem IRC input and output files
-                qchem_dir = os.path.join(self.save_dir, f"qchem_irc{i}")
-                os.makedirs(qchem_dir, exist_ok=True)
+        # Create folder to save IRC input and output files
+        work_dir = self.work_dir / f"{self.path_prefix}{conf_id}"
+        work_dir.mkdir(parents=True, exist_ok=True)
 
-                irc_check = True
-                adj_mat = []
-                # Conduct IRC
-                qchem_input_file = os.path.join(qchem_dir, f"qchem_irc.qcin")
-                qchem_output_file = os.path.join(qchem_dir, f"qchem_irc.log")
+        input_file = work_dir / f"{self.path_prefix}.qcin"
+        output_file = work_dir / f"{self.path_prefix}.log"
 
-                # Generate and save input file
-                qchem_str = write_qchem_irc(
-                    ts_mol,
-                    conf_id=i,
-                    method=self.method,
-                    basis=self.basis,
-                    mult=multiplicity,
+        # Generate and save input file
+        input_content = write_qchem_irc(
+            ts_mol,
+            conf_id=conf_id,
+            method=self.method,
+            basis=self.basis,
+            mult=multiplicity,
+        )
+
+        with open(input_file, "w") as f:
+            f.writelines(input_content)
+
+        # Run the IRC using subprocess
+        with open(output_file, "w") as f:
+            subprocess_run = subprocess.run(
+                [self.binary_path, "-nt", str(self.nprocs), input_file],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                cwd=os.getcwd(),
+            )
+
+        adj_mats = []
+        try:
+            log = QChemLog(output_file)
+            for cid in [log.get_irc_midpoint() - 1, -2]:
+                adj_mats.append(
+                    log.get_mol(
+                        refid=cid,
+                        sanitize=False,
+                        backend="openbabel",
+                    ).GetAdjacencyMatrix()
                 )
-                with open(qchem_input_file, "w") as f:
-                    f.writelines(qchem_str)
+        except BaseException as e:
+            raise RuntimeError(
+                f"Run into error when obtaining adjacency matrix from IRC output file ({output_file}). Got: {e}"
+            )
 
-                # Run IRC using subprocess
-                with open(qchem_output_file, "w") as f:
-                    qchem_run = subprocess.run(
-                        [self.binary_path, "-nt", str(self.nprocs), qchem_input_file],
-                        stdout=f,
-                        stderr=subprocess.STDOUT,
-                        cwd=os.getcwd(),
-                    )
-
-                # Extract molecule adjacency matrix from IRC results
-                # TBD: We can stop running IRC if one side of IRC fails
-                # I personally think it is worth to continue to run the other IRC just to provide more sights
-                try:
-                    log = QChemLog(qchem_output_file)
-                    adj_mat.append(
-                        log.get_mol(
-                            refid=log.get_irc_midpoint() - 1,
-                            sanitize=False,
-                            backend="openbabel",
-                        ).GetAdjacencyMatrix()
-                    )
-                    adj_mat.append(
-                        log.get_mol(
-                            refid=-2,  # The second to last geometry in the job
-                            sanitize=False,
-                            backend="openbabel",
-                        ).GetAdjacencyMatrix()
-                    )
-                except Exception as e:
-                    print(
-                        f"Run into error when obtaining adjacency matrix from IRC output file. Got: {e}"
-                    )
-                    ts_mol.KeepIDs[i] = False
-                    irc_check = False
-
-                # Bypass the further steps if IRC job fails
-                if not irc_check and len(adj_mat) != 2:
-                    ts_mol.KeepIDs[i] = False
-                    continue
-
-                # Generate the adjacency matrix from the SMILES
-                r_smi, p_smi = kwargs["rxn_smiles"].split(">>")
-                r_adj = RDKitMol.FromSmiles(r_smi).GetAdjacencyMatrix()
-                p_adj = RDKitMol.FromSmiles(p_smi).GetAdjacencyMatrix()
-                f_adj, b_adj = adj_mat
-
-                rf_pb_check, rb_pf_check = False, False
-                try:
-                    rf_pb_check = (r_adj == f_adj).all() and (p_adj == b_adj).all()
-                    rb_pf_check = (r_adj == b_adj).all() and (p_adj == f_adj).all()
-                except AttributeError:
-                    print(
-                        "Error! Likely that the reaction smiles doesn't correspond to this reaction."
-                    )
-
-                check = rf_pb_check or rb_pf_check
-                ts_mol.KeepIDs[i] = check
-
-            else:
-                ts_mol.KeepIDs[i] = False
-
-        if self.save_dir:
-            with open(os.path.join(self.save_dir, "irc_check_ids.pkl"), "wb") as f:
-                pickle.dump(ts_mol.KeepIDs, f)
-
-        return ts_mol
+        return adj_mats
