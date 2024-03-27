@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 
 class BaseTask(ABC):
 
-    def __init__(self, track_stats: bool = False):
+    def __init__(self, track_stats: bool = False, *args, **kwargs):
         """
         Base class for all tasks.
         Args:
