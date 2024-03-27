@@ -1,16 +1,15 @@
-import os
-import subprocess
 from typing import Optional
 
 import numpy as np
 
 from rdmc import RDKitMol
+from rdmc.conformer_generation.task.orca import OrcaTask
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
 from rdmc.external.inpwriter import write_orca_opt
-from rdmc.conformer_generation.task.orca import OrcaTask
+from rdtools.conversion.xyz import xyz_to_coords
 
 
-class OrcaOptimizer(OrcaTask, TSOptimizer):
+class OrcaOptimizer(TSOptimizer, OrcaTask):
     """
     The class to optimize TS geometries using the Berny algorithm built in Orca.
     You have to have the Orca package installed to run this optimizer.
@@ -23,7 +22,81 @@ class OrcaOptimizer(OrcaTask, TSOptimizer):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def extract_frequencies(self, save_dir: str, n_atoms: int):
+    path_prefix = "orca_opt"
+
+    def __init__(self, **kwargs):
+        super(TSOptimizer, self).__init__(**kwargs)
+
+    def run_opt(
+        self,
+        mol: "RDKitMol",
+        conf_id: int,
+        multiplicity: int = 1,
+        **kwargs,
+    ) -> Tuple[Optional["np.ndarray"], bool, float, Optional["np.ndarray"]]:
+        """
+        Optimize the TS guesses.
+
+        Args:
+            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
+            conf_id (int): The conformer id.
+            multiplicity (int): The multiplicity of the molecule. Defaults to ``1``.
+
+        Returns:
+            tuple: pos, success, energy, freq
+        """
+        pos, success, energy, freq = None, False, np.nan, None
+
+        work_dir = self.work_dir / f"{self.path_prefix}{conf_id}"
+        work_dir.mkdir(parents=True, exist_ok=True)
+
+        input_file = work_dir / f"{self.path_prefix}.gjf"
+        output_file = work_dir / f"{self.path_prefix}.log"
+
+        # Generate and save the input file
+        input_content = write_orca_opt(
+            mol,
+            conf_id=conf_id,
+            ts=True,
+            method=self.method,
+            mult=multiplicity,
+            nprocs=self.nprocs,
+        )
+
+        with open(input_file, "w") as f:
+            f.writelines(input_content)
+
+        # Run the job via subprocess
+        subprocess_run = self.subprocess_runner(
+            input_file,
+            output_file,
+            work_dir,
+        )
+
+        if subprocess_run.returncode != 0:
+            print(f"Run into error in TS optimization.")
+        else:
+            try:
+                with open(work_dir / f"{self.path_prefix}.xyz", "r") as f:
+                    pos = xyz_to_coords(f.read(), header=True)
+                freq = self.extract_frequencies(
+                    output_file,
+                    mol.GetNumAtoms(),
+                )
+                try:
+                    energy = self.logparser(output_file).get_scf_energies(
+                        relative=False
+                    )[-1]
+                except BaseException as e:
+                    pass
+                success = True
+            except BaseException as e:
+                print(f"Got an error when reading the output file ({output_file}): {e}")
+
+        return pos, success, energy, freq
+
+    @staticmethod
+    def extract_frequencies(log_path: str, n_atoms: int):
         """
         Extract frequencies from the Orca opt job.
 
@@ -35,8 +108,7 @@ class OrcaOptimizer(OrcaTask, TSOptimizer):
             np.ndarray: The frequencies in cm-1.
         """
 
-        log_file = os.path.join(save_dir, "orca_opt.log")
-        with open(log_file, "r") as f:
+        with open(log_path, "r") as f:
             orca_data = f.readlines()
 
         dof = 3 * n_atoms
@@ -52,87 +124,3 @@ class OrcaOptimizer(OrcaTask, TSOptimizer):
             return np.array([float(line.split()[1]) for line in freqs])
         else:
             return None
-
-    def optimize_ts_guesses(
-        self,
-        mol: "RDKitMol",
-        multiplicity: int = 1,
-        save_dir: Optional[str] = None,
-        **kwargs,
-    ):
-        """
-        Optimize the TS guesses.
-
-        Args:
-            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
-            multiplicity (int): The multiplicity of the molecule. Defaults to ``1``.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
-
-        Returns:
-            RDKitMol: The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
-        """
-        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
-        opt_mol.energy = {}  # TODO: add orca energies
-        opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
-        for i in range(mol.GetNumConformers()):
-
-            if not opt_mol.KeepIDs[i]:
-                opt_mol.AddNullConformer(confId=i)
-                opt_mol.energy.update({i: np.nan})
-                continue
-
-            if save_dir:
-                ts_conf_dir = os.path.join(save_dir, f"orca_opt{i}")
-                os.makedirs(ts_conf_dir, exist_ok=True)
-
-            # Generate and save the ORCA input file
-            orca_str = write_orca_opt(
-                mol,
-                conf_id=i,
-                ts=True,
-                method=self.method,
-                mult=multiplicity,
-                nprocs=self.nprocs,
-            )
-
-            orca_input_file = os.path.join(ts_conf_dir, "orca_opt.inp")
-            with open(orca_input_file, "w") as f:
-                f.writelines(orca_str)
-
-            # Run the optimization using subprocess
-            with open(os.path.join(ts_conf_dir, "orca_opt.log"), "w") as f:
-                orca_run = subprocess.run(
-                    [self.binary_path, orca_input_file],
-                    stdout=f,
-                    stderr=subprocess.STDOUT,
-                    cwd=os.getcwd(),
-                )
-
-            # Check the Orca results
-            if orca_run.returncode == 0:
-                try:
-                    new_mol = RDKitMol.FromFile(
-                        os.path.join(ts_conf_dir, "orca_opt.xyz"), sanitize=False
-                    )
-                    opt_mol.AddConformer(new_mol.GetConformer(), assignId=True)
-                    opt_mol.frequency.update(
-                        {
-                            i: self.extract_frequencies(
-                                ts_conf_dir, opt_mol.GetNumAtoms()
-                            )
-                        }
-                    )
-                except Exception as e:
-                    opt_mol.AddNullConformer(confId=i)
-                    opt_mol.energy.update({i: np.nan})
-                    opt_mol.KeepIDs[i] = False
-                    print(f"Cannot read Orca output, got: {e}")
-            else:
-                opt_mol.AddNullConformer(confId=i)
-                opt_mol.energy.update({i: np.nan})
-                opt_mol.KeepIDs[i] = False
-
-        if save_dir:
-            self.save_opt_mols(save_dir, opt_mol, opt_mol.KeepIDs, opt_mol.energy)
-
-        return opt_mol

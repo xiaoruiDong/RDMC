@@ -1,16 +1,16 @@
-import os
-import subprocess
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 
-from rdmc.conformer_generation.task.gaussian_task import GaussianTask
+from rdmc.conformer_generation.task.gaussian import GaussianTask
 from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
 from rdmc.external.inpwriter import write_gaussian_opt
-from rdmc.external.logparser import GaussianLog
 
 
-class GaussianOptimizer(GaussianTask, TSOptimizer):
+class GaussianOptimizer(
+    TSOptimizer,
+    GaussianTask,
+):
     """
     The class to optimize TS geometries using the Berny algorithm built in Gaussian.
     You have to have the Gaussian package installed to run this optimizer
@@ -24,84 +24,71 @@ class GaussianOptimizer(GaussianTask, TSOptimizer):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    def optimize_ts_guesses(
+    path_prefix = "gaussian_opt"
+
+    def __init__(self, **kwargs):
+        super(TSOptimizer, self).__init__(**kwargs)
+
+    def run_opt(
         self,
         mol: "RDKitMol",
+        conf_id: int,
         multiplicity: int = 1,
-        save_dir: Optional[str] = None,
         **kwargs,
-    ):
+    ) -> Tuple[Optional["np.ndarray"], bool, float, Optional["np.ndarray"]]:
         """
         Optimize the TS guesses.
 
         Args:
             mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
+            conf_id (int): The conformer id.
             multiplicity (int): The multiplicity of the molecule. Defaults to ``1``.
-            save_dir (Optional[str], optional): The path to save the results. Defaults to ``None``.
 
         Returns:
-            RDKitMol: The optimized TS molecule in RDKitMol with 3D conformer saved with the molecule.
+            tuple: pos, success, energy, freq
         """
-        opt_mol = mol.Copy(quickCopy=True, copy_attrs=["KeepIDs"])
-        opt_mol.energy = {}
-        opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
-        for i in range(mol.GetNumConformers()):
+        pos, success, energy, freq = None, False, np.nan, None
 
-            if not opt_mol.KeepIDs[i]:
-                opt_mol.AddNullConformer(confId=i)
-                opt_mol.energy.update({i: np.nan})
-                continue
+        work_dir = self.work_dir / f"{self.path_prefix}{conf_id}"
+        work_dir.mkdir(parents=True, exist_ok=True)
 
-            if save_dir:
-                ts_conf_dir = os.path.join(save_dir, f"gaussian_opt{i}")
-                os.makedirs(ts_conf_dir, exist_ok=True)
+        input_file = work_dir / f"{self.path_prefix}.gjf"
+        output_file = work_dir / f"{self.path_prefix}.log"
 
-            # Generate and save the gaussian input file
-            gaussian_str = write_gaussian_opt(
-                mol,
-                conf_id=i,
-                ts=True,
-                method=self.method,
-                mult=multiplicity,
-                nprocs=self.nprocs,
-                memory=self.memory,
-            )
-            gaussian_input_file = os.path.join(ts_conf_dir, "gaussian_opt.gjf")
-            with open(gaussian_input_file, "w") as f:
-                f.writelines(gaussian_str)
+        # Generate and save the input file
+        input_content = write_gaussian_opt(
+            mol,
+            conf_id=conf_id,
+            ts=True,
+            method=self.method,
+            mult=multiplicity,
+            nprocs=self.nprocs,
+            memory=self.memory,
+        )
 
-            # Run the gaussian via subprocess
-            with open(os.path.join(ts_conf_dir, "gaussian_opt.log"), "w") as f:
-                gaussian_run = subprocess.run(
-                    [self.binary_path, gaussian_input_file],
-                    stdout=f,
-                    stderr=subprocess.STDOUT,
-                    cwd=os.getcwd(),
-                )
-            # Check the output of the gaussian
-            if gaussian_run.returncode == 0:
-                try:
-                    g16_log = GaussianLog(os.path.join(ts_conf_dir, "gaussian_opt.log"))
-                    if g16_log.success:
-                        new_mol = g16_log.get_mol(
-                            embed_conformers=False, sanitize=False
-                        )
-                        opt_mol.AddConformer(new_mol.GetConformer(), assignId=True)
-                        opt_mol.energy.update(
-                            {i: g16_log.get_scf_energies(relative=False)[-1]}
-                        )
-                        opt_mol.frequency.update({i: g16_log.freqs})
-                except Exception as e:
-                    opt_mol.AddNullConformer(confId=i)
-                    opt_mol.energy.update({i: np.nan})
-                    opt_mol.KeepIDs[i] = False
-                    print(f"Got an error when reading the Gaussian output: {e}")
-            else:
-                opt_mol.AddNullConformer(confId=i)
-                opt_mol.energy.update({i: np.nan})
-                opt_mol.KeepIDs[i] = False
+        with open(input_file, "w") as f:
+            f.writelines(input_content)
 
-        if save_dir:
-            self.save_opt_mols(save_dir, opt_mol, opt_mol.KeepIDs, opt_mol.energy)
+        subprocess_run = self.subprocess_runner(
+            input_file,
+            output_file,
+            work_dir,
+        )
 
-        return opt_mol
+        if subprocess_run.returncode != 0:
+            print(f"Run into error in TS optimization.")
+        else:
+            try:
+                log = self.logparser(output_file)
+                if log.success:
+                    pos = log.converged_geometries[-1]
+                    success = True
+                    energy = log.get_scf_energies(relative=False)[-1]
+                    freq = log.freqs
+                else:
+                    pos = log.all_geometries[-1]
+                    energy = log.get_scf_energies(relative=False, converged=False)[-1]
+            except BaseException as e:
+                print(f"Got an error when reading the output file ({output_file}): {e}")
+
+        return pos, success, energy, freq
