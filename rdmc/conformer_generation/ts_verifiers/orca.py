@@ -1,7 +1,5 @@
 import os
-from typing import Optional
 import subprocess
-import pickle
 
 from rdmc import RDKitMol
 
@@ -10,7 +8,7 @@ from rdmc.external.inpwriter import write_orca_irc
 from rdmc.conformer_generation.task.orca import OrcaTask
 
 
-class OrcaIRCVerifier(IRCVerifier, OrcaIRCVerifier):
+class OrcaIRCVerifier(IRCVerifier, OrcaTask):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Orca.
 

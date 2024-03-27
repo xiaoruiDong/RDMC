@@ -4,7 +4,7 @@ from typing import List
 
 import numpy as np
 
-from rdtools import Mol
+from rdmc import Mol
 from rdmc.conformer_generation.task.basetask import BaseTask
 from rdmc.conformer_generation.verifiers.base import FreqVerifier
 
