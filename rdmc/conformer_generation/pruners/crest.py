@@ -17,8 +17,6 @@ class CRESTPruner(ConfGenPruner):
         track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
     """
 
-    _available = crest_available
-
     def __init__(
         self,
         ethr: float = 0.15,
@@ -43,6 +41,9 @@ class CRESTPruner(ConfGenPruner):
         self.rthr = rthr
         self.bthr = bthr
         self.ewin = ewin
+
+    def is_available(self):
+        return crest_available
 
     def prune_conformers(
         self,

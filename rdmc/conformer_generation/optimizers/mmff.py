@@ -16,14 +16,15 @@ class MMFFOptimizer(ConfGenOptimizer):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
-    _avail = True
-
     def __init__(self, method: str = "rdkit", track_stats: bool = False):
         super(MMFFOptimizer, self).__init__(track_stats)
         if method == "rdkit":
             self.ff = RDKitFF()
         elif method == "openbabel":
             raise NotImplementedError
+
+    def is_available(self):
+        return True
 
     def optimize_conformers(
         self,

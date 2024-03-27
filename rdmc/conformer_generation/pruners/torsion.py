@@ -23,8 +23,6 @@ class TorsionPruner(ConfGenPruner):
         track_stats (bool, optional): Whether to track statistics. Defaults to ``False``.
     """
 
-    _avail = True
-
     def __init__(
         self,
         mean_chk_threshold: float = 10.0,
@@ -36,6 +34,9 @@ class TorsionPruner(ConfGenPruner):
         self.mean_chk_threshold = mean_chk_threshold
         self.max_chk_threshold = max_chk_threshold
         self.torsions_list = None
+
+    def is_available(self):
+        return True
 
     def initialize_torsions_list(
         self,
