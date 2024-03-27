@@ -18,10 +18,10 @@ class GaussianTask(BaseTask):
         binary_path: Optional[str] = None,
     ):
         """
-        Initiate the Gaussian optimizer.
+        Initiate the Gaussian task.
 
         Args:
-            method (str, optional): The method to be used for stable species optimization. you can use the level of theory available in Gaussian.
+            method (str, optional): The method to be used for the Gaussian task. you can use the level of theory available in Gaussian.
                 We provided a script to run XTB using Gaussian, but there are some extra steps to do. Defaults to GFN2-xTB.
             nprocs (int, optional): The number of processors to use. Defaults to ``1``.
             memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
@@ -37,9 +37,9 @@ class GaussianTask(BaseTask):
 
     def is_available(self):
         """
-        Check if ETKDG embedder is available. Always True under the RDMC Framework
+        Check if the Gaussian binary is available.
 
         Returns:
-            bool: True
+            bool
         """
         return gaussian_available
