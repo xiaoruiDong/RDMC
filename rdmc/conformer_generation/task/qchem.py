@@ -2,12 +2,11 @@ from typing import Optional
 
 from rdmc.conformer_generation.comp_env import qchem_available
 from rdmc.conformer_generation.comp_env.software import get_binary
-from rdmc.conformer_generation.task.basetask import BaseTask
 from rdmc.conformer_generation.utils import subprocess_runner
 from rdmc.external.logparser import QChemLog
 
 
-class QChemTask(BaseTask):
+class QChemTask:
 
     logparser = QChemLog
 
@@ -17,7 +16,6 @@ class QChemTask(BaseTask):
         basis: str = "def2-tzvp",
         nprocs: int = 1,
         memory: int = 1,
-        track_stats: bool = False,
         binary_path: Optional[str] = None,
     ):
         """
@@ -30,10 +28,8 @@ class QChemTask(BaseTask):
                 Defaults to ``"def2-tzvp"``.
             nprocs (int, optional): The number of processors to use. Defaults to ``1``.
             memory (int, optional): Memory in GB used by QChem. Defaults to ``1``.
-            track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
             binary_path (str, optional): The path to the QChem binary. Defaults to ``None``, the task will try to locate the binary automatically.
         """
-        super().__init__(track_stats)
         self.method = method
         self.basis = basis
         self.nprocs = nprocs
