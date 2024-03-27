@@ -1,12 +1,7 @@
-import os
-import subprocess
-
 from rdmc import RDKitMol
-
-from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
 from rdmc.conformer_generation.task.qchem import QChemTask
+from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
 from rdmc.external.inpwriter import write_qchem_irc
-from rdmc.external.logparser import QChemLog
 
 
 class QChemIRCVerifier(QChemTask, IRCVerifier):
@@ -66,17 +61,15 @@ class QChemIRCVerifier(QChemTask, IRCVerifier):
             f.writelines(input_content)
 
         # Run the IRC using subprocess
-        with open(output_file, "w") as f:
-            subprocess_run = subprocess.run(
-                [self.binary_path, "-nt", str(self.nprocs), input_file],
-                stdout=f,
-                stderr=subprocess.STDOUT,
-                cwd=os.getcwd(),
-            )
+        subprocess_run = self.subprocess_runner(
+            input_file,
+            output_file,
+            work_dir,
+        )
 
         adj_mats = []
         try:
-            log = QChemLog(output_file)
+            log = self.logparser(output_file)
             for cid in [log.get_irc_midpoint() - 1, -2]:
                 adj_mats.append(
                     log.get_mol(

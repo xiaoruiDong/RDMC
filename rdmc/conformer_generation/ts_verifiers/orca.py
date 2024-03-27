@@ -1,11 +1,7 @@
-import os
-import subprocess
-
 from rdmc import RDKitMol
-
+from rdmc.conformer_generation.task.orca import OrcaTask
 from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
 from rdmc.external.inpwriter import write_orca_irc
-from rdmc.conformer_generation.task.orca import OrcaTask
 
 
 class OrcaIRCVerifier(IRCVerifier, OrcaTask):
@@ -62,14 +58,13 @@ class OrcaIRCVerifier(IRCVerifier, OrcaTask):
         with open(input_file, "w") as f:
             f.writelines(input_content)
 
-        # Run the Orca IRC using subprocess
-        with open(output_file, "w") as f:
-            subprocess_run = subprocess.run(
-                [self.binary_path, input_file],
-                stdout=f,
-                stderr=subprocess.STDOUT,
-                cwd=os.getcwd(),
-            )
+        # Run the IRC using subprocess
+        subprocess_run = self.subprocess_runner(
+            input_file,
+            output_file,
+            work_dir,
+        )
+
         if subprocess_run.returncode != 0:
             print(f"Run into error when running Orca IRC.")
             return []

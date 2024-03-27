@@ -1,14 +1,7 @@
-import os
-from typing import Optional
-import subprocess
-import pickle
-
 from rdmc import RDKitMol
-
 from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
 from rdmc.conformer_generation.task.gaussian import GaussianTask
 from rdmc.external.inpwriter import write_gaussian_irc
-from rdmc.external.logparser import GaussianLog
 
 
 class GaussianIRCVerifier(IRCVerifier, GaussianTask):
@@ -85,20 +78,18 @@ class GaussianIRCVerifier(IRCVerifier, GaussianTask):
             with open(input_file, "w") as f:
                 f.writelines(input_content)
 
-            # Run IRC using subprocess
-            with open(output_file, "w") as f:
-                subprocess.run(
-                    [self.binary_path, input_file],
-                    stdout=f,
-                    stderr=subprocess.STDOUT,
-                    cwd=os.getcwd(),
-                )
+            # Run the IRC using subprocess
+            subprocess_run = self.subprocess_runner(
+                input_file,
+                output_file,
+                work_dir,
+            )
 
             # Extract molecule adjacency matrix from IRC results
             # TBD: We can stop running IRC if one side of IRC fails
             # I personally think it is worth to continue to run the other IRC just to provide more sights
             try:
-                glog = GaussianLog(output_file)
+                glog = self.logparser(output_file)
                 adj_mats.append(
                     glog.get_mol(
                         refid=glog.num_all_geoms - 1,  # The last geometry in the job
