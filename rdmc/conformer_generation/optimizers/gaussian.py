@@ -26,6 +26,10 @@ class GaussianOptimizer(GaussianTask, ConfGenOptimizer):
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
+    def __init__(self, track_stats: bool = False, **kwargs):
+        super().__init__(track_stats=track_stats)
+        super(ConfGenOptimizer, self).__init__(**kwargs)
+
     def run(
         self,
         mol: "RDKitMol",
