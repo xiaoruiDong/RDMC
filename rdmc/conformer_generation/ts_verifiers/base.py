@@ -62,8 +62,6 @@ class IRCVerifier(BaseTask):
             )
 
         if self.save_dir:
-            self.copy_work_dir_to_save_dir()
-
             with open(self.save_dir / "irc_check_ids.pkl", "wb") as f:
                 pickle.dump(ts_mol.KeepIDs, f)
 

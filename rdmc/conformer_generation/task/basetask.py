@@ -66,12 +66,13 @@ class BaseTask(ABC):
             self.work_dir.mkdir(parents=True, exist_ok=True)
 
     def __call__(self, *args, **kwargs):
-        time_start = time()
 
         self.update_work_and_save_dir(
             kwargs.get("work_dir"),
             kwargs.get("save_dir"),
         )
+
+        time_start = time()
 
         results = self.run(*args, **kwargs)
 
@@ -79,6 +80,8 @@ class BaseTask(ABC):
             time_end = time()
             stats = {"time": time_end - time_start}
             self.stats.append(stats)
+
+        self.copy_work_dir_to_save_dir()
 
         return results
 
