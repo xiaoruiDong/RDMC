@@ -60,6 +60,6 @@ class OrcaTask:
         """
         # Run the job via subprocess
         if command is None:
-            command = [self.binary_path, input_path]
+            command = [str(self.binary_path), str(input_path)]
 
         return subprocess_runner(command, output_path, work_dir)
