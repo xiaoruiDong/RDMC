@@ -54,12 +54,15 @@ class FreqVerifier(BaseTask):
                 # Make this module can also apply to normal usage
                 mol.KeepIDs = {i: True for i in range(mol.GetNumConformers())}
 
+            if not hasattr(mol, "frequency"):
+                mol.frequency = {i: None for i in range(mol.GetNumConformers())}
+
             for i in range(mol.GetNumConformers()):
                 if not mol.KeepIDs[i]:
                     # Check if the conformer is good till this step
                     continue
 
-                if hasattr(mol, "frequency") and mol.frequency[i] is not None:
+                if mol.frequency[i] is not None:
                     frequencies = mol.frequency[i]
                 else:
                     frequencies = self.calc_freq(mol, conf_id=i, **kwargs)
