@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 from rdmc.conformer_generation.comp_env.orca import orca_available
@@ -62,4 +63,12 @@ class OrcaTask:
         if command is None:
             command = [str(self.binary_path), str(input_path)]
 
-        return subprocess_runner(command, output_path, work_dir)
+        # force orca to be in the PATH and LD_LIBRARY_PATH
+        if command[0] != "orca":
+            env = os.environ.copy()
+            env["PATH"] = os.path.dirname(command[0]) + ":" + env.get("PATH", "")
+            env["LD_LIBRARY_PATH"] = (
+                os.path.dirname(command[0]) + ":" + env.get("LD_LIBRARY_PATH", "")
+            )
+
+        return subprocess_runner(command, output_path, work_dir, env=env)
