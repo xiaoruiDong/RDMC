@@ -120,6 +120,7 @@ class XTBFrequencyVerifier(TSVerifier):
     """
 
     def __init__(self,
+                 method: str = "GFN2-xTB",
                  cutoff_frequency: float = -100.,
                  track_stats: bool = False):
         """
@@ -133,6 +134,7 @@ class XTBFrequencyVerifier(TSVerifier):
         """
         super(XTBFrequencyVerifier, self).__init__(track_stats)
 
+        self.method = method
         self.cutoff_frequency = cutoff_frequency
 
     def verify_ts_guesses(self,
@@ -155,7 +157,7 @@ class XTBFrequencyVerifier(TSVerifier):
         for i in range(ts_mol.GetNumConformers()):
             if ts_mol.KeepIDs[i]:
                 if ts_mol.frequency[i] is None:
-                    props = run_xtb_calc(ts_mol, confId=i, job="--hess", uhf=multiplicity - 1)
+                    props = run_xtb_calc(ts_mol, confId=i, job="--hess", method=self.method, uhf=multiplicity - 1)
                     frequencies = props["frequencies"]
                 else:
                     frequencies = ts_mol.frequency[i]
