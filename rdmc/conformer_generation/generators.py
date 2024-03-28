@@ -212,7 +212,7 @@ class StochasticConformerGenerator:
             }
             self.stats.append(stats)
 
-        return unique_mol_data
+        return self.unique_mol_data
 
     def set_config(
         self,
