@@ -156,7 +156,15 @@ def write_gaussian_opt(
     scheme_str += " freq" if follow_freq else ""
 
     if method.lower() in ["gfn2-xtb", "gfn1-xtb"]:
-        scheme_str += f'\nexternal="{XTB_GAUSSIAN_PERL_PATH} --gfn {method[3]} -P"'
+        if nprocs == [1, 2]:
+            xtb_nprocs = nprocs
+        elif nprocs in [3, 4]:
+            xtb_nprocs, nprocs = nprocs - 1, 1
+        else:
+            xtb_nprocs, nprocs = nprocs - 2, 2
+        scheme_str += (
+            f'\nexternal="{XTB_GAUSSIAN_PERL_PATH} --gfn {method[3]} -P {xtb_nprocs}"'
+        )
     else:
         scheme_str += f" {method}"
 
