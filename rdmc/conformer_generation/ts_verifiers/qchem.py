@@ -1,3 +1,5 @@
+from typing import Optional
+
 from rdmc import RDKitMol
 from rdmc.conformer_generation.task.qchem import QChemTask
 from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
@@ -14,13 +16,30 @@ class QChemIRCVerifier(QChemTask, IRCVerifier):
         basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem.
                                 Defaults to ``"def2-tzvp"``.
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by QChem. Defaults to ``1``.
+        binary_path (str, optional): The path to the QChem binary. Defaults to ``None``, the task will try to locate the binary automatically.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
     path_prefix = "qchem_irc"
 
-    def __init__(self, **kwargs):
-        super(IRCVerifier).__init__(**kwargs)
+    def __init__(
+        self,
+        method: str = "b3lyp",
+        basis: str = "def2-tzvp",
+        nprocs: int = 1,
+        memory: int = 1,
+        binary_path: Optional[str] = None,
+        track_stats: bool = False,
+    ):
+        super(QChemIRCVerifier, self).__init__(
+            method=method,
+            basis=basis,
+            nprocs=nprocs,
+            memory=memory,
+            binary_path=binary_path,
+        )
+        super(QChemTask, self).__init__(track_stats=track_stats)
 
     def run_irc(
         self,

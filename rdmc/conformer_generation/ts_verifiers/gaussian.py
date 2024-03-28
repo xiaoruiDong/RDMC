@@ -4,7 +4,10 @@ from rdmc.conformer_generation.task.gaussian import GaussianTask
 from rdmc.external.inpwriter import write_gaussian_irc
 
 
-class GaussianIRCVerifier(IRCVerifier, GaussianTask):
+class GaussianIRCVerifier(
+    GaussianTask,
+    IRCVerifier,
+):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Gaussian.
 
@@ -28,9 +31,12 @@ class GaussianIRCVerifier(IRCVerifier, GaussianTask):
         fc_kw: str = "calcall",
         track_stats: bool = False,
     ):
-        super(IRCVerifier).__init__(
-            method=method, nprocs=nprocs, memory=memory, track_stats=track_stats
+        super(GaussianIRCVerifier).__init__(
+            method=method,
+            nprocs=nprocs,
+            memory=memory,
         )
+        super(GaussianTask).__init__(track_stats=track_stats)
         self.fc_kw = fc_kw
 
     def run_irc(

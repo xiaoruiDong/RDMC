@@ -9,7 +9,10 @@ from rdmc.external.inpwriter import write_orca_opt
 from rdtools.conversion.xyz import xyz_to_coords
 
 
-class OrcaOptimizer(ConfGenOptimizer, OrcaTask):
+class OrcaOptimizer(
+    OrcaTask,
+    ConfGenOptimizer,
+):
     """
     The class to optimize geometries using Orca.
     You have to have the Orca package installed to run this optimizer.
@@ -35,10 +38,10 @@ class OrcaOptimizer(ConfGenOptimizer, OrcaTask):
         binary_path: Optional[str] = None,
         track_stats: bool = False,
     ):
-        super(ConfGenOptimizer, self).__init__(track_stats=track_stats)
-        super(OrcaTask, self).__init__(
+        super(OrcaOptimizer, self).__init__(
             method=method, nprocs=nprocs, memory=memory, binary_path=binary_path
         )
+        super(OrcaTask, self).__init__(track_stats=track_stats)
 
     def run_opt(
         self,

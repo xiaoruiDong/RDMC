@@ -8,8 +8,8 @@ from rdmc.external.inpwriter import write_gaussian_opt
 
 
 class GaussianOptimizer(
-    ConfGenOptimizer,
     GaussianTask,
+    ConfGenOptimizer,
 ):
     """
     Optimizer using the Gaussian.
@@ -35,10 +35,10 @@ class GaussianOptimizer(
         binary_path: Optional[str] = None,
         track_stats: bool = False,
     ):
-        super(ConfGenOptimizer, self).__init__(track_stats=track_stats)
-        super(GaussianTask, self).__init__(
+        super(GaussianOptimizer, self).__init__(
             method=method, nprocs=nprocs, memory=memory, binary_path=binary_path
         )
+        super(GaussianTask, self).__init__(track_stats=track_stats)
 
     def run_opt(
         self,

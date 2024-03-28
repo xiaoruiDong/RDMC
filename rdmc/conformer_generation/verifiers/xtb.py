@@ -6,8 +6,8 @@ from rdmc.conformer_generation.task.xtb import XTBTask
 
 
 class XTBFrequencyVerifier(
-    FreqVerifier,
     XTBTask,
+    FreqVerifier,
 ):
     """
     The class for verifying the stable species by calculating and checking its frequencies using XTB.
@@ -22,9 +22,8 @@ class XTBFrequencyVerifier(
     def __init__(
         self, cutoff_frequency: Optional[float] = None, track_stats: bool = False
     ):
-        # Unnecessary for XTBTask, but as an example for future tasks e.g., GaussianFreqVerifier
-        super(XTBFrequencyVerifier, self).__init__(cutoff_frequency, track_stats)
-        super(FreqVerifier, self).__init__()
+        super(XTBFrequencyVerifier, self).__init__()
+        super(XTBTask, self).__init__(cutoff_frequency, track_stats)
 
     def calc_freq(
         self,

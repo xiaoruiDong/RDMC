@@ -6,7 +6,7 @@ from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
 from rdmc.conformer_generation.task.xtb import XTBTask
 
 
-class XTBOptimizer(ConfGenOptimizer, XTBTask):
+class XTBOptimizer(XTBTask, ConfGenOptimizer):
     """
     Optimizer using the xTB.
 

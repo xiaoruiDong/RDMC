@@ -1,10 +1,15 @@
+from typing import Optional
+
 from rdmc import RDKitMol
 from rdmc.conformer_generation.task.orca import OrcaTask
 from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
 from rdmc.external.inpwriter import write_orca_irc
 
 
-class OrcaIRCVerifier(IRCVerifier, OrcaTask):
+class OrcaIRCVerifier(
+    OrcaTask,
+    IRCVerifier,
+):
     """
     The class for verifying the TS by calculating and checking its IRC analysis using Orca.
 
@@ -13,13 +18,25 @@ class OrcaIRCVerifier(IRCVerifier, OrcaTask):
                                 If you want to use XTB methods, you need to put the xtb binary into the Orca directory.
                                 Defaults to ``"XTB2"``.
         nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by Orca. Defaults to ``1``.
+        binary_path (str, optional): The path to the Orca binary. Defaults to ``None``, the task will try to locate the binary automatically.
         track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
     """
 
     path_prefix = "orca_irc"
 
-    def __init__(self, **kwargs):
-        super(IRCVerifier).__init__(**kwargs)
+    def __init__(
+        self,
+        method: str = "GFN2-xTB",
+        nprocs: int = 1,
+        memory: int = 1,
+        binary_path: Optional[str] = None,
+        track_stats: bool = False,
+    ):
+        super(OrcaIRCVerifier, self).__init__(
+            method=method, nprocs=nprocs, memory=memory, binary_path=binary_path
+        )
+        super(OrcaTask, self).__init__(track_stats=track_stats)
 
     def run_irc(
         self,
