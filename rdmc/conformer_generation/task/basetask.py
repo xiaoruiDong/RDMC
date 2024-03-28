@@ -79,8 +79,12 @@ class BaseTask(ABC):
 
         if self.track_stats:
             time_end = time()
-            stats = {"time": time_end - time_start}
-            self.stats.append(stats)
+            self.update_states(
+                time_end - time_start,
+                results,
+                *args,
+                **kwargs,
+            )
 
         self.copy_work_dir_to_save_dir()
 
@@ -93,3 +97,10 @@ class BaseTask(ABC):
         ):
             shutil.copytree(self.work_dir, self.save_dir, dirs_exist_ok=True)
             shutil.rmtree(self.work_dir)
+
+    def update_stats(self, exe_time: float, results, *args, **kwargs):
+        """
+        Update the task stats. The default behavior is recording the execution time of the task.
+        """
+        stats = {"time": exe_time}
+        self.stats.append(stats)
