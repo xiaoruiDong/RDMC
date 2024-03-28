@@ -1,7 +1,28 @@
 from rdmc import RDKitMol
-from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
+from rdmc.conformer_generation.ts_verifiers.base import TSFreqVerifier, IRCVerifier
 from rdmc.conformer_generation.task.gaussian import GaussianTask
+from rdmc.conformer_generation.verifiers.gaussian import (
+    GaussianFreqVerifier as ConfGaussFreqVerifier,
+)
 from rdmc.external.inpwriter import write_gaussian_irc
+
+
+class GaussianFreqVerifier(ConfGaussFreqVerifier, TSFreqVerifier):
+    """
+    The class for verifying the TS by calculating and checking its frequencies using Gaussian.
+
+    Args:
+        method (str, optional): The method to be used for species optimization. You can use the level of theory available in Gaussian.
+            Defaults to ``"GFN2-xTB"``, which is realized by additional scripts provided in the ``rdmc`` package.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by Gaussian. Defaults to ``1``.
+        binary_path (str, optional): The path to the Gaussian binary. Defaults to ``None``, the task will try to locate the binary automatically,
+            by checking if g16, g09, and g03 executable is in the PATH.
+        cutoff_frequency (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
+            imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations.
+            Defaults to ``-10.0`` cm-1.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
+    """
 
 
 class GaussianIRCVerifier(

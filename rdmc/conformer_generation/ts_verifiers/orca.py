@@ -2,8 +2,29 @@ from typing import Optional
 
 from rdmc import RDKitMol
 from rdmc.conformer_generation.task.orca import OrcaTask
-from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
+from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier, TSFreqVerifier
+from rdmc.conformer_generation.verifiers.orca import (
+    OrcaFreqVerifier as ConfOrcaFreqVerifier,
+)
 from rdmc.external.inpwriter import write_orca_irc
+
+
+class OrcaFreqVerifier(ConfOrcaFreqVerifier, TSFreqVerifier):
+    """
+    The class for verifying the TS by calculating and checking its frequency using Orca.
+
+    Args:
+        method (str, optional): The method to be used for optimization. you can use the level of theory available in Orca.
+            If you want to use XTB methods, you need to put the xtb binary into the Orca directory.
+            Defaults to ``"XTB2"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by Orca. Defaults to ``1``.
+        binary_path (str, optional): The path to the Orca binary. Defaults to ``None``, the task will try to locate the binary automatically.
+        cutoff_frequency (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
+            imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations.
+            Defaults to ``-10.0`` cm-1.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
+    """
 
 
 class OrcaIRCVerifier(

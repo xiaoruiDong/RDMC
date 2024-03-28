@@ -2,8 +2,30 @@ from typing import Optional
 
 from rdmc import RDKitMol
 from rdmc.conformer_generation.task.qchem import QChemTask
-from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier
+from rdmc.conformer_generation.ts_verifiers.base import IRCVerifier, TSFreqVerifier
+from rdmc.conformer_generation.verifiers.qchem import (
+    QChemFreqVerifier as ConfQChemFreqVerifier,
+)
 from rdmc.external.inpwriter import write_qchem_irc
+
+
+class QChemFreqVerifier(ConfQChemFreqVerifier, TSFreqVerifier):
+    """
+    The class for verifying the TS by calculating and checking its frequency using QChem.
+
+    Args:
+        method (str, optional): The method to be used for TS optimization. you can use the method available in QChem.
+                                Defaults to ``"wB97x-d3"``.
+        basis (str, optional): The method to be used for TS optimization. you can use the basis available in QChem.
+                                Defaults to ``"def2-tzvp"``.
+        nprocs (int, optional): The number of processors to use. Defaults to ``1``.
+        memory (int, optional): Memory in GB used by QChem. Defaults to ``1``.
+        binary_path (str, optional): The path to the QChem binary. Defaults to ``None``, the task will try to locate the binary automatically.
+        cutoff_frequency (float, optional): Cutoff frequency above which a frequency does not correspond to a TS
+            imaginary frequency to avoid small magnitude frequencies which correspond to internal bond rotations.
+            Defaults to ``-10.0`` cm-1.
+        track_stats (bool, optional): Whether to track the status. Defaults to ``False``.
+    """
 
 
 class QChemIRCVerifier(QChemTask, IRCVerifier):
