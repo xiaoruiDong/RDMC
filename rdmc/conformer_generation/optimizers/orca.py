@@ -66,7 +66,7 @@ class OrcaOptimizer(
         work_dir = self.work_dir / f"{self.path_prefix}{conf_id}"
         work_dir.mkdir(parents=True, exist_ok=True)
 
-        input_file = work_dir / f"{self.path_prefix}.gjf"
+        input_file = work_dir / f"{self.path_prefix}.inp"
         output_file = work_dir / f"{self.path_prefix}.log"
 
         # Generate and save the input file
