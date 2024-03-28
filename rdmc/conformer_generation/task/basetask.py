@@ -79,7 +79,7 @@ class BaseTask(ABC):
 
         if self.track_stats:
             time_end = time()
-            self.update_states(
+            self.update_stats(
                 time_end - time_start,
                 results,
                 *args,
