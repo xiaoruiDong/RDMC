@@ -22,8 +22,8 @@ class XTBOptimizer(
     def __init__(
         self, method: str = "gff", level: str = "normal", track_stats: bool = False
     ):
-        super(XTBOptimizer).__init__(method=method)
-        super(XTBTask).__init__(track_stats=track_stats)
+        super(XTBOptimizer, self).__init__(method=method)
+        super(XTBTask, self).__init__(track_stats=track_stats)
         self.level = level
 
     def run_opt(
@@ -63,5 +63,6 @@ class XTBOptimizer(
         else:
             pos = opt_mol.GetPositions()
             energy = props["total energy"]
+            success = True
 
         return pos, success, energy, freq
