@@ -28,10 +28,10 @@ class GeoMolEmbedder(ConfGenEmbedder):
     Embed conformers using GeoMol.
 
     Args:
-            trained_model_dir (str, optional): Directory of the trained model. If not provided, the models distributed with the package will be used.
-            dataset (str, optional): Dataset used for training. Defaults to ``"drugs"``.
-            temp_schedule (str, optional): Temperature schedule. Defaults to ``"linear"``.
-            track_stats (bool, optional): Whether to track the statistics of the conformer generation. Defaults to ``False``.
+        trained_model_dir (str, optional): Directory of the trained model. If not provided, the models distributed with the package will be used.
+        dataset (str, optional): Dataset used for training. Defaults to ``"drugs"``.
+        temp_schedule (str, optional): Temperature schedule. Defaults to ``"linear"``.
+        track_stats (bool, optional): Whether to track the statistics of the conformer generation. Defaults to ``False``.
     """
 
     def __init__(
