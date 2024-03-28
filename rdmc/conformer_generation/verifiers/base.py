@@ -54,9 +54,10 @@ class FreqVerifier(BaseTask):
                     # Check if the conformer is good till this step
                     continue
 
-                frequencies = mol.frequency[i] or self.calc_freq(
-                    mol, conf_id=i, **kwargs
-                )
+                if hasattr(mol, "frequency") and mol.frequency[i] is not None:
+                    frequencies = mol.frequency[i]
+                else:
+                    frequencies = self.calc_freq(mol, conf_id=i, **kwargs)
 
                 freq_check = (
                     sum(frequencies < self.cutoff_frequency)
