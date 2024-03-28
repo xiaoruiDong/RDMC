@@ -40,9 +40,9 @@ class StochasticConformerGenerator:
             :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
             :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
         optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
-                                                Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
-                                                :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
-                                                :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
+            Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+            :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+            :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
         estimator (Estimator, optional): Instance of an :obj:`Estimator <rdmc.conformer_generation.solvation.Estimator>`. Available option is
             :obj:`ConfSolv <rdmc.conformer_generation.solvation.ConfSolv>`.
         pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
@@ -74,18 +74,18 @@ class StochasticConformerGenerator:
         Args:
             smiles (str): SMILES input for which to generate conformers.
             embedder (ConfGenEmbedder, optional): Instance of a :obj:`ConfGenEmbedder <rdmc.conformer_generation.embedders.ConfGenEmbedder>`.
-                                                Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
-                                                :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
-                                                :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
+                Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
+                :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
+                :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
             optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
-                                                    Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
-                                                    :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
-                                                    :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
+                Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+                :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+                :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
             estimator (Estimator, optional): Instance of an :obj:`Estimator <rdmc.conformer_generation.solvation.Estimator>`. Available option is
-                                            :obj:`ConfSolv <rdmc.conformer_generation.solvation.ConfSolv>`.
+                :obj:`ConfSolv <rdmc.conformer_generation.solvation.ConfSolv>`.
             pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
-                                            :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
-                                            :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+                :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
             metric (SCGMetric, optional): The available option is `SCGMetric <rdmc.conformer_generation.metrics.SCGMetric>`.
             min_iters (int, optional): Minimum number of iterations for which to run the module.
             max_iters (int, optional}: Maximum number of iterations for which to run the module.
@@ -234,30 +234,30 @@ class StochasticConformerGenerator:
 
         Args:
             embedder (ConfGenEmbedder, optional): Instance of a :obj:`ConfGenEmbedder <rdmc.conformer_generation.embedders.ConfGenEmbedder>`.
-                                                Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
-                                                :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
-                                                :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
-                                                Defaults to :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`.
+                Available options are :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`,
+                :obj:`GeoMolEmbedder <rdmc.conformer_generation.embedders.GeoMolEmbedder>`, and
+                :obj:`RandomEmbedder <rdmc.conformer_generation.embedders.RandomEmbedder>`.
+                Defaults to :obj:`ETKDGEmbedder <rdmc.conformer_generation.embedders.ETKDGEmbedder>`.
             optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
-                                                    Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
-                                                    :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
-                                                    :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`. Defaults to
-                                                    :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>` with ``"gff"`` method.
+                Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+                :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+                :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`. Defaults to
+                :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>` with ``"gff"`` method.
             pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
-                                              :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
-                                              :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`. By default,
-                                              ``"loose"`` utilizes :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>` with
-                                              ``mean_chk_threshold=20`` and ``max_chk_threshold=30``, and ``"normal"`` utilizes
-                                              :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>`.
+                :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+                :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`. By default,
+                ``"loose"`` utilizes :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>` with
+                ``mean_chk_threshold=20`` and ``max_chk_threshold=30``, and ``"normal"`` utilizes
+                :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>`.
             metric (SCGMetric, optional): The available option is `SCGMetric <rdmc.conformer_generation.metrics.SCGMetric>`.
-                                          By default, both modes use ``"entropy"`` metric, while ``"loose"`` with ``window=3`` and ``threshold=0.05``,
-                                          and ``"normal"`` with ``window=5`` and ``threshold=0.01``.
+                By default, both modes use ``"entropy"`` metric, while ``"loose"`` with ``window=3`` and ``threshold=0.05``,
+                and ``"normal"`` with ``window=5`` and ``threshold=0.01``.
             min_iters (int, optional): Minimum number of iterations for which to run the module. Defaults to ``3`` for ``"loose"`` and ``5`` for ``"normal"``.
             max_iters (int, optional}: Maximum number of iterations for which to run the module. Defaults to ``20`` for ``"loose"`` and ``100`` for ``"normal"``.
             final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete. By default, no final modules are used for ``"loose"``.
-                                  For ``"normal"``, two :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` with ``ewin=12`` and ``ewin=6``, are introduced
-                                  before and after a :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>` with ``"gfn2"`` method
-                                  and ``"vtight"`` level.
+                For ``"normal"``, two :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` with ``ewin=12`` and ``ewin=6``, are introduced
+                before and after a :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>` with ``"gfn2"`` method
+                and ``"vtight"`` level.
         """
         if config == "loose":
             self.embedder = ETKDGEmbedder() if not embedder else embedder
@@ -316,16 +316,16 @@ class ConformerGenerator:
     Args:
         smiles (str): SMILES input for which to generate conformers.
         multiplicity (int, optional): The spin multiplicity of the species. Defaults to ``None``,
-                                      which will be interpreted from molecule generated by the `smiles`.
+            which will be interpreted from molecule generated by the `smiles`.
         optimizer (ConfGenOptimizer, optional): Instance of a :obj:`ConfGenOptimizer <rdmc.conformer_generation.optimizers.ConfGenOptimizer>`.
-                                                Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
-                                                :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
-                                                :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
+            Available options are :obj:`XTBOptimizer <rdmc.conformer_generation.optimizers.XTBOptimizer>`,
+            :obj:`GaussianOptimizer <rdmc.conformer_generation.optimizers.GaussianOptimizer>`, and
+            :obj:`MMFFOptimizer <rdmc.conformer_generation.optimizers.MMFFOptimizer>`.
         pruner (ConfGenPruner, optional): Instance of a :obj:`ConfGenPruner <rdmc.conformer_generation.pruners.ConfGenPruner>`. Available options are
-                                          :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
-                                          :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
+            :obj:`CRESTPruner <rdmc.conformer_generation.pruners.CRESTPruner>` and
+            :obj:`TorsionPruner <rdmc.conformer_generation.pruners.TorsionPruner>`.
         verifiers (Verifier, optional): Instance of a :obj:`Verifier <rdmc.conformer_generation.verifiers.Verifier>`.
-                                        Available option is :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.verifiers.XTBFrequencyVerifier>`.
+            Available option is :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.verifiers.XTBFrequencyVerifier>`.
         sampler (TorsionalSampler, optional): Instance of a :obj:`TorsionalSampler <rdmc.conformer_generation.sampler.TorsionalSampler>`.
         final_modules (list): List of instances of optimizer/pruner to run after initial cycles complete.
         save_dir (str or Pathlike object, optional): The path to save the intermediate files and outputs generated during the generation.
