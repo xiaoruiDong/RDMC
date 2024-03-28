@@ -102,8 +102,13 @@ class OrcaOptimizer(
                 )
                 try:
                     energy = self.logparser(output_file).get_scf_energies(
-                        relative=False
+                        relative=False,
+                        converged=False,
                     )[-1]
+                    # todo:
+                    # orca may solely use energy targets to determine convergence
+                    # currently logparse has a different convergence criteria,
+                    # results in energies are not loaded.
                 except BaseException as e:
                     pass
 
@@ -151,6 +156,12 @@ class OrcaOptimizer(
         if freq_idx:
             freqs = orca_data[freq_idx - 4 - dof : freq_idx - 4]
             freqs.reverse()
-            return np.array([float(line.split()[1]) for line in freqs])
+            return np.array(
+                [
+                    float(line.split()[1])
+                    for line in freqs
+                    if float(line.split()[1]) != 0.0
+                ]
+            )
         else:
             return None
