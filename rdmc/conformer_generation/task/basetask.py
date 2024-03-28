@@ -69,8 +69,8 @@ class BaseTask(ABC):
     def __call__(self, *args, **kwargs):
 
         self.update_work_and_save_dir(
-            kwargs.get("work_dir"),
-            kwargs.get("save_dir"),
+            kwargs.pop("work_dir", None),
+            kwargs.pop("save_dir", None),
         )
 
         time_start = time()
