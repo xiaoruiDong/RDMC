@@ -121,6 +121,6 @@ class GeoMolEmbedder(ConfGenEmbedder):
         mol = Mol.FromSmiles(smiles)
         for i, x in enumerate(split_model_coords):
             add_conformer(mol, coords=x.squeeze(axis=1), conf_id=i)
-        mol.KeepIDs = {i: True for i in n_conformers}
+        mol.KeepIDs = {i: True for i in range(n_conformers)}
 
         return mol
