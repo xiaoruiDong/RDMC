@@ -1,11 +1,11 @@
 from rdmc.conformer_generation.ts_verifiers.base import TSFreqVerifier
 from rdmc.conformer_generation.verifiers.xtb import (
-    XTBFrequencyVerifier as XTBFreqVerifier,
+    XTBFrequencyVerifier as ConfXTBFreqVerifier,
 )
 
 
 class XTBFrequencyVerifier(
-    XTBFreqVerifier,
+    ConfXTBFreqVerifier,
     TSFreqVerifier,
 ):
     """
@@ -17,3 +17,6 @@ class XTBFrequencyVerifier(
                                             Defaults to ``-10.`` cm-1
         track_stats (bool, optional): Whether to track stats. Defaults to ``False``.
     """
+
+
+XTBFreqVerifier = XTBFrequencyVerifier

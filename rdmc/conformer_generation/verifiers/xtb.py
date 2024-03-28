@@ -50,3 +50,6 @@ class XTBFrequencyVerifier(
             mol, confId=conf_id, job="--hess", method=self.method, uhf=multiplicity - 1
         )
         return props["frequencies"]
+
+
+XTBFreqVerifier = XTBFrequencyVerifier
