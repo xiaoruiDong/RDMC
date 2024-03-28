@@ -1,3 +1,4 @@
+from rdmc import Mol
 from rdmc.conformer_generation.embedders.base import ConfGenEmbedder
 
 
@@ -15,15 +16,17 @@ class ETKDGEmbedder(ConfGenEmbedder):
         """
         return True
 
-    def run(self, n_conformers: int):
+    def run(self, smiles: str, n_conformers: int):
         """
         Embed conformers according to the molecule graph.
 
         Args:
+            smiles (str): SMILES string of the molecule.
             n_conformers (int): Number of conformers to generate.
 
         Returns:
             mol: Molecule with conformers.
         """
-        self.mol.EmbedMultipleConfs(n_conformers)
-        return self.mol
+        mol = Mol.FromSmiles(smiles)
+        mol.EmbedMultipleConfs(n_conformers)
+        return mol

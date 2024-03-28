@@ -1,9 +1,13 @@
 from pathlib import Path
 
 import numpy as np
+
+from rdmc import Mol
 from rdmc.conformer_generation.embedders.base import ConfGenEmbedder
 from rdmc.conformer_generation.comp_env.torch import torch
 from rdmc.conformer_generation.comp_env.software import try_import, package_available
+from rdtools.conf import add_conformer
+
 
 package_name = "geomol"
 namespace = globals()
@@ -78,11 +82,12 @@ class GeoMolEmbedder(ConfGenEmbedder):
         self.device = device
         self.model.to(device)
 
-    def run(self, n_conformers: int):
+    def run(self, smiles: str, n_conformers: int):
         """
         Embed conformers according to the molecule graph.
 
         Args:
+            smiles (str): SMILES string of the molecule.
             n_conformers (int): Number of conformers to generate.
 
         Returns:
@@ -96,7 +101,7 @@ class GeoMolEmbedder(ConfGenEmbedder):
 
         # featurize data and run GeoMol
         if self.tg_data is None:
-            self.tg_data = featurize_mol_from_smiles(self.smiles, dataset=self.dataset)
+            self.tg_data = featurize_mol_from_smiles(smiles, dataset=self.dataset)
         data = from_data_list([self.tg_data]).to(
             self.device
         )  # need to run this bc of dumb internal GeoMol processing
@@ -113,8 +118,8 @@ class GeoMolEmbedder(ConfGenEmbedder):
         split_model_coords = np.split(model_coords, n_conformers, axis=1)
 
         # package in mol and return
-        self.mol.EmbedMultipleNullConfs(n=n_conformers, random=False)
+        mol = Mol.FromSmiles(smiles)
         for i, x in enumerate(split_model_coords):
-            conf = self.mol.GetEditableConformer(i)
-            conf.SetPositions(x.squeeze(axis=1))
-        return self.mol
+            add_conformer(mol, coords=x.squeeze(axis=1), conf_id=i)
+
+        return mol
