@@ -1,13 +1,13 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 
-from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
+from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
 from rdmc.conformer_generation.task.qchem import QChemTask
 from rdmc.external.inpwriter import write_qchem_opt
 
 
-class QChemOptimizer(TSOptimizer, QChemTask):
+class QChemOptimizer(ConfGenOptimizer, QChemTask):
     """
     The class to optimize TS geometries using the Baker's eigenvector-following (EF) algorithm built in QChem.
     You have to have the QChem package installed to run this optimizer.
@@ -24,7 +24,7 @@ class QChemOptimizer(TSOptimizer, QChemTask):
     path_prefix = "qchem_opt"
 
     def __init__(self, **kwargs):
-        super(TSOptimizer, self).__init__(**kwargs)
+        super(ConfGenOptimizer, self).__init__(**kwargs)
 
     def run_opt(
         self,

@@ -3,12 +3,12 @@ from typing import Optional, Tuple
 import numpy as np
 
 from rdmc.conformer_generation.task.gaussian import GaussianTask
-from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
+from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
 from rdmc.external.inpwriter import write_gaussian_opt
 
 
 class GaussianOptimizer(
-    TSOptimizer,
+    ConfGenOptimizer,
     GaussianTask,
 ):
     """
@@ -27,7 +27,7 @@ class GaussianOptimizer(
     path_prefix = "gaussian_opt"
 
     def __init__(self, **kwargs):
-        super(TSOptimizer, self).__init__(**kwargs)
+        super(ConfGenOptimizer, self).__init__(**kwargs)
 
     def run_opt(
         self,

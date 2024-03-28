@@ -1,15 +1,15 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 
 from rdmc import RDKitMol
 from rdmc.conformer_generation.task.orca import OrcaTask
-from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
+from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
 from rdmc.external.inpwriter import write_orca_opt
 from rdtools.conversion.xyz import xyz_to_coords
 
 
-class OrcaOptimizer(TSOptimizer, OrcaTask):
+class OrcaOptimizer(ConfGenOptimizer, OrcaTask):
     """
     The class to optimize TS geometries using the Berny algorithm built in Orca.
     You have to have the Orca package installed to run this optimizer.
@@ -25,7 +25,7 @@ class OrcaOptimizer(TSOptimizer, OrcaTask):
     path_prefix = "orca_opt"
 
     def __init__(self, **kwargs):
-        super(TSOptimizer, self).__init__(**kwargs)
+        super(ConfGenOptimizer, self).__init__(**kwargs)
 
     def run_opt(
         self,

@@ -3,11 +3,11 @@ from typing import Optional
 
 import numpy as np
 
-from rdmc.conformer_generation.ts_optimizers.base import TSOptimizer
+from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
 from rdmc.conformer_generation.comp_env.sella import run_sella_opt, sella_available
 
 
-class SellaOptimizer(TSOptimizer):
+class SellaOptimizer(ConfGenOptimizer):
     """
     The class to optimize TS geometries using the Sella algorithm.
     It uses XTB as the backend calculator, ASE as the interface, and Sella module from the Sella repo.
