@@ -29,7 +29,15 @@ class ConfGenEmbedder(BaseTask):
         """
         raise NotImplementedError
 
-    def update_stats(self, exe_time: float, mol, n_conformers: int, *args, **kwargs):
+    def update_stats(
+        self,
+        exe_time: float,
+        mol,
+        smiles: str,
+        n_conformers: int,
+        *args,
+        **kwargs,
+    ):
         """
         Update the statistics of the conformer generation.
 
