@@ -25,6 +25,7 @@ class GaussianOptimizer(
     """
 
     path_prefix = "gaussian_opt"
+    optimize_ts = False
 
     def __init__(
         self,
@@ -69,7 +70,7 @@ class GaussianOptimizer(
         input_content = write_gaussian_opt(
             mol,
             conf_id=conf_id,
-            ts=False,  # difference 1 compared to TSGaussianOptimizer
+            ts=self.optimize_ts,
             method=self.method,
             mult=multiplicity,
             nprocs=self.nprocs,
@@ -97,14 +98,17 @@ class GaussianOptimizer(
 
                     # Check connectivity
                     # difference 2 compared to TSGaussianOptimizer
-                    post_adj_mat = log.get_mol(
-                        refid=log.num_all_geoms - 1,  # The last geometry in the job
-                        converged=False,
-                        sanitize=False,
-                        backend="openbabel",
-                    ).GetAdjacencyMatrix()
-                    pre_adj_mat = mol.GetAdjacencyMatrix()
-                    success = np.array_equal(pre_adj_mat, post_adj_mat)
+                    if not self.optimize_ts:
+                        post_adj_mat = log.get_mol(
+                            refid=log.num_all_geoms - 1,  # The last geometry in the job
+                            converged=False,
+                            sanitize=False,
+                            backend="openbabel",
+                        ).GetAdjacencyMatrix()
+                        pre_adj_mat = mol.GetAdjacencyMatrix()
+                        success = np.array_equal(pre_adj_mat, post_adj_mat)
+                    else:
+                        success = True
 
                 else:
                     pos = log.all_geometries[-1]
