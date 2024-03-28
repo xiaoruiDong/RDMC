@@ -20,9 +20,12 @@ class XTBFrequencyVerifier(
     """
 
     def __init__(
-        self, cutoff_frequency: Optional[float] = None, track_stats: bool = False
+        self,
+        method: str = "GFN2-xTB",
+        cutoff_frequency: Optional[float] = None,
+        track_stats: bool = False,
     ):
-        super(XTBFrequencyVerifier, self).__init__()
+        super(XTBFrequencyVerifier, self).__init__(method=method)
         super(XTBTask, self).__init__(cutoff_frequency, track_stats)
 
     def calc_freq(
@@ -43,5 +46,7 @@ class XTBFrequencyVerifier(
         Returns:
             RDKitMol: The molecule in RDKitMol object with verification results stored in ``KeepIDs``.
         """
-        props = run_xtb_calc(mol, confId=conf_id, job="--hess", uhf=multiplicity - 1)
+        props = run_xtb_calc(
+            mol, confId=conf_id, job="--hess", method=self.method, uhf=multiplicity - 1
+        )
         return props["frequencies"]

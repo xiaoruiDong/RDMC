@@ -6,7 +6,10 @@ from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
 from rdmc.conformer_generation.task.xtb import XTBTask
 
 
-class XTBOptimizer(XTBTask, ConfGenOptimizer):
+class XTBOptimizer(
+    XTBTask,
+    ConfGenOptimizer,
+):
     """
     Optimizer using the xTB.
 
@@ -19,8 +22,8 @@ class XTBOptimizer(XTBTask, ConfGenOptimizer):
     def __init__(
         self, method: str = "gff", level: str = "normal", track_stats: bool = False
     ):
-        super().__init__(track_stats=track_stats)
-        self.method = method
+        super(XTBOptimizer).__init__(method=method)
+        super(XTBTask).__init__(track_stats=track_stats)
         self.level = level
 
     def run_opt(
