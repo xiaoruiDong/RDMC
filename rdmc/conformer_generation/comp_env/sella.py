@@ -9,6 +9,7 @@ from contextlib import redirect_stdout
 import io
 from pathlib import Path
 import tempfile
+from typing import Optional
 
 from rdmc.conformer_generation.comp_env.software import try_import
 from rdmc.conformer_generation.comp_env.ase import ORCA
