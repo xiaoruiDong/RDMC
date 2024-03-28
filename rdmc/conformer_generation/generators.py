@@ -156,27 +156,23 @@ class StochasticConformerGenerator:
             self.logger.info(
                 f"\nIteration {self.iter}: embedding {n_conformers_per_iter} initial guesses..."
             )
-            initial_mol_data = self.embedder(self.smiles, n_conformers_per_iter)
+            mol = self.embedder(smiles=self.smiles, n_conformers=n_conformers_per_iter)
 
             if self.optimizer:
                 self.logger.info(
                     f"Iteration {self.iter}: optimizing initial guesses..."
                 )
-                opt_mol_data = self.optimizer(initial_mol_data)
+                opt_mol = self.optimizer(mol)
             else:
-                opt_mol_data = []
-                for c_id in range(len(initial_mol_data)):
-                    conf = initial_mol_data[c_id]["conf"]
-                    positions = conf.GetPositions()
-                    opt_mol_data.append(
-                        {"positions": positions, "conf": conf, "energy": np.nan}
-                    )
+                opt_mol = mol
+                opt_mol.energies = {i: np.nan for i in range(n_conformers_per_iter)}
 
             # check for failures
-            if len(opt_mol_data) == 0:
+            if sum(opt_mol.KeepIDs.values()) == 0:
                 self.logger.info("Failed to optimize any of the embedded conformers")
                 continue
 
+            opt_mol_data = mol_to_dict(opt_mol, conf_copy_attrs=["KeepIDs", "energy"])
             self.logger.info(f"Iteration {self.iter}: pruning conformers...")
             unique_mol_data = (
                 self.pruner(opt_mol_data, self.unique_mol_data)
