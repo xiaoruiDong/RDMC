@@ -1,10 +1,7 @@
-from typing import List
-
 import numpy as np
 
 from rdmc.forcefield import RDKitFF
 from rdmc.conformer_generation.optimizers.base import ConfGenOptimizer
-from rdmc.conformer_generation.utils import dict_to_mol
 
 
 class MMFFOptimizer(ConfGenOptimizer):
@@ -26,43 +23,31 @@ class MMFFOptimizer(ConfGenOptimizer):
     def is_available(self):
         return True
 
-    def run(
-        self,
-        mol_data: List[dict],
-    ) -> List[dict]:
+    def run(self, mol, **kwargs):
         """
         Optimize the conformers.
 
         Args:
-            mol_data (List[dict]): The list of conformers to be optimized.
+            mol (RDKitMol): An RDKitMol object with all guess geometries embedded as conformers.
 
         Returns:
-            List[dict]: The list of optimized conformers sorted by energy.
+            RDKitMol: The optimized molecule as RDKitMol with 3D geometries embedded.
         """
-        if len(mol_data) == 0:
-            return mol_data
 
-        # Everytime calling dict_to_mol create a new molecule object
-        # No need to Copy the molecule object in this function
-        mol = dict_to_mol(mol_data)
-        self.ff.setup(mol)
+        opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
+
+        self.ff.setup(opt_mol)
         results = self.ff.optimize_confs()
-        _, energies = zip(*results)  # kcal/mol
+        return_codes, energies = zip(*results)  # kcal/mol
         opt_mol = self.ff.get_optimized_mol()
 
-        for c_id, energy in zip(range(len(mol_data)), energies):
-            conf = opt_mol.GetEditableConformer(c_id)
-            positions = conf.GetPositions()
-            mol_data[c_id].update(
-                {
-                    "positions": positions,  # issues if not all opts succeeded?
-                    "conf": conf,  # all confs share the same owning molecule `opt_mol`
-                    "energy": energy,
-                }
-            )
+        for i, return_code in enumerate(return_codes):
+            opt_mol.KeepIDs[i] = opt_mol.KeepIDs[i] and (return_code == 0)
+        opt_mol.energy = {i: energy for i, energy in enumerate(energies)}
+        opt_mol.frequency = {i: None for i in range(mol.GetNumConformers())}
 
         if self.track_stats:
             self.n_failures = np.sum([r[0] == 1 for r in results])
-            self.percent_failures = self.n_failures / len(mol_data) * 100
+            self.percent_failures = self.n_failures / len(results) * 100
 
-        return sorted(mol_data, key=lambda x: x["energy"])
+        return opt_mol
