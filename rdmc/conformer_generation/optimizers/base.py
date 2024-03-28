@@ -33,6 +33,9 @@ class ConfGenOptimizer(BaseTask):
         Returns:
             RDKitMol: The optimized molecule as RDKitMol with 3D geometries embedded.
         """
+        if not hasattr(mol, "KeepIDs"):
+            # Make this module can also apply to normal usage
+            mol.KeepIDs = {i: True for i in range(mol.GetNumConformers())}
 
         opt_mol = mol.Copy(copy_attrs=["KeepIDs"])
         opt_mol.energy = {}
