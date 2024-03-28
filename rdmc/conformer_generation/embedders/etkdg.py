@@ -29,4 +29,5 @@ class ETKDGEmbedder(ConfGenEmbedder):
         """
         mol = Mol.FromSmiles(smiles)
         mol.EmbedMultipleConfs(n_conformers)
+        mol.KeepIDs = {i: True for i in n_conformers}
         return mol

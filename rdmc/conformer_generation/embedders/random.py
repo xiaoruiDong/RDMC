@@ -29,4 +29,5 @@ class RandomEmbedder(ConfGenEmbedder):
         """
         mol = Mol.FromSmiles(smiles)
         mol.EmbedMultipleNullConfs(n_conformers, random=True)
+        mol.KeepIDs = {i: True for i in n_conformers}
         return mol
