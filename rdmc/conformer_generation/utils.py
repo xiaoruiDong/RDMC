@@ -271,6 +271,7 @@ def subprocess_runner(
     command: list,
     log_path: str,
     work_dir: Optional[str] = None,
+    env: Optional[dict] = None,
 ):
     """
     Run the Gaussian task with the subprcoess module.
@@ -290,6 +291,7 @@ def subprocess_runner(
             stdout=f,
             stderr=subprocess.STDOUT,
             cwd=work_dir,
+            env=env,
         )
 
     return subprocess_run
