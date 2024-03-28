@@ -49,6 +49,11 @@ class FreqVerifier(BaseTask):
             # todo: add a log message
             pass
         else:
+
+            if not hasattr(mol, "KeepIDs"):
+                # Make this module can also apply to normal usage
+                mol.KeepIDs = {i: True for i in range(mol.GetNumConformers())}
+
             for i in range(mol.GetNumConformers()):
                 if not mol.KeepIDs[i]:
                     # Check if the conformer is good till this step
@@ -59,10 +64,14 @@ class FreqVerifier(BaseTask):
                 else:
                     frequencies = self.calc_freq(mol, conf_id=i, **kwargs)
 
-                freq_check = (
-                    sum(frequencies < self.cutoff_frequency)
-                    == self.allowed_number_negative_frequencies
-                )
+                if frequencies is None:
+                    # Frequency job fails
+                    freq_check = False
+                else:
+                    freq_check = (
+                        sum(frequencies < self.cutoff_frequency)
+                        == self.allowed_number_negative_frequencies
+                    )
 
                 # update properties
                 mol.frequency[i] = frequencies
