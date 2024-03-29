@@ -5,3 +5,10 @@ try_import(
     namespace=globals(),
     package_name="PyTorch",
 )
+
+try_import(
+    "torch.nn.functional",
+    alias="F",
+    namespace=globals(),
+    package_name="PyTorch",
+)
