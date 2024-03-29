@@ -63,9 +63,9 @@ B 1 2
     assert gaussian_input == test_input_1
 
     test_input_2 = f"""%mem=16gb
-%nprocshared=4
+%nprocshared=1
 #P opt=(ts,calcfc,nomicro,noeig,maxcycle=200,cartesian) scf=(verytight) nosymm
-external="{XTB_GAUSSIAN_PERL_PATH} --gfn 2 -P"
+external="{XTB_GAUSSIAN_PERL_PATH} --gfn 2 -P 3"
 
 title
 
