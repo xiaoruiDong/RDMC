@@ -138,4 +138,4 @@ def has_binary(binary: str) -> bool:
     Returns:
         bool: True if the binary is available, otherwise False.
     """
-    return get_binary(binary) != None
+    return get_binary(binary) is not None
