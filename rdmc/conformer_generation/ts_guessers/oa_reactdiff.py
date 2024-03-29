@@ -191,7 +191,7 @@ def samples_to_pos_charge(out_samples, fragments_nodes):
 def set_new_schedule(
     ddpm_trainer: "DDPMModule",
     timesteps: int = 250,
-    device: torch.device = torch.device("cuda"),
+    device: str = "cuda",
     noise_schedule: str = "polynomial_2",
 ) -> "DDPMModule":
     precision: float = 1e-5
