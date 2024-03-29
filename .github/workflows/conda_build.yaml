@@ -9,33 +9,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
-        run:
-            shell: bash -l {0}
+      run:
+        shell: bash -l {0}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Miniconda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-            activate-environment: rdmc_env
-            environment-file: environment.yml
-            miniforge-variant: mambaforge
-            miniforge-version: latest
-            python-version: 3.7
-            auto-activate-base: true
-            use-mamba: true
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          use-mamba: true
+          mamba-version: "*"
+          python-version: "3.11"
+          activate-environment: rdmc_env
+          environment-file: environment.yml
 
-    - name: Conda info
-      run: |
-        conda info
-        conda list
+      - name: Conda info
+        run: |
+          conda info
+          conda list
 
-    - name: Build Conda package
-      env:
-        CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
-      run: |
-        mamba install -y conda-build anaconda-client boa
-        conda config --set anaconda_upload yes
-        conda mambabuild --debug --output-folder conda-bld --token $CONDA_TOKEN --user xiaoruidong .conda/release
+      - name: Build Conda package
+        env:
+          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+          mamba install -y conda-build anaconda-client boa
+          conda config --set anaconda_upload yes
+          conda mambabuild --debug --output-folder conda-bld --token $CONDA_TOKEN --user xiaoruidong .conda/release

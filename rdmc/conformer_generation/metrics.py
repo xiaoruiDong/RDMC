@@ -25,12 +25,13 @@ class SCGMetric:
         T (float, optional): Temperature for entropy or partition function calculations. Defaults to ``298`` K.
     """
 
-    def __init__(self,
-                 metric: Optional[str] = "entropy",
-                 window: Optional[int] = 5,
-                 threshold: Optional[float] = 0.01,
-                 T: Optional[float] = 298,
-                 ):
+    def __init__(
+        self,
+        metric: Optional[str] = "entropy",
+        window: Optional[int] = 5,
+        threshold: Optional[float] = 0.01,
+        T: Optional[float] = 298,
+    ):
         """
         Generate an SCGMetric instance.
 
@@ -49,8 +50,7 @@ class SCGMetric:
         self.T = T
         self.metric_history = []
 
-    def calculate_metric(self,
-                         mol_data: List[dict]):
+    def calculate_metric(self, mol_data: List[dict]):
         """
         Calculate the metric for a given molecule. The calculated value will be appended to the ``metric_history`` list.
 
@@ -81,15 +81,14 @@ class SCGMetric:
         if self.metric == "total conformers":
             return False
         else:
-            min_metric = np.min(self.metric_history[-self.window:])
-            max_metric = np.max(self.metric_history[-self.window:])
+            min_metric = np.min(self.metric_history[-self.window :])
+            max_metric = np.max(self.metric_history[-self.window :])
             change = (max_metric - min_metric) / np.clip(
                 min_metric, a_min=1e-10, a_max=None
             )
             return True if change <= self.threshold else False
 
-    def calculate_entropy(self,
-                          mol_data: List[dict]):
+    def calculate_entropy(self, mol_data: List[dict]):
         """
         Calculate the entropy of a molecule.
 
@@ -103,8 +102,7 @@ class SCGMetric:
         entropy = -R * np.sum(prob * np.log(prob))
         return entropy
 
-    def calculate_partition_function(self,
-                                     mol_data: List[dict]):
+    def calculate_partition_function(self, mol_data: List[dict]):
         """
         Calculate the partition function of a molecule.
 

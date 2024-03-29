@@ -1,0 +1,1 @@
+from rdmc.conformer_generation.ts_verifiers.gaussian import GaussianIRCVerifier

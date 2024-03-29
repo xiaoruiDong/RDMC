@@ -16,6 +16,6 @@ style-check:
 		--count \
 		--max-line-length 150 \
 		--max-doc-length 200 \
-		--ignore=E266,E501,W503,W505 \
+		--ignore=E203,E266,E501,W503,W505 \
 		--show-source \
 		./

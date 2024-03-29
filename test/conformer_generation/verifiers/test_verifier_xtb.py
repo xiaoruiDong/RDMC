@@ -1,0 +1,1 @@
+from rdmc.conformer_generation.verifiers.xtb import XTBFrequencyVerifier
