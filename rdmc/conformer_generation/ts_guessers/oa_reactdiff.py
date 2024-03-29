@@ -193,7 +193,7 @@ def set_new_schedule(
     timesteps: int = 250,
     device: torch.device = torch.device("cuda"),
     noise_schedule: str = "polynomial_2",
-) -> DDPMModule:
+) -> "DDPMModule":
     precision: float = 1e-5
 
     gamma_module = PredefinedNoiseSchedule(
@@ -211,7 +211,7 @@ def set_new_schedule(
 
 def inplaint_batch(
     batch: List,
-    ddpm_trainer: DDPMModule,
+    ddpm_trainer: "DDPMModule",
     resamplings: int = 1,
     jump_length: int = 1,
     frag_fixed: List = [0, 2],
