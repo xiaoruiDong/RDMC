@@ -6,14 +6,15 @@ from rdmc import RDKitMol
 
 
 @pytest.mark.parametrize(
-    'rad_smi, expect_smi',
+    "rad_smi, expect_smi",
     [
-        ('[CH3]', 'C'),
-        ('c1[c]cccc1', 'c1ccccc1'),
-        ('C[NH2]', 'CN'),
-        ('[CH2]C[CH2]', 'CCC')
-    ])
-@pytest.mark.parametrize('cheap', [(True,), (False,)])
+        ("[CH3]", "C"),
+        ("c1[c]cccc1", "c1ccccc1"),
+        ("C[NH2]", "CN"),
+        ("[CH2]C[CH2]", "CCC"),
+    ],
+)
+@pytest.mark.parametrize("cheap", [(True,), (False,)])
 def test_get_closed_shell_mol(rad_smi, expect_smi, cheap):
 
     rad_mol = RDKitMol.FromSmiles(rad_smi)
@@ -38,6 +39,13 @@ def test_copy_method():
     assert mol.__hash__() != mol_copy.__hash__()
     assert mol.GetAtomicNumbers() == mol_copy.GetAtomicNumbers()
     assert mol_copy.GetNumConformers() == 0
+
+    mol_copy = mol.Copy()
+    mol_copy.KeepIDs = {1: True, 2: False}
+    mol_copy2 = mol_copy.Copy(copy_attrs=["KeepIDs"])
+
+    assert hasattr(mol_copy2, "KeepIDs")
+    assert mol_copy2.KeepIDs == mol_copy.KeepIDs
 
 
 def test_get_torsion_tops():

@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 from rdkit import Chem
 
+from rdtools.mol import get_atomic_nums
 from rdtools.conversion.smiles import mol_from_smiles, mol_to_smiles
 from rdtools.conversion.rmg import mol_from_rmg_mol
 from rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
@@ -318,7 +319,6 @@ class MolFromMixin:
 
 
 class MolToMixin:
-
     """This class is a mixin intended to work with Mol object and its child classes"""
 
     def ToOBMol(self) -> "openbabel.OBMol":
@@ -368,7 +368,9 @@ class MolToMixin:
         Returns:
             str: The corresponding Mol block string.
         """
-        return Chem.MolToMolBlock(self, confId=confId, includeStereo=includeStereo, kekulize=kekulize)
+        return Chem.MolToMolBlock(
+            self, confId=confId, includeStereo=includeStereo, kekulize=kekulize
+        )
 
     def ToInchi(
         self,
@@ -491,15 +493,13 @@ class MolToMixin:
         """
         # todo: add this into rdtools.conversion
         atoms = Atoms(
-            positions=self.GetPositions(id=confId),
-            numbers=self.GetAtomicNumbers()
+            positions=self.GetConformer(confId).GetPositions(),
+            numbers=get_atomic_nums(self),
         )
         atoms.set_initial_magnetic_moments(
             [atom.GetNumRadicalElectrons() + 1 for atom in self.GetAtoms()]
         )
-        atoms.set_initial_charges(
-            [atom.GetFormalCharge() for atom in self.GetAtoms()]
-        )
+        atoms.set_initial_charges([atom.GetFormalCharge() for atom in self.GetAtoms()])
         return atoms
 
     def ToGraph(
@@ -533,9 +533,9 @@ class MolToMixin:
 
 
 class MolTransformMixin(MolFromMixin, MolToMixin):
-
     """
     A mixin used to transform a molecule object. It is intended to be used with the ``Mol`` class
     and its child classes.
     """
+
     pass

@@ -24,19 +24,22 @@ from rdmc.conformer_generation.utils import mol_to_dict
 from rdmc.mathlib.greedymin import search_minimum
 from rdtools.bond import get_formed_and_broken_bonds
 from rdtools.conf import set_conformer_coordinates
+from rdmc.conformer_generation.comp_env.xtb import (
+    VERBOSITY_FULL,
+    VERBOSITY_MINIMAL,
+    VERBOSITY_MUTED,
+    get_method,
+    _methods,
+    Calculator,
+)
+from rdmc.conformer_generation.comp_env.software import try_import, package_available
 
-try:
-    from xtb.libxtb import VERBOSITY_FULL, VERBOSITY_MINIMAL, VERBOSITY_MUTED
-    from xtb.utils import get_method, _methods
-    from xtb.interface import Calculator
-except ImportError:
-    print("No xtb-python installation detected. Skipping import...")
 
-try:
-    import scine_sparrow
-    import scine_utilities as su
-except BaseException:
-    print("No scine_sparrow installation detected. Skipping import...")
+try_import("scine_sparrow", namespace=globals())
+try_import(
+    "scine_utilities", alias="su", namespace=globals(), package_name="scine_sparrow"
+)
+try_import("seaborn", alias="sns", namespace=globals(), package_name="seaborn")
 
 
 class TorsionalSampler:
@@ -66,19 +69,21 @@ class TorsionalSampler:
                                                                                               :obj:`XTBFrequencyVerifier <rdmc.conformer_generation.ts_verifiers.XTBFrequencyVerifier>`.
     """
 
-    def __init__(self,
-                 method: str = "GFN2-xTB",
-                 nprocs: int = 1,
-                 memory: int = 1,
-                 n_point_each_torsion: int = 45,
-                 n_dimension: int = 2,
-                 optimizer: Optional[Union["ConfGenOptimizer", "TSOptimizer"]] = None,
-                 pruner: Optional["ConfGenPruner"] = None,
-                 verifiers: Optional[Union["TSVerifier",
-                                           "Verifier",
-                                           List["TSVerifier"],
-                                           List["Verifier"]]] = None,
-                 ):
+    _avail = package_available["scine_sparrow"] or package_available["xtb-python"]
+
+    def __init__(
+        self,
+        method: str = "GFN2-xTB",
+        nprocs: int = 1,
+        memory: int = 1,
+        n_point_each_torsion: int = 45,
+        n_dimension: int = 2,
+        optimizer: Optional[Union["ConfGenOptimizer", "TSOptimizer"]] = None,
+        pruner: Optional["ConfGenPruner"] = None,
+        verifiers: Optional[
+            Union["TSVerifier", "Verifier", List["TSVerifier"], List["Verifier"]]
+        ] = None,
+    ):
         """
         Initiate the TorsionalSampler class object.
 
@@ -113,13 +118,14 @@ class TorsionalSampler:
         self.pruner = pruner
         self.verifiers = [] if not verifiers else verifiers
 
-    def get_conformers_by_change_torsions(self,
-                                          mol: RDKitMol,
-                                          id: int = 0,
-                                          torsions: Optional[list] = None,
-                                          exclude_methyl: bool = True,
-                                          on_the_fly_check: bool = True,
-                                          ) -> List[RDKitMol]:
+    def get_conformers_by_change_torsions(
+        self,
+        mol: RDKitMol,
+        id: int = 0,
+        torsions: Optional[list] = None,
+        exclude_methyl: bool = True,
+        on_the_fly_check: bool = True,
+    ) -> List[RDKitMol]:
         """
         Generate conformers by rotating the angles of the torsions. A on-the-fly check
         can be applied, which identifies the conformers with colliding atoms.
@@ -147,7 +153,9 @@ class TorsionalSampler:
         # If `-1` is assigned for n_dimension, it would be the number of rotatable bonds.
         if self.n_dimension == -1:
             n_dimension = len(torsions)
-            self.logger.info(f"Sampling {self.n_point_each_torsion} to the power of {n_dimension} conformers...")
+            self.logger.info(
+                f"Sampling {self.n_point_each_torsion} to the power of {n_dimension} conformers..."
+            )
         else:
             n_dimension = self.n_dimension
 
@@ -196,21 +204,24 @@ class TorsionalSampler:
             for i in range(len(bookkeep)):
                 set_conformer_coordinates(mols.GetConformer(i), bookkeep[i]["coords"])
                 mols.GetConformer(i).SetProp("angles", str(bookkeep[i]["angles"]))
-                mols.GetConformer(i).SetProp("colliding_atoms", str(bookkeep[i]["colliding_atoms"]))
+                mols.GetConformer(i).SetProp(
+                    "colliding_atoms", str(bookkeep[i]["colliding_atoms"])
+                )
             conformers_by_change_torsions.append(mols)
 
         return conformers_by_change_torsions
 
-    def __call__(self,
-                 mol: RDKitMol,
-                 id: int,
-                 rxn_smiles: Optional[str] = None,
-                 torsions: Optional[List] = None,
-                 no_sample_dangling_bonds: bool = True,
-                 no_greedy: bool = False,
-                 save_dir: Optional[str] = None,
-                 save_plot: bool = True,
-                 ):
+    def __call__(
+        self,
+        mol: RDKitMol,
+        id: int,
+        rxn_smiles: Optional[str] = None,
+        torsions: Optional[List] = None,
+        no_sample_dangling_bonds: bool = True,
+        no_greedy: bool = False,
+        save_dir: Optional[str] = None,
+        save_plot: bool = True,
+    ):
         """
         Run the workflow of conformer generation.
 
@@ -261,7 +272,9 @@ class TorsionalSampler:
         )
 
         if conformers_by_change_torsions == []:
-            self.logger.info("Doesn't find any torsional pairs! Using original result...")
+            self.logger.info(
+                "Doesn't find any torsional pairs! Using original result..."
+            )
             return mol
 
         if save_dir:
@@ -277,14 +290,19 @@ class TorsionalSampler:
                         confs.GetConformer(i).GetProp("colliding_atoms").lower()
                     )
                     if not colliding_atoms:
-                        [minimum_mols.AddConformer(confs.GetConformer(i), assignId=True)]
+                        [
+                            minimum_mols.AddConformer(
+                                confs.GetConformer(i), assignId=True
+                            )
+                        ]
 
             if self.n_dimension == -1:
                 n_conformers = minimum_mols.GetNumConformers()
                 self.logger.info(
                     f"After on the fly check of potentially colliding atoms, "
                     f"{n_conformers} conformers will be passed to the following "
-                    f"optimization and verification steps.")
+                    f"optimization and verification steps."
+                )
         else:
             # Setting the environmental parameters before running energy calculations
             try:
@@ -319,7 +337,7 @@ class TorsionalSampler:
                     energies = energies.reshape(-1)
                 else:
                     num = confs.GetNumConformers()
-                    nsteps = int(round(len(energies) ** (1. / self.n_dimension)))
+                    nsteps = int(round(len(energies) ** (1.0 / self.n_dimension)))
                     energies = energies.reshape((nsteps,) * self.n_dimension)
 
                 # Find local minima on the scanned potential energy surface by greedy algorithm
@@ -337,7 +355,10 @@ class TorsionalSampler:
                             ind += nsteps**dimension * value
                         ids.append(ind)
 
-                [minimum_mols.AddConformer(confs.GetConformer(i), assignId=True) for i in ids]
+                [
+                    minimum_mols.AddConformer(confs.GetConformer(i), assignId=True)
+                    for i in ids
+                ]
 
                 if save_dir and save_plot and len(rescaled_energies.shape) in [1, 2]:
                     torsion_pair = confs.GetProp("torsion_pair")
@@ -351,7 +372,9 @@ class TorsionalSampler:
                         detailed_view=False,
                         title=title,
                     )
-            self.logger.info(f"{minimum_mols.GetNumConformers()} local minima on PES were found...")
+            self.logger.info(
+                f"{minimum_mols.GetNumConformers()} local minima on PES were found..."
+            )
 
             # Recovering the environmental parameters
             if original_OMP_NUM_THREADS and original_OMP_STACKSIZE:
@@ -364,10 +387,12 @@ class TorsionalSampler:
         # Run opt and verify guesses
         multiplicity = minimum_mols.GetSpinMultiplicity()
         self.logger.info("Optimizing guesses...")
-        minimum_mols.KeepIDs = {i: True for i in range(minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
+        minimum_mols.KeepIDs = {
+            i: True for i in range(minimum_mols.GetNumConformers())
+        }  # map ids of generated guesses thru workflow
 
         try:
-            mols = minimum_mols.ToRWMol()
+            mols = minimum_mols
             path = os.path.join(conf_dir, "sampling_confs.sdf")
             writer = Chem.rdmolfiles.SDWriter(path)
             for i in range(mols.GetNumConformers()):
@@ -396,7 +421,9 @@ class TorsionalSampler:
                 return_ids=True,
             )
             self.logger.info(f"Pruned {self.pruner.n_pruned_confs} conformers")
-            opt_minimum_mols.KeepIDs = {k: k in unique_ids and v for k, v in opt_minimum_mols.KeepIDs.items()}
+            opt_minimum_mols.KeepIDs = {
+                k: k in unique_ids and v for k, v in opt_minimum_mols.KeepIDs.items()
+            }
             with open(os.path.join(conf_dir, "prune_check_ids.pkl"), "wb") as f:
                 pickle.dump(opt_minimum_mols.KeepIDs, f)
 
@@ -404,14 +431,22 @@ class TorsionalSampler:
         # Stopped whenever one conformer pass all the verifiers
         self.logger.info("Verifying guesses...")
         energy_dict = opt_minimum_mols.energy
-        sorted_index = [k for k, v in sorted(energy_dict.items(), key=lambda item: item[1]) if opt_minimum_mols.KeepIDs[k]]  # Order by energy
+        sorted_index = [
+            k
+            for k, v in sorted(energy_dict.items(), key=lambda item: item[1])
+            if opt_minimum_mols.KeepIDs[k]
+        ]  # Order by energy
         for idx in sorted_index:
             energy = opt_minimum_mols.energy[idx]
             if energy >= mol.energy[id]:
-                self.logger.info("Sampler doesn't find conformer with lower energy!! Using original result...")
+                self.logger.info(
+                    "Sampler doesn't find conformer with lower energy!! Using original result..."
+                )
                 return mol
 
-            opt_minimum_mols.KeepIDs = {i: False for i in range(opt_minimum_mols.GetNumConformers())}  # map ids of generated guesses thru workflow
+            opt_minimum_mols.KeepIDs = {
+                i: False for i in range(opt_minimum_mols.GetNumConformers())
+            }  # map ids of generated guesses thru workflow
             opt_minimum_mols.KeepIDs[idx] = True
             for verifier in self.verifiers:
                 verifier(
@@ -422,19 +457,26 @@ class TorsionalSampler:
                 )
 
             if opt_minimum_mols.KeepIDs[idx]:
-                self.logger.info(f"Sampler finds conformer with lower energy. The energy decreases {mol.energy[id] - energy} kcal/mol.")
-                set_conformer_coordinates(mol.GetConformer(id), opt_minimum_mols.GetConformer(idx).GetPositions())
+                self.logger.info(
+                    f"Sampler finds conformer with lower energy. The energy decreases {mol.energy[id] - energy} kcal/mol."
+                )
+                set_conformer_coordinates(
+                    mol.GetConformer(id),
+                    opt_minimum_mols.GetConformer(idx).GetPositions(),
+                )
                 mol.energy[id] = energy
                 mol.frequency[id] = opt_minimum_mols.frequency[idx]
                 return mol
 
-        self.logger.info("Sampler doesn't find conformer with lower energy!! Using original result...")
+        self.logger.info(
+            "Sampler doesn't find conformer with lower energy!! Using original result..."
+        )
         return mol
 
 
-def get_separable_angle_list(samplings: Union[List, Tuple],
-                             from_angles: Optional[Union[List, Tuple]] = None
-                             ) -> List[List]:
+def get_separable_angle_list(
+    samplings: Union[List, Tuple], from_angles: Optional[Union[List, Tuple]] = None
+) -> List[List]:
     """
     Get a angle list for each input dimension. For each dimension
     The input can be a ``int`` indicating the angles will be evenly sampled;
@@ -484,10 +526,11 @@ def get_separable_angle_list(samplings: Union[List, Tuple],
     return angle_list
 
 
-def get_energy(mol: RDKitMol,
-               confId: int = 0,
-               method: str = "GFN2-xTB",
-               ) -> float:
+def get_energy(
+    mol: RDKitMol,
+    confId: int = 0,
+    method: str = "GFN2-xTB",
+) -> float:
     """
     Calculate the energy of the ``RDKitMol`` with given ``confId``. The unit is in kcal/mol.
     Only support methods already supported either in sparrow or xtb-python.
@@ -561,13 +604,14 @@ def preprocess_energies(energies: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     return rescaled_energies, mask
 
 
-def plot_heat_map(energies: np.ndarray,
-                  minimum_points: List[Tuple],
-                  save_path: str,
-                  mask: Optional[np.ndarray] = None,
-                  detailed_view: bool = False,
-                  title: Optional[str] = None,
-                  ):
+def plot_heat_map(
+    energies: np.ndarray,
+    minimum_points: List[Tuple],
+    save_path: str,
+    mask: Optional[np.ndarray] = None,
+    detailed_view: bool = False,
+    title: Optional[str] = None,
+):
     """
     Plot and save the heat map of a given PES.
 
@@ -579,7 +623,6 @@ def plot_heat_map(energies: np.ndarray,
         detailed_view (bool): Whether to plot the detailed view of the PES. Defaults to ``False``.
         title (str, optional): The title of the plot.
     """
-    import seaborn as sns
 
     if detailed_view:
         fig_size = (28, 20)
