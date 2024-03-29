@@ -29,10 +29,12 @@ class TSInitialGuesser(BaseTask):
 
         try:
             positions, successes = self.generate_ts_guesses(mols, **kwargs)
-        except BaseException:
+        except BaseException as e:
+            print("Run into errors when generating TS guesses.")
+            print(e)
             # todo: add a log
             positions = {i: None for i in range(n_conf)}
-            positions = {i: False for i in range(n_conf)}
+            successes = {i: False for i in range(n_conf)}
 
         # copy data to mol
         ts_mol = mols[0][0].Copy(quickCopy=True)
