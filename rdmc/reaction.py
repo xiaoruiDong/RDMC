@@ -14,10 +14,11 @@ from rdkit.Chem import rdChemReactions, rdFMCS
 
 
 from rdmc import RDKitMol
-from rdtools.compare import is_same_complex
-from rdtools.resonance import generate_resonance_structures
 from rdtools.bond import get_all_changing_bonds
+from rdtools.compare import is_same_complex
+from rdtools.featurizer import get_rxn_fingerprint
 from rdtools.reaction.draw import draw_reaction
+from rdtools.resonance import generate_resonance_structures
 from rdtools.view import reaction_viewer
 
 
@@ -589,6 +590,39 @@ class Reaction:
             equiv = is_equivalent_reaction(tmp_reaction, reaction)
 
         return equiv
+
+    def get_fingerprint(
+        self,
+        mode: str = "REAC_DIFF",
+        fp_type: str = "morgan",
+        count: bool = False,
+        num_bits: int = 2048,
+        **kwargs,
+    ) -> "np.array":
+        """
+        Get the fingerprint of the reaction.
+
+        Args:
+            mode (str): The fingerprint combination of ``'REAC'`` (reactant), ``'PROD'`` (product),
+                ``'DIFF'`` (reactant - product), ``'REVD'`` (product - reactant), ``'SUM'`` (reactant + product),
+                separated by ``'_'``. Defaults to ``REAC_DIFF``, with the fingerprint to be a concatenation of
+                reactant fingerprint and the difference between the reactant complex and the product complex.
+            fp_type (str,  optional): The type of fingerprint to generate. Options are:
+                ``'atom_pair'``, ``'morgan'`` (default), ``'rdkit'``,
+                ``'topological_torsion'``, ``'avalon'``, and ``'maccs'``.
+            num_bits (int, optional): The length of the molecular fingerprint. For a mode with N blocks, the eventual length
+                is ``num_bits * N``. Default is ``2048``. It has no effect on ``'maccs'`` generator.
+            dtype (str, optional): The data type of the output numpy array. Defaults to ``'int32'``.
+        """
+        return get_rxn_fingerprint(
+            self.reactant_complex,
+            self.product_complex,
+            mode=mode,
+            fp_type=fp_type,
+            count=count,
+            num_bits=num_bits,
+            **kwargs,
+        )
 
 
 def is_equivalent_reaction(
