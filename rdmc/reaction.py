@@ -196,6 +196,16 @@ class Reaction:
         return self.reactant_complex.GetNumAtoms()
 
     @property
+    def num_heavy_atoms(self) -> bool:
+        """
+        The number of heavy atoms involved in the reaction.
+        """
+        assert (
+            self.is_num_atoms_balanced
+        ), "The number of atoms in the reactant(s) and product(s) are not balanced."
+        return self.reactant_complex.GetNumHeavyAtoms()
+
+    @property
     def num_reactants(self) -> int:
         """
         The number of reactants.
