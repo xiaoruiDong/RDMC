@@ -466,7 +466,9 @@ class Reaction:
         """
         Convert the reaction to RDKit ChemicalReaction.
         """
-        return rdChemReactions.ReactionFromSmarts(self.to_smiles(), useSmiles=True)
+        rxn = rdChemReactions.ReactionFromSmarts(self.to_smiles(), useSmiles=True)
+        rxn.Initialize()
+        return rxn
 
     def draw_2d(
         self,
