@@ -22,17 +22,19 @@ class MolConfMixin:
         self,
         confId: Optional[int] = None,
         random: bool = True,
-    ) -> None:
+    ) -> int:
         """
-        Embed a conformer with atoms' coordinates of random numbers or with all atoms
-        located at the origin to the current `RDKitMol`.
+        Embed a conformer with atoms' coordinates of random numbers or with all atoms located at the origin.
 
         Args:
             confId (int, optional): Which ID to set for the conformer (will be added as the last conformer by default).
             random (bool, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
-                                     coordinates. Defaults to ``True``.
+                coordinates. Defaults to ``True``.
+
+        Returns:
+            int: The conformer ID added.
         """
-        add_null_conformer(self, confId, random)
+        return add_null_conformer(self, confId, random)
 
     def AlignMol(
         self,
