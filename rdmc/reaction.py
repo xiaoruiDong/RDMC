@@ -10,14 +10,14 @@ from functools import reduce, wraps
 from itertools import chain, product
 from typing import List, Optional, Tuple, Union
 
+from rdkit import Chem
 from rdkit.Chem import rdChemReactions, rdFMCS
-
 
 from rdmc import RDKitMol
 from rdtools.bond import get_all_changing_bonds
 from rdtools.compare import is_same_complex
 from rdtools.featurizer import get_rxn_fingerprint
-from rdtools.reaction.draw import draw_reaction
+from rdtools.reaction import draw_reaction, map_h_atoms_in_reaction
 from rdtools.resonance import generate_resonance_structures
 from rdtools.view import reaction_viewer
 
@@ -624,6 +624,30 @@ class Reaction:
             count=count,
             num_bits=num_bits,
             **kwargs,
+        )
+
+    def map_h_atoms(
+        self,
+        add_hs: bool = False,
+    ) -> "Reaction":
+        """
+        Atom map H atoms. This is useful if the reactions are initialized with only heavy atoms
+        or the reactant and product complex only has heavy atom mapped.
+
+        Args:
+            add_hs (bool, optional): If the reaction is initialized with only heavy atoms presenting,
+                set it to ``True``. Defaults to ``False``.
+
+        Returns:
+            Reaction: a new reaction instance with h atoms mapped.
+        """
+        rmol, pmol = self.reactant_complex, self.product_complex
+        if add_hs:
+            rmol, pmol = Chem.AddHs(rmol), Chem.AddHs(pmol)
+        new_rmol, new_pmol = map_h_atoms_in_reaction(rmol, pmol)
+        return Reaction(
+            RDKitMol(new_rmol),
+            RDKitMol(new_pmol),
         )
 
 
