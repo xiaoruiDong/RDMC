@@ -6,6 +6,7 @@ from rdkit import Chem
 
 from rdmc.conf import EditableConformer
 from rdtools.conf import (
+    add_conformer,
     add_null_conformer,
     embed_multiple_null_confs,
     embed_conformer,
@@ -17,6 +18,23 @@ from rdtools.mol import set_mol_positions
 
 
 class MolConfMixin:
+
+    def AddConformerWithCoords(
+        self,
+        coords: "np.array",
+        confId: Optional[int] = None,
+    ) -> int:
+        """
+        Embed a conformer with the given coordinates.
+
+        Args:
+            coords (np.array, optional): The coordinates of the atoms. Should be the same length as the
+            confId (int, optional): Which ID to set for the conformer (will be added as the last conformer by default).
+
+        Returns:
+            int: The conformer ID added.
+        """
+        return add_conformer(self, None, coords, confId)
 
     def AddNullConformer(
         self,
