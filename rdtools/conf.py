@@ -23,6 +23,9 @@ def add_conformer(
         coords (np.ndarray, optional): Instead of feeding a conformer, a user may provide the coordinates of the conformer to be added.
                                        Defaults to ``None``, but either ``conf`` or ``coords`` must be provided.
         conf_id (int, optional): Which ID to set for the conformer (will be added as the last conformer by default). Defaults to ``None``.
+
+    Returns:
+        int: The conformer ID added
     """
     assign_id = True if conf_id is None else False
     if conf is None:
@@ -32,7 +35,7 @@ def add_conformer(
             raise ValueError("conf and coords cannot be both None.")
     elif conf_id is not None:
         conf.SetId(conf_id)
-    mol.AddConformer(conf, assign_id)
+    return mol.AddConformer(conf, assign_id)
 
 
 def add_null_conformer(
@@ -53,7 +56,7 @@ def add_null_conformer(
     conf = Chem.Conformer(num_atoms)
     if random:
         set_conformer_coordinates(conf, np.random.rand(num_atoms, 3))
-    add_conformer(mol, conf=conf, conf_id=conf_id)
+    return add_conformer(mol, conf=conf, conf_id=conf_id)
 
 
 def create_conformer(
