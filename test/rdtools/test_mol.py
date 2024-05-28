@@ -161,17 +161,49 @@ def test_get_atom_masses(smi, expected):
 @pytest.mark.parametrize(
     "rad_smi, expect_smi",
     [
+        ("[CH2]", "C"),
         ("[CH3]", "C"),
         ("c1[c]cccc1", "c1ccccc1"),
-        ("C[NH2]", "CN"),
+        ("C[NH]", "CN"),
         ("[CH2]C[CH2]", "CCC"),
         ("C", "C"),
     ],
 )
-@pytest.mark.parametrize("cheap", [True, False])
+@pytest.mark.parametrize("explicit", [True, False])
 @pytest.mark.parametrize("atommap", [True, False])
-def test_get_closed_shell_mol(rad_smi, expect_smi, cheap, atommap):
+def test_get_closed_shell_mol(rad_smi, expect_smi, explicit, atommap):
 
     rad_mol = mol_from_smiles(rad_smi, assign_atom_map=atommap)
-    cs_mol = get_closed_shell_mol(rad_mol, cheap=cheap)
+    cs_mol = get_closed_shell_mol(rad_mol, explicit=explicit)
     assert mol_to_smiles(cs_mol) == expect_smi
+
+
+def test_get_closed_shell_mol_one_hs():
+
+    rad_mol = mol_from_smiles("[CH2]")
+    cs_mol = get_closed_shell_mol(rad_mol)
+    assert mol_to_smiles(cs_mol) == "C"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=1)
+    assert mol_to_smiles(cs_mol) == "[CH]"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=2)
+    assert mol_to_smiles(cs_mol) == "[CH2]"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=3)
+    assert mol_to_smiles(cs_mol) == "[CH3]"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=4)
+    assert mol_to_smiles(cs_mol) == "C"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=5)
+    assert mol_to_smiles(cs_mol) == "C"
+
+    rad_mol = mol_from_smiles("[C]", add_hs=False)
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=1, explicit=False)
+    assert mol_to_smiles(cs_mol) == "[CH]"
