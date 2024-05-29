@@ -129,10 +129,7 @@ def test_get_element_counts(smi, expected):
             "[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]",
             [1, 6, 1, 1, 1, 1],
         ),
-        (
-            "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
-            [8, 6, 6, 1, 1, 1, 1]
-        ),
+        ("[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]", [8, 6, 6, 1, 1, 1, 1]),
     ],
 )
 def test_get_atomic_nums(smi, expected):
@@ -149,15 +146,13 @@ def test_get_atomic_nums(smi, expected):
         ),
         (
             "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
-            [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008]),
+            [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008],
+        ),
     ],
 )
 def test_get_atom_masses(smi, expected):
     mol = mol_from_smiles(smi)
-    np.testing.assert_allclose(
-        np.array(get_atom_masses(mol)),
-        np.array(expected)
-    )
+    np.testing.assert_allclose(np.array(get_atom_masses(mol)), np.array(expected))
 
 
 @pytest.mark.parametrize(
@@ -230,7 +225,19 @@ def test_get_closed_shell_mol_one_hs():
 )
 def test_dehydrogenated_mol(smi, n_result, kind, charge):
     mol = mol_from_smiles(smi)
+    n_Hs = len([atom for atom in mol.GetAtoms() if atom.GetAtomicNum() == 1])
     children = get_dehydrogenated_mol(mol, kind=kind)
     assert len(children) == n_result
     for child in children:
         assert get_formal_charge(child) == charge
+        assert (
+            len([atom for atom in child.GetAtoms() if atom.GetAtomicNum() == 1])
+            == n_Hs - 1
+        )
+
+
+def test_dehydrogenated_mol_on_atoms():
+    mol = mol_from_smiles("CO")
+    children = get_dehydrogenated_mol(mol, only_on_atoms=[1])
+    assert len(children) == 1
+    assert mol_to_smiles(children[0]) == "C[O]"

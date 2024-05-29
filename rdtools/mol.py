@@ -1,5 +1,6 @@
 import copy
 from collections import Counter
+from functools import lru_cache
 from itertools import product as cartesian_product
 from typing import List, Optional, Union, Sequence
 
@@ -350,10 +351,16 @@ def get_closed_shell_implicit(
     return mol
 
 
+@lru_cache(maxsize=1)
+def get_heavy_hydrogen_query():
+    return Chem.MolFromSmarts("[*]-[H]")
+
+
 def get_dehydrogenated_mol(
     mol,
     kind: str = "radical",
     once_per_heavy: bool = True,
+    only_on_atoms: Optional[list] = None,
 ) -> list:
     """
     Generate the molecules that have one less hydrogen atom compared to the reference molecule.
@@ -368,33 +375,34 @@ def get_dehydrogenated_mol(
             By setting this argument to ``True``, the function will only remove H atom
             once per heavy atoms. Otherwise, the function will comprehensively generate
             dehydrogenated molecule by remove every single H atoms. Defaults to ``True``.
+        only_on_atoms (list, optional): This argument allows only operating on specific atoms.
+            Defaults to None, operating on all atoms.
 
     Returns:
         list: a list of dehydrogenated molecules
     """
-    # Find all hydrogen atoms
-    h_idxs = [atom.GetIdx() for atom in mol.GetAtoms() if atom.GetAtomicNum() == 1]
+    tpl = get_heavy_hydrogen_query()
+    hvy_h_pairs = mol.GetSubstructMatches(tpl, maxMatches=mol.GetNumAtoms())
 
-    # Generate ion forms by removing each hydrogen atom
     new_mols = []
-    explored_heavy_atoms = set()
-    for h_idx in h_idxs:
-        new_mol = get_writable_copy(mol)
-        H_atom = new_mol.GetAtomWithIdx(h_idx)
-        heavy_atom = H_atom.GetNeighbors()[0]
-
-        if once_per_heavy and heavy_atom.GetIdx() in explored_heavy_atoms:
+    explored_hvy_atoms = set()
+    for hvy_idx, h_idx in hvy_h_pairs:
+        if only_on_atoms and hvy_idx not in only_on_atoms:
+            continue
+        elif once_per_heavy and hvy_idx in explored_hvy_atoms:
             continue
         elif once_per_heavy:
-            explored_heavy_atoms.add(heavy_atom.GetIdx())
+            explored_hvy_atoms.add(hvy_idx)
+
+        new_mol = get_writable_copy(mol)
+        hvy_atom = new_mol.GetAtomWithIdx(hvy_idx)
 
         if kind == "radical":
-            increment_radical(heavy_atom)
+            increment_radical(hvy_atom)
         elif kind == "cation":
-            heavy_atom.SetFormalCharge(heavy_atom.GetFormalCharge() + 1)
+            hvy_atom.SetFormalCharge(hvy_atom.GetFormalCharge() + 1)
         elif kind == "anion":
-            heavy_atom.SetFormalCharge(heavy_atom.GetFormalCharge() - 1)
-
+            hvy_atom.SetFormalCharge(hvy_atom.GetFormalCharge() - 1)
         new_mol.RemoveAtom(h_idx)
 
         fast_sanitize(new_mol)
