@@ -11,11 +11,13 @@ from rdtools.conversion import (
 )
 from rdtools.mol import (
     combine_mols,
+    get_dehydrogenated_mol,
     get_element_symbols,
     get_element_counts,
     get_atomic_nums,
     get_atom_masses,
     get_closed_shell_mol,
+    get_formal_charge,
 )
 from rdtools.conf import (
     embed_multiple_null_confs,
@@ -207,3 +209,28 @@ def test_get_closed_shell_mol_one_hs():
     rad_mol = mol_from_smiles("[C]", add_hs=False)
     cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=1, explicit=False)
     assert mol_to_smiles(cs_mol) == "[CH]"
+
+
+@pytest.mark.parametrize(
+    "smi, n_result",
+    [
+        ("C", 1),
+        ("c1ccccc1", 6),
+        ("CN", 2),
+        ("CO", 2),
+    ],
+)
+@pytest.mark.parametrize(
+    "kind, charge",
+    [
+        ("cation", 1),
+        ("anion", -1),
+        ("radical", 0),
+    ],
+)
+def test_dehydrogenated_mol(smi, n_result, kind, charge):
+    mol = mol_from_smiles(smi)
+    children = get_dehydrogenated_mol(mol, kind=kind)
+    assert len(children) == n_result
+    for child in children:
+        assert get_formal_charge(child) == charge
