@@ -224,6 +224,24 @@ def fast_sanitize(mol: Chem.RWMol):
     )
 
 
+def get_writable_copy(mol: Chem.Mol):
+    """
+    Get an writable (editable) copy of the current molecule object.
+    If it is an RWMol, then return a copy with the same type. Otherwise,
+    return a copy in RWMol type.
+
+    Args:
+        mol(Mol): molecule to copy from.
+
+    Returns:
+        RWMol: The writable copy of the molecule
+    """
+    if isinstance(mol, Chem.RWMol):
+        return copy.copy(mol)  # Write in this way to support RDKitMol defined in rdmc
+    else:
+        return Chem.RWMol(mol)
+
+
 def get_closed_shell_mol(
     mol: Chem.RWMol,
     sanitize: bool = True,
@@ -249,10 +267,7 @@ def get_closed_shell_mol(
     Returns:
         RDKitMol: A closed shell molecule.
     """
-    if isinstance(mol, Chem.RWMol):
-        mol = copy.copy(mol)
-    else:
-        mol = Chem.RWMol(mol)
+    mol = get_writable_copy(mol)
 
     if explicit:
         return get_closed_shell_explicit(mol, sanitize, max_num_hs=max_num_hs)
