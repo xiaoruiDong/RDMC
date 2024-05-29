@@ -89,7 +89,8 @@ def parse_xyz_by_xyz2mol(
     use_huckel: bool = False,
     embed_chiral: bool = True,
     use_atom_maps: bool = False,
-    force_rdmc: bool = False,
+    original: bool = False,
+    sanitize: bool = True,
     **kwargs,
 ) -> "Mol":
     """
@@ -102,16 +103,18 @@ def parse_xyz_by_xyz2mol(
         use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
         embed_chiral: ``True`` to embed chiral information. Defaults to True.
         use_atom_maps(bool, optional): ``True`` to set atom map numbers to the molecule. Defaults to ``False``.
-        force_rdmc (bool, optional): Defaults to ``False``. In rare case, we may hope to use a tailored
-                                     version of the Jensen XYZ parser, other than the one available in RDKit.
-                                     Set this argument to ``True`` to force use RDMC's implementation,
-                                     which user's may have some flexibility to modify.
+        original (bool, optional): Defaults to ``False``. In rare cases, we may hope to use the original
+            xyz2mol python implementation (with minor modifications), other than the one available in RDKit.
+            Set this argument to ``True`` to force use the original xyz2mol implementation in Python.
+            The user may have some flexibility to modify this "original" version located at
+            `rdtools.conversion.xyz2mol.py`.
+        sanitize (bool, optional): Whether to sanitize the perceived molecule, defaults to ``True``.
 
     Returns:
         Mol: A RDKit Mol corresponding to the xyz.
     """
-    if rdDetermineBonds is None or force_rdmc:
-        return parse_xyz_by_xyz2mol_rdmc(
+    if rdDetermineBonds is None or original:
+        mol = parse_xyz_by_xyz2mol_rdmc(
             xyz=xyz,
             charge=charge,
             allow_charged_fragments=allow_charged_fragments,
@@ -120,15 +123,19 @@ def parse_xyz_by_xyz2mol(
             embed_chiral=embed_chiral,
             use_atom_maps=use_atom_maps,
         )
+    else:
+        mol = parse_xyz_by_xyz2mol_rdkit_native(
+            xyz=xyz,
+            charge=charge,
+            allow_charged_fragments=allow_charged_fragments,
+            use_huckel=use_huckel,
+            embed_chiral=embed_chiral,
+            use_atom_maps=use_atom_maps,
+        )
 
-    return parse_xyz_by_xyz2mol_rdkit_native(
-        xyz=xyz,
-        charge=charge,
-        allow_charged_fragments=allow_charged_fragments,
-        use_huckel=use_huckel,
-        embed_chiral=embed_chiral,
-        use_atom_maps=use_atom_maps,
-    )
+    if sanitize:
+        Chem.SanitizeMol(mol)
+    return mol
 
 
 def parse_xyz_by_openbabel(
@@ -149,7 +156,7 @@ def parse_xyz_by_openbabel(
     """
     try:
         obmol = xyz_from_openbabel(xyz)
-    except TypeError:   # xyz_from_openbabel is None if openbabel is not available
+    except TypeError:  # xyz_from_openbabel is None if openbabel is not available
         raise ImportError(
             "Unable to parse XYZ with openbabel as openbabel is not installed. Please install openbabel first."
         )
@@ -199,10 +206,9 @@ def mol_from_xyz(
                 - allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to ``False``.
                 - use_graph: ``True`` to use networkx module for accelerate. Defaults to ``True``.
                 - use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to ``False``.
-                - forced_rdmc: Defaults to ``False``. In rare case, we may hope to use a tailored
-                               version of the Jensen XYZ parser, other than the one available in RDKit.
-                               Set this argument to ``True`` to force use RDMC's implementation,
-                               which user's may have some flexibility to modify.
+                - original: In rare cases, we may hope to use the original
+                    xyz2mol python implementation (with minor modifications), other than the one available in RDKit.
+                    Set this argument to ``True`` to force use the original xyz2mol implementation in Python.
 
     Returns:
         Chem.RWMol: An RDKit molecule object corresponding to the xyz.
@@ -215,7 +221,9 @@ def mol_from_xyz(
 
     elif backend.lower() == "xyz2mol":
         # Sanitization is done inside the function
-        return parse_xyz_by_xyz2mol(xyz, embed_chiral=embed_chiral, **kwargs)
+        return parse_xyz_by_xyz2mol(
+            xyz, embed_chiral=embed_chiral, sanitize=sanitize, **kwargs
+        )
 
     else:
         raise NotImplementedError(
