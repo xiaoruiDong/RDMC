@@ -10,7 +10,7 @@ from rdkit.Chem import Descriptors
 from rdkit.Geometry.rdGeometry import Point3D
 
 from rdtools.atommap import has_atom_map_numbers
-from rdtools.atom import get_element_symbol, get_atom_mass
+from rdtools.atom import get_element_symbol, get_atom_mass, increment_radical
 from rdtools.conf import (
     add_null_conformer,
     embed_multiple_null_confs,
@@ -348,6 +348,60 @@ def get_closed_shell_implicit(
     if sanitize:
         fast_sanitize(mol)
     return mol
+
+
+def get_dehydrogenated_mol(
+    mol,
+    kind: str = "radical",
+    once_per_heavy: bool = True,
+) -> list:
+    """
+    Generate the molecules that have one less hydrogen atom compared to the reference molecule.
+    This function only supports molecules that have H atoms explicitly defined. Note, this function
+    doesn't filter out equivalent structures.
+
+    Args:
+        mol (Chem.Mol): The reference molecule
+        kind (str, optional): The kind of generated molecules. The available options are
+            "radical", "cation", and "anion".
+        once_per_heavy (bool, optional): There can be multiple Hs on a single heavy atom.
+            By setting this argument to ``True``, the function will only remove H atom
+            once per heavy atoms. Otherwise, the function will comprehensively generate
+            dehydrogenated molecule by remove every single H atoms. Defaults to ``True``.
+
+    Returns:
+        list: a list of dehydrogenated molecules
+    """
+    # Find all hydrogen atoms
+    h_idxs = [atom.GetIdx() for atom in mol.GetAtoms() if atom.GetAtomicNum() == 1]
+
+    # Generate ion forms by removing each hydrogen atom
+    new_mols = []
+    explored_heavy_atoms = set()
+    for h_idx in h_idxs:
+        new_mol = get_writable_copy(mol)
+        H_atom = new_mol.GetAtomWithIdx(h_idx)
+        heavy_atom = H_atom.GetNeighbors()[0]
+
+        if once_per_heavy and heavy_atom.GetIdx() in explored_heavy_atoms:
+            continue
+        elif once_per_heavy:
+            explored_heavy_atoms.add(heavy_atom.GetIdx())
+
+        if kind == "radical":
+            increment_radical(heavy_atom)
+        elif kind == "cation":
+            heavy_atom.SetFormalCharge(heavy_atom.GetFormalCharge() + 1)
+        elif kind == "anion":
+            heavy_atom.SetFormalCharge(heavy_atom.GetFormalCharge() - 1)
+
+        new_mol.RemoveAtom(h_idx)
+
+        fast_sanitize(new_mol)
+
+        new_mols.append(new_mol)
+
+    return new_mols
 
 
 def set_mol_positions(
