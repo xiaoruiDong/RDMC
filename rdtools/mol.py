@@ -313,6 +313,13 @@ def get_closed_shell_explicit(
         for atom_idx in range(num_orig_atoms, h_atom_idx):
             mol.GetAtomWithIdx(atom_idx).SetAtomMapNum(atom_idx + 1)
 
+    if mol.GetNumConformers():
+        # Set coordinates to the added H atoms
+        for atom_idx in range(num_orig_atoms, h_atom_idx):
+            Chem.rdmolops.SetTerminalAtomCoords(
+                mol, atom_idx, mol.GetAtomWithIdx(atom_idx).GetNeighbors()[0].GetIdx()
+            )
+
     if sanitize:
         fast_sanitize(mol)
     return mol
