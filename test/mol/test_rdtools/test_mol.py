@@ -159,10 +159,10 @@ def test_get_atom_masses(smi, expected):
         ("C", "C"),
     ],
 )
-@pytest.mark.parametrize("cheap", [True, False])
+@pytest.mark.parametrize("explicit", [True, False])
 @pytest.mark.parametrize("atommap", [True, False])
-def test_get_closed_shell_mol(rad_smi, expect_smi, cheap, atommap):
+def test_get_closed_shell_mol(rad_smi, expect_smi, explicit, atommap):
 
     rad_mol = RDKitMol.FromSmiles(rad_smi, assignAtomMap=atommap)
-    cs_mol = get_closed_shell_mol(rad_mol, cheap=cheap)
+    cs_mol = get_closed_shell_mol(rad_mol, explicit=explicit)
     assert cs_mol.ToSmiles() == expect_smi
