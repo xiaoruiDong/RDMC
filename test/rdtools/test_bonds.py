@@ -11,6 +11,7 @@ from rdtools.bond import (
     get_broken_bonds,
     get_formed_and_broken_bonds,
     get_all_changing_bonds,
+    get_atoms_in_bonds,
 )
 from rdtools.conversion import mol_from_smiles
 
@@ -143,3 +144,28 @@ def test_get_all_changing_bonds() -> None:
         == [{(0, 1), (2, 3)},
             {(0, 2)},
             {(1, 2), (4, 5), (1, 5), (3, 4)}]
+
+
+@pytest.mark.parametrize(
+    "bonds, atoms",
+    [
+        ([(1, 2)], [1, 2]),
+        ([(0, 1), (1, 2)], [0, 1, 2]),
+        (
+            [
+                (0, 1),
+                (2, 3),
+                (4, 5),
+            ],
+            [0, 1, 2, 3, 4, 5],
+        ),
+    ],
+)
+@pytest.mark.parametrize("sorted", [True, False])
+def test_get_atoms_in_bonds(bonds, atoms, sorted):
+    result_atoms = get_atoms_in_bonds(bonds, sorted=sorted)
+
+    if sorted:
+        assert result_atoms == atoms
+    else:
+        assert set(result_atoms) == set(atoms)

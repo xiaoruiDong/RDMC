@@ -237,3 +237,20 @@ def get_all_changing_bonds(
         get_broken_bonds(rmol, pmol),
         get_bonds_with_BO_changed(rmol, pmol),
     )
+
+
+def get_atoms_in_bonds(bonds: list, sorted: bool = False):
+    """
+    Get unique atoms in a list of bonds.
+
+    Args:
+        bonds (list): A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+        sorted (bool, optional): Whether to sort the atom indexes. Defaults to ``False``.
+
+    Returns:
+        list: A list of the atom indexes of the atoms in the bonds.
+    """
+    atoms = list(set(sum(bonds, ())))
+    if sorted:
+        atoms.sort()
+    return atoms
