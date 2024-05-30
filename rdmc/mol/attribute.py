@@ -18,12 +18,11 @@ from rdtools.torsion import get_torsional_modes
 
 
 class MolAttrMixin:
-
     """
     A mixin used to get extra molecule attributes that are not directly available in Mol's attributes.
     """
 
-    def GetAdjacencyMatrix(self) -> 'np.ndarray':
+    def GetAdjacencyMatrix(self) -> "np.ndarray":
         """
         Get the adjacency matrix of the molecule.
 
@@ -33,7 +32,7 @@ class MolAttrMixin:
         """
         return get_adjacency_matrix(self)
 
-    def GetAtoms(self) -> List['Atom']:
+    def GetAtoms(self) -> List["Atom"]:
         """
         This is a rewrite of GetAtoms(), based on the findings of `RDKit issue <https://github.com/rdkit/rdkit/issues/6208>`_.
         Although RDKit fixed this issue in version 2023.09, we still keep this function for backward compatibility.
@@ -52,7 +51,7 @@ class MolAttrMixin:
         """
         return tuple(get_atom_map_numbers(self))
 
-    def GetHeavyAtoms(self) -> List['Atom']:
+    def GetHeavyAtoms(self) -> List["Atom"]:
         """
         Get heavy atoms of the molecule with the order consistent with the atom indexes.
 

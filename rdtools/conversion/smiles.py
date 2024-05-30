@@ -3,17 +3,18 @@ from rdkit import Chem
 from rdtools.atommap import (
     clear_atom_map_numbers,
     has_atom_map_numbers,
+    map_h_atoms_in_reaction,
     needs_renumber,
     renumber_atoms,
     reset_atom_map_numbers,
 )
 from rdtools.conversion.utils import prepare_output_mol
 
+from rdkit.Chem.rdChemReactions import ChemicalReaction
+
 
 def get_smiles_parser_params(
-    remove_hs: bool = True,
-    sanitize: bool = True,
-    allow_cxsmiles: bool = False
+    remove_hs: bool = True, sanitize: bool = True, allow_cxsmiles: bool = False
 ) -> Chem.SmilesParserParams:
     """
     Get the parameters for the RDKit SMILES parser.
@@ -141,4 +142,6 @@ def mol_to_smiles(
     if remove_atom_map:
         clear_atom_map_numbers(mol)
 
-    return Chem.MolToSmiles(mol, isomericSmiles=stereo, kekuleSmiles=kekule, canonical=canonical)
+    return Chem.MolToSmiles(
+        mol, isomericSmiles=stereo, kekuleSmiles=kekule, canonical=canonical
+    )

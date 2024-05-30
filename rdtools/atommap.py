@@ -1,3 +1,5 @@
+"""A module of atom map number operations"""
+
 from itertools import permutations
 from typing import Iterable, List, Optional, Tuple
 
