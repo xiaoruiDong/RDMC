@@ -210,7 +210,7 @@ def is_valid_habs_ts(
 ):
     """
     Check if the TS belonging to a H atom abstraction reactions. This function assumes the TS, rmol,
-    and pmol have the same atom order.
+    and pmol have the same atom order. This may be extended to general substitution reaction.
 
     Args:
         rmol (Chem.Mol): the reactant complex.
@@ -248,6 +248,11 @@ def is_valid_habs_ts(
         Returns:
             np.ndarray: new xyz coordinates of the atoms
         """
+        # Knowing the distance between Atom A and B
+        # as well as the distance change between Atom A and B due the to the frequency,
+        # Compute the magnitude of the distance change.
+        # This is solved by solving a quadratic equation
+        # The root with smaller absolute value is chosen as the magnitude.
         x_AB = positions[atom1_idx] - positions[atom2_idx]
         x_dAB = freq_modes[atom1_idx] - freq_modes[atom2_idx]
         m1, m2 = get_magnitude(x_AB, x_dAB, target)
@@ -276,32 +281,37 @@ def is_valid_habs_ts(
         num_in_three_member_ring = sum([ring_sizes[mem] == 3 for mem in membership])
         return num_in_three_member_ring >= 2
 
+    # Obtain the information of the reaction center
     formed, broken = get_formed_and_broken_bonds(rmol, pmol)
     assert len(formed) == 1 and len(broken) == 1, "The TS should be b1f1."
     formed, broken = set(formed[0]), set(broken[0])
-    H_index = (formed & broken).pop()
-    atom1_idx = (formed - {H_index}).pop()  # the radical site in reactant
-    atom2_idx = (broken - {H_index}).pop()  # the radical site in product
+    H_idx = (formed & broken).pop()  # the H atom index in both sides
+    atom1_idx = (formed - {H_idx}).pop()  # the radical site in reactant
+    atom2_idx = (broken - {H_idx}).pop()  # the radical site in product
+    atom1_atomic_num = rmol.GetAtomWithIdx(atom1_idx).GetAtomicNum()
+    atom2_atomic_num = pmol.GetAtomWithIdx(atom2_idx).GetAtomicNum()
 
+    # Write a XYZ to perceive the transition state connectivity
     symbols = get_element_symbols(rmol)
     xyz_str = ""
     for symbol, coords in zip(symbols, ts_xyz):
         xyz_str += f"{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n"
+    mol = mol_from_xyz(
+        xyz_str, **{**{"sanitize": False, "header": False}, **kwargs}
+    )  # force sanitize to be False for the TS structure
 
-    mol = mol_from_xyz(xyz_str, **{**{"sanitize": False, "header": False}, **kwargs})
+    # Add weights to the displacement
     weights = np.sqrt(get_atom_masses(mol)).reshape(-1, 1)
-    positions = mol.GetConformer().GetPositions()
     freq_modes = disp * weights
 
-    # Check 1. change position to have H-atom1 == covalent length, see if the
+    # Check 1. change the TS geometry to have L(H--atom1) == covalent bond length, see if the
     # molecule is isomorphic to the product
-    target1_dist = get_covalent_radius(
-        mol.GetAtomWithIdx(atom1_idx).GetAtomicNum()
-    ) + get_covalent_radius(1)
-    new_pos = get_well_xyz(H_index, atom1_idx, positions, freq_modes, target1_dist)
+    len_H_atom1 = sum(map(get_covalent_radius, [1, atom1_atomic_num]))
+    new_pos = get_well_xyz(H_idx, atom1_idx, ts_xyz, freq_modes, len_H_atom1)
     set_conformer_coordinates(mol.GetConformer(), new_pos)
+    product_xyz = mol_to_xyz(mol)
     pmol_fake = mol_from_xyz(
-        mol_to_xyz(mol), **{**{"sanitize": False, "header": True}, **kwargs}
+        product_xyz, **{**{"sanitize": False, "header": True}, **kwargs}
     )
     check1 = is_same_connectivity_mol(pmol, pmol_fake)
     if not check1:
@@ -313,15 +323,13 @@ def is_valid_habs_ts(
 
     # Check 2. change position to have H-atom2 == covalent length, see if the
     # molecule is isomorphic to the reactant
-    target2_dist = get_covalent_radius(
-        mol.GetAtomWithIdx(atom2_idx).GetAtomicNum()
-    ) + get_covalent_radius(1)
-    new_pos = get_well_xyz(H_index, atom2_idx, positions, freq_modes, target2_dist)
+    len_H_atom2 = sum(map(get_covalent_radius, [1, atom2_atomic_num]))
+    new_pos = get_well_xyz(H_idx, atom2_idx, ts_xyz, freq_modes, len_H_atom2)
     set_conformer_coordinates(mol.GetConformer(), new_pos)
+    reactant_xyz = mol_to_xyz(mol)
     rmol_fake = mol_from_xyz(
-        mol_to_xyz(mol), **{**{"sanitize": False, "header": True}, **kwargs}
+        reactant_xyz, **{**{"sanitize": False, "header": True}, **kwargs}
     )
-    # print(mol2.GetConformer().GetBondLength([H_index, atom2_idx]), target2_dist)
     check2 = is_same_connectivity_mol(rmol, rmol_fake)
     if not check2:
         diff = list(
