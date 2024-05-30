@@ -11,7 +11,7 @@ from rdkit.Chem import Descriptors
 from rdkit.Geometry.rdGeometry import Point3D
 
 from rdtools.atommap import has_atom_map_numbers
-from rdtools.atom import get_element_symbol, get_atom_mass, increment_radical
+from rdtools.atom import get_atom_mass, increment_radical
 from rdtools.conf import (
     add_null_conformer,
     embed_multiple_null_confs,
@@ -96,7 +96,7 @@ def get_element_symbols(mol: Chem.Mol) -> List[str]:
     Returns:
         List[str] : List of element symbols (e.g. ``["H", "C", "O",]`` etc.)
     """
-    return [get_element_symbol(atom) for atom in mol.GetAtoms()]
+    return [atom.GetSymbol() for atom in mol.GetAtoms()]
 
 
 def get_atomic_nums(mol: Chem.Mol) -> List[int]:

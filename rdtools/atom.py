@@ -63,7 +63,7 @@ def get_element_symbol(atom: Chem.Atom) -> str:
     Returns:
         str: The symbol of the atom.
     """
-    return element.get_element_symbol(atom.GetAtomicNum())
+    return atom.GetSymbol()
 
 
 def get_n_outer_electrons(atom: Chem.Atom) -> int:
