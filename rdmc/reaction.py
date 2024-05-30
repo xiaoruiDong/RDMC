@@ -14,10 +14,17 @@ from rdkit import Chem
 from rdkit.Chem import rdChemReactions, rdFMCS
 
 from rdmc import RDKitMol
-from rdtools.bond import get_all_changing_bonds
+from rdtools.bond import get_all_changing_bonds, get_atoms_in_bonds
 from rdtools.compare import is_same_complex
 from rdtools.featurizer import get_rxn_fingerprint
+from rdtools.mol import get_element_counts
 from rdtools.reaction import draw_reaction, map_h_atoms_in_reaction
+from rdtools.reaction.analysis import (
+    is_num_atoms_balanced,
+    is_element_balanced,
+    is_charge_balanced,
+    is_mult_equal,
+)
 from rdtools.resonance import generate_resonance_structures
 from rdtools.view import reaction_viewer
 
@@ -139,52 +146,42 @@ class Reaction:
         """
         Whether the number of atoms in the reactant(s) and product(s) are balanced.
         """
-        return self.reactant_complex.GetNumAtoms() == self.product_complex.GetNumAtoms()
+        return is_num_atoms_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def reactant_element_count(self) -> dict:
         """
         The element count in the reactant(s) and product(s).
         """
-        return dict(Counter(self.reactant_complex.GetElementSymbols()))
+        return get_element_counts(self.reactant_complex)
 
     @property
     def product_element_count(self) -> dict:
         """
         The element count in the reactant(s) and product(s).
         """
-        return dict(Counter(self.product_complex.GetElementSymbols()))
+        return get_element_counts(self.product_complex)
 
     @property
     def is_element_balanced(self) -> bool:
         """
         Whether the elements in the reactant(s) and product(s) are balanced.
         """
-        if self.is_num_atoms_balanced:
-            return Counter(self.reactant_complex.GetElementSymbols()) == Counter(
-                self.product_complex.GetElementSymbols()
-            )
-        return False
+        return is_element_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def is_charge_balanced(self) -> bool:
         """
         Whether the charge in the reactant(s) and product(s) are balanced.
         """
-        return (
-            self.reactant_complex.GetFormalCharge()
-            == self.product_complex.GetFormalCharge()
-        )
+        return is_charge_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def is_mult_equal(self) -> bool:
         """
         Whether the spin multiplicity in the reactant(s) and product(s) are equal.
         """
-        return (
-            self.reactant_complex.GetSpinMultiplicity()
-            == self.product_complex.GetSpinMultiplicity()
-        )
+        return is_mult_equal(self.reactant_complex, self.product_complex)
 
     @property
     def num_atoms(self) -> bool:
@@ -331,7 +328,7 @@ class Reaction:
         """
         The atoms involved in the bonds broken and formed in the reaction.
         """
-        return list(set(chain(*self.active_bonds)))
+        return get_atoms_in_bonds(self.active_bonds)
 
     @property
     @require_bond_analysis
@@ -339,7 +336,7 @@ class Reaction:
         """
         The atoms involved in the bonds broken and formed in the reaction.
         """
-        return list(set(chain(*self.involved_bonds)))
+        return get_atoms_in_bonds(self.involved_bonds)
 
     @property
     def is_resonance_corrected(self) -> bool:
