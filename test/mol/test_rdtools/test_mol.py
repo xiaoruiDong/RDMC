@@ -32,7 +32,9 @@ def test_combine_mols_1():
     pos2 = mol2.GetPositions()
 
     offset = np.array([1, 0, 0], dtype=float)
-    combined_mol = combine_mols(mol1, mol2, offset=offset, c_product=False)  # Return Chem.Mol
+    combined_mol = combine_mols(
+        mol1, mol2, offset=offset, c_product=False
+    )  # Return Chem.Mol
 
     assert combined_mol.GetNumAtoms() == mol1.GetNumAtoms() + mol2.GetNumAtoms()
     assert combined_mol.GetNumConformers() == 1
@@ -118,10 +120,7 @@ def test_get_element_counts(smi, expected):
             "[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]",
             [1, 6, 1, 1, 1, 1],
         ),
-        (
-            "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
-            [8, 6, 6, 1, 1, 1, 1]
-        ),
+        ("[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]", [8, 6, 6, 1, 1, 1, 1]),
     ],
 )
 def test_get_atomic_nums(smi, expected):
@@ -138,15 +137,13 @@ def test_get_atomic_nums(smi, expected):
         ),
         (
             "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
-            [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008]),
+            [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008],
+        ),
     ],
 )
 def test_get_atom_masses(smi, expected):
     mol = RDKitMol.FromSmiles(smi)
-    np.testing.assert_allclose(
-        np.array(get_atom_masses(mol)),
-        np.array(expected)
-    )
+    np.testing.assert_allclose(np.array(get_atom_masses(mol)), np.array(expected))
 
 
 @pytest.mark.parametrize(

@@ -106,15 +106,29 @@ class MolConfMixin:
         try:
             # Only added in version 2022
             rmsd, _, atom_map = Chem.rdMolAlign.GetBestAlignmentTransform(
-                prbMol, refMol, prbCid, refCid, atomMaps, maxIters,
-                weights=weights, reflect=reflect, maxIters=maxIters, *kwargs
+                prbMol,
+                refMol,
+                prbCid,
+                refCid,
+                atomMaps,
+                maxIters,
+                weights=weights,
+                reflect=reflect,
+                maxIters=maxIters,
+                *kwargs,
             )
         except AttributeError:
             rmsd = math.inf
             for atom_map in atomMaps:
                 cur_rmsd = Chem.rdMolAlign.AlignMol(
-                    prbMol, refMol, prbCid, refCid, atom_map,
-                    weights=weights, reflect=reflect, maxIters=maxIters
+                    prbMol,
+                    refMol,
+                    prbCid,
+                    refCid,
+                    atom_map,
+                    weights=weights,
+                    reflect=reflect,
+                    maxIters=maxIters,
                 )
                 if cur_rmsd < rmsd:
                     rmsd = cur_rmsd
@@ -232,10 +246,7 @@ class MolConfMixin:
         return rmsd, atom_map, reflect
 
     def SetPositions(
-        self,
-        coords: Union[Sequence, str],
-        confId: int = 0,
-        header: bool = False
+        self, coords: Union[Sequence, str], confId: int = 0, header: bool = False
     ):
         """
         Set the atom positions to one of the conformer.

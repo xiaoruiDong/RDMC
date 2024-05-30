@@ -300,7 +300,9 @@ def set_bond_length(
         except ValueError:
             # RDKit doesn't allow change bonds for atoms in a ring
             # A workaround hasn't been proposed
-            raise NotImplementedError(f'Approach for modifying the bond length of {atom_ids} is not available.')
+            raise NotImplementedError(
+                f"Approach for modifying the bond length of {atom_ids} is not available."
+            )
 
 
 def set_angle_deg(
@@ -327,7 +329,9 @@ def set_angle_deg(
         except ValueError:
             # RDKit doesn't allow change bonds for atoms in a ring
             # A workaround hasn't been proposed
-            raise NotImplementedError(f'Approach for modifying the angle of {atom_ids} is not available.')
+            raise NotImplementedError(
+                f"Approach for modifying the angle of {atom_ids} is not available."
+            )
 
 
 def set_torsion_deg(
@@ -354,4 +358,6 @@ def set_torsion_deg(
         except ValueError:
             # RDKit doesn't allow change bonds for atoms in a ring
             # A workaround hasn't been proposed
-            raise NotImplementedError(f'Approach for modifying the torsion of {atom_ids} is not available.')
+            raise NotImplementedError(
+                f"Approach for modifying the torsion of {atom_ids} is not available."
+            )

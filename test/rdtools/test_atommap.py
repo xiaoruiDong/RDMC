@@ -149,14 +149,86 @@ def test_reverse_match():
     Test the functionality to reverse a mapping.
     """
     map = [
-        1, 2, 3, 4, 5, 17, 18, 19, 20, 21, 22, 23, 24, 25, 6, 7, 8,
-        9, 10, 11, 12, 13, 14, 15, 16, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-        35, 36, 37, 38, 39
+        1,
+        2,
+        3,
+        4,
+        5,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
     ]
     r_map = [
-        0, 1, 2, 3, 4, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 5,
-        6, 7, 8, 9, 10, 11, 12, 13, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-        34, 35, 36, 37, 38
+        0,
+        1,
+        2,
+        3,
+        4,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
     ]
 
     np.testing.assert_equal(np.array(r_map), np.array(reverse_map(map)))
@@ -168,21 +240,25 @@ def test_move_atommaps_to_notes():
     move_atommaps_to_notes(mol, clear_atommap=True)
     atom_map_numbers_after = get_atom_map_numbers(mol)
     assert atom_map_numbers_after == [0] * len(atom_map_numbers_before)
-    assert [int(atom.GetProp('atomNote')) for atom in mol.GetAtoms()] == atom_map_numbers_before
+    assert [
+        int(atom.GetProp("atomNote")) for atom in mol.GetAtoms()
+    ] == atom_map_numbers_before
 
     mol = Chem.MolFromSmiles("[CH3:1][CH2:2][OH:3]")
     atom_map_numbers_before = get_atom_map_numbers(mol)
     move_atommaps_to_notes(mol, clear_atommap=False)
     atom_map_numbers_after = get_atom_map_numbers(mol)
     assert atom_map_numbers_after == atom_map_numbers_before
-    assert [int(atom.GetProp('atomNote')) for atom in mol.GetAtoms()] == atom_map_numbers_before
+    assert [
+        int(atom.GetProp("atomNote")) for atom in mol.GetAtoms()
+    ] == atom_map_numbers_before
 
 
 def test_move_notes_to_atommaps():
     mol = Chem.MolFromSmiles("[CH3][CH2][OH]")
     atom_notes = []
     for atom in mol.GetAtoms():
-        atom.SetProp('atomNote', str(atom.GetIdx() + 1))
+        atom.SetProp("atomNote", str(atom.GetIdx() + 1))
         atom_notes.append(atom.GetIdx() + 1)
     atom_map_numbers_before = get_atom_map_numbers(mol)
     move_notes_to_atommaps(mol)
