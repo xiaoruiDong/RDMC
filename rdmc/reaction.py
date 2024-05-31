@@ -357,15 +357,21 @@ class Reaction:
             # TODO: when the reactant and product are changed
             return self
         try:
-            rcps = generate_resonance_structures(
-                self.reactant_complex,
-            )
+            rcps = [
+                RDKitMol(m)
+                for m in generate_resonance_structures(
+                    self.reactant_complex,
+                )
+            ]
         except BaseException:
             rcps = [self.reactant_complex]
         try:
-            pcps = generate_resonance_structures(
-                self.product_complex,
-            )
+            pcps = [
+                RDKitMol(m)
+                for m in generate_resonance_structures(
+                    self.product_complex,
+                )
+            ]
         except BaseException:
             pcps = [self.product_complex]
 
