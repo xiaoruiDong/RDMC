@@ -260,12 +260,15 @@ def uncharge_mol(mol : Chem.RWMol,
         # See https://www.rdkit.org/docs/Cookbook.html#neutralizing-molecules)
 
         # Check if H's are explicit or implicit
-        if "H" in get_element_counts(mol).keys(): 
-            implicit_h = False
-            pattern = Chem.MolFromSmarts("[+1!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
-        else:
-            implicit_h = True
-            pattern = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
+        implicit_h = False
+        pattern = Chem.MolFromSmarts("[+1!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
+            
+        for atom in mol.GetAtoms():
+            if (not atom.GetNoImplicit() and atom.GetAtomicNum() != 1) or atom.GetNumImplicitHs() > 0:
+                implicit_h = True
+                print(atom.GetNumImplicitHs())
+                pattern = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
+                break
 
         at_matches = mol.GetSubstructMatches(pattern)
         at_matches_list = [y[0] for y in at_matches]
@@ -277,7 +280,7 @@ def uncharge_mol(mol : Chem.RWMol,
                 atom.SetFormalCharge(0)
                 if implicit_h: 
                     atom.SetNumExplicitHs(hcount - chg)
-                else:
+                else: # find a neighboring H atom and remove it
                     for neighbor in atom.GetNeighbors():
                         if neighbor.GetAtomicNum() == 1:
                             mol.RemoveAtom(neighbor.GetIdx())
@@ -287,6 +290,10 @@ def uncharge_mol(mol : Chem.RWMol,
         if get_formal_charge(mol) == 0: 
             return mol
     
+    # TODO: identify if we want the final form to be re-atom mapped, especially if new atoms are added/removed.
+    # Also whether these should have implicit H, e.g. "CC(=O)[O-]" --> "[C:1]([C:2](=[O:3])[OH:4])([H:5])([H:6])[H:7]"
+
+
     warnings.warn(f"Unable to uncharge: got {mol_to_smiles(mol)}")
     return mol
 
@@ -418,6 +425,7 @@ def set_mol_positions(
     else:
         set_conformer_coordinates(conf, coords)
 
-mol = mol_from_smiles("[NH4+]")
-z = uncharge_mol(mol, method = "rdkit")
+
+mol = mol_from_smiles("CC(=O)[O-]")
+z = uncharge_mol(mol, method = "nocharge")
 print(Chem.MolToSmiles(z))
