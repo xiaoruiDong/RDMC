@@ -11,6 +11,8 @@ import numpy as np
 
 from scipy.spatial import distance_matrix
 
+from rdkit.Chem import rdMolTransforms as rdMT
+
 from rdtools.conf import (
     set_conformer_coordinates,
     get_bond_length,
@@ -44,6 +46,15 @@ class EditableConformer(object):
                         attr,
                     ),
                 )
+
+    def Canonicalize(self, ignoreHs: bool = False):
+        """
+        Canonicalize the Conformer.
+
+        Args:
+            ignoreHs (bool, optional): Whether ignore hydrogens. Default to ``False``.
+        """
+        rdMT.CanonicalizeConformer(self._conf, ignoreHs=ignoreHs)
 
     def GetBondLength(
         self,
@@ -99,6 +110,30 @@ class EditableConformer(object):
             list: A list of dihedral angles of all torsional modes.
         """
         return [self.GetTorsionDeg(tor) for tor in self.GetTorsionalModes()]
+
+    def GetCentroid(self, ignoreHs: bool = False) -> np.ndarray:
+        """
+        Get the centroid of the conformer.
+
+        Args:
+            ignoreHs (bool): Whether ignore hydrogens. Default to ``False``.
+
+        Returns:
+            array: The centroid of the conformer.
+        """
+        return np.array(rdMT.ComputeCentroid(self._conf, ignoreHs=ignoreHs))
+
+    def GetPrincipalAxesAndMoments(self, ignoreHs: bool = False) -> tuple:
+        """
+        Get the principal axes and moments of the conformer.
+
+        Args:
+            ignoreHs (bool): Whether ignore hydrogens. Default to ``False``.
+
+        Returns:
+            tuple: A tuple containing the principal axes and moments.
+        """
+        return rdMT.ComputePrincipalAxesAndMoments(self._conf, ignoreHs=ignoreHs)
 
     def GetDistanceMatrix(self) -> np.ndarray:
         """
