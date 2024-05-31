@@ -447,3 +447,24 @@ def set_mol_positions(
             raise ValueError(f"Conformer {conf_id} does not exist")
     else:
         set_conformer_coordinates(conf, coords)
+
+
+def get_mol_weight(mol, heavy: bool = False, exact: bool = False) -> float:
+    """
+    Get molecular weight of the molecule.
+
+    Args:
+        heavy (bool, optional): Whether to ignore weight of the hydrogens. Defaults to ``False``.
+        exact (bool, optional): Whether to use exact molecular weight (distinguishing isotopes). Defaults to ``False``.
+
+    Returns:
+        float : Molecular weight.
+    """
+    if not heavy and not exact:
+        return Chem.Descriptors.MolWt(mol)
+    elif not heavy and exact:
+        return Chem.Descriptors.ExactMolWt(mol)
+    elif exact:
+        raise NotImplementedError
+    else:
+        return Chem.Descriptors.HeavyAtomMolWt(mol)
