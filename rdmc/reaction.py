@@ -575,6 +575,7 @@ class Reaction:
     def is_equivalent(
         self,
         reaction: "Reaction",
+        resonance: bool = False,
         both_directions: bool = False,
     ) -> bool:
         """
@@ -582,16 +583,23 @@ class Reaction:
 
         Args:
             reaction (Reaction): The reaction to compare.
+            resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
             both_directions (bool, optional): Whether to check both directions. Defaults to ``False``.
 
         Returns:
             bool: Whether the reaction is equivalent to the given reaction.
         """
-        equiv = is_equivalent_reaction(self, reaction)
+        if resonance:
+            cur_rxn = self.apply_resonance_correction(inplace=False)
+            qry_rxn = reaction.apply_resonance_correction(inplace=False)
+        else:
+            cur_rxn = self
+            qry_rxn = reaction
+        equiv = is_equivalent_reaction(cur_rxn, qry_rxn)
 
         if both_directions and not equiv:
-            tmp_reaction = self.get_reverse_reaction()
-            equiv = is_equivalent_reaction(tmp_reaction, reaction)
+            rev_rxn = cur_rxn.get_reverse_reaction()
+            equiv = is_equivalent_reaction(rev_rxn, qry_rxn)
 
         return equiv
 
