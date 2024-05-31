@@ -4,9 +4,11 @@ from itertools import product as cartesian_product
 from typing import List, Optional, Union, Sequence
 
 import numpy as np
+import warnings
 
 from rdkit import Chem
 from rdkit.Chem import Descriptors
+from rdkit.Chem.MolStandardize.rdMolStandardize import ChargeParent
 from rdkit.Geometry.rdGeometry import Point3D
 
 from rdtools.atommap import has_atom_map_numbers
@@ -18,7 +20,7 @@ from rdtools.conf import (
     set_conformer_coordinates,
 )
 from rdtools.conversion.xyz import xyz_to_coords
-
+from rdtools.conversion.smiles import mol_from_smiles, mol_to_smiles
 
 def get_spin_multiplicity(mol: Chem.Mol) -> int:
     """
@@ -224,6 +226,71 @@ def fast_sanitize(mol: Chem.RWMol):
     )
 
 
+
+def uncharge_mol(mol : Chem.RWMol,
+                 method = "all"):
+    """
+    Uncharges a molecule, adding or removing hydrogens wherever necessary.
+
+    Args:
+        mol (Chem.Mol): The molecule to uncharge.
+        method (str, optional): Algorithm for uncharging: "rdkit" for RDKit's 
+                                built-in ChargeParent method, "nocharge" for 
+                                Neil O'Boyle's nocharge algorithm (as adapted
+                                by Vincent Scalfani)
+                                Default is to use "all", starting with uncharger.
+    """
+    if isinstance(mol, Chem.RWMol):
+        mol = copy.copy(mol)
+    else:
+        mol = Chem.RWMol(mol)
+
+    METHOD_LIST = ["all", "rdkit", "nocharge"]
+
+    if method not in METHOD_LIST:
+        raise KeyError(f"Method must be in {METHOD_LIST}; got: {method}") 
+
+    if method in ("rdkit", "all"):
+        mol = ChargeParent(mol)
+        if get_formal_charge(mol) == 0: 
+            return mol
+
+    if method in ("nocharge", "all"):
+        # Algorithm adapted from Noel O’Boyle (Vincent Scalfani adapted code for RDKit)
+        # See https://www.rdkit.org/docs/Cookbook.html#neutralizing-molecules)
+
+        # Check if H's are explicit or implicit
+        if "H" in get_element_counts(mol).keys(): 
+            implicit_h = False
+            pattern = Chem.MolFromSmarts("[+1!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
+        else:
+            implicit_h = True
+            pattern = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
+
+        at_matches = mol.GetSubstructMatches(pattern)
+        at_matches_list = [y[0] for y in at_matches]
+        if len(at_matches_list) > 0:
+            for at_idx in at_matches_list:
+                atom = mol.GetAtomWithIdx(at_idx)
+                chg = atom.GetFormalCharge()
+                hcount = atom.GetTotalNumHs()
+                atom.SetFormalCharge(0)
+                if implicit_h: 
+                    atom.SetNumExplicitHs(hcount - chg)
+                else:
+                    for neighbor in atom.GetNeighbors():
+                        if neighbor.GetAtomicNum() == 1:
+                            mol.RemoveAtom(neighbor.GetIdx())
+                            break
+                atom.UpdatePropertyCache()
+
+        if get_formal_charge(mol) == 0: 
+            return mol
+    
+    warnings.warn(f"Unable to uncharge: got {mol_to_smiles(mol)}")
+    return mol
+
+
 def get_closed_shell_mol(
     mol: Chem.RWMol,
     sanitize: bool = True,
@@ -350,3 +417,7 @@ def set_mol_positions(
             raise ValueError(f"Conformer {conf_id} does not exist")
     else:
         set_conformer_coordinates(conf, coords)
+
+mol = mol_from_smiles("[NH4+]")
+z = uncharge_mol(mol, method = "rdkit")
+print(Chem.MolToSmiles(z))
