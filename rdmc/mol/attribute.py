@@ -12,6 +12,7 @@ from rdtools.mol import (
     get_element_symbols,
     get_heavy_atoms,
     get_spin_multiplicity,
+    get_mol_weight,
 )
 from rdtools.bond import get_bonds_as_tuples
 from rdtools.torsion import get_torsional_modes
@@ -199,3 +200,16 @@ class MolAttrMixin:
             int : Spin multiplicity.
         """
         return get_spin_multiplicity(self)
+
+    def GetMolWeight(self, heavy: bool = False, exact: bool = False) -> float:
+        """
+        Get (averaged) molecular weight of the molecule.
+
+        Args:
+            heavy (bool, optional): Whether to ignore weight of the hydrogens. Defaults to ``False``.
+            exact (bool, optional): Whether to use exact molecular weight (distinguishing isotopes). Defaults to ``False``.
+
+        Returns:
+            float : Molecular weight.
+        """
+        return get_mol_weight(self, heavy, exact)
