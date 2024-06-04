@@ -1,8 +1,9 @@
 import pytest
 
-from rdtools.compare import get_match_and_recover_recipe, get_unique_mols, has_matched_mol, is_same_connectivity_mol
+from rdtools.compare import get_match_and_recover_recipe, get_unique_mols, has_matched_mol, is_same_connectivity_mol, is_symmetric_to_substructure
 from rdtools.conversion import mol_from_smiles, mol_to_smiles
 
+from rdkit.Chem import MolFromSmarts
 
 @pytest.mark.parametrize(
     "smi1, smi2, expected",
@@ -147,3 +148,18 @@ def test_has_same_connectivity(smi1, smi2, expect_match):
     mol1 = mol_from_smiles(smi1)
     mol2 = mol_from_smiles(smi2)
     assert is_same_connectivity_mol(mol1, mol2) == expect_match
+
+
+@pytest.mark.parametrize(
+    'smi, sma, expect_match',
+    [
+        ('CC(=O)C', '[CX3]=[OX1]', True),
+        ('CC(=O)C(=O)C', '[CX3]=[OX1]', True),
+        ('CC(=O)CC(=O)', '[CX3]=[OX1]', False),
+        ('C', '[CX3]=[OX1]', False),
+        ('OCC(CO)(CO)CO', '[CX4]-[OX2]', True),
+    ])
+def test_is_symmetric_to_substructure(smi, sma, expect_match):
+    mol = mol_from_smiles(smi)
+    substructure = MolFromSmarts(sma)
+    assert is_symmetric_to_substructure(mol, substructure) == expect_match
