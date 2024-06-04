@@ -226,6 +226,17 @@ def fast_sanitize(mol: Chem.RWMol):
     )
 
 
+def is_implicit(mol : Chem.RWMol):
+    """
+    Infer whether a molecule has implicit hydrogens.
+    """
+        
+    for atom in mol.GetAtoms():
+        if atom.GetNumImplicitHs() > 0:
+            return True
+        
+    return False
+
 
 def uncharge_mol(mol : Chem.RWMol,
                  method = "all"):
@@ -259,16 +270,11 @@ def uncharge_mol(mol : Chem.RWMol,
         # Algorithm adapted from Noel O’Boyle (Vincent Scalfani adapted code for RDKit)
         # See https://www.rdkit.org/docs/Cookbook.html#neutralizing-molecules)
 
-        # Check if H's are explicit or implicit
-        implicit_h = False
-        pattern = Chem.MolFromSmarts("[+1!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
-            
-        for atom in mol.GetAtoms():
-            if (not atom.GetNoImplicit() and atom.GetAtomicNum() != 1) or atom.GetNumImplicitHs() > 0:
-                implicit_h = True
-                print(atom.GetNumImplicitHs())
-                pattern = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
-                break
+        implicit_h = is_implicit(mol)
+        if implicit_h:
+            pattern = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")            
+        else:
+            pattern = Chem.MolFromSmarts("[+1!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
 
         at_matches = mol.GetSubstructMatches(pattern)
         at_matches_list = [y[0] for y in at_matches]
@@ -276,16 +282,11 @@ def uncharge_mol(mol : Chem.RWMol,
             for at_idx in at_matches_list:
                 atom = mol.GetAtomWithIdx(at_idx)
                 chg = atom.GetFormalCharge()
-                hcount = atom.GetTotalNumHs()
-                atom.SetFormalCharge(0)
-                if implicit_h: 
-                    atom.SetNumExplicitHs(hcount - chg)
-                else: # find a neighboring H atom and remove it
-                    for neighbor in atom.GetNeighbors():
-                        if neighbor.GetAtomicNum() == 1:
-                            mol.RemoveAtom(neighbor.GetIdx())
-                            break
-                atom.UpdatePropertyCache()
+                
+                if chg > 0:                        
+                    mol = deprotonate_at_site(mol, at_idx)
+                elif chg < 0:
+                    mol = protonate_at_site(mol, at_idx)
 
         if get_formal_charge(mol) == 0: 
             return mol
@@ -293,8 +294,59 @@ def uncharge_mol(mol : Chem.RWMol,
     # TODO: identify if we want the final form to be re-atom mapped, especially if new atoms are added/removed.
     # Also whether these should have implicit H, e.g. "CC(=O)[O-]" --> "[C:1]([C:2](=[O:3])[OH:4])([H:5])([H:6])[H:7]"
 
-
     warnings.warn(f"Unable to uncharge: got {mol_to_smiles(mol)}")
+    return mol
+
+
+def protonate_at_site(mol, site):
+    '''
+    Add a proton of a mol object at the provided index. 
+    
+    Args:
+        mol: Mol object
+        site: RDKit atom index of the site to be de/protonated.
+    '''
+
+    length = mol.GetNumAtoms()
+    atom = mol.GetAtomWithIdx(site)
+    atom.SetFormalCharge(atom.GetFormalCharge() + 1)
+
+    if is_implicit(mol):
+        hcount = atom.GetTotalNumHs(includeNeighbors=True)
+        newcharge = hcount + 1
+        atom.SetNumExplicitHs(newcharge)
+    else:
+        h_atom = Chem.MolFromSmiles('[H]')
+        mol = combine_mols(mol, h_atom)
+        mol = Chem.RWMol(mol) # as it appears to get un-RWmol from combining
+        mol.AddBond(site, length, order=Chem.rdchem.BondType.SINGLE)
+        
+    return mol
+
+
+def deprotonate_at_site(mol, site):
+    '''
+    Remove a proton of a mol object at the provided index. 
+
+    Args:
+        mol: Mol object
+        site: RDKit atom index of the site to be de/protonated.
+   
+    '''
+
+    atom = mol.GetAtomWithIdx(site)    
+    atom.SetFormalCharge(atom.GetFormalCharge() - 1)
+
+    if is_implicit(mol):
+        hcount = atom.GetTotalNumHs(includeNeighbors=True)
+        newcharge = hcount - 1
+        atom.SetNumExplicitHs(newcharge)
+    else:
+        for neighbor in atom.GetNeighbors():
+            if neighbor.GetAtomicNum() == 1:
+                mol.RemoveAtom(neighbor.GetIdx())
+                break
+    
     return mol
 
 
@@ -424,8 +476,3 @@ def set_mol_positions(
             raise ValueError(f"Conformer {conf_id} does not exist")
     else:
         set_conformer_coordinates(conf, coords)
-
-
-mol = mol_from_smiles("CC(=O)[O-]")
-z = uncharge_mol(mol, method = "nocharge")
-print(Chem.MolToSmiles(z))

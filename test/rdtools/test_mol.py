@@ -16,6 +16,8 @@ from rdtools.mol import (
     get_atomic_nums,
     get_atom_masses,
     get_closed_shell_mol,
+    is_implicit,
+    uncharge_mol
 )
 from rdtools.conf import (
     embed_multiple_null_confs,
@@ -175,3 +177,23 @@ def test_get_closed_shell_mol(rad_smi, expect_smi, cheap, atommap):
     rad_mol = mol_from_smiles(rad_smi, assign_atom_map=atommap)
     cs_mol = get_closed_shell_mol(rad_mol, cheap=cheap)
     assert mol_to_smiles(cs_mol) == expect_smi
+
+
+@pytest.mark.parametrize(
+    "ion_smi, expected_smi",
+    [
+        ("CCCCC(=O)[O-]", "CCCCC(=O)O"),
+        ("c1ccccc1[O-]", "Oc1ccccc1"),
+        ("CCC[NH3+]", "CCCN"),
+        ("[NH3+]CC(=O)[O-]", "NCC(=O)O"),
+        ("S(=O)(=O)([O-])[O-]", "O=S(=O)(O)O"),
+        ("C", "C"),
+    ],
+)
+@pytest.mark.parametrize("method", ["all", "rdkit", "nocharge"])
+def test_uncharge_mol(ion_smi, expected_smi, method):
+
+    ion_mol = mol_from_smiles(ion_smi)
+    neut_mol = uncharge_mol(ion_mol, method=method)
+    assert mol_to_smiles(neut_mol) == expected_smi
+
