@@ -239,7 +239,7 @@ def is_implicit(mol : Chem.RWMol):
 
 
 def uncharge_mol(mol : Chem.RWMol,
-                 method = "all"):
+                 method : str = "all"):
     """
     Uncharges a molecule, adding or removing hydrogens wherever necessary.
 
@@ -291,14 +291,11 @@ def uncharge_mol(mol : Chem.RWMol,
         if get_formal_charge(mol) == 0: 
             return mol
     
-    # TODO: identify if we want the final form to be re-atom mapped, especially if new atoms are added/removed.
-    # Also whether these should have implicit H, e.g. "CC(=O)[O-]" --> "[C:1]([C:2](=[O:3])[OH:4])([H:5])([H:6])[H:7]"
-
     warnings.warn(f"Unable to uncharge: got {mol_to_smiles(mol)}")
     return mol
 
 
-def protonate_at_site(mol, site):
+def protonate_at_site(mol : Chem.RWMol, site : int):
     '''
     Add a proton of a mol object at the provided index. 
     
@@ -324,7 +321,7 @@ def protonate_at_site(mol, site):
     return mol
 
 
-def deprotonate_at_site(mol, site):
+def deprotonate_at_site(mol : Chem.RWMol, site : int):
     '''
     Remove a proton of a mol object at the provided index. 
 
