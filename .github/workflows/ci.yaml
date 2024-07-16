@@ -70,6 +70,11 @@ jobs:
 
       - name: Run Unit Tests
         run: pytest
+      
+      - name: Test notebooks
+        shell: bash -l {0}
+        run: |
+          pytest --no-cov -v --nbmake ipython/*.ipynb
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
