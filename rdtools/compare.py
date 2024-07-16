@@ -2,6 +2,7 @@ from typing import List, Tuple, Union
 import traceback
 
 import numpy as np
+from collections import defaultdict
 
 from rdkit import Chem
 from rdkit.Chem.rdMolDescriptors import CalcMolFormula
@@ -282,3 +283,70 @@ def is_same_connectivity_conf(
 
     else:
         return is_same_connectivity_mol(mol, new_mol)
+
+
+def is_symmetric_to_substructure(mol : Chem.Mol, substructure: Chem.Mol) -> bool:
+    '''
+    Check whether a mol is symmetric to a provided substructure.
+
+    Args:
+        mol1 (RWMol): The molecule to check.
+        substructure (RWMol): A molecule representing the SMARTS substructure to check.
+
+    Returns:
+        bool: Whether the molecule is symmetric w.r.t. the substructure.
+    '''
+    matches = mol.GetSubstructMatches(substructure)
+
+    classes = find_symmetry_classes(mol)
+    
+    if len(matches) == 0: # Substructure isn't in molecule.
+        return False
+    elif len(matches) == 1: # Molecule has only one match and is therefore symmetric w.r.t. substructure
+        return True
+    
+    # Assumes that 'matches' contains sets of equal size.
+    length_matches = len(matches[0])
+    num_matches = len(matches)
+    for match in matches:
+        assert len(match) == length_matches
+    
+    # There is a match if all of the nth elements of each list in the matches is in the classes set.
+    for cla in classes: # Example: classes = {(2, 4), (1,3), (0,5)}; cla = (2, 4)      
+
+        # Loop through the matches.
+        for j in range(length_matches): # Example: 0, 1 (length_matches = 2, the substructure is 2 atoms long)
+            
+            match_index = 0
+            for i in range(num_matches): # Example: 0, 1 (num_matches = 2, we have 2 substructure matches)
+                # Logic here is that matches[i][j] should be in the cla set for all i.
+                if matches[i][j] in cla:
+                    match_index += 1
+                    
+            # 2 possibilities: 
+            if match_index == num_matches: # symmetric: all symmetry classes match all substructure matches at the same ID
+                pass
+            elif match_index == 0: # nothing matches, but other iterations of i, j, and cla might match
+                pass
+            else: # asymmetric, matches are out of order
+                return False
+    
+    return True
+
+def find_symmetry_classes(mol : Chem.Mol) -> set:
+    '''
+    Find set of symmetry classes for a given mol. 
+    Adapted from code by Greg Landrum, 2011:
+    https://sourceforge.net/p/rdkit/mailman/rdkit-discuss/thread/CAD4fdRSofifYy_GFeZfxoHd_z4Y=4tVNR3UuBTea3sr81e8UMQ@mail.gmail.com/
+
+    Args:
+        mol: Molecule to examine symmetry classes.
+    '''
+
+    equivs = defaultdict(set)
+    matches = mol.GetSubstructMatches(mol,uniquify=False)
+    for match in matches:
+        for idx1,idx2 in enumerate(match): equivs[idx1].add(idx2)
+    classes = set()
+    for s in equivs.values(): classes.add(tuple(s))
+    return classes
