@@ -422,3 +422,107 @@ def fix_oxonium_bonds(
     ]
 
     return fix_mol(mol, remedies=remedies, sanitize=sanitize)
+
+
+def fix_charged_molecule(
+    mol: "RDKitMol",
+    sanitize: bool = True,
+) -> "RDKitMol":
+    """
+    Fix charged species. The formal charge of an atom is usually not perceived correctly.
+    This adjustment converts radical species into charged species.
+
+    Args:
+        mol (RDKitMol): The molecule to be fixed.
+        sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
+                                   Using ``False`` is only recommended for debugging and testing.
+
+    Returns:
+        RDKitMol: The fixed molecule.
+    """
+    remedies = [
+        # Remedy 1 - RC1(R)OC1(R)R to RC1(R)[O+]C1(R)R
+        # This is a case of an oxirane where the oxygen atom is protonated
+        rdChemReactions.ReactionFromSmarts(
+            "[C+0-0v4X4:1]-[O+0-0v3X3:2]-[C+0-0v4X4:3]>>[C+0v4X4:1]-[O+1v3X3:2]-[C+0v4X4:3]"
+        ),
+        # Remedy 2 - RC1(R)SC1(R)R to RC1(R)[S+]C1(R)R
+        # This is a case of a thiirane where the sulfur atom is protonated
+        rdChemReactions.ReactionFromSmarts(
+            "[C+0-0v4X4:1]-[S+0-0v3X3:2]-[C+0-0v4X4:3]>>[C+0v4X4:1]-[S+1v3X3:2]-[C+0v4X4:3]"
+        ),
+        # Remedy 3 - O=C(R)R to [O+]=C(R)R
+        # This is a case of a carbonyl group where the oxygen atom is protonated
+        rdChemReactions.ReactionFromSmarts(
+            "[O+0v2X2:1]-[C+0v3X3:2]>>[O+1v3X2:1]=[C+0v4X3:2]"
+        ),
+        # Remedy 4 - [OH] to [OH-]
+        # This is a case of a hydroxyl radical to hydroxide ion
+        rdChemReactions.ReactionFromSmarts("[O+0v1X1:1]>>[O-1v1X1:1]"),
+        # Remedy 5 - C[O] to C[O-]
+        # This is a case of a hydroxymethyl radical to methoxide anion
+        rdChemReactions.ReactionFromSmarts(
+            "[O+0v1X1:1]-[C+0v4X4:2]>>[O-1v1X1:1]-[C+0v4X4:2]"
+        ),
+        # Remedy 6 - C[S] to C[S-]
+        # This is a case of a methylthiyl radical to methanethiolate anion
+        rdChemReactions.ReactionFromSmarts(
+            "[S+0v1X1:1]-[C+0v4X4:2]>>[S-1v1X1:1]-[C+0v4X4:2]"
+        ),
+        # Remedy 7 - CN to C[N-]
+        # This is a case of a deprotonated methanimidoylazanide
+        rdChemReactions.ReactionFromSmarts(
+            "[C+0v4X4:1]-[N+0v2X2:2]>>[C+0v4X4:1]-[N-1v2X2:2]"
+        ),
+        # Remedy 8 - R[N-]R to RN=R
+        # This is a case combining amine and methyliminooxomethane
+        rdChemReactions.ReactionFromSmarts(
+            "[C+0v4X4:1]-[N-1v3X2:2]-[C+0v4X3:3]>>[C+0v4X4:1]-[N+0v3X2:2]=[C+0v4X3:3]"
+        ),
+        # Remedy 9 - [C]#N to [C-]#N
+        # This is a case of a cyano radical to cyanide
+        rdChemReactions.ReactionFromSmarts(
+            "[C+0v3X1:1]#[N+0v3X1:2]>>[C-1v3X1:1]#[N+0v3X1:2]"
+        ),
+        # Remedy 10 - [Cl] to [Cl-]
+        # This is a case of a chlorine atom to chloride anion
+        rdChemReactions.ReactionFromSmarts("[Cl+0v0X0:1]>>[Cl-1v0X0:1]"),
+        # Remedy 11 - [Br] to [Br-]
+        # This is a case of a bromine atom to bromide anion
+        rdChemReactions.ReactionFromSmarts("[Br+0v0X0:1]>>[Br-1v0X0:1]"),
+        # Remedy 12 - R(R)[N]R to R(R)[N+1]R
+        # This is a case of a protonation of an amine group
+        rdChemReactions.ReactionFromSmarts("[N+0v4X4:1]>>[N+1v4X4:1]"),
+        # Remedy 13 - R(R)[O]R to R(R)[O+]R
+        # This is a case of a protonation of an oxygen atom
+        rdChemReactions.ReactionFromSmarts("[O+0v3X3:1]>>[O+1v3X3:1]"),
+        # Remedy 14 - R(R)[O]R to R(R)[O+]R
+        # This is a case of a protonation of a sulfur atom
+        rdChemReactions.ReactionFromSmarts("[S+0v3X3:1]>>[S+1v3X3:1]"),
+        # Remedy 15 - OCN to [O+]=C=N
+        # This is a case of the formation of protonated isocyanatobenzene
+        rdChemReactions.ReactionFromSmarts(
+            "[O+0v2X2:1]-[C+0v2X2:2]-[N+0v2X2:3]>>[O+1v3X2:1]=[C+0v4X2:2]=[N+0v3X2:3]"
+        ),
+        # Remedy 16 - OC[N-] to [O+]=C=N
+        rdChemReactions.ReactionFromSmarts(
+            "[O+0v2X2:1]-[C+0v2X2:2]-[N-1v2X2:3]>>[O+1v3X2:1]=[C+0v4X2:2]=[N+0v3X2:3]"
+        ),
+        # Remedy 17 - [O-]CR(R) to [O]=CR(R)
+        rdChemReactions.ReactionFromSmarts(
+            "[O-1v1X1:1]-[C+0v3X3:2]>>[O+0v2X1:1]=[C+0v4X3:2]"
+        ),
+        # Remedy 18 - RC[N]R(R) to RC=[N+]R(R)
+        rdChemReactions.ReactionFromSmarts(
+            "[N+0v3X3:1]-[C+0v3X3:2]>>[N+1v3X3:1]=[C+0v4X3:2]"
+        ),
+        # Remedy 19 - R[N]COO to R[N-]COO
+        rdChemReactions.ReactionFromSmarts(
+            "[N+0v2X2:1]-[C+0v4X3:2]>>[N-1v2X2:1]-[C+0v4X3:2]"
+        ),
+        # Remedy 20 - R=C-[OH] to R=C=[OH+]
+        rdChemReactions.ReactionFromSmarts(
+            "[C+0v3X2:1]-[O+0v2X2:2]>>[C+0v4X2:1]=[O+1v3X2:2]"
+        ),
+    ]
+    return fix_mol(mol, remedies=remedies, sanitize=sanitize)
