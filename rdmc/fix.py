@@ -524,5 +524,9 @@ def fix_charged_molecule(
         rdChemReactions.ReactionFromSmarts(
             "[C+0v3X2:1]-[O+0v2X2:2]>>[C+0v4X2:1]=[O+1v3X2:2]"
         ),
+        # Remedy 21 - C1CCCCC1=O to c1ccccc1[O-]
+        rdChemReactions.ReactionFromSmarts(
+            "[O+0v2X1:1]=[CX3:2]1-,=[CX3:3]-,=[CX3:4]-,=[CX3:5]-,=[CX3:6]-,=[CX3:7]1>>[O-1v1X1:1]-[CX3:2]1:[CX3:3]:[CX3:4]:[CX3:5]:[CX3:6]:[CX3:7]1"
+        )
     ]
     return fix_mol(mol, remedies=remedies, sanitize=sanitize)
