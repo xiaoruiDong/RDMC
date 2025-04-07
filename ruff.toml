@@ -10,6 +10,7 @@ ignore = [
     "E203", # Whitespace before ':'
     "E231", # trailing whitespace
     "E501", # Line too long
+    "D107", # Missing docstring in __init__
 ]
 [lint.extend-per-file-ignores]
 "__init__.py" = ["F401"]
