@@ -1,9 +1,11 @@
-from typing import List, Sequence
+# -*- coding: utf-8 -*-
+"""Torsion related functions."""
+
+from typing import Sequence
 
 from rdkit import Chem
 
 from rdtools.dist import get_shortest_path
-
 
 # The rotational bond definition in RDkit
 # It is the same as rdkit.Chem.Lipinski import RotatableBondSmarts
@@ -17,18 +19,22 @@ def determine_smallest_atom_index_in_torsion(
     atom1: Chem.Atom,
     atom2: Chem.Atom,
 ) -> int:
-    """
-    Determine the smallest atom index in mol connected to ``atom1`` which is not ``atom2``.
-    Returns a heavy atom if available, otherwise a hydrogen atom.
-    Useful for deterministically determining the indices of four atom in a torsion.
-    This function assumes there ARE additional atoms connected to ``atom1``, and that ``atom2`` is not a hydrogen atom.
+    """Determine the smallest atom index connected to ``atom1`` but not ``atom2``.
+
+    Returns a heavy atom if available, otherwise a hydrogen atom. Useful for
+    deterministically determining the indices of four atom in a torsion. This function
+    assumes there ARE additional atoms connected to ``atom1``, and that ``atom2`` is not
+    a hydrogen atom.
 
     Args:
-        atom1 (Atom): The atom who's neighbors will be searched.
-        atom2 (Atom): An atom connected to ``atom1`` to exclude (a pivotal atom).
+        atom1 (Chem.Atom): The atom who's neighbors will be searched.
+        atom2 (Chem.Atom): An atom connected to ``atom1`` to exclude (a pivotal atom).
 
     Returns:
         int: The smallest atom index (1-indexed) connected to ``atom1`` which is not ``atom2``.
+
+    Raises:
+        ValueError: If no neighbors are found or if ``atom2`` is a hydrogen atom.
     """
     neighbor = [a for a in atom1.GetNeighbors() if a.GetIdx() != atom2.GetIdx()]
     atomic_num_list = sorted([nb.GetAtomicNum() for nb in neighbor])
@@ -48,16 +54,15 @@ def determine_smallest_atom_index_in_torsion(
 def find_internal_torsions(
     mol: Chem.Mol,
     exclude_methyl: bool = False,
-) -> List[List[int]]:
-    """
-    Find the internal torsions from RDkit molecule.
+) -> list[list[int]]:
+    """Find the internal torsions from RDkit molecule.
 
     Args:
         mol (Chem.Mol): RDKit molecule.
         exclude_methyl (bool): Whether exclude the torsions with methyl groups.
 
     Returns:
-        list: A list of internal torsions.
+        list[list[int]]: A list of internal torsions.
     """
     query = (
         ROTATABLE_BOND_SMARTS if not exclude_methyl else ROTATABLE_BOND_SMARTS_WO_METHYL
@@ -77,15 +82,14 @@ def find_internal_torsions(
     return torsions
 
 
-def find_ring_torsions(mol: Chem.Mol) -> List[List[int]]:
-    """
-    Find the ring from RDkit molecule.
+def find_ring_torsions(mol: Chem.Mol) -> list[list[int]]:
+    """Find the ring from RDkit molecule.
 
     Args:
         mol (Chem.Mol): RDKit molecule.
 
     Returns:
-        list: A list of ring torsions.
+        list[list[int]]: A list of ring torsions.
     """
     # Originally uses CalculateTorsionLists
     # Replace by the implementation athttps://github.com/rdkit/rdkit/
@@ -106,9 +110,8 @@ def get_torsional_modes(
     mol: Chem.Mol,
     exclude_methyl: bool = False,
     include_ring: bool = True,
-) -> List[List[int]]:
-    """
-    Get the torsional modes from RDkit molecule.
+) -> list[list[int]]:
+    """Get the torsional modes from RDkit molecule.
 
     Args:
         mol (Chem.Mol): RDKit molecule.
@@ -116,7 +119,7 @@ def get_torsional_modes(
         include_ring (bool): Whether include the ring torsions. Defaults to ``True``.
 
     Returns:
-        list: A list of torsional modes.
+        list[list[int]]: A list of torsional modes.
     """
     internal_torsions = find_internal_torsions(mol, exclude_methyl)
     ring_torsions = find_ring_torsions(mol) if include_ring else []
@@ -126,23 +129,28 @@ def get_torsional_modes(
 
 def get_torsion_tops(
     mol: Chem.Mol,
-    torsion: Sequence,
+    torsion: Sequence[int],
     allow_non_bonding_pivots: bool = False,
-) -> tuple:
-    """
-    Generate tops for the given torsion. Top atoms are defined as atoms on one side of the torsion.
-    The mol should be in one-piece when using this function, otherwise, the results will be
-    misleading.
+) -> tuple[list[int], list[int]]:
+    """Generate tops for the given torsion.
+
+    Top atoms are defined as atoms on one side
+    of the torsion. The mol should be in one-piece when using this function, otherwise,
+    the results will be misleading.
 
     Args:
-        torsion (Sequence): The atom indices of the pivot atoms (length of 2) or
+        mol (Chem.Mol): The molecule to get the torsion tops from.
+        torsion (Sequence[int]): The atom indices of the pivot atoms (length of 2) or
             a length-4 atom index sequence with the 2nd and 3rd are the pivot of the torsion.
         allow_non_bonding_pivots (bool, optional): Allow pivots. Defaults to ``False``.
             There are cases like CC#CC or X...H...Y, where a user may want to define a
             torsion with a nonbonding pivots.
 
     Returns:
-        tuple: Two frags, one of the top of the torsion, and the other top of the torsion.
+        tuple[list[int], list[int]]: Two frags, one of the top of the torsion, and the other top of the torsion.
+
+    Raises:
+        ValueError: If the torsion is invalid.
     """
     pivot = torsion if len(torsion) == 2 else [int(i) for i in torsion[1:3]]
     try:
@@ -154,8 +162,10 @@ def get_torsion_tops(
             except IndexError:
                 raise ValueError(f"Atom {pivot[0]} and {pivot[1]} are not bonded.")
 
-            bond_idxs = [mol.GetBondBetweenAtoms(*path[:2]).GetIdx(),
-                         mol.GetBondBetweenAtoms(*path[-2:]).GetIdx()]
+            bond_idxs = [
+                mol.GetBondBetweenAtoms(*path[:2]).GetIdx(),
+                mol.GetBondBetweenAtoms(*path[-2:]).GetIdx(),
+            ]
         else:
             raise ValueError(f"Atom {pivot[0]} and {pivot[1]} are not bonded.")
 
