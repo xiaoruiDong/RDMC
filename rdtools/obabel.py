@@ -1,10 +1,13 @@
-import numpy as np
+# -*- coding: utf-8 -*-
+"""A module contains functions to convert between OpenBabel and RDKit molecules."""
 
+import numpy as np
+import numpy.typing as npt
 from rdkit import Chem
 
-from rdtools.utils import get_fake_module
-from rdtools.conf import add_conformer
 from rdtools.bond import BOND_ORDERS
+from rdtools.conf import add_conformer
+from rdtools.utils import get_fake_module
 
 try:
     # Openbabel 3
@@ -26,16 +29,14 @@ RDKIT_TO_OB_BOND_ORDER = {
 }
 
 
-def get_obmol_coords(obmol: "ob.OBMol"):
-    """
-    Get the atom coordinates from an openbabel molecule. If all coordinates are zero,
-    None will be returned.
+def get_obmol_coords(obmol: ob.OBMol) -> npt.NDArray[np.float64]:
+    """Get the atom coordinates from an openbabel molecule.
 
     Args:
-        obmol (OBMol): The openbabel OBMol to get coordinates from.
+        obmol (ob.OBMol): The openbabel OBMol to get coordinates from.
 
     Returns:
-        np.array: The coordinates.
+        npt.NDArray[np.float64]: The coordinates.
     """
     coords = []
     for obatom in ob.OBMolAtomIter(obmol):
@@ -44,21 +45,21 @@ def get_obmol_coords(obmol: "ob.OBMol"):
 
 
 def openbabel_mol_to_rdkit_mol(
-    obmol: "openbabel.OBMol",
+    obmol: ob.OBMol,
     remove_hs: bool = False,
     sanitize: bool = True,
     embed: bool = True,
 ) -> Chem.RWMol:
-    """
-    Convert a OpenBabel molecular structure to a Chem.rdchem.RWMol object.
+    """Convert a OpenBabel molecular structure to a Chem.rdchem.RWMol object.
+
     Args:
-        obmol (Molecule): An OpenBabel Molecule object for the conversion.
+        obmol (ob.OBMol): An OpenBabel Molecule object for the conversion.
         remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule, Defaults to False.
         sanitize (bool, optional): Whether to sanitize the RDKit molecule. Defaults to True.
         embed (bool, optional): Whether to embeb 3D conformer from OBMol. Defaults to True.
 
     Returns:
-        RWMol: A writable RDKit RWMol instance.
+        Chem.RWMol: A writable RDKit RWMol instance.
     """
     # For efficiency consideration, split keep_hs and remove_hs
     if remove_hs:
@@ -169,18 +170,19 @@ def _obmol_to_rdkitmol_removehs(
 def rdkit_mol_to_openbabel_mol(
     rdmol: Chem.Mol,
     embed: bool = True,
-) -> "ob.OBMol":
-    """
-    Convert a Mol to an Openbabel mol. This a temporary replace of
+) -> ob.OBMol:
+    """Convert a Mol to an Openbabel mol.
+
+    This a temporary replace of
     ``rdkit_mol_to_openbabel_mol_manual``. When the molecule has multiple conformers,
     this function will only use the first conformer.
 
     Args:
-        rdmol (Mol): The RDKit Mol object to be converted.
+        rdmol (Chem.Mol): The RDKit Mol object to be converted.
         embed (bool, optional): Whether to embed conformer into the OBMol. Defaults to ``True``.
 
     Returns:
-        OBMol: An openbabel OBMol instance.
+        ob.OBMol: An openbabel OBMol instance.
     """
     sdf_str = Chem.MolToMolBlock(rdmol)
     obconv, obmol = ob.OBConversion(), ob.OBMol()
@@ -200,18 +202,19 @@ def rdkit_mol_to_openbabel_mol(
 def rdkit_mol_to_openbabel_mol_manual(
     rdmol: Chem.Mol,
     embed: bool = True,
-) -> "ob.OBMol":
-    """
-    Convert a Mol/RWMol to a Openbabel mol. This function has a problem converting
+) -> ob.OBMol:
+    """Convert a Mol/RWMol to a Openbabel mol.
+
+    This function has a problem converting
     aromatic molecules. Example: 'c1nc[nH]n1'. Currently use a workaround, converting an
     RDKit Mol to sdf string and read by openbabel.
 
     Args:
-        rdmol (Mol): The RDKit Mol/RWMol object to be converted.
+        rdmol (Chem.Mol): The RDKit Mol/RWMol object to be converted.
         embed (bool, optional): Whether to embed conformer into the OBMol. Defaults to True.
 
     Returns:
-        OBMol: An openbabel OBMol instance.
+        ob.OBMol: An openbabel OBMol instance.
     """
     obmol = ob.OBMol()
     for rdatom in rdmol.GetAtoms():
@@ -248,27 +251,28 @@ def rdkit_mol_to_openbabel_mol_manual(
     return obmol
 
 
-def set_obmol_coords(obmol: "ob.OBMol", coords: np.array):
-    """
-    Set the atom coordinates of an openbabel molecule.
+def set_obmol_coords(obmol: ob.OBMol, coords: npt.NDArray[np.float64]) -> None:
+    """Set the atom coordinates of an openbabel molecule.
 
     Args:
-        obmol (OBMol): The openbabel OBMol to get coordinates from.
-        coords (np.array): The coordinates to set.
+        obmol (ob.OBMol): The openbabel OBMol to get coordinates from.
+        coords (npt.NDArray[np.float64]): The coordinates to set.
     """
     for atom_idx, atom in enumerate(ob.OBMolAtomIter(obmol)):
         atom.SetVector(ob.vector3(*coords[atom_idx].tolist()))
 
 
-def parse_xyz_by_openbabel(xyz: str) -> "ob.OBMol":
-    """
-    Perceive a xyz str using openbabel and generate the corresponding OBMol.
+def parse_xyz_by_openbabel(xyz: str) -> ob.OBMol:
+    """Perceive a xyz str using openbabel and generate the corresponding OBMol.
 
     Args:
         xyz (str): A str in xyz format containing atom positions.
 
     Returns:
-        ob.OBMol: An openbabel molecule from the xyz
+        ob.OBMol: An openbabel molecule from the xyz.
+
+    Raises:
+        ValueError: If the xyz cannot be parsed.
     """
     obconversion = ob.OBConversion()
     obconversion.SetInFormat("xyz")
@@ -283,8 +287,9 @@ def parse_xyz_by_openbabel(xyz: str) -> "ob.OBMol":
     return obmol
 
 
-def _correct_atom_spin_mult(obmol: "ob.OBMol"):
-    """
+def _correct_atom_spin_mult(obmol: ob.OBMol) -> None:
+    """Temporary fix for the atom spin multiplicity in openbabel.
+
     This is a temporary Fix for Issue # 1. Openbabel has a native function called AssignSpinMultiplicity
     however,  it becomes a dummy function in openbabel 3,
     where it only returns True. See https://github.com/openbabel/
@@ -294,7 +299,7 @@ def _correct_atom_spin_mult(obmol: "ob.OBMol"):
     Currently, it cannot deal with any charged species properly.
 
     Args:
-        obmol (OBMol): The openbabel OBMol to be fixed.
+        obmol (ob.OBMol): The openbabel OBMol to be fixed.
     """
     for obatom in ob.OBMolAtomIter(obmol):
         atomic_num = obatom.GetAtomicNum()
