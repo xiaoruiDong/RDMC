@@ -44,7 +44,7 @@ repos:
         language: python
         types: [python]
         pass_filenames: true
-        args: ["--style=numpy"]
+        args: ["--style=google"]
 
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
