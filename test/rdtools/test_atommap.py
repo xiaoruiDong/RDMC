@@ -149,14 +149,86 @@ def test_reverse_match():
     Test the functionality to reverse a mapping.
     """
     map = [
-        1, 2, 3, 4, 5, 17, 18, 19, 20, 21, 22, 23, 24, 25, 6, 7, 8,
-        9, 10, 11, 12, 13, 14, 15, 16, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-        35, 36, 37, 38, 39
+        1,
+        2,
+        3,
+        4,
+        5,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
     ]
     r_map = [
-        0, 1, 2, 3, 4, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 5,
-        6, 7, 8, 9, 10, 11, 12, 13, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-        34, 35, 36, 37, 38
+        0,
+        1,
+        2,
+        3,
+        4,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
     ]
 
     np.testing.assert_equal(np.array(r_map), np.array(reverse_map(map)))
@@ -168,21 +240,25 @@ def test_move_atommaps_to_notes():
     move_atommaps_to_notes(mol, clear_atommap=True)
     atom_map_numbers_after = get_atom_map_numbers(mol)
     assert atom_map_numbers_after == [0] * len(atom_map_numbers_before)
-    assert [int(atom.GetProp('atomNote')) for atom in mol.GetAtoms()] == atom_map_numbers_before
+    assert [
+        int(atom.GetProp("atomNote")) for atom in mol.GetAtoms()
+    ] == atom_map_numbers_before
 
     mol = Chem.MolFromSmiles("[CH3:1][CH2:2][OH:3]")
     atom_map_numbers_before = get_atom_map_numbers(mol)
     move_atommaps_to_notes(mol, clear_atommap=False)
     atom_map_numbers_after = get_atom_map_numbers(mol)
     assert atom_map_numbers_after == atom_map_numbers_before
-    assert [int(atom.GetProp('atomNote')) for atom in mol.GetAtoms()] == atom_map_numbers_before
+    assert [
+        int(atom.GetProp("atomNote")) for atom in mol.GetAtoms()
+    ] == atom_map_numbers_before
 
 
 def test_move_notes_to_atommaps():
     mol = Chem.MolFromSmiles("[CH3][CH2][OH]")
     atom_notes = []
     for atom in mol.GetAtoms():
-        atom.SetProp('atomNote', str(atom.GetIdx() + 1))
+        atom.SetProp("atomNote", str(atom.GetIdx() + 1))
         atom_notes.append(atom.GetIdx() + 1)
     atom_map_numbers_before = get_atom_map_numbers(mol)
     move_notes_to_atommaps(mol)
@@ -206,37 +282,45 @@ def test_move_notes_to_atommaps():
         ),
         (
             "[CH:1]1([CH:8]2[CH:7]=[CH:6][CH:10]=[CH:9]2)[CH2:2][CH2:3][CH:4]=[CH:5]1",
-            '[C:1]1([C:8]2([H:20])[C:7]([H:19])=[C:6]([H:18])[C:10]([H:17])=[C:9]2[H:16])'
-            '([H:11])[C:2]([H:14])([H:15])[C:3]([H:12])([H:13])[C:4]([H:22])=[C:5]1[H:21]',
+            "[C:1]1([C:8]2([H:20])[C:7]([H:19])=[C:6]([H:18])[C:10]([H:17])=[C:9]2[H:16])"
+            "([H:11])[C:2]([H:14])([H:15])[C:3]([H:12])([H:13])[C:4]([H:22])=[C:5]1[H:21]",
             "[CH:1]1=[CH:2][CH2:3][CH:4]=[CH:5]1.[CH:6]1=[CH:7][CH2:8][CH:9]=[CH:10]1",
-            '[C:1]1([H:11])=[C:2]([H:15])[C:3]([H:12])([H:13])[C:4]([H:22])=[C:5]1[H:21].'
-            '[C:6]1([H:18])=[C:7]([H:19])[C:8]([H:14])([H:20])[C:9]([H:16])=[C:10]1[H:17]',
+            "[C:1]1([H:11])=[C:2]([H:15])[C:3]([H:12])([H:13])[C:4]([H:22])=[C:5]1[H:21]."
+            "[C:6]1([H:18])=[C:7]([H:19])[C:8]([H:14])([H:20])[C:9]([H:16])=[C:10]1[H:17]",
         ),
         (
-            '[CH3:1][CH2:2][CH2:3][CH2:4][OH:5].[O:6]',
-            '[C:1]([C:2]([C:3]([C:4]([O:5][H:16])([H:14])'
-            '[H:15])([H:12])[H:13])([H:10])[H:11])([H:7])([H:8])[H:9].[O:6]',
-            '[CH2:1][CH2:2][CH2:3][CH2:4][OH:5].[OH:6]',
-            '[C:1]([C:2]([C:3]([C:4]([O:5][H:16])([H:14])'
-            '[H:15])([H:12])[H:13])([H:10])[H:11])([H:7])[H:8].[O:6][H:9]',
+            "[CH3:1][CH2:2][CH2:3][CH2:4][OH:5].[O:6]",
+            "[C:1]([C:2]([C:3]([C:4]([O:5][H:16])([H:14])"
+            "[H:15])([H:12])[H:13])([H:10])[H:11])([H:7])([H:8])[H:9].[O:6]",
+            "[CH2:1][CH2:2][CH2:3][CH2:4][OH:5].[OH:6]",
+            "[C:1]([C:2]([C:3]([C:4]([O:5][H:16])([H:14])"
+            "[H:15])([H:12])[H:13])([H:10])[H:11])([H:7])[H:8].[O:6][H:9]",
         ),
         (
-            '[CH3:1][CH3:2]',
-            '[C:1]([C:2]([H:4])([H:7])[H:8])([H:3])([H:5])[H:6]',
-            '[CH2:1]=[CH2:2].[H:3][H:4]',
-            '[C:1](=[C:2]([H:7])[H:8])([H:5])[H:6].[H:3][H:4]'
+            "[CH3:1][CH3:2]",
+            "[C:1]([C:2]([H:4])([H:7])[H:8])([H:3])([H:5])[H:6]",
+            "[CH2:1]=[CH2:2].[H:3][H:4]",
+            "[C:1](=[C:2]([H:7])[H:8])([H:5])[H:6].[H:3][H:4]",
         ),
         (
-            '[CH3:1][CH3:2]',
-            '[C:1]([C:2]([H:6])([H:7])[H:8])([H:3])([H:4])[H:5]',
-            '[CH2:1][CH3:2].[H:3]',
-            '[C:1]([C:2]([H:6])([H:7])[H:8])([H:4])[H:5].[H:3]',
-
-        )
-    ]
+            "[CH3:1][CH3:2]",
+            "[C:1]([C:2]([H:6])([H:7])[H:8])([H:3])([H:4])[H:5]",
+            "[CH2:1][CH3:2].[H:3]",
+            "[C:1]([C:2]([H:6])([H:7])[H:8])([H:4])[H:5].[H:3]",
+        ),
+        (
+            "[CH2:1]([CH2:2][O:7][OH:8])[O:10]",
+            "[CH:1]([CH2:2][O:7][OH:8])[OH:10]",
+            "[C:1]([C:2]([H:5])([H:6])[O:7][O:8][H:9])([H:3])([H:4])[O:10]",
+            "[C:1]([C:2]([H:5])([H:6])[O:7][O:8][H:9])([H:3])[O:10][H:4]",
+        ),
+    ],
 )
 def map_h_atoms_in_reaction(rsmi, exp_rsmi, psmi, exp_psmi):
-    rmol, pmol = mol_from_smiles(rsmi, add_hs=False), mol_from_smiles(psmi, add_hs=false)
+    rmol, pmol = (
+        mol_from_smiles(rsmi, add_hs=False),
+        mol_from_smiles(psmi, add_hs=False),
+    )
     rmol, pmol = map_h_atoms_in_reaction(rmol, pmol)
     assert mol_to_smiles(rmol) == exp_rsmi
     assert mol_to_smiles(pmol) == exp_psmi

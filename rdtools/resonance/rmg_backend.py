@@ -22,7 +22,9 @@ from rdtools.resonance.filtration import (
     get_octet_deviation_list,
     get_charge_span_list,
 )
-from rdtools.resonance.filtration import filter_structures as filter_resonance_structures
+from rdtools.resonance.filtration import (
+    filter_structures as filter_resonance_structures,
+)
 from rdtools.resonance.pathfinder import PathFinderRegistry
 from rdtools.resonance.utils import (
     force_no_implicit,
@@ -588,8 +590,8 @@ def generate_clar_structures(mol):
 
     for solution in solutions:
         new_struct = Chem.RWMol(mol, True)
-        ring_assign = solution[0: len(aromatic_rings)]
-        bond_assign = solution[len(aromatic_rings):]
+        ring_assign = solution[0 : len(aromatic_rings)]
+        bond_assign = solution[len(aromatic_rings) :]
 
         for index, bidx in enumerate(bonds):
             bond = new_struct.GetBondWithIdx(bidx)
@@ -688,9 +690,7 @@ def _clar_optimization(mol):
     for i, atom in enumerate(atoms):
         A_eq[i, list(atom_ring_map[atom] | atom_bond_map[atom])] = 1
 
-    constraints = [LinearConstraint(
-        A=A_eq, lb=np.ones(n_atom), ub=np.ones(n_atom)
-    )]
+    constraints = [LinearConstraint(A=A_eq, lb=np.ones(n_atom), ub=np.ones(n_atom))]
 
     c = np.array([1] * n_ring + [0] * (n_ring_bond + n_exo_bond))
 
@@ -716,7 +716,7 @@ def _solve_clar_lp(
         integrality=1,
         bounds=bounds,
         constraints=constraints,
-        options={'time_limit': 10}
+        options={"time_limit": 10},
     )
 
     if result.status != 0:
@@ -738,7 +738,7 @@ def _solve_clar_lp(
         raise Exception("Optimization obtained a non-integer solution.")
 
     # Generate constraints based on the solution obtained
-    y = solution[0: n_ring]
+    y = solution[0:n_ring]
     constraints.append(
         LinearConstraint(
             A=np.hstack([y, [0] * (solution.shape[0] - n_ring)]),

@@ -97,14 +97,14 @@ def test_mol_from_xyz_openbabel(xyz, smi, header):
     mols.items(),
 )
 @pytest.mark.parametrize("header", [True, False])
-@pytest.mark.parametrize("force_rdmc", [True, False])
-def test_mol_from_xyz_xyz2mol(xyz, smi, header, force_rdmc):
+@pytest.mark.parametrize("original", [True, False])
+def test_mol_from_xyz_xyz2mol(xyz, smi, header, original):
     xyz_wo_header = "\n".join(xyz.splitlines()[2:])
     num_atoms = int(xyz.splitlines()[0].strip())
     if not header:
         xyz = xyz_wo_header
 
-    mol = mol_from_xyz(xyz, backend="xyz2mol", header=header, force_rdmc=force_rdmc)
+    mol = mol_from_xyz(xyz, backend="xyz2mol", header=header, original=original)
 
     # Check molecule properties are correct
     assert mol.GetNumAtoms() == num_atoms
@@ -173,8 +173,8 @@ Br     1.697832   -0.646080   -0.165647
 H     -0.184647    0.453509    1.137464
 """,
             Chem.CHI_TETRAHEDRAL_CW,
-        )
-    ]
+        ),
+    ],
 )
 @pytest.mark.parametrize("backend", ["openbabel", "xyz2mol"])
 def test_embed_chiral(xyz, chiral_tag, backend):

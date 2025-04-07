@@ -30,7 +30,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Chemistry",
 ]
 urls = { Homepage = "https://github.com/xiaoruiDong/RDMC" }
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 dependencies = [
     "rdkit>=2021.03.1",
     "numpy",
@@ -41,19 +41,23 @@ dependencies = [
     "cclib",
     "py3Dmol",
     "ipywidgets",
+    "ase",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "black",
-    "isort",
-    "pycodestyle",
+    "ruff",
+    "pydocstyle",
+    "docformatter",
+    "pydoclint",
+    "pre-commit",
+    "mypy",
     "pytest-cov",
     "pytest",
-    "sphinx",
-    "pydata-sphinx-theme",
-    "sphinx-favicon",
+    "nbmake",
 ]
+
+docs = ["sphinx", "pydata-sphinx-theme", "sphinx-favicon"]
 
 [project.readme]
 file = "README.md"
@@ -61,9 +65,6 @@ content-type = "text/markdown"
 
 [project.license]
 file = "LICENSE"
-
-[tool.isort]
-profile = "black"
 
 [tool.setuptools.packages.find]
 where = ["."]

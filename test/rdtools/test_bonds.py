@@ -11,6 +11,7 @@ from rdtools.bond import (
     get_broken_bonds,
     get_formed_and_broken_bonds,
     get_all_changing_bonds,
+    get_atoms_in_bonds,
 )
 from rdtools.conversion import mol_from_smiles
 
@@ -74,17 +75,33 @@ def test_get_bonds_as_sets():
     """
     mol1 = mol_from_smiles("[C:1]([c:2]1[n:3][o:4][n:5][n:6]1)([H:7])([H:8])[H:9]")
     mol2 = mol_from_smiles("[C:1]([N:3]=[C:2]=[N:6][N:5]=[O:4])([H:7])([H:8])[H:9]")
-    mol3 = mol_from_smiles("[C:1]2([C:2]1[N:3]2[O:4][N:5][N:6]1)([H:7])([H:8])[H:9]", sanitize=False)
+    mol3 = mol_from_smiles(
+        "[C:1]2([C:2]1[N:3]2[O:4][N:5][N:6]1)([H:7])([H:8])[H:9]", sanitize=False
+    )
 
-    assert _get_bonds_as_sets(mol1) \
-        == ({(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},)
-    assert _get_bonds_as_sets(mol1, mol2) \
-        == ({(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
-            {(0, 2), (1, 2), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)})
-    assert _get_bonds_as_sets(mol1, mol2, mol3) \
-        == ({(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
-            {(0, 2), (1, 2), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
-            {(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5), (0, 2)})
+    assert _get_bonds_as_sets(mol1) == (
+        {(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
+    )
+    assert _get_bonds_as_sets(mol1, mol2) == (
+        {(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
+        {(0, 2), (1, 2), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
+    )
+    assert _get_bonds_as_sets(mol1, mol2, mol3) == (
+        {(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
+        {(0, 2), (1, 2), (3, 4), (4, 5), (0, 6), (0, 7), (0, 8), (1, 5)},
+        {
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 4),
+            (4, 5),
+            (0, 6),
+            (0, 7),
+            (0, 8),
+            (1, 5),
+            (0, 2),
+        },
+    )
 
 
 def test_get_formed_bonds():
@@ -119,12 +136,14 @@ def test_get_formed_and_broken_bonds() -> None:
     mol2 = mol_from_smiles("[C:1]([N:3]=[C:2]=[N:6][N:5]=[O:4])([H:7])([H:8])[H:9]")
 
     # The backend molecule should be the same as the input RWMol object
-    assert [set(blist) for blist in get_formed_and_broken_bonds(mol1, mol2)] \
-        == [{(0, 2)},
-            {(0, 1), (2, 3)}]
-    assert [set(blist) for blist in get_formed_and_broken_bonds(mol2, mol1)] \
-        == [{(0, 1), (2, 3)},
-            {(0, 2)}]
+    assert [set(blist) for blist in get_formed_and_broken_bonds(mol1, mol2)] == [
+        {(0, 2)},
+        {(0, 1), (2, 3)},
+    ]
+    assert [set(blist) for blist in get_formed_and_broken_bonds(mol2, mol1)] == [
+        {(0, 1), (2, 3)},
+        {(0, 2)},
+    ]
 
 
 def test_get_all_changing_bonds() -> None:
@@ -135,11 +154,38 @@ def test_get_all_changing_bonds() -> None:
     mol2 = mol_from_smiles("[C:1]([N:3]=[C:2]=[N:6][N:5]=[O:4])([H:7])([H:8])[H:9]")
 
     # The backend molecule should be the same as the input RWMol object
-    assert [set(blist) for blist in get_all_changing_bonds(mol1, mol2)] \
-        == [{(0, 2)},
-            {(0, 1), (2, 3)},
-            {(1, 2), (4, 5), (1, 5), (3, 4)}]
-    assert [set(blist) for blist in get_all_changing_bonds(mol2, mol1)] \
-        == [{(0, 1), (2, 3)},
-            {(0, 2)},
-            {(1, 2), (4, 5), (1, 5), (3, 4)}]
+    assert [set(blist) for blist in get_all_changing_bonds(mol1, mol2)] == [
+        {(0, 2)},
+        {(0, 1), (2, 3)},
+        {(1, 2), (4, 5), (1, 5), (3, 4)},
+    ]
+    assert [set(blist) for blist in get_all_changing_bonds(mol2, mol1)] == [
+        {(0, 1), (2, 3)},
+        {(0, 2)},
+        {(1, 2), (4, 5), (1, 5), (3, 4)},
+    ]
+
+
+@pytest.mark.parametrize(
+    "bonds, atoms",
+    [
+        ([(1, 2)], [1, 2]),
+        ([(0, 1), (1, 2)], [0, 1, 2]),
+        (
+            [
+                (0, 1),
+                (2, 3),
+                (4, 5),
+            ],
+            [0, 1, 2, 3, 4, 5],
+        ),
+    ],
+)
+@pytest.mark.parametrize("sorted", [True, False])
+def test_get_atoms_in_bonds(bonds, atoms, sorted):
+    result_atoms = get_atoms_in_bonds(bonds, sorted=sorted)
+
+    if sorted:
+        assert result_atoms == atoms
+    else:
+        assert set(result_atoms) == set(atoms)

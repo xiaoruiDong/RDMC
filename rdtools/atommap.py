@@ -1,3 +1,5 @@
+"""A module of atom map number operations"""
+
 from itertools import permutations
 from typing import Iterable, List, Optional, Tuple
 
@@ -319,7 +321,10 @@ def map_h_atoms_in_reaction(
     # there can be cases with unequal number of atoms labeled with atom map index. Known cases:
     # * H will not be labeled in most case but will be labeled if it has no neighbors, [H][H] or [H]
 
-    r_atommap_nums, p_atommap_nums = get_atom_map_numbers(rmol), get_atom_map_numbers(pmol)
+    r_atommap_nums, p_atommap_nums = (
+        get_atom_map_numbers(rmol),
+        get_atom_map_numbers(pmol),
+    )
 
     # Step 1: pair the heavy atoms
     ridx_to_pidx = {}
@@ -353,9 +358,9 @@ def map_h_atoms_in_reaction(
             idxs_to_add[rH_idx] = pH_idx
 
         if len(rH_nbs) > len(pH_nbs):
-            unused_ridxs.extend(rH_nbs[len(pH_nbs):])
+            unused_ridxs.extend(rH_nbs[len(pH_nbs) :])
         elif len(rH_nbs) < len(pH_nbs):
-            unset_pidxs.extend(pH_nbs[len(rH_nbs):])
+            unset_pidxs.extend(pH_nbs[len(rH_nbs) :])
 
     ridx_to_pidx.update(idxs_to_add)
 
@@ -396,22 +401,32 @@ def map_h_atoms_in_reaction(
 
     # Step 4: update atom map numbers
     # Assign atom map number missing in reactant
-    for i in range(1, max(max(r_atommap_nums), max(p_atommap_nums)) + 1):
-        if i not in r_atommap_nums:  # must be in pmol assuming no discontinuity
+    remaining_atom_map_nums = []
+    for i in range(1, max(len(r_atommap_nums), len(p_atommap_nums)) + 1):
+        if i not in r_atommap_nums and i not in p_atommap_nums:
+            # discontinuity
+            remaining_atom_map_nums.append(i)
+        elif i not in r_atommap_nums:  # must be in pmol
             pidx = p_atommap_nums.index(i)
             ridx = [ridx for ridx, pid in ridx_to_pidx.items() if pid == pidx][0]
             rmol.GetAtomWithIdx(ridx).SetAtomMapNum(i)
             r_atommap_nums[ridx] = i
 
     # assign H atom map numbers
-    cur_atommap = max(r_atommap_nums) + 1
+    cur_atommap_idx = 0
     for i, mapnum in enumerate(r_atommap_nums):
         if mapnum == 0:
-            rmol.GetAtomWithIdx(i).SetAtomMapNum(cur_atommap)
-            cur_atommap += 1
+            rmol.GetAtomWithIdx(i).SetAtomMapNum(
+                remaining_atom_map_nums[cur_atommap_idx]
+            )
+            cur_atommap_idx += 1
 
     # assign pmol atom map numbers
     for ridx, pidx in ridx_to_pidx.items():
-        pmol.GetAtomWithIdx(pidx).SetAtomMapNum(rmol.GetAtomWithIdx(ridx).GetAtomMapNum())
+        pmol.GetAtomWithIdx(pidx).SetAtomMapNum(
+            rmol.GetAtomWithIdx(ridx).GetAtomMapNum()
+        )
 
-    return renumber_atoms(rmol, update_atom_map=False), renumber_atoms(pmol, update_atom_map=False)
+    return renumber_atoms(rmol, update_atom_map=False), renumber_atoms(
+        pmol, update_atom_map=False
+    )

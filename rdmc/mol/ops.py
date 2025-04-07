@@ -96,7 +96,7 @@ class MolOpsMixin:
 
     def GetClosedShellMol(
         self,
-        cheap: bool = False,
+        explicit: bool = True,
         sanitize: bool = True,
     ) -> "Mol":
         """
@@ -105,18 +105,18 @@ class MolOpsMixin:
         and will not work properly for singlet radicals.
 
         Args:
-            cheap (bool): Whether to use a cheap method where H atoms are only implicitly added.
-                          Defaults to ``False``. Setting it to ``False`` only when the molecule
-                          is immediately used for generating SMILES/InChI and other representations,
-                          and no further manipulation is needed. Otherwise, it may be confusing as
-                          the hydrogen atoms will not appear in the list of atoms, not display in the
-                          2D graph, etc.
+            explicit (bool): Whether to use add H atoms explicitly.
+                Defaults to ``False``. Setting it to ``False`` only when the molecule
+                is immediately used for generating SMILES/InChI and other representations,
+                and no further manipulation is needed. Otherwise, it may be confusing as
+                the hydrogen atoms will not appear in the list of atoms, not display in the
+                2D graph, etc.
             sanitize (bool): Whether to sanitize the molecule. Defaults to ``True``.
 
         Returns:
             Mol: A closed shell molecule.
         """
-        return get_closed_shell_mol(self, sanitize, cheap)  # use copy.copy inside
+        return get_closed_shell_mol(self, sanitize, explicit)  # use copy.copy inside
 
     def CombineMol(
         self,

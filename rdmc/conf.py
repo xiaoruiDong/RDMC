@@ -11,6 +11,8 @@ import numpy as np
 
 from scipy.spatial import distance_matrix
 
+from rdkit.Chem import rdMolTransforms as rdMT
+
 from rdtools.conf import (
     set_conformer_coordinates,
     get_bond_length,
@@ -35,8 +37,24 @@ class EditableConformer(object):
         self._conf = conf
         self._owning_mol = conf.GetOwningMol()
         for attr in dir(conf):
-            if not attr.startswith('_') and not hasattr(self, attr):
-                setattr(self, attr, getattr(self._conf, attr,))
+            if not attr.startswith("_") and not hasattr(self, attr):
+                setattr(
+                    self,
+                    attr,
+                    getattr(
+                        self._conf,
+                        attr,
+                    ),
+                )
+
+    def Canonicalize(self, ignoreHs: bool = False):
+        """
+        Canonicalize the Conformer.
+
+        Args:
+            ignoreHs (bool, optional): Whether ignore hydrogens. Default to ``False``.
+        """
+        rdMT.CanonicalizeConformer(self._conf, ignoreHs=ignoreHs)
 
     def GetBondLength(
         self,
@@ -92,6 +110,30 @@ class EditableConformer(object):
             list: A list of dihedral angles of all torsional modes.
         """
         return [self.GetTorsionDeg(tor) for tor in self.GetTorsionalModes()]
+
+    def GetCentroid(self, ignoreHs: bool = False) -> np.ndarray:
+        """
+        Get the centroid of the conformer.
+
+        Args:
+            ignoreHs (bool): Whether ignore hydrogens. Default to ``False``.
+
+        Returns:
+            array: The centroid of the conformer.
+        """
+        return np.array(rdMT.ComputeCentroid(self._conf, ignoreHs=ignoreHs))
+
+    def GetPrincipalAxesAndMoments(self, ignoreHs: bool = False) -> tuple:
+        """
+        Get the principal axes and moments of the conformer.
+
+        Args:
+            ignoreHs (bool): Whether ignore hydrogens. Default to ``False``.
+
+        Returns:
+            tuple: A tuple containing the principal axes and moments.
+        """
+        return rdMT.ComputePrincipalAxesAndMoments(self._conf, ignoreHs=ignoreHs)
 
     def GetDistanceMatrix(self) -> np.ndarray:
         """
@@ -155,7 +197,8 @@ class EditableConformer(object):
             self._torsions = get_torsional_modes(
                 self._owning_mol,
                 exclude_methyl=excludeMethyl,
-                include_ring=includeRings)
+                include_ring=includeRings,
+            )
             return self._torsions
 
     def HasCollidingAtoms(self, threshold=0.4) -> np.ndarray:
@@ -169,7 +212,7 @@ class EditableConformer(object):
             mol=self._owning_mol,
             conf_id=self.GetId(),
             threshold=threshold,
-            reference='vdw'
+            reference="vdw",
         )
 
     def HasOwningMol(self):
@@ -183,10 +226,7 @@ class EditableConformer(object):
             return True
         return False
 
-    def SetOwningMol(self,
-                     owningMol: Union['RDKitMol',
-                                      'Mol',
-                                      'RWMol']):
+    def SetOwningMol(self, owningMol: Union["RDKitMol", "Mol", "RWMol"]):
         """
         Set the owning molecule of the conformer. It can be either RDKitMol
         or Chem.rdchem.Mol.
@@ -197,12 +237,11 @@ class EditableConformer(object):
         Raises:
             ValueError: Not a valid ``owning_mol`` input, when giving something else.
         """
-        if not hasattr(owningMol, 'GetConformer'):
-            raise ValueError('Provided an invalid molecule object.')
+        if not hasattr(owningMol, "GetConformer"):
+            raise ValueError("Provided an invalid molecule object.")
         self._owning_mol = owningMol
 
-    def SetPositions(self,
-                     coords: Union[tuple, list]):
+    def SetPositions(self, coords: Union[tuple, list]):
         """
         Set the Positions of atoms of the conformer.
 
@@ -253,11 +292,7 @@ class EditableConformer(object):
         """
         self.SetAngleDeg(atomIds, value * 180.0 / np.pi)
 
-    def SetTorsionDeg(
-        self,
-        torsion: list,
-        degree: Union[float, int]
-    ):
+    def SetTorsionDeg(self, torsion: list, degree: Union[float, int]):
         """
         Set the dihedral angle of the torsion in degrees. The torsion can only be defined
         by a chain of bonded atoms.
@@ -278,12 +313,12 @@ class EditableConformer(object):
         """
         if len(angles) != len(self.GetTorsionalModes()):
             raise ValueError(
-                'The length of angles is not equal to the length of torsional modes')
+                "The length of angles is not equal to the length of torsional modes"
+            )
         for angle, tor in zip(angles, self.GetTorsionalModes()):
             self.SetTorsionDeg(tor, angle)
 
-    def SetTorsionalModes(self,
-                          torsions: Union[list, tuple]):
+    def SetTorsionalModes(self, torsions: Union[list, tuple]):
         """
         Set the torsional modes (rotors) of the Conformer. This is useful when the
         default torsion is not correct.
@@ -297,9 +332,9 @@ class EditableConformer(object):
         if isinstance(torsions, (list, tuple)):
             self._torsions = torsions
         else:
-            raise ValueError('Invalid torsional mode input.')
+            raise ValueError("Invalid torsional mode input.")
 
-    def ToConformer(self) -> 'Conformer':
+    def ToConformer(self) -> "Conformer":
         """
         Get its backend RDKit Conformer object.
 
@@ -308,7 +343,7 @@ class EditableConformer(object):
         """
         return self._conf
 
-    def ToMol(self) -> 'RDKitMol':
+    def ToMol(self) -> "RDKitMol":
         """
         Convert conformer to mol.
 

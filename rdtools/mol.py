@@ -1,5 +1,6 @@
 import copy
 from collections import Counter
+from functools import lru_cache
 from itertools import product as cartesian_product
 from typing import List, Optional, Union, Sequence
 
@@ -10,7 +11,7 @@ from rdkit.Chem import Descriptors
 from rdkit.Geometry.rdGeometry import Point3D
 
 from rdtools.atommap import has_atom_map_numbers
-from rdtools.atom import get_element_symbol, get_atom_mass
+from rdtools.atom import get_atom_mass, increment_radical
 from rdtools.conf import (
     add_null_conformer,
     embed_multiple_null_confs,
@@ -95,7 +96,7 @@ def get_element_symbols(mol: Chem.Mol) -> List[str]:
     Returns:
         List[str] : List of element symbols (e.g. ``["H", "C", "O",]`` etc.)
     """
-    return [get_element_symbol(atom) for atom in mol.GetAtoms()]
+    return [atom.GetSymbol() for atom in mol.GetAtoms()]
 
 
 def get_atomic_nums(mol: Chem.Mol) -> List[int]:
@@ -224,10 +225,29 @@ def fast_sanitize(mol: Chem.RWMol):
     )
 
 
+def get_writable_copy(mol: Chem.Mol):
+    """
+    Get an writable (editable) copy of the current molecule object.
+    If it is an RWMol, then return a copy with the same type. Otherwise,
+    return a copy in RWMol type.
+
+    Args:
+        mol(Mol): molecule to copy from.
+
+    Returns:
+        RWMol: The writable copy of the molecule
+    """
+    if isinstance(mol, Chem.RWMol):
+        return copy.copy(mol)  # Write in this way to support RDKitMol defined in rdmc
+    else:
+        return Chem.RWMol(mol)
+
+
 def get_closed_shell_mol(
     mol: Chem.RWMol,
     sanitize: bool = True,
-    cheap: bool = False,
+    explicit: bool = True,
+    max_num_hs: int = 12,
 ) -> "Chem.RWMol":
     """
     Get a closed shell molecule by removing all radical electrons and adding
@@ -236,26 +256,30 @@ def get_closed_shell_mol(
 
     Args:
         mol (Chem.RWMol): The radical molecule
-        cheap (bool): Whether to use a cheap method where H atoms are only implicitly added.
-                      Defaults to ``False``. Setting it to ``False`` only when the molecule
-                      is immediately used for generating SMILES/InChI and other representations,
-                      and no further manipulation is needed. Otherwise, it may be confusing as
-                      the hydrogen atoms will not appear in the list of atoms, not display in the
-                      2D graph, etc.
         sanitize (bool): Whether to sanitize the molecule. Defaults to ``True``.
+        explicit (bool): Whether to use add H atoms explicitly.
+                Defaults to ``True``, which is best used with radical molecules with
+                hydrogen atoms explicitly defined. Setting it to ``False``, if the
+                hydrogen atoms are implicitly defined.
+        max_num_hs (int, optional): The max number of Hs to add on a single atom. This option allows partial
+            saturation for a bi- or tri-radical site. E.g., [CH] => [CH3].
+            Defaults to ``12``, which is equivalent to add as many Hs as possible to the radical site.
 
     Returns:
         RDKitMol: A closed shell molecule.
     """
-    if cheap:
-        return get_closed_shell_cheap(mol, sanitize)
+    mol = get_writable_copy(mol)
+
+    if explicit:
+        return get_closed_shell_explicit(mol, sanitize, max_num_hs=max_num_hs)
     else:
-        return get_closed_shell_by_add_hs(mol, sanitize)
+        return get_closed_shell_implicit(mol, sanitize, max_num_hs=max_num_hs)
 
 
-def get_closed_shell_by_add_hs(
+def get_closed_shell_explicit(
     mol: Chem.RWMol,
     sanitize: bool = True,
+    max_num_hs: int = 12,
 ) -> Chem.RWMol:
     """
     Get the closed shell molecule of a radical molecule by explicitly adding
@@ -264,62 +288,135 @@ def get_closed_shell_by_add_hs(
     Args:
         mol (Chem.RWMol): The radical molecule.
         sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
+        max_num_hs (int, optional): The max number of Hs to add on a single atom. This option allows partial
+            saturation for a bi- or tri-radical site. E.g., [CH] => [CH3].
+            Defaults to ``12``, which is equivalent to add as many Hs as possible to the radical site.
 
     Returns:
         Chem.RWMol: The closed shell molecule.
     """
-    if isinstance(mol, Chem.RWMol):
-        mol = copy.copy(mol)
-    else:
-        mol = Chem.RWMol(mol)
 
-    h_atom_idx = mol.GetNumAtoms()
-    num_orig_atoms = mol.GetNumAtoms()
+    h_atom_idx, num_orig_atoms = mol.GetNumAtoms(), mol.GetNumAtoms()
 
     for atom_idx in range(mol.GetNumAtoms()):
         atom = mol.GetAtomWithIdx(atom_idx)
         num_rad_elecs = atom.GetNumRadicalElectrons()
         if num_rad_elecs:
-            for _ in range(num_rad_elecs):
+            for _ in range(min(num_rad_elecs, max_num_hs)):
                 mol.AddAtom(Chem.Atom(1))
                 mol.AddBond(h_atom_idx, atom_idx, Chem.BondType.SINGLE)
                 h_atom_idx += 1
-            atom.SetNumRadicalElectrons(0)
+                num_rad_elecs -= 1
+            atom.SetNumRadicalElectrons(num_rad_elecs)
 
-    if has_atom_map_numbers:
+    if has_atom_map_numbers(mol):
         for atom_idx in range(num_orig_atoms, h_atom_idx):
             mol.GetAtomWithIdx(atom_idx).SetAtomMapNum(atom_idx + 1)
+
+    if mol.GetNumConformers():
+        # Set coordinates to the added H atoms
+        for atom_idx in range(num_orig_atoms, h_atom_idx):
+            Chem.rdmolops.SetTerminalAtomCoords(
+                mol, atom_idx, mol.GetAtomWithIdx(atom_idx).GetNeighbors()[0].GetIdx()
+            )
 
     if sanitize:
         fast_sanitize(mol)
     return mol
 
 
-def get_closed_shell_cheap(
+def get_closed_shell_implicit(
     mol: Chem.Mol,
     sanitize: bool = True,
+    max_num_hs: int = 12,
 ) -> Chem.Mol:
     """
-    Get the closed shell molecule of a radical molecule. This is a cheap version
-    where no new atom is actually added to the molecule.
+    Get the closed shell molecule of a radical molecule. This only adds Hs implicitly
+    and no new atom is actually added to the molecule. This is suggested for the molecule
+    objects with (most) H atoms are not explicitly defined.
 
     Args:
         mol (Chem.Mol): The radical molecule.
         sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``.
+        max_num_hs (int, optional): The max number of Hs to add on a single atom. This option allows partial
+            saturation for a bi- or tri-radical site. E.g., [CH] => [CH3].
+            Defaults to ``12``, which is equivalent to add as many Hs as possible to the radical site.
 
     Returns:
         Chem.Mol: The closed shell molecule.
     """
-    mol = copy.copy(mol)
 
     for atom in mol.GetAtoms():
         if atom.GetNumRadicalElectrons():
-            atom.SetNumRadicalElectrons(0)
+            atom.SetNumRadicalElectrons(
+                max(0, atom.GetNumRadicalElectrons() - max_num_hs)
+            )
             atom.SetNoImplicit(False)
 
     if sanitize:
         fast_sanitize(mol)
     return mol
+
+
+@lru_cache(maxsize=1)
+def get_heavy_hydrogen_query():
+    return Chem.MolFromSmarts("[*]-[H]")
+
+
+def get_dehydrogenated_mol(
+    mol,
+    kind: str = "radical",
+    once_per_heavy: bool = True,
+    only_on_atoms: Optional[list] = None,
+) -> list:
+    """
+    Generate the molecules that have one less hydrogen atom compared to the reference molecule.
+    This function only supports molecules that have H atoms explicitly defined. Note, this function
+    doesn't filter out equivalent structures.
+
+    Args:
+        mol (Chem.Mol): The reference molecule
+        kind (str, optional): The kind of generated molecules. The available options are
+            "radical", "cation", and "anion".
+        once_per_heavy (bool, optional): There can be multiple Hs on a single heavy atom.
+            By setting this argument to ``True``, the function will only remove H atom
+            once per heavy atoms. Otherwise, the function will comprehensively generate
+            dehydrogenated molecule by remove every single H atoms. Defaults to ``True``.
+        only_on_atoms (list, optional): This argument allows only operating on specific atoms.
+            Defaults to None, operating on all atoms.
+
+    Returns:
+        list: a list of dehydrogenated molecules
+    """
+    tpl = get_heavy_hydrogen_query()
+    hvy_h_pairs = mol.GetSubstructMatches(tpl, maxMatches=mol.GetNumAtoms())
+
+    new_mols = []
+    explored_hvy_atoms = set()
+    for hvy_idx, h_idx in hvy_h_pairs:
+        if only_on_atoms and hvy_idx not in only_on_atoms:
+            continue
+        elif once_per_heavy and hvy_idx in explored_hvy_atoms:
+            continue
+        elif once_per_heavy:
+            explored_hvy_atoms.add(hvy_idx)
+
+        new_mol = get_writable_copy(mol)
+        hvy_atom = new_mol.GetAtomWithIdx(hvy_idx)
+
+        if kind == "radical":
+            increment_radical(hvy_atom)
+        elif kind == "cation":
+            hvy_atom.SetFormalCharge(hvy_atom.GetFormalCharge() + 1)
+        elif kind == "anion":
+            hvy_atom.SetFormalCharge(hvy_atom.GetFormalCharge() - 1)
+        new_mol.RemoveAtom(h_idx)
+
+        fast_sanitize(new_mol)
+
+        new_mols.append(new_mol)
+
+    return new_mols
 
 
 def set_mol_positions(
@@ -350,3 +447,24 @@ def set_mol_positions(
             raise ValueError(f"Conformer {conf_id} does not exist")
     else:
         set_conformer_coordinates(conf, coords)
+
+
+def get_mol_weight(mol, heavy: bool = False, exact: bool = False) -> float:
+    """
+    Get molecular weight of the molecule.
+
+    Args:
+        heavy (bool, optional): Whether to ignore weight of the hydrogens. Defaults to ``False``.
+        exact (bool, optional): Whether to use exact molecular weight (distinguishing isotopes). Defaults to ``False``.
+
+    Returns:
+        float : Molecular weight.
+    """
+    if not heavy and not exact:
+        return Chem.Descriptors.MolWt(mol)
+    elif not heavy and exact:
+        return Chem.Descriptors.ExactMolWt(mol)
+    elif exact:
+        raise NotImplementedError
+    else:
+        return Chem.Descriptors.HeavyAtomMolWt(mol)

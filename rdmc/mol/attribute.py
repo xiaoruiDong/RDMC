@@ -12,18 +12,18 @@ from rdtools.mol import (
     get_element_symbols,
     get_heavy_atoms,
     get_spin_multiplicity,
+    get_mol_weight,
 )
 from rdtools.bond import get_bonds_as_tuples
 from rdtools.torsion import get_torsional_modes
 
 
 class MolAttrMixin:
-
     """
     A mixin used to get extra molecule attributes that are not directly available in Mol's attributes.
     """
 
-    def GetAdjacencyMatrix(self) -> 'np.ndarray':
+    def GetAdjacencyMatrix(self) -> "np.ndarray":
         """
         Get the adjacency matrix of the molecule.
 
@@ -33,7 +33,7 @@ class MolAttrMixin:
         """
         return get_adjacency_matrix(self)
 
-    def GetAtoms(self) -> List['Atom']:
+    def GetAtoms(self) -> List["Atom"]:
         """
         This is a rewrite of GetAtoms(), based on the findings of `RDKit issue <https://github.com/rdkit/rdkit/issues/6208>`_.
         Although RDKit fixed this issue in version 2023.09, we still keep this function for backward compatibility.
@@ -52,7 +52,7 @@ class MolAttrMixin:
         """
         return tuple(get_atom_map_numbers(self))
 
-    def GetHeavyAtoms(self) -> List['Atom']:
+    def GetHeavyAtoms(self) -> List["Atom"]:
         """
         Get heavy atoms of the molecule with the order consistent with the atom indexes.
 
@@ -200,3 +200,16 @@ class MolAttrMixin:
             int : Spin multiplicity.
         """
         return get_spin_multiplicity(self)
+
+    def GetMolWeight(self, heavy: bool = False, exact: bool = False) -> float:
+        """
+        Get (averaged) molecular weight of the molecule.
+
+        Args:
+            heavy (bool, optional): Whether to ignore weight of the hydrogens. Defaults to ``False``.
+            exact (bool, optional): Whether to use exact molecular weight (distinguishing isotopes). Defaults to ``False``.
+
+        Returns:
+            float : Molecular weight.
+        """
+        return get_mol_weight(self, heavy, exact)

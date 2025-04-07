@@ -14,11 +14,11 @@ from rdmc import RDKitMol
         ("[CH2]C[CH2]", "CCC"),
     ],
 )
-@pytest.mark.parametrize("cheap", [(True,), (False,)])
-def test_get_closed_shell_mol(rad_smi, expect_smi, cheap):
+@pytest.mark.parametrize("explicit", [(True,), (False,)])
+def test_get_closed_shell_mol(rad_smi, expect_smi, explicit):
 
     rad_mol = RDKitMol.FromSmiles(rad_smi)
-    assert rad_mol.GetClosedShellMol(cheap=cheap).ToSmiles() == expect_smi
+    assert rad_mol.GetClosedShellMol(explicit=explicit).ToSmiles() == expect_smi
 
 
 def test_copy_method():

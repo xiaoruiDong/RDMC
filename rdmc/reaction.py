@@ -5,19 +5,26 @@
 Module for Reaction
 """
 
-from collections import Counter
 from functools import reduce, wraps
-from itertools import chain, product
+from itertools import product
 from typing import List, Optional, Tuple, Union
 
+from rdkit import Chem
 from rdkit.Chem import rdChemReactions, rdFMCS
 
-
 from rdmc import RDKitMol
+from rdtools.bond import get_all_changing_bonds, get_atoms_in_bonds
 from rdtools.compare import is_same_complex
+from rdtools.featurizer import get_rxn_fingerprint
+from rdtools.mol import get_element_counts
+from rdtools.reaction import draw_reaction, map_h_atoms_in_reaction
+from rdtools.reaction.analysis import (
+    is_num_atoms_balanced,
+    is_element_balanced,
+    is_charge_balanced,
+    is_mult_equal,
+)
 from rdtools.resonance import generate_resonance_structures
-from rdtools.bond import get_all_changing_bonds
-from rdtools.reaction.draw import draw_reaction
 from rdtools.view import reaction_viewer
 
 
@@ -138,52 +145,42 @@ class Reaction:
         """
         Whether the number of atoms in the reactant(s) and product(s) are balanced.
         """
-        return self.reactant_complex.GetNumAtoms() == self.product_complex.GetNumAtoms()
+        return is_num_atoms_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def reactant_element_count(self) -> dict:
         """
         The element count in the reactant(s) and product(s).
         """
-        return dict(Counter(self.reactant_complex.GetElementSymbols()))
+        return get_element_counts(self.reactant_complex)
 
     @property
     def product_element_count(self) -> dict:
         """
         The element count in the reactant(s) and product(s).
         """
-        return dict(Counter(self.product_complex.GetElementSymbols()))
+        return get_element_counts(self.product_complex)
 
     @property
     def is_element_balanced(self) -> bool:
         """
         Whether the elements in the reactant(s) and product(s) are balanced.
         """
-        if self.is_num_atoms_balanced:
-            return Counter(self.reactant_complex.GetElementSymbols()) == Counter(
-                self.product_complex.GetElementSymbols()
-            )
-        return False
+        return is_element_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def is_charge_balanced(self) -> bool:
         """
         Whether the charge in the reactant(s) and product(s) are balanced.
         """
-        return (
-            self.reactant_complex.GetFormalCharge()
-            == self.product_complex.GetFormalCharge()
-        )
+        return is_charge_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def is_mult_equal(self) -> bool:
         """
         Whether the spin multiplicity in the reactant(s) and product(s) are equal.
         """
-        return (
-            self.reactant_complex.GetSpinMultiplicity()
-            == self.product_complex.GetSpinMultiplicity()
-        )
+        return is_mult_equal(self.reactant_complex, self.product_complex)
 
     @property
     def num_atoms(self) -> bool:
@@ -194,6 +191,16 @@ class Reaction:
             self.is_num_atoms_balanced
         ), "The number of atoms in the reactant(s) and product(s) are not balanced."
         return self.reactant_complex.GetNumAtoms()
+
+    @property
+    def num_heavy_atoms(self) -> bool:
+        """
+        The number of heavy atoms involved in the reaction.
+        """
+        assert (
+            self.is_num_atoms_balanced
+        ), "The number of atoms in the reactant(s) and product(s) are not balanced."
+        return self.reactant_complex.GetNumHeavyAtoms()
 
     @property
     def num_reactants(self) -> int:
@@ -320,7 +327,7 @@ class Reaction:
         """
         The atoms involved in the bonds broken and formed in the reaction.
         """
-        return list(set(chain(*self.active_bonds)))
+        return get_atoms_in_bonds(self.active_bonds)
 
     @property
     @require_bond_analysis
@@ -328,7 +335,7 @@ class Reaction:
         """
         The atoms involved in the bonds broken and formed in the reaction.
         """
-        return list(set(chain(*self.involved_bonds)))
+        return get_atoms_in_bonds(self.involved_bonds)
 
     @property
     def is_resonance_corrected(self) -> bool:
@@ -350,15 +357,21 @@ class Reaction:
             # TODO: when the reactant and product are changed
             return self
         try:
-            rcps = generate_resonance_structures(
-                self.reactant_complex,
-            )
+            rcps = [
+                RDKitMol(m)
+                for m in generate_resonance_structures(
+                    self.reactant_complex,
+                )
+            ]
         except BaseException:
             rcps = [self.reactant_complex]
         try:
-            pcps = generate_resonance_structures(
-                self.product_complex,
-            )
+            pcps = [
+                RDKitMol(m)
+                for m in generate_resonance_structures(
+                    self.product_complex,
+                )
+            ]
         except BaseException:
             pcps = [self.product_complex]
 
@@ -455,7 +468,9 @@ class Reaction:
         """
         Convert the reaction to RDKit ChemicalReaction.
         """
-        return rdChemReactions.ReactionFromSmarts(self.to_smiles(), useSmiles=True)
+        rxn = rdChemReactions.ReactionFromSmarts(self.to_smiles(), useSmiles=True)
+        rxn.Initialize()
+        return rxn
 
     def draw_2d(
         self,
@@ -560,6 +575,7 @@ class Reaction:
     def is_equivalent(
         self,
         reaction: "Reaction",
+        resonance: bool = False,
         both_directions: bool = False,
     ) -> bool:
         """
@@ -567,18 +583,82 @@ class Reaction:
 
         Args:
             reaction (Reaction): The reaction to compare.
+            resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
             both_directions (bool, optional): Whether to check both directions. Defaults to ``False``.
 
         Returns:
             bool: Whether the reaction is equivalent to the given reaction.
         """
-        equiv = is_equivalent_reaction(self, reaction)
+        if resonance:
+            cur_rxn = self.apply_resonance_correction(inplace=False)
+            qry_rxn = reaction.apply_resonance_correction(inplace=False)
+        else:
+            cur_rxn = self
+            qry_rxn = reaction
+        equiv = is_equivalent_reaction(cur_rxn, qry_rxn)
 
         if both_directions and not equiv:
-            tmp_reaction = self.get_reverse_reaction()
-            equiv = is_equivalent_reaction(tmp_reaction, reaction)
+            rev_rxn = cur_rxn.get_reverse_reaction()
+            equiv = is_equivalent_reaction(rev_rxn, qry_rxn)
 
         return equiv
+
+    def get_fingerprint(
+        self,
+        mode: str = "REAC_DIFF",
+        fp_type: str = "morgan",
+        count: bool = False,
+        num_bits: int = 2048,
+        **kwargs,
+    ) -> "np.array":
+        """
+        Get the fingerprint of the reaction.
+
+        Args:
+            mode (str): The fingerprint combination of ``'REAC'`` (reactant), ``'PROD'`` (product),
+                ``'DIFF'`` (reactant - product), ``'REVD'`` (product - reactant), ``'SUM'`` (reactant + product),
+                separated by ``'_'``. Defaults to ``REAC_DIFF``, with the fingerprint to be a concatenation of
+                reactant fingerprint and the difference between the reactant complex and the product complex.
+            fp_type (str,  optional): The type of fingerprint to generate. Options are:
+                ``'atom_pair'``, ``'morgan'`` (default), ``'rdkit'``,
+                ``'topological_torsion'``, ``'avalon'``, and ``'maccs'``.
+            num_bits (int, optional): The length of the molecular fingerprint. For a mode with N blocks, the eventual length
+                is ``num_bits * N``. Default is ``2048``. It has no effect on ``'maccs'`` generator.
+            dtype (str, optional): The data type of the output numpy array. Defaults to ``'int32'``.
+        """
+        return get_rxn_fingerprint(
+            self.reactant_complex,
+            self.product_complex,
+            mode=mode,
+            fp_type=fp_type,
+            count=count,
+            num_bits=num_bits,
+            **kwargs,
+        )
+
+    def map_h_atoms(
+        self,
+        add_hs: bool = False,
+    ) -> "Reaction":
+        """
+        Atom map H atoms. This is useful if the reactions are initialized with only heavy atoms
+        or the reactant and product complex only has heavy atom mapped.
+
+        Args:
+            add_hs (bool, optional): If the reaction is initialized with only heavy atoms presenting,
+                set it to ``True``. Defaults to ``False``.
+
+        Returns:
+            Reaction: a new reaction instance with h atoms mapped.
+        """
+        rmol, pmol = self.reactant_complex, self.product_complex
+        if add_hs:
+            rmol, pmol = Chem.AddHs(rmol), Chem.AddHs(pmol)
+        new_rmol, new_pmol = map_h_atoms_in_reaction(rmol, pmol)
+        return Reaction(
+            RDKitMol(new_rmol),
+            RDKitMol(new_pmol),
+        )
 
 
 def is_equivalent_reaction(

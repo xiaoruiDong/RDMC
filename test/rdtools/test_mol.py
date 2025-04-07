@@ -11,11 +11,13 @@ from rdtools.conversion import (
 )
 from rdtools.mol import (
     combine_mols,
+    get_dehydrogenated_mol,
     get_element_symbols,
     get_element_counts,
     get_atomic_nums,
     get_atom_masses,
     get_closed_shell_mol,
+    get_formal_charge,
 )
 from rdtools.conf import (
     embed_multiple_null_confs,
@@ -127,10 +129,7 @@ def test_get_element_counts(smi, expected):
             "[C:2]([H:3])([H:4])([H:5])[H:6].[H:1]",
             [1, 6, 1, 1, 1, 1],
         ),
-        (
-            "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
-            [8, 6, 6, 1, 1, 1, 1]
-        ),
+        ("[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]", [8, 6, 6, 1, 1, 1, 1]),
     ],
 )
 def test_get_atomic_nums(smi, expected):
@@ -147,31 +146,98 @@ def test_get_atomic_nums(smi, expected):
         ),
         (
             "[O:1][C:2]([C:3]([H:4])[H:5])([H:6])[H:7]",
-            [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008]),
+            [15.999, 12.011, 12.011, 1.008, 1.008, 1.008, 1.008],
+        ),
     ],
 )
 def test_get_atom_masses(smi, expected):
     mol = mol_from_smiles(smi)
-    np.testing.assert_allclose(
-        np.array(get_atom_masses(mol)),
-        np.array(expected)
-    )
+    np.testing.assert_allclose(np.array(get_atom_masses(mol)), np.array(expected))
 
 
 @pytest.mark.parametrize(
     "rad_smi, expect_smi",
     [
+        ("[CH2]", "C"),
         ("[CH3]", "C"),
         ("c1[c]cccc1", "c1ccccc1"),
-        ("C[NH2]", "CN"),
+        ("C[NH]", "CN"),
         ("[CH2]C[CH2]", "CCC"),
         ("C", "C"),
     ],
 )
-@pytest.mark.parametrize("cheap", [True, False])
+@pytest.mark.parametrize("explicit", [True, False])
 @pytest.mark.parametrize("atommap", [True, False])
-def test_get_closed_shell_mol(rad_smi, expect_smi, cheap, atommap):
+def test_get_closed_shell_mol(rad_smi, expect_smi, explicit, atommap):
 
     rad_mol = mol_from_smiles(rad_smi, assign_atom_map=atommap)
-    cs_mol = get_closed_shell_mol(rad_mol, cheap=cheap)
+    cs_mol = get_closed_shell_mol(rad_mol, explicit=explicit)
     assert mol_to_smiles(cs_mol) == expect_smi
+
+
+def test_get_closed_shell_mol_one_hs():
+
+    rad_mol = mol_from_smiles("[CH2]")
+    cs_mol = get_closed_shell_mol(rad_mol)
+    assert mol_to_smiles(cs_mol) == "C"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=1)
+    assert mol_to_smiles(cs_mol) == "[CH]"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=2)
+    assert mol_to_smiles(cs_mol) == "[CH2]"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=3)
+    assert mol_to_smiles(cs_mol) == "[CH3]"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=4)
+    assert mol_to_smiles(cs_mol) == "C"
+
+    rad_mol = mol_from_smiles("[C]")
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=5)
+    assert mol_to_smiles(cs_mol) == "C"
+
+    rad_mol = mol_from_smiles("[C]", add_hs=False)
+    cs_mol = get_closed_shell_mol(rad_mol, max_num_hs=1, explicit=False)
+    assert mol_to_smiles(cs_mol) == "[CH]"
+
+
+@pytest.mark.parametrize(
+    "smi, n_result",
+    [
+        ("C", 1),
+        ("c1ccccc1", 6),
+        ("CN", 2),
+        ("CO", 2),
+    ],
+)
+@pytest.mark.parametrize(
+    "kind, charge",
+    [
+        ("cation", 1),
+        ("anion", -1),
+        ("radical", 0),
+    ],
+)
+def test_dehydrogenated_mol(smi, n_result, kind, charge):
+    mol = mol_from_smiles(smi)
+    n_Hs = len([atom for atom in mol.GetAtoms() if atom.GetAtomicNum() == 1])
+    children = get_dehydrogenated_mol(mol, kind=kind)
+    assert len(children) == n_result
+    for child in children:
+        assert get_formal_charge(child) == charge
+        assert (
+            len([atom for atom in child.GetAtoms() if atom.GetAtomicNum() == 1])
+            == n_Hs - 1
+        )
+
+
+def test_dehydrogenated_mol_on_atoms():
+    mol = mol_from_smiles("CO")
+    children = get_dehydrogenated_mol(mol, only_on_atoms=[1])
+    assert len(children) == 1
+    assert mol_to_smiles(children[0]) == "C[O]"

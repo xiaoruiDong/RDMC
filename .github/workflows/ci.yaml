@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
@@ -58,7 +58,7 @@ jobs:
           environment-file: environment.yml
 
       - name: Install Pytest
-        run: mamba install -y pytest pytest-cov # temporarily remove "pytest-check"
+        run: mamba install -y pytest pytest-cov nbmake # temporarily remove "pytest-check"
 
       - name: Mamba info
         run: |
