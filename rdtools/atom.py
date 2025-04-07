@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""A module contains functions to manipulate atoms in a molecule."""
+
 import math
 
 from rdkit import Chem
@@ -5,20 +8,20 @@ from rdkit import Chem
 from rdtools import element
 
 
-def clear_rxn_prop(atom):
-    """
-    A helper function used to clean up the atom props created by reaction conversion
-    """
+def clear_rxn_prop(atom: Chem.Atom) -> None:
+    """Clean up the atom props created by reaction conversion."""
     atom.ClearProp("react_atom_idx")
     atom.ClearProp("old_mapno")
 
 
-def decrement_radical(atom: Chem.Atom):
-    """
-    Decrement the number of radical electrons on an atom by one.
+def decrement_radical(atom: Chem.Atom) -> None:
+    """Decrement the number of radical electrons on an atom by one.
 
     Args:
-        atom (Atom): The atom whose radical count is to be decremented.
+        atom (Chem.Atom): The atom whose radical count is to be decremented.
+
+    Raises:
+        ValueError: If the radical count is already zero.
     """
     new_radical_count = atom.GetNumRadicalElectrons() - 1
     if new_radical_count < 0:
@@ -27,11 +30,10 @@ def decrement_radical(atom: Chem.Atom):
 
 
 def get_atom_mass(atom: Chem.Atom) -> float:
-    """
-    Get the mass of an atom given its atomic number.
+    """Get the mass of an atom given its atomic number.
 
     Args:
-        atom (Atom): The atom whose mass is to be returned.
+        atom (Chem.Atom): The atom whose mass is to be returned.
 
     Returns:
         float: The mass of the atom.
@@ -40,12 +42,12 @@ def get_atom_mass(atom: Chem.Atom) -> float:
 
 
 def get_electronegativity(atom: Chem.Atom) -> float:
-    """
-    Get the electronegativity of an atom. Currently, only supports atom 1-35 and 53. Others will
-    return 1.0.
+    """Get the electronegativity of an atom.
+
+    Currently, only supports atom 1-35 and 53, others will return 1.0.
 
     Args:
-        atom (Atom): The atom whose electronegativity is to be returned.
+        atom (Chem.Atom): The atom whose electronegativity is to be returned.
 
     Returns:
         float: The electronegativity of the atom.
@@ -54,11 +56,10 @@ def get_electronegativity(atom: Chem.Atom) -> float:
 
 
 def get_element_symbol(atom: Chem.Atom) -> str:
-    """
-    Get the element symbol of an atom.
+    """Get the element symbol of an atom.
 
     Args:
-        atom (Atom): The atom whose symbol is to be returned.
+        atom (Chem.Atom): The atom whose symbol is to be returned.
 
     Returns:
         str: The symbol of the atom.
@@ -67,11 +68,10 @@ def get_element_symbol(atom: Chem.Atom) -> str:
 
 
 def get_n_outer_electrons(atom: Chem.Atom) -> int:
-    """
-    Get the number of outer electrons of an atom.
+    """Get the number of outer electrons of an atom.
 
     Args:
-        atom (Atom): The atom whose number of outer electrons is to be returned.
+        atom (Chem.Atom): The atom whose number of outer electrons is to be returned.
 
     Returns:
         int: The number of outer electrons of the atom.
@@ -80,11 +80,10 @@ def get_n_outer_electrons(atom: Chem.Atom) -> int:
 
 
 def get_total_bond_order(atom: Chem.Atom) -> float:
-    """
-    Get the total bond order of an atom.
+    """Get the total bond order of an atom.
 
     Args:
-        atom (Atom): The atom whose total bond order is to be returned.
+        atom (Chem.Atom): The atom whose total bond order is to be returned.
 
     Returns:
         float: The total bond order of the atom.
@@ -105,11 +104,10 @@ def get_total_bond_order(atom: Chem.Atom) -> float:
 
 # RDKit / RDMC compatible
 def get_lone_pair(atom: Chem.Atom) -> int:
-    """
-    Get the number of lone pairs on an atom.
+    """Get the number of lone pairs on an atom.
 
     Args:
-        atom (Atom): The atom whose lone pair is to be returned.
+        atom (Chem.Atom): The atom whose lone pair is to be returned.
 
     Returns:
         int: The number of lone pairs on the atom.
@@ -124,11 +122,10 @@ def get_lone_pair(atom: Chem.Atom) -> int:
 
 
 def get_num_occupied_orbitals(atom: Chem.Atom) -> int:
-    """
-    Get the number of occupied orbitals of an atom.
+    """Get the number of occupied orbitals of an atom.
 
     Args:
-        atom (Atom): The atom whose number of occupied orbitals is to be returned.
+        atom (Chem.Atom): The atom whose number of occupied orbitals is to be returned.
 
     Returns:
         int: The number of occupied orbitals on the atom.
@@ -146,11 +143,10 @@ def get_num_occupied_orbitals(atom: Chem.Atom) -> int:
 
 
 def has_empty_orbitals(atom: Chem.Atom) -> bool:
-    """
-    Determine whether an atom has empty orbitals.
+    """Determine whether an atom has empty orbitals.
 
     Args:
-        atom (Atom): The atom to be checked.
+        atom (Chem.Atom): The atom to be checked.
 
     Returns:
         bool: ``True`` if the atom has empty orbitals, ``False`` otherwise.
@@ -171,12 +167,13 @@ def has_empty_orbitals(atom: Chem.Atom) -> bool:
         return num_occupied_orbitals < 7
 
 
-def increment_radical(atom: Chem.Atom):
-    """
-    Increment the number of radical electrons on an atom by one. It will increase the number of radical electrons by 1 despite
-    whether valid. The cleaning step should be done later to ensure the validity of the molecule.
+def increment_radical(atom: Chem.Atom) -> None:
+    """Increment the number of radical electrons on an atom by one.
+
+    It will increase the number of radical electrons by 1 despite whether valid.
+    The cleaning step should be done later to ensure the validity of the molecule.
 
     Args:
-        atom (Atom): The atom whose radical count is to be incremented.
+        atom (Chem.Atom): The atom whose radical count is to be incremented.
     """
     atom.SetNumRadicalElectrons(atom.GetNumRadicalElectrons() + 1)
