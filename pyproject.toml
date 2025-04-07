@@ -48,7 +48,7 @@ dependencies = [
 dev = [
     "ruff",
     "pydocstyle",
-    "pydocformatter",
+    "docformatter",
     "pydoclint",
     "pre-commit",
     "mypy",
