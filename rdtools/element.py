@@ -1,3 +1,5 @@
+"""Functions to get information about elements in the periodic table."""
+
 from typing import Union
 
 from rdkit.Chem import GetPeriodicTable
@@ -41,12 +43,12 @@ electronegativity = {
 
 
 def get_electronegativity(element: Union[int, str]) -> float:
-    """
-    Get the electronegativity of an element. Currently, only supports atom 1-35 and 53. Others will
-    return 1.0.
+    """Get the electronegativity of an element.
+
+    Currently, only supports atom 1-35 and 53. Others will return 1.0.
 
     Args:
-        element (int or str): The atomic number or the symbol of the element whose electronegativity is to be returned.
+        element (Union[int, str]): The atomic number or the symbol of the element whose electronegativity is to be returned.
 
     Returns:
         float: The electronegativity of the atom.
@@ -57,11 +59,10 @@ def get_electronegativity(element: Union[int, str]) -> float:
 
 
 def get_n_outer_electrons(element: Union[int, str]) -> int:
-    """
-    Get the number of outer electrons of an element.
+    """Get the number of outer electrons of an element.
 
     Args:
-        element (int or str): The atomic number or the symbol of the element whose number of outer electrons is to be returned.
+        element (Union[int, str]): The atomic number or the symbol of the element whose number of outer electrons is to be returned.
 
     Returns:
         int: The number of outer electrons of the element.
@@ -70,8 +71,7 @@ def get_n_outer_electrons(element: Union[int, str]) -> int:
 
 
 def get_atomic_num(symbol: str) -> int:
-    """
-    Get the atomic number of an atom given its symbol.
+    """Get the atomic number of an atom given its symbol.
 
     Args:
         symbol (str): The symbol of the atom.
@@ -83,8 +83,7 @@ def get_atomic_num(symbol: str) -> int:
 
 
 def get_element_symbol(atomic_num: int) -> str:
-    """
-    Get the symbol of an atom given its atomic number.
+    """Get the symbol of an atom given its atomic number.
 
     Args:
         atomic_num (int): The atomic number of the atom.
@@ -96,11 +95,10 @@ def get_element_symbol(atomic_num: int) -> str:
 
 
 def get_atom_mass(element: Union[int, str]) -> float:
-    """
-    Get the mass of an element.
+    """Get the mass of an element.
 
     Args:
-        element (int or str): The atomic number or the symbol of the element.
+        element (Union[int, str]): The atomic number or the symbol of the element.
 
     Returns:
         float: The mass of the atom.
@@ -109,11 +107,10 @@ def get_atom_mass(element: Union[int, str]) -> float:
 
 
 def get_covalent_radius(element: Union[int, str]) -> float:
-    """
-    Get the covalent radius of an element.
+    """Get the covalent radius of an element.
 
     Args:
-        atomic_num (int or str): The atomic number or the symbol of the element.
+        element (Union[int, str]): The atomic number or the symbol of the element.
 
     Returns:
         float: The covalent radius of the atom.
@@ -122,11 +119,10 @@ def get_covalent_radius(element: Union[int, str]) -> float:
 
 
 def get_vdw_radius(element: Union[int, str]) -> float:
-    """
-    Get the van der Waals radius of an element.
+    """Get the van der Waals radius of an element.
 
     Args:
-        atomic_num (int or str): The atomic number or the symbol of the element.
+        element (Union[int, str]): The atomic number or the symbol of the element.
 
     Returns:
         float: The van der Waals radius of the atom.
@@ -135,11 +131,10 @@ def get_vdw_radius(element: Union[int, str]) -> float:
 
 
 def get_bond_radius(element: Union[int, str]) -> float:
-    """
-    Get the bond radius of an element.
+    """Get the bond radius of an element.
 
     Args:
-        atomic_num (int or str): The atomic number or the symbol of the element.
+        element (Union[int, str]): The atomic number or the symbol of the element.
 
     Returns:
         float: The bond radius of the atom.
