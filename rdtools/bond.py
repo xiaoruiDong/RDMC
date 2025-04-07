@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+"""A module contains functions to manipulate bonds in a molecule."""
+
 import copy
 from functools import lru_cache
-from typing import List, Optional, Set, Tuple
+from typing import Optional
 
 from rdkit import Chem
 from rdkit.Chem import BondType
-
 
 BOND_ORDERS = {
     1: BondType.SINGLE,
@@ -23,19 +25,19 @@ BOND_ORDERS = {
 
 def add_bond(
     mol: Chem.RWMol,
-    bond: Tuple[int, int],
+    bond: tuple[int, int],
     bond_type: BondType = BondType.SINGLE,
     update_properties: bool = True,
     inplace: bool = True,
 ) -> Chem.RWMol:
-    """
-    Add a bond to a molecule.
+    """Add a bond to a molecule.
 
     Args:
         mol (Chem.RWMol): The molecule to be added.
-        bond (tuple): The atom index of the bond to be added.
-        bond_type (Chem.BondType, optional): The bond type to be added. Defaults to ``Chem.BondType.SINGLE``.
+        bond (tuple[int, int]): The atom index of the bond to be added.
+        bond_type (BondType, optional): The bond type to be added. Defaults to ``Chem.BondType.SINGLE``.
         update_properties (bool, optional): Whether to update the properties of the molecule. Defaults to ``True``.
+        inplace (bool, optional): Whether to modify the molecule in place. Defaults to ``True``.
 
     Returns:
         Chem.RWMol: The molecule with bonds added.
@@ -47,19 +49,19 @@ def add_bond(
 
 def add_bonds(
     mol: Chem.RWMol,
-    bonds: List[Tuple[int, int]],
-    bond_types: Optional[List[BondType]] = None,
+    bonds: list[tuple[int, int]],
+    bond_types: Optional[list[BondType]] = None,
     update_properties: bool = True,
     inplace: bool = True,
 ) -> Chem.RWMol:
-    """
-    Add bonds to a molecule.
+    """Add bonds to a molecule.
 
     Args:
         mol (Chem.RWMol): The molecule to be added.
-        bond (tuple): The atom index of the bond to be added.
-        bond_type (Chem.BondType, optional): The bond type to be added. Defaults to ``Chem.BondType.SINGLE``.
+        bonds (list[tuple[int, int]]): The atom index of the bond to be added.
+        bond_types (Optional[list[BondType]], optional): The bond type to be added. Defaults to ``Chem.BondType.SINGLE``.
         update_properties (bool, optional): Whether to update the properties of the molecule. Defaults to ``True``.
+        inplace (bool, optional): Whether to modify the molecule in place. Defaults to ``True``.
 
     Returns:
         Chem.RWMol: The molecule with bonds added.
@@ -76,22 +78,23 @@ def add_bonds(
     return mol
 
 
-def increment_bond_order(bond: Chem.Bond):
-    """
-    Increment the bond order of a bond by one.
+def increment_bond_order(bond: Chem.Bond) -> None:
+    """Increment the bond order of a bond by one.
 
     Args:
-        bond (Bond): The bond whose order is to be incremented.
+        bond (Chem.Bond): The bond whose order is to be incremented.
     """
     bond.SetBondType(BOND_ORDERS[bond.GetBondType() + 1])
 
 
-def decrement_bond_order(bond: Chem.Bond):
-    """
-    Decrement the bond order of a bond by one.
+def decrement_bond_order(bond: Chem.Bond) -> None:
+    """Decrement the bond order of a bond by one.
 
     Args:
-        bond (Bond): The bond whose order is to be decremented.
+        bond (Chem.Bond): The bond whose order is to be decremented.
+
+    Raises:
+        ValueError: If bond order is negative.
     """
     new_order = bond.GetBondTypeAsDouble() - 1
     if new_order <= 0.5:  # Also avoid decrementing aromatic bonds with bond order 1.5
@@ -99,33 +102,32 @@ def decrement_bond_order(bond: Chem.Bond):
     bond.SetBondType(BOND_ORDERS[new_order])
 
 
-def get_bonds_as_tuples(mol: Chem.Mol) -> List[Tuple[int, int]]:
-    """
-    Get the bonds of a molecule as a list of tuples.
+def get_bonds_as_tuples(mol: Chem.Mol) -> list[tuple[int, int]]:
+    """Get the bonds of a molecule as a list of tuples.
 
     Args:
-        mol (Mol): The molecule whose bonds are to be returned.
+        mol (Chem.Mol): The molecule whose bonds are to be returned.
 
     Returns:
-        List[Tuple[int, int]]: The bonds of the molecule as a list of tuples.
+        list[tuple[int, int]]: The bonds of the molecule as a list of tuples.
     """
     return [
-        tuple(sorted((b.GetBeginAtomIdx(), b.GetEndAtomIdx()))) for b in mol.GetBonds()
+        tuple(sorted((b.GetBeginAtomIdx(), b.GetEndAtomIdx())))
+        for b in mol.GetBonds()  # type: ignore[no-untyped-call]
     ]
 
 
 @lru_cache(maxsize=10000)
 def _get_bonds_as_sets(
     *mols: Chem.Mol,
-) -> Tuple[Set[tuple]]:
-    """
-    Get the set of bonds for the provided list of mols.
+) -> tuple[set[tuple[int, int]], ...]:
+    """Get the set of bonds for the provided list of mols.
 
     Args:
-        mols ('RDKitMol' or 'Mol'): a RDKit Mol object
+        *mols (Chem.Mol): a RDKit Mol object
 
-    Returns
-        Tuple[Set]: (bond set in the reactant, bond set in the product)
+    Returns:
+        tuple[set[tuple[int, int]], ...]: (bond set in the reactant, bond set in the product)
     """
     return tuple(set(get_bonds_as_tuples(mol)) for mol in mols)
 
@@ -133,17 +135,19 @@ def _get_bonds_as_sets(
 def get_formed_bonds(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-) -> List[tuple]:
-    """
-    Get all bonds formed in the reaction. Both reactant and product complexes
-    need to be atom-mapped.
+) -> list[tuple[int, int]]:
+    """Get all bonds formed in the reaction.
+
+    Both reactant and product complexes need to be atom-mapped to get the correct
+    atom indexes. The formed bonds are the bonds that are present in the product
+    complex but not in the reactant complex.
 
     Args:
         rmol (Chem.Mol): the reactant complex.
         pmol (Chem.Mol): the product complex.
 
-    Returns
-        list: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+    Returns:
+        list[tuple[int, int]]: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
     r_bonds, p_bonds = _get_bonds_as_sets(rmol, pmol)
     return list(p_bonds - r_bonds)
@@ -152,17 +156,18 @@ def get_formed_bonds(
 def get_broken_bonds(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-) -> List[tuple]:
-    """
-    Get all bonds broken in the reaction. Both reactant and product complexes
-    need to be atom-mapped.
+) -> list[tuple[int, int]]:
+    """Get all bonds broken in the reaction.
+
+    Both reactant and product complexes need to be atom-mapped. The broken bonds are the
+    bonds that are present in the reactant complex but not in the product complex.
 
     Args:
         rmol (Chem.Mol): the reactant complex.
         pmol (Chem.Mol): the product complex.
 
     Returns:
-        list: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+        list[tuple[int, int]]: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
     r_bonds, p_bonds = _get_bonds_as_sets(rmol, pmol)
     return list(r_bonds - p_bonds)
@@ -171,17 +176,19 @@ def get_broken_bonds(
 def get_bonds_with_BO_changed(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-) -> List[tuple]:
-    """
-    Get all bonds whose bond order is changed in the reaction. Both reactant and product complexes
-    need to be atom-mapped.
+) -> list[tuple[int, int]]:
+    """Get all bonds whose bond order is changed in the reaction.
+
+    Both reactant and product complexes need to be atom-mapped. The changed bonds are the
+    bonds that are present in both the reactant and product complexes but have a different
+    bond order.
 
     Args:
         rmol (Chem.Mol): the reactant complex.
         pmol (Chem.Mol): the product complex.
 
     Returns:
-        list: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+        list[tuple[int, int]]: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
     r_bonds, p_bonds = _get_bonds_as_sets(rmol, pmol)
     changed_bonds = [
@@ -198,19 +205,21 @@ def get_bonds_with_BO_changed(
 def get_formed_and_broken_bonds(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-) -> Tuple[List[tuple], List[tuple]]:
-    """
-    Get all bonds broken in the reaction. Both reactant and product complexes
-    need to be atom-mapped. This function doesn't count bonds whose bond order
-    is lowered but not equal to zero.
+) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """Get all bonds broken in the reaction.
+
+    Both reactant and product complexes need to be atom-mapped.
+    This function doesn't count bonds whose bond order is lowered but
+    not equal to zero.
 
     Args:
         rmol (Chem.Mol): the reactant complex.
         pmol (Chem.Mol): the product complex.
 
     Returns:
-        tuple: - formed bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
-               - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+        tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+            - formed bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+            - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
     return get_formed_bonds(rmol, pmol), get_broken_bonds(rmol, pmol)
 
@@ -218,19 +227,20 @@ def get_formed_and_broken_bonds(
 def get_all_changing_bonds(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-) -> Tuple[List[tuple], List[tuple], List[tuple]]:
-    """
-    Get all bonds changed in the reaction. Both reactant and product complexes
-    need to be atom-mapped.
+) -> tuple[list[tuple[int, int]], list[tuple[int, int]], list[tuple[int, int]]]:
+    """Get all bonds changed in the reaction.
+
+    Both reactant and product complexes need to be atom-mapped.
 
     Args:
         rmol (Chem.Mol): the reactant complex.
         pmol (Chem.Mol): the product complex.
 
     Returns:
-        tuple: - formed bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
-               - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
-               - bonds with BO changed: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+        tuple[list[tuple[int, int]], list[tuple[int, int]], list[tuple[int, int]]]:
+            - formed bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+            - broken bonds: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+            - bonds with BO changed: A list of length-2 tuples that contain the atom indexes of the bonded atoms.
     """
     return (
         get_formed_bonds(rmol, pmol),
@@ -239,18 +249,17 @@ def get_all_changing_bonds(
     )
 
 
-def get_atoms_in_bonds(bonds: list, sorted: bool = False):
-    """
-    Get unique atoms in a list of bonds.
+def get_atoms_in_bonds(bonds: list[tuple[int, int]], sorted: bool = False) -> list[int]:
+    """Get unique atoms in a list of bonds.
 
     Args:
-        bonds (list): A list of length-2 tuples that contain the atom indexes of the bonded atoms.
+        bonds (list[tuple[int, int]]): A list of length-2 tuples that contain the atom indexes of the bonded atoms.
         sorted (bool, optional): Whether to sort the atom indexes. Defaults to ``False``.
 
     Returns:
-        list: A list of the atom indexes of the atoms in the bonds.
+        list[int]: A list of the atom indexes of the atoms in the bonds.
     """
-    atoms = list(set(sum(bonds, ())))
+    atoms: list[int] = list(set(sum(bonds, ())))
     if sorted:
         atoms.sort()
     return atoms
