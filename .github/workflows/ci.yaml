@@ -58,7 +58,7 @@ jobs:
           environment-file: environment.yml
 
       - name: Install Pytest
-        run: mamba install -y pytest pytest-cov # temporarily remove "pytest-check"
+        run: mamba install -y pytest pytest-cov nbmake # temporarily remove "pytest-check"
 
       - name: Mamba info
         run: |

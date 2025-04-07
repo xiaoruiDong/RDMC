@@ -54,6 +54,7 @@ dev = [
     "mypy",
     "pytest-cov",
     "pytest",
+    "nbmake",
 ]
 
 docs = ["sphinx", "pydata-sphinx-theme", "sphinx-favicon"]
