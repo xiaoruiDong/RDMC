@@ -1,37 +1,71 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Modules for base operations of resonance structure generation and analysis."""
+
+from typing import Any, Callable, Literal
+
+from rdkit import Chem
 
 from rdtools.resonance.utils import is_equivalent_structure
 
 
 class ResonanceAlgoRegistry:
-    _registry = {}
+    """Registry for resonance algorithms."""
+
+    _registry: dict[str, Callable[..., Any]] = {}
 
     @classmethod
-    def register(cls, name: str):
-        def decorator(some_class):
-            cls._registry[name] = some_class
-            return some_class
+    def register(cls, name: str) -> Callable[..., Any]:
+        """Register a resonance algorithm.
+
+        Args:
+            name (str): Name of the resonance algorithm.
+
+        Returns:
+            Callable[..., Any]: A decorator that registers the algorithm.
+        """
+
+        def decorator(some_function: Callable[..., Any]) -> Callable[..., Any]:
+            """Decorator that registers the algorithm.
+
+            Args:
+                some_function (Callable[..., Any]): The function to register.
+
+            Returns:
+                Callable[..., Any]: The decorated function.
+            """
+            cls._registry[name] = some_function
+            return some_function
 
         return decorator
 
     @classmethod
-    def get(cls, name: str):
-        return cls._registry.get(name)
+    def get(cls, name: str) -> Callable[..., Any]:
+        """Get a registered resonance algorithm by name.
+
+        Args:
+            name (str): Name of the resonance algorithm.
+
+        Returns:
+            Callable[..., Any]: The registered algorithm function.
+        """
+        return cls._registry[name]
 
 
 def _merge_resonance_structures(
-    known_structs: list,
-    new_structs: list,
+    known_structs: list[Chem.Mol],
+    new_structs: list[Chem.Mol],
     keep_isomorphic: bool = False,
-):
-    """
-    Merge resonance structures by removing duplicates.
+) -> None:
+    """Merge resonance structures by removing duplicates.
+
     This is only used in combining resonance structures from different backends.
+    It modifies the ``known_structs`` list in place.
 
     Args:
-        known_structs (list): A list of known resonance structures. This list will be modified in place.
-        new_structs (list): A list of new resonance structures.
+        known_structs (list[Chem.Mol]): A list of known resonance structures. This list will be modified in place.
+        new_structs (list[Chem.Mol]): A list of new resonance structures.
+        keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
     """
     if len(new_structs) <= 1:
         # The new algorithm failed or only return the original molecule
@@ -54,14 +88,27 @@ def _merge_resonance_structures(
 
 
 def generate_resonance_structures(
-    mol: "Chem.RWMol",
+    mol: Chem.RWMol,
     keep_isomorphic: bool = False,
     copy: bool = True,
-    backend: str = "all",
-    **kwargs,
-):
-    """
-    Generate resonance structures for a molecule.
+    backend: Literal["all", "rdkit", "rmg"] = "all",
+    **kwargs: Any,
+) -> list[Chem.Mol]:
+    """Generate resonance structures for a molecule.
+
+    Args:
+        mol (Chem.RWMol): A charged molecule in RDKit RWMol.
+        keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
+        copy (bool, optional): If copy the input molecule. Defaults to ``True``.
+        backend (Literal["all", "rdkit", "rmg"], optional): The backend to use for generating resonance structures. Defaults to ``"all"``.
+        **kwargs (Any): Additional arguments for the resonance algorithms.
+
+
+    Returns:
+        list[Chem.Mol]: A list of resonance structures.
+
+    Raises:
+        ValueError: If the backend is invalid.
     """
     if backend == "all":
         algos = list(ResonanceAlgoRegistry._registry.values())
@@ -82,13 +129,14 @@ def generate_resonance_structures(
 
         return known_structs
 
-    algo = ResonanceAlgoRegistry.get(backend)
-    if algo:
-        return algo(
-            mol=mol,
-            keep_isomorphic=keep_isomorphic,
-            copy=copy,
-            **kwargs,
-        )
-    else:
+    try:
+        algo = ResonanceAlgoRegistry.get(backend)
+    except KeyError:
         raise ValueError(f"Invalid backend {backend}")
+
+    return algo(
+        mol=mol,
+        keep_isomorphic=keep_isomorphic,
+        copy=copy,
+        **kwargs,
+    )

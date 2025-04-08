@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-"""
-This module contains the function generating resonance structures.
-"""
+"""This module contains the function generating resonance structures."""
 
 import logging
+from typing import Any
+
+from rdkit import Chem
 
 from rdtools.resonance.base import ResonanceAlgoRegistry
 from rdtools.resonance.utils import (
@@ -13,9 +13,6 @@ from rdtools.resonance.utils import (
     is_partially_charged,
     unset_aromatic_flags,
 )
-
-from rdkit import Chem
-
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +22,14 @@ def generate_radical_resonance_structures(
     keep_isomorphic: bool = False,
     copy: bool = True,
     kekulize: bool = True,
-    **kwargs,
-):
-    """
-    Generate resonance structures for a radical molecule.  RDKit by design doesn't work
-    for radical resonance. The approach is a temporary workaround by replacing radical electrons by positive
-    charges and generating resonance structures by RDKit ResonanceMolSupplier.
-    Currently, this function only works for neutral radicals.
+    **kwargs: Any,
+) -> list[Chem.Mol]:
+    """Generate resonance structures for a radical molecule.
+
+    RDKit by design doesn't
+    work for radical resonance. The approach is a temporary workaround by replacing
+    radical electrons by positive charges and generating resonance structures by RDKit
+    ResonanceMolSupplier. Currently, this function only works for neutral radicals.
 
     Known issues:
 
@@ -42,9 +40,10 @@ def generate_radical_resonance_structures(
         keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
         copy (bool, optional): If copy the input molecule. Defaults to ``True``.
         kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``True``.
+        **kwargs (Any): Additional arguments for the resonance algorithms.
 
     Returns:
-        list: a list of molecules with resonance structures.
+        list[Chem.Mol]: a list of molecules with resonance structures.
     """
     mol_copy = Chem.RWMol(mol, True) if copy else mol
 
@@ -114,7 +113,7 @@ def generate_radical_resonance_structures(
         cleaned_mols.append(res_mol)
 
     # To remove duplicate resonance structures
-    known_structs = []
+    known_structs: list[Chem.Mol] = []
     for new_struct in cleaned_mols:
         for known_struct in known_structs:
             if is_equivalent_structure(
@@ -140,19 +139,19 @@ def generate_charged_resonance_structures(
     keep_isomorphic: bool = False,
     copy: bool = True,
     kekulize: bool = True,
-    **kwargs,
-) -> list:
-    """
-    Generate resonance structures for a charged molecule.
+    **kwargs: Any,
+) -> list[Chem.Mol]:
+    """Generate resonance structures for a charged molecule.
 
     Args:
         mol (Chem.RWMol): A charged molecule in RDKit RWMol.
         keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
         copy (bool, optional): If copy the input molecule. Defaults to ``True``.
         kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``True``.
+        **kwargs (Any): Additional arguments for the resonance algorithms.
 
     Returns:
-        list: a list of molecules with resonance structures.
+        list[Chem.Mol]: a list of molecules with resonance structures.
     """
     mol_copy = Chem.RWMol(mol, True) if copy else mol
 
@@ -185,7 +184,7 @@ def generate_charged_resonance_structures(
         cleaned_mols.append(res_mol)
 
     # To remove duplicate resonance structures
-    known_structs = []
+    known_structs: list[Chem.Mol] = []
     for new_struct in cleaned_mols:
         for known_struct in known_structs:
             if is_equivalent_structure(
@@ -212,19 +211,19 @@ def generate_resonance_structures(
     keep_isomorphic: bool = False,
     copy: bool = True,
     kekulize: bool = True,
-    **kwargs,
-):
-    """
-    Generate resonance structures with RDKit algorithm.
+    **kwargs: Any,
+) -> list[Chem.Mol]:
+    """Generate resonance structures with RDKit algorithm.
 
     Args:
         mol (Chem.RWMol): A charged molecule in RDKit RWMol.
         keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
         copy (bool, optional): If copy the input molecule. Defaults to ``True``.
         kekulize (bool, optional): If kekulize the molecule in generating resonance structures. Defaults to ``True``.
+        **kwargs (Any): Additional arguments for the resonance algorithms.
 
     Returns:
-        list: a list of molecules with resonance structures.
+        list[Chem.Mol]: a list of molecules with resonance structures.
     """
     if is_partially_charged(mol):
         return generate_charged_resonance_structures(

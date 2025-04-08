@@ -1,31 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Functions for generating resonance structures using RMG algorithm.
 
-"""
-This module contains functions for generating resonance structures.
 This is a rewrite of the original resonance_rmg.py module.
 """
 
+import logging
 from collections import defaultdict
 from itertools import chain
-import logging
-from typing import List, Optional, Tuple
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
-from scipy.optimize import milp, Bounds, LinearConstraint
-
+import numpy.typing as npt
 from rdkit import Chem
+from scipy.optimize import Bounds, LinearConstraint, milp
 
 from rdtools.resonance.base import ResonanceAlgoRegistry
 from rdtools.resonance.filtration import (
-    get_octet_deviation,
-    get_octet_deviation_list,
-    get_charge_span_list,
-)
-from rdtools.resonance.filtration import (
     filter_structures as filter_resonance_structures,
 )
-from rdtools.resonance.pathfinder import PathFinderRegistry
+from rdtools.resonance.filtration import (
+    get_charge_span_list,
+    get_octet_deviation,
+    get_octet_deviation_list,
+)
+from rdtools.resonance.pathfinder import PathFinder, PathFinderRegistry
 from rdtools.resonance.utils import (
     force_no_implicit,
     get_aryne_rings,
@@ -38,7 +37,6 @@ from rdtools.resonance.utils import (
     is_radical,
 )
 
-
 logger = logging.getLogger(__name__)
 
 sanitize_flag_kekule = Chem.SANITIZE_PROPERTIES | Chem.SANITIZE_SETCONJUGATION
@@ -49,12 +47,14 @@ sanitize_flag_aromatic = sanitizeOps = (
 )
 
 
-def analyze_molecule(mol):
-    """
-    Identify key features of molecule important for resonance structure generation.
+def analyze_molecule(mol: Chem.Mol) -> dict[str, bool]:
+    """Identify key features of molecule important for resonance structure generation.
+
+    Args:
+        mol (Chem.Mol): the input molecule.
 
     Returns:
-        dict: a dictionary of features. The keys are:
+        dict[str, bool]: a dictionary of features. The keys are:
             - is_radical: whether the molecule is a radical
             - is_cyclic: whether the molecule is cyclic
             - is_aromatic: whether the molecule is aromatic
@@ -88,18 +88,18 @@ def analyze_molecule(mol):
 
 
 def populate_resonance_algorithms(
-    features: Optional[dict] = None,
-) -> Tuple[list]:
-    """
-    Generate two list of resonance structure algorithms
+    features: Optional[dict[str, bool]] = None,
+) -> tuple[list[str,], list[Callable[..., Any]]]:
+    """Generate two list of resonance structure algorithms.
+
         - The first are aromatic-agnostic approaches
         - The second are aromatic-specific approaches
 
     Args:
-        features (dict, optional): a dictionary of features from ``analyze_molecule``.
+        features (Optional[dict[str, bool]], optional): a dictionary of features from ``analyze_molecule``.
 
     Returns:
-        Tuple[list]: a tuple of two lists of resonance structure algorithms
+        tuple[list[str,], list[Callable[..., Any]]]: a tuple of two lists of resonance structure algorithms
 
     Returns a list of resonance algorithms.
     """
@@ -127,15 +127,13 @@ def populate_resonance_algorithms(
     if features["is_cyclic"]:
         aromatic_specific.append(generate_aryne_resonance_structures)
     if features["hasLonePairs"]:
-        aromatic_agnostic.extend(
-            [
-                "adj_lone_pair_radical",
-                "forward_adj_lone_pair_multiple_bond",
-                "reverse_adj_lone_pair_multiple_bond",
-                "forward_adj_lone_pair_radical_multiple_bond",
-                "reverse_adj_lone_pair_radical_multiple_bond",
-            ]
-        )
+        aromatic_agnostic.extend([
+            "adj_lone_pair_radical",
+            "forward_adj_lone_pair_multiple_bond",
+            "reverse_adj_lone_pair_multiple_bond",
+            "forward_adj_lone_pair_radical_multiple_bond",
+            "reverse_adj_lone_pair_radical_multiple_bond",
+        ])
         if not features["is_aromatic"]:
             # The generate_lone_pair_multiple_bond_resonance_structures method may perturb the electronic
             # configuration of a conjugated aromatic system, causing a major slow-down (two orders of magnitude
@@ -151,20 +149,25 @@ def populate_resonance_algorithms(
 
 
 def _generate_resonance_structures(
-    mol_list: list,
-    aromatic_agnostic: list,
-    aromatic_specific: list,
+    mol_list: list[Chem.Mol],
+    aromatic_agnostic: list[str],
+    aromatic_specific: list[Callable[..., Any]],
     keep_isomorphic: bool = False,
     update_aromatic_flags: bool = False,
-):
-    """
-    Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
+) -> list[Chem.Mol]:
+    """Iteratively generate all resonance structures.
+
+    It takes a list of starting molecules and generate all possible resonance structures using the specified methods.
 
     Args:
-        mol_list             starting list of molecules
-        method_list          list of resonance structure algorithms
-        keep_isomorphic      if ``False``, removes any structures that are isomorphic (default)
-                             if ``True``, keep all unique molecules.
+        mol_list (list[Chem.Mol]): A list of starting molecules.
+        aromatic_agnostic (list[str]): A list of methods to generate resonance structures that are not specific to aromatic systems.
+        aromatic_specific (list[Callable[..., Any]]): A list of methods to generate resonance structures that are specific to aromatic systems.
+        keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
+        update_aromatic_flags (bool, optional): If update the aromatic flags of the generated structures. Defaults to ``False``.
+
+    Returns:
+        list[Chem.Mol]: A list of resonance structures.
     """
     octate_deviations = get_octet_deviation_list(mol_list)
     charge_spans = get_charge_span_list(mol_list)
@@ -172,7 +175,9 @@ def _generate_resonance_structures(
     min_charge_span = min(charge_spans)
     ref_charge = Chem.GetFormalCharge(mol_list[0])
 
-    prune_book = {i: defaultdict(set) for i in range(len(mol_list))}
+    prune_book: dict[int, dict[str, set[tuple[int, ...]]]] = {
+        i: defaultdict(set) for i in range(len(mol_list))
+    }
 
     # Iterate over resonance structures
     index = 0
@@ -200,10 +205,10 @@ def _generate_resonance_structures(
             # update min_charge_span to make this criterion tighter
             min_charge_span = charge_span
 
-        for method in aromatic_agnostic:
-            pathfinder = PathFinderRegistry.get(method)
+        for method_name in aromatic_agnostic:
+            pathfinder = PathFinderRegistry.get(method_name)
             for new_structure, path in generate_resonance_structures_with_pathfinder(
-                mol_list[index], pathfinder, prune_paths=prune_book[index][method]
+                mol_list[index], pathfinder, prune_paths=prune_book[index][method_name]
             ):
                 charge = Chem.GetFormalCharge(new_structure)
                 if charge != ref_charge:  # Not expected to happen
@@ -268,15 +273,14 @@ def _generate_resonance_structures(
 
 @ResonanceAlgoRegistry.register("rmg")
 def generate_resonance_structures(
-    mol,
+    mol: Chem.RWMol,
     clar_structures: bool = True,
     keep_isomorphic: bool = False,
     filter_structures: bool = True,
     copy: bool = True,
-    **kwargs,
-) -> list:
-    """
-    Generate and return all of the resonance structures for the input molecule.
+    **kwargs: Any,
+) -> list[Chem.Mol]:
+    """Generate and return all of the resonance structures for the input molecule.
 
     Most of the complexity of this method goes into handling aromatic species, particularly to generate an accurate
     set of resonance structures that is consistent regardless of the input structure. The following considerations
@@ -290,18 +294,28 @@ def generate_resonance_structures(
     Aromatic species are broken into the following categories for resonance treatment:
 
     - Radical polycyclic aromatic species: Kekule structures are generated in order to generate adjacent resonance
-      structures. The resulting structures are then used for Clar structure generation. After all three steps, any
-      non-aromatic structures are removed, under the assumption that they are not important resonance contributors.
+        structures. The resulting structures are then used for Clar structure generation. After all three steps, any
+        non-aromatic structures are removed, under the assumption that they are not important resonance contributors.
     - Radical monocyclic aromatic species: Kekule structures are generated along with adjacent resonance structures.
-      All are kept regardless of aromaticity because the radical is more likely to delocalize into the ring.
+        All are kept regardless of aromaticity because the radical is more likely to delocalize into the ring.
     - Stable polycyclic aromatic species: Clar structures are generated
     - Stable monocyclic aromatic species: Kekule structures are generated
 
     Note, RDKit atom obeys the octet rule, that is when making an atom electron deficient, it may automatically add
     implicit hydrogens if possible. This is not desired in resonance structure generation, so the molecule will be processed
     by setting atoms with no hydrogen (either implicit or explicit) to be "no implicit".
-    """
 
+    Args:
+        mol (Chem.RWMol): A charged molecule in RDKit RWMol.
+        clar_structures (bool, optional): If generate Clar structures. Defaults to ``True``.
+        keep_isomorphic (bool, optional): If keep isomorphic resonance structures. Defaults to ``False``.
+        filter_structures (bool, optional): If filter the resonance structures. Defaults to ``True``.
+        copy (bool, optional): If copy the input molecule. Defaults to ``True``.
+        **kwargs (Any): Additional arguments for the resonance algorithms.
+
+    Returns:
+        list[Chem.Mol]: A list of resonance structures.
+    """
     # RMG avoid generating resonance structures for charged species
     # The concerns are due to invalid atom types. This may not be an issue for RDKit.
     # Comment out the check for formal charge until significant issues are found.
@@ -355,6 +369,7 @@ def generate_resonance_structures(
                     mol_list.append(new_mol)
 
     # Special handling for aromatic species
+    aromatic_specific: list[Callable[..., Any]]
     if features["is_aromatic"]:
         if features["is_radical"] and not features["is_aryl_radical"]:
             _generate_resonance_structures(
@@ -385,24 +400,23 @@ def generate_resonance_structures(
 
 
 def generate_resonance_structures_with_pathfinder(
-    mol: "Mol",
-    pathfinder: "PathFinder",
-    prune_paths=set(),
-) -> List[tuple]:
-    """
-    Generate resonance structures using a path finder.
+    mol: Chem.Mol,
+    pathfinder: PathFinder,
+    prune_paths: set[tuple[int, ...]] = set(),
+) -> list[tuple[Chem.Mol, tuple[int, ...]]]:
+    """Generate resonance structures using a path finder.
 
     Args:
-        mol (Mol): the input molecule.
+        mol (Chem.Mol): the input molecule.
         pathfinder (PathFinder): the path finder registered in the registry.
-        prune_paths (set, optional): A set of paths to prune. Defaults to an empty set.
+        prune_paths (set[tuple[int, ...]], optional): A set of paths to prune. Defaults to an empty set.
 
     Returns:
-        List[tuple]: a list of tuples, each tuple contains a resonance structure and a path.
+        list[tuple[Chem.Mol, tuple[int, ...]]]: a list of tuples, each tuple contains a resonance structure and a path.
     """
     structures = []
     paths = pathfinder.find(mol)
-    logger.debug(f"Found paths: {paths} with method {pathfinder.__name__}")
+    logger.debug(f"Found paths: {paths} with method {pathfinder.__name__}")  # type: ignore[attr-defined]
     paths.difference_update(prune_paths)
     logger.debug(f"{paths} After pruning")
     for path in paths:
@@ -417,20 +431,21 @@ def generate_resonance_structures_with_pathfinder(
 
 
 def generate_optimal_aromatic_resonance_structures(
-    mol: "Mol",
-    features: dict = None,
-):
-    """
-    Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.
+    mol: Chem.Mol,
+    features: Optional[dict[str, bool]] = None,
+) -> list[Chem.Mol]:
+    """Generate the aromatic form of the molecule.
+
+    For radicals, generates the form with the most aromatic rings.
 
     Args:
-        mol (Mol): the input molecule.
-        features (dict, optional): a dictionary of features from ``analyze_molecule``.
+        mol (Chem.Mol): the input molecule.
+        features (Optional[dict[str, bool]], optional): a dictionary of features from ``analyze_molecule``.
 
     Returns:
-        list: a list of resonance structures. In most cases, only one structure will be returned.
-              In certain cases where multiple forms have the same number of aromatic rings,
-              multiple structures will be returned. It just returns an empty list if an error is raised.
+        list[Chem.Mol]: a list of resonance structures.
+            In certain cases where multiple forms have the same number of aromatic rings,
+            multiple structures will be returned. It just returns an empty list if an error is raised.
     """
     features = features if features is not None else analyze_molecule(mol)
 
@@ -482,22 +497,20 @@ def generate_optimal_aromatic_resonance_structures(
 
 
 def generate_aromatic_resonance_structure(
-    mol: "Mol",
+    mol: Chem.RWMol,
     copy: bool = True,
-) -> list:
-    """
-    Generate the aromatic form of the molecule in place without considering other resonance.
+) -> list[Chem.RWMol]:
+    """Generate the aromatic resonance in place without considering other resonance.
 
     This method completely get rid of the implementation in the original rmg algorithm, to
     perceive aromaticity and use purely RDKit aromaticity perception. So the performance may be different.
 
     Args:
-        mol: molecule to generate aromatic resonance structure for
-        aromatic_bonds (optional): list of previously identified aromatic bonds
-        copy (optional): copy the molecule if ``True``, otherwise modify in place
+        mol (Chem.RWMol): molecule to generate aromatic resonance structure for
+        copy (bool, optional): copy the molecule if ``True``, otherwise modify in place
 
     Returns:
-        List of one molecule if successful, empty list otherwise
+        list[Chem.RWMol]: List of one molecule if successful, empty list otherwise
     """
     mol = Chem.RWMol(mol, True) if copy else mol
     try:
@@ -507,13 +520,20 @@ def generate_aromatic_resonance_structure(
         return []
 
 
-def generate_kekule_structure(mol, copy: bool = True):
-    """
-    Generate a kekulized (single-double bond) form of the molecule.
+def generate_kekule_structure(mol: Chem.RWMol, copy: bool = True) -> list[Chem.RWMol]:
+    """Generate a kekulized (single-double bond) form of the molecule.
+
     The specific arrangement of double bonds is non-deterministic, and depends on RDKit.
 
-    Returns a single Kekule structure as an element of a list of length 1.
-    If there's an error (eg. in RDKit) then it just returns an empty list.
+    Returns a single Kekule structure as an element of a list of length 1. If there's an
+    error (eg. in RDKit) then it just returns an empty list.
+
+    Args:
+        mol (Chem.RWMol): molecule to generate kekulized structure for
+        copy (bool, optional): copy the molecule if ``True``, otherwise modify in place
+
+    Returns:
+        list[Chem.RWMol]: List of one molecule if successful, empty list otherwise
     """
     mol = Chem.RWMol(mol, True) if copy else mol
     try:
@@ -524,24 +544,29 @@ def generate_kekule_structure(mol, copy: bool = True):
         return []
 
 
-def generate_aryne_resonance_structures(mol):
-    """
-    Generate aryne resonance structures, including the cumulene and alkyne forms.
+def generate_aryne_resonance_structures(mol: Chem.RWMol) -> list[Chem.RWMol]:
+    """Generate aryne resonance structures, including the cumulene and alkyne forms.
 
     For all 6-membered rings, check for the following bond patterns:
 
-      - TSDSDS (pattern 1)
-      - DDDSDS (pattern 2)
+        - TSDSDS (pattern 1)
+        - DDDSDS (pattern 2)
 
     This does NOT cover all possible aryne resonance forms, only the simplest ones.
     Especially for polycyclic arynes, enumeration of all resonance forms is
     related to enumeration of all Kekule structures, which is very difficult.
+
+    Args:
+        mol (Chem.RWMol): molecule to generate aryne resonance structure for
+
+    Returns:
+        list[Chem.RWMol]: List of resonance structures
     """
     pattern1_rings, pattern2_rings = get_aryne_rings(mol)
 
-    operations = [[ring, "DDDSDS"] for ring in pattern1_rings] + [
-        [ring, "DSTSDS"] for ring in pattern2_rings
-    ]
+    operations: list[tuple[tuple[int, ...], str]] = [
+        (ring, "DDDSDS") for ring in pattern1_rings
+    ] + [(ring, "DSTSDS") for ring in pattern2_rings]
 
     new_mol_list = []
     for ring, new_orders in operations:
@@ -569,11 +594,16 @@ def generate_aryne_resonance_structures(mol):
     return new_mol_list
 
 
-def generate_clar_structures(mol):
-    """
-    Generate Clar structures for a given molecule.
+def generate_clar_structures(mol: Chem.RWMol) -> list[Chem.RWMol]:
+    """Generate Clar structures for a given molecule.
 
-    Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
+    This method uses the Clar algorithm to generate all possible Clar structures for a given molecule.
+
+    Args:
+        mol (Chem.RWMol): The input molecule.
+
+    Returns:
+        list[Chem.RWMol]: A list of generated Clar structures.
     """
     if not is_cyclic(mol):
         return []
@@ -581,7 +611,7 @@ def generate_clar_structures(mol):
     # Atom IDs are necessary in order to maintain consistent matrices between iterations
 
     try:
-        solutions, aromatic_rings, bonds = _clar_optimization(mol)
+        solutions, aromatic_rings, bonds = _clar_optimization(mol)  # type: ignore
     except BaseException:
         # The optimization algorithm did not work on the first iteration
         return []
@@ -594,7 +624,7 @@ def generate_clar_structures(mol):
         bond_assign = solution[len(aromatic_rings) :]
 
         for index, bidx in enumerate(bonds):
-            bond = new_struct.GetBondWithIdx(bidx)
+            bond = new_struct.GetBondWithIdx(int(bidx))
             if bond_assign[index] == 0:
                 bond.SetBondType(Chem.BondType.SINGLE)
             else:  # the value is either 0 or 1 and we don't need to check
@@ -615,10 +645,13 @@ def generate_clar_structures(mol):
     return structures
 
 
-def _clar_optimization(mol):
-    """
-    Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
-    of Clar sextets within the constraints of molecular geometry and atom valency.
+def _clar_optimization(
+    mol: Chem.RWMol,
+) -> Union[tuple[list[npt.NDArray[np.int_]], list[tuple[int]], list[int]], tuple[()]]:
+    """Implements linear programming algorithm for finding Clar structures.
+
+    This algorithm maximizes the number of Clar sextets within the constraints of molecular
+    geometry and atom valency.
 
     Returns a list of valid Clar solutions in the form of a tuple, with the following entries:
         [0] Molecule object
@@ -632,27 +665,32 @@ def _clar_optimization(mol):
     Method adapted from:
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93-107.
+
+    Args:
+        mol (Chem.RWMol): The input molecule.
+
+    Returns:
+        Union[tuple[list[npt.NDArray[np.int_]], list[tuple[int]], list[int]], tuple[()]]: A tuple containing the solutions,
+            aromatic rings, and bonds. If no valid solution is found, an empty tuple is returned.
     """
     ring_info = mol.GetRingInfo()
     bond_rings = [
         ring for ring in ring_info.BondRings() if len(ring) == 6
     ]  # RMG only consider 6 member rings
-    aromatic_rings = [
+    aromatic_rings: list[tuple[int]] = [
         ring
         for ring in bond_rings
-        if all(
-            [
-                mol.GetBondWithIdx(bidx).GetBondType() == Chem.BondType.AROMATIC
-                for bidx in ring
-            ]
-        )
+        if all([
+            mol.GetBondWithIdx(bidx).GetBondType() == Chem.BondType.AROMATIC
+            for bidx in ring
+        ])
     ]
     if not aromatic_rings:
-        return []
+        return ()
     aromatic_rings.sort(key=lambda x: sum(x))
 
-    bonds = set(chain(*aromatic_rings))
-    bonds = sorted(bonds)
+    _bonds = set(chain(*aromatic_rings))
+    bonds: list[int] = sorted(_bonds)
 
     n_ring = len(aromatic_rings)
     n_ring_bond = len(bonds)
@@ -705,12 +743,30 @@ def _clar_optimization(mol):
 
 
 def _solve_clar_lp(
-    c: np.array,
+    c: npt.NDArray[np.int_],
     bounds: Bounds,
-    constraints: List[LinearConstraint],
+    constraints: list[LinearConstraint],
     n_ring: int,
-    max_num=None,
-):
+    max_num: Optional[int] = None,
+) -> list[npt.NDArray[np.int_]]:
+    """Solve the Clar optimization problem using linear programming.
+
+    This function uses the `scipy.optimize.milp` function to solve the linear programming problem.
+
+    Args:
+        c (npt.NDArray[np.int_]): Coefficients for the objective function.
+        bounds (Bounds): Bounds for the variables.
+        constraints (list[LinearConstraint]): Constraints for the optimization problem.
+        n_ring (int): Number of aromatic rings in the molecule.
+        max_num (Optional[int], optional): Maximum number of sextets. Defaults to None.
+
+    Returns:
+        list[npt.NDArray[np.int_]]: List of solutions to the optimization problem.
+
+    Raises:
+        Exception: If the optimization problem cannot be solved or if the solution is not valid.
+        RuntimeError: If the optimization problem cannot be solved or if the solution is not valid.
+    """
     result = milp(
         c=-c,  # Note: negative to maximize
         integrality=1,
@@ -748,21 +804,26 @@ def _solve_clar_lp(
     # Run optimization with additional constraints
     try:
         inner_solutions = _solve_clar_lp(c, bounds, constraints, n_ring, max_num)
-    except RuntimeError as e:
+    except RuntimeError:
         inner_solutions = []
 
     return inner_solutions + [solution]
 
 
-def _clar_transformation(mol, aromatic_rings, ring_assign):
-    """
-    Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
-
-    Args:
-        mol             a :class:`Molecule` object
-        aromaticRing    a list of :class:`Atom` objects corresponding to an aromatic ring in mol
+def _clar_transformation(
+    mol: Chem.RWMol,
+    aromatic_rings: list[tuple[int]],
+    ring_assign: npt.NDArray[np.int_],
+) -> None:
+    """Performs Clar transformation for given ring in a molecule.
 
     This function directly modifies the input molecule and does not return anything.
+
+    Args:
+        mol (Chem.RWMol): The input molecule to be modified.
+        aromatic_rings (list[tuple[int]]): List of aromatic rings in the molecule.
+        ring_assign (npt.NDArray[np.int_]): List of ring assignments for the rings.
+            1 indicates aromatic, 0 indicates non-aromatic.
     """
     for index, is_arom in enumerate(ring_assign):
         if is_arom == 1:

@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Utility functions for resonance structure generation and analysis."""
 
 import itertools
 import math
-from typing import List, Union
 
 from rdkit import Chem
 from rdkit.Chem import Lipinski, rdqueries
-
 
 PERIODIC_TABLE = Chem.GetPeriodicTable()
 
@@ -71,23 +70,21 @@ aryne_template1_kek = Chem.MolFromSmarts("[*]1#[*]-[*]=[*]-[*]=[*]1")
 aryne_template2 = Chem.MolFromSmarts("[*]1=[*]=[*]=[*]-[*]=[*]1")
 
 
-def force_no_implicit(mol: "Mol"):
-    """
-    Force RDKit to not use implicit hydrogens.
-    """
+def force_no_implicit(mol: Chem.Mol) -> None:
+    """Force RDKit to not use implicit hydrogens."""
     for atom in mol.GetAtoms():
         if atom.GetAtomicNum() > 1 and not atom.GetTotalNumHs():
             atom.SetNoImplicit(True)
 
 
 # RDKit / RDMC compatible
-def get_electronegativity(atom: "Atom") -> float:
-    """
-    Get the electronegativity of an atom. Currently only supports atom 1-35 and 53. Others will
-    return 1.0.
+def get_electronegativity(atom: Chem.Atom) -> float:
+    """Get the electronegativity of an atom.
+
+    Currently only supports atom 1-35 and 53. Others will return 1.0.
 
     Args:
-        atom (Atom): The atom whose electronegativity is to be returned.
+        atom (Chem.Atom): The atom whose electronegativity is to be returned.
 
     Returns:
         float: The electronegativity of the atom.
@@ -96,12 +93,11 @@ def get_electronegativity(atom: "Atom") -> float:
 
 
 # RDKit / RDMC compatible
-def get_total_bond_order(atom: "Atom") -> float:
-    """
-    Get the total bond order of an atom.
+def get_total_bond_order(atom: Chem.Atom) -> float:
+    """Get the total bond order of an atom.
 
     Args:
-        atom (Atom): The atom whose total bond order is to be returned.
+        atom (Chem.Atom): The atom whose total bond order is to be returned.
 
     Returns:
         float: The total bond order of the atom.
@@ -114,12 +110,11 @@ def get_total_bond_order(atom: "Atom") -> float:
 
 
 # RDKit / RDMC compatible
-def get_lone_pair(atom: "Atom") -> int:
-    """
-    Get the number of lone pairs on an atom.
+def get_lone_pair(atom: Chem.Atom) -> int:
+    """Get the number of lone pairs on an atom.
 
     Args:
-        atom (Atom): The atom whose lone pair is to be returned.
+        atom (Chem.Atom): The atom whose lone pair is to be returned.
 
     Returns:
         int: The number of lone pairs on the atom.
@@ -134,12 +129,11 @@ def get_lone_pair(atom: "Atom") -> int:
 
 
 # RDKit / RDMC compatible
-def get_charge_span(mol: "RDKitMol") -> float:
-    """
-    Get the charge span of a molecule.
+def get_charge_span(mol: Chem.Mol) -> float:
+    """Get the charge span of a molecule.
 
     Args:
-        mol (RDKitMol): The molecule whose charge span is to be returned.
+        mol (Chem.Mol): The molecule whose charge span is to be returned.
 
     Returns:
         float: The charge span of the molecule.
@@ -151,14 +145,13 @@ def get_charge_span(mol: "RDKitMol") -> float:
 
 
 # RDKit / RDMC compatible
-def get_radical_count(mol) -> int:
-    """
-    Return the total number of radical electrons on all atoms in the
-    molecule. In this function, monoradical atoms count as one, biradicals
-    count as two, etc.
+def get_radical_count(mol: Chem.Mol) -> int:
+    """Return the total number of radical electrons on all atoms in the molecule.
+
+    In this function, monoradical atoms count as one, biradicals count as two, etc.
 
     Args:
-        mol (RDKitMol, RWMol): The molecule to be checked.
+        mol (Chem.Mol): The molecule to be checked.
 
     Returns:
         int: The total number of radical electrons on all atoms in the molecule.
@@ -167,12 +160,11 @@ def get_radical_count(mol) -> int:
 
 
 # RDKit / RDMC compatible
-def get_num_occupied_orbitals(atom: "Atom") -> int:
-    """
-    Get the number of occupied orbitals on an atom.
+def get_num_occupied_orbitals(atom: Chem.Atom) -> int:
+    """Get the number of occupied orbitals on an atom.
 
     Args:
-        atom (Atom): The atom whose number of occupied orbitals is to be returned.
+        atom (Chem.Atom): The atom whose number of occupied orbitals is to be returned.
 
     Returns:
         int: The number of occupied orbitals on the atom.
@@ -190,17 +182,31 @@ def get_num_occupied_orbitals(atom: "Atom") -> int:
 
 
 # Pure RDKit
-def get_num_aromatic_rings(mol: "Mol") -> int:
+def get_num_aromatic_rings(mol: Chem.Mol) -> int:
+    """Get the number of aromatic rings in a molecule.
+
+    Args:
+        mol (Chem.Mol): The molecule to be checked.
+
+    Returns:
+        int: The number of aromatic rings in the molecule.
     """
-    Get the number of aromatic rings in a molecule.
-    """
-    return Lipinski.NumAromaticRings(mol)
+    return Lipinski.NumAromaticRings(mol)  # type: ignore[attr-defined]
 
 
 # RDKit / RDMC compatible
-def get_aryne_rings(mol: "Mol") -> List[List[int]]:
-    """
-    Get the indices of all aryne rings in a molecule.
+def get_aryne_rings(
+    mol: Chem.Mol,
+) -> tuple[tuple[tuple[int, ...]], tuple[tuple[int, ...]]]:
+    """Get the indices of all aryne rings in a molecule.
+
+    Args:
+        mol (Chem.Mol): The molecule to be checked.
+
+    Returns:
+        tuple[tuple[tuple[int, ...]], tuple[tuple[int, ...]]]: A tuple containing two lists of indices.
+        The first list contains the indices of the first aryne ring, and the second list
+        contains the indices of the second aryne ring.
     """
     return (
         (
@@ -212,12 +218,11 @@ def get_aryne_rings(mol: "Mol") -> List[List[int]]:
 
 
 # RDKit / RDMC compatible
-def has_empty_orbitals(atom: "Atom") -> bool:
-    """
-    Determine whether an atom has empty orbitals.
+def has_empty_orbitals(atom: Chem.Atom) -> bool:
+    """Determine whether an atom has empty orbitals.
 
     Args:
-        atom (Atom): The atom to be checked.
+        atom (Chem.Atom): The atom to be checked.
 
     Returns:
         bool: ``True`` if the atom has empty orbitals, ``False`` otherwise.
@@ -239,12 +244,11 @@ def has_empty_orbitals(atom: "Atom") -> bool:
 
 
 # RDKit / RDMC compatible
-def is_radical(mol) -> bool:
-    """
-    Determine whether a molecule is a radical.
+def is_radical(mol: Chem.Mol) -> bool:
+    """Determine whether a molecule is a radical.
 
     Args:
-        mol (RDKitMol, RWMol): The molecule to be checked.
+        mol (Chem.Mol): The molecule to be checked.
 
     Returns:
         bool: ``True`` if the molecule is a radical, ``False`` otherwise.
@@ -256,12 +260,11 @@ def is_radical(mol) -> bool:
 
 
 # RDKit / RDMC compatible
-def is_partially_charged(mol) -> bool:
-    """
-    Determine whether a molecule is partially charged.
+def is_partially_charged(mol: Chem.Mol) -> bool:
+    """Determine whether a molecule is partially charged.
 
     Args:
-        mol (RDKitMol, RWMol): The molecule to be checked.
+        mol (Chem.Mol): The molecule to be checked.
 
     Returns:
         bool: ``True`` if the molecule is partially charged, ``False`` otherwise.
@@ -273,12 +276,11 @@ def is_partially_charged(mol) -> bool:
 
 
 # RDKit / RDMC compatible
-def is_aromatic(mol) -> bool:
-    """
-    Determine whether a molecule is aromatic.
+def is_aromatic(mol: Chem.Mol) -> bool:
+    """Determine whether a molecule is aromatic.
 
     Args:
-        mol (RDKitMol, RWMol): The molecule to be checked.
+        mol (Chem.Mol): The molecule to be checked.
 
     Returns:
         bool: ``True`` if the molecule is aromatic, ``False`` otherwise.
@@ -290,12 +292,11 @@ def is_aromatic(mol) -> bool:
 
 
 # RDKit / RDMC compatible
-def is_cyclic(mol) -> bool:
-    """
-    Determine whether a molecule is cyclic.
+def is_cyclic(mol: Chem.Mol) -> bool:
+    """Determine whether a molecule is cyclic.
 
     Args:
-        mol (RDKitMol, RWMol): The molecule to be checked.
+        mol (Chem.Mol): The molecule to be checked.
 
     Returns:
         bool: ``True`` if the molecule is cyclic, ``False`` otherwise.
@@ -307,12 +308,11 @@ def is_cyclic(mol) -> bool:
 
 
 # RDKit / RDMC compatible
-def get_order_str(bond: "Bond") -> str:
-    """
-    Get the string representation of the bond order.
+def get_order_str(bond: Chem.Bond) -> str:
+    """Get the string representation of the bond order.
 
     Args:
-        bond (Bond): The bond whose order is to be returned.
+        bond (Chem.Bond): The bond whose order is to be returned.
 
     Returns:
         str: The string representation of the bond order.
@@ -333,16 +333,16 @@ def get_order_str(bond: "Bond") -> str:
 
 
 # RDKit / RDMC compatible
-def get_relevant_cycles(mol) -> list:
-    """
-    Returns all relevant cycles as a list of bond indices.
+def get_relevant_cycles(mol: Chem.Mol) -> tuple[tuple[int, ...], ...]:
+    """Returns all relevant cycles as a list of bond indices.
+
     Note, as of now, this function only returns the smallest set of smallest rings.
 
     Args:
-        mol (RDKitMol, RWMol): The molecule to be checked.
+        mol (Chem.Mol): The molecule to be checked.
 
     Returns:
-        list: A list of rings, each represented as a list of bond indices.
+        tuple[tuple[int, ...], ...]: A list of rings, each represented as a list of bond indices.
     """
     # TODO: improve this function with the actual relevant cycle algorithm
     # This is a temporary solution works for simple cases
@@ -350,28 +350,46 @@ def get_relevant_cycles(mol) -> list:
     return mol.GetRingInfo().BondRings()
 
 
-def get_aromatic_rings(mol):
-    """
-    Returns all aromatic rings as a list of atoms and a list of bonds.
+def get_aromatic_rings(
+    mol: Chem.Mol,
+) -> tuple[list[tuple[int, ...]], list[list[Chem.Bond]]]:
+    """Returns all aromatic rings as a list of atoms and a list of bonds.
 
-    Identifies rings using `Graph.get_smallest_set_of_smallest_rings()`, then uses RDKit to perceive aromaticity.
-    RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
-    Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
+    Identifies rings using `Graph.get_smallest_set_of_smallest_rings()`, then uses RDKit
+    to perceive aromaticity. RDKit uses an atom-based pi-electron counting algorithm to
+    check aromaticity based on Huckel's Rule. Therefore, this method identifies "true"
+    aromaticity, rather than simply the RMG bond type.
 
-    The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
-    by RMG, and not by RDKit.
+    The method currently restricts aromaticity to six-membered carbon-only rings. This
+    is a limitation imposed by RMG, and not by RDKit.
 
-    By default, the atom order will be sorted to get consistent results from different runs. The atom order can
-    be saved when dealing with problems that are sensitive to the atom map.
+    By default, the atom order will be sorted to get consistent results from different
+    runs. The atom order can be saved when dealing with problems that are sensitive to
+    the atom map.
+
+    Args:
+        mol (Chem.Mol): The molecule to be checked.
+
+    Returns:
+        tuple[list[tuple[int, ...]], list[list[Chem.Bond]]]: A tuple containing two lists.
+        The first list contains the indices of the aromatic rings, and the second list
+        contains the corresponding aromatic bonds.
     """
     rings = get_relevant_cycles(mol)
 
-    def filter_fused_rings(_rings):
-        """
-        Given a list of rings, remove ones which share more than 2 atoms.
+    def filter_fused_rings(
+        _rings: tuple[tuple[int, ...], ...],
+    ) -> tuple[tuple[int, ...]]:
+        """Given a list of rings, remove ones which share more than 2 atoms.
+
+        Args:
+            _rings (tuple[tuple[int, ...], ...]): A list of rings, each represented as a list of bond indices.
+
+        Returns:
+            tuple[tuple[int, ...]]: A list of rings, each represented as a list of bond indices.
         """
         if len(_rings) < 2:
-            return _rings
+            return _rings  # type:ignore
 
         to_remove = set()
         for i, j in itertools.combinations(range(len(_rings)), 2):
@@ -382,22 +400,22 @@ def get_aromatic_rings(mol):
         to_remove_sorted = sorted(to_remove, reverse=True)
 
         for i in to_remove_sorted:
-            del _rings[i]
+            del _rings[i]  # type:ignore
 
-        return _rings
+        return _rings  # type:ignore
 
     # Remove rings that share more than 3 atoms, since they cannot be planar
     rings = filter_fused_rings(rings)
 
     # Only keep rings with exactly 6 atoms, since RMG can only handle aromatic benzene
-    rings = [ring for ring in rings if len(ring) == 6]
+    _rings = [ring for ring in rings if len(ring) == 6]
 
-    if not rings:
+    if not _rings:
         return [], []
 
     aromatic_rings = []
     aromatic_bonds = []
-    for ring0 in rings:
+    for ring0 in _rings:
         aromatic_bonds_in_ring = []
         # Figure out which atoms and bonds are aromatic and reassign appropriately:
         for idx in ring0:
@@ -416,17 +434,17 @@ def get_aromatic_rings(mol):
                 aromatic_rings.append(ring0)
                 aromatic_bonds.append(aromatic_bonds_in_ring)
 
-    return aromatic_rings, aromatic_bonds
+    return aromatic_rings, aromatic_bonds  # type:ignore
 
 
 def is_aryl_radical(
-    mol,
+    mol: Chem.Mol,
 ) -> bool:
-    """
-    Determine if the molecule only contains aryl radicals, i.e., radical on an aromatic ring.
+    """Determine if the molecule only contains aryl radicals.
 
     Args:
-        mol (RDKitMol, RWMol): The molecule to be checked.
+        mol (Chem.Mol): The molecule to be checked.
+
     Returns:
         bool: ``True`` if the molecule only contains aryl radicals, ``False`` otherwise.
     """
@@ -440,14 +458,15 @@ def is_aryl_radical(
 
 
 # RDKit / RDMC compatible
-def is_identical(mol1: "RDKitMol", mol2: "RDKitMol") -> bool:
-    """
-    Determine whether two molecules are identical. This method assumes two molecules have
-    the same composition.
+def is_identical(mol1: Chem.Mol, mol2: Chem.Mol) -> bool:
+    """Determine whether two molecules are identical.
+
+    This method assumes two molecules have the same composition.
 
     Args:
-        mol1 (RDKitMol, RWMol): The first molecule to be compared.
-        mol2 (RDKitMol, RWMol): The second molecule to be compared.
+        mol1 (Chem.Mol): The first molecule to be compared.
+        mol2 (Chem.Mol): The second molecule to be compared.
+
     Returns:
         bool: ``True`` if the two molecules are identical, ``False`` otherwise.
     """
@@ -455,23 +474,24 @@ def is_identical(mol1: "RDKitMol", mol2: "RDKitMol") -> bool:
 
 
 # Pure RDKit
-def increment_radical(atom: "Atom"):
-    """
-    Increment the number of radical electrons on an atom by one.
+def increment_radical(atom: Chem.Atom) -> None:
+    """Increment the number of radical electrons on an atom by one.
 
     Args:
-        atom (Atom): The atom whose radical count is to be incremented.
+        atom (Chem.Atom): The atom whose radical count is to be incremented.
     """
     atom.SetNumRadicalElectrons(atom.GetNumRadicalElectrons() + 1)
 
 
 # RDKit / RDMC compatible
-def decrement_radical(atom: "Atom"):
-    """
-    Decrement the number of radical electrons on an atom by one.
+def decrement_radical(atom: Chem.Atom) -> None:
+    """Decrement the number of radical electrons on an atom by one.
 
     Args:
-        atom (Atom): The atom whose radical count is to be decremented.
+        atom (Chem.Atom): The atom whose radical count is to be decremented.
+
+    Raises:
+        ValueError: If the radical count is already zero.
     """
     new_radical_count = atom.GetNumRadicalElectrons() - 1
     if new_radical_count < 0:
@@ -480,23 +500,24 @@ def decrement_radical(atom: "Atom"):
 
 
 # RDKit / RDMC compatible
-def increment_order(bond: "Bond"):
-    """
-    Increment the bond order of a bond by one.
+def increment_order(bond: Chem.Bond) -> None:
+    """Increment the bond order of a bond by one.
 
     Args:
-        bond (Bond): The bond whose order is to be incremented.
+        bond (Chem.Bond): The bond whose order is to be incremented.
     """
     bond.SetBondType(bond_order_dicts[bond.GetBondTypeAsDouble() + 1])
 
 
 # RDKit / RDMC compatible
-def decrement_order(bond: "Bond"):
-    """
-    Decrement the bond order of a bond by one.
+def decrement_order(bond: Chem.Bond) -> None:
+    """Decrement the bond order of a bond by one.
 
     Args:
-        bond (Bond): The bond whose order is to be decremented.
+        bond (Chem.Bond): The bond whose order is to be decremented.
+
+    Raises:
+        ValueError: If the bond order is already zero or if the bond is aromatic.
     """
     new_order = bond.GetBondTypeAsDouble() - 1
     if new_order <= 0.5:  # Also avoid decrementing aromatic bonds with bond order 1.5
@@ -505,16 +526,17 @@ def decrement_order(bond: "Bond"):
 
 
 # RDKit / RDMC compatible
-def update_charge(atom: "Atom", lone_pair: int = 0):
-    """
-    Update the formal charge of an atom based on its number of lone pairs and bond orders.
-    Since there is no way to set the number of lone pairs directly, the formal charge is
-    set to reflect the number of lone pairs. The formal charge is set to the number of
-    valence electrons minus the number of lone pair electrons, the number of radical electrons,
-    and the total bond orders.
+def update_charge(atom: Chem.Atom, lone_pair: int = 0) -> None:
+    """Update the formal charge of an atom.
+
+    Update is based on its number of lone pairs and bond
+    orders. Since there is no way to set the number of lone pairs directly, the formal
+    charge is set to reflect the number of lone pairs. The formal charge is set to the
+    number of valence electrons minus the number of lone pair electrons, the number of
+    radical electrons, and the total bond orders.
 
     Args:
-        atom (Atom): The atom whose formal charge is to be updated.
+        atom (Chem.Atom): The atom whose formal charge is to be updated.
         lone_pair (int): The number of lone pairs on the atom.
     """
     order = get_total_bond_order(atom)
@@ -528,11 +550,18 @@ def update_charge(atom: "Atom", lone_pair: int = 0):
 
 
 # RDKit / RDMC compatible
-def unset_aromatic_flags(mol):
-    """
-    A helper function to unset aromatic flags in a molecule.
+def unset_aromatic_flags(mol: Chem.Mol) -> Chem.Mol:
+    """Unset aromatic flags in a molecule.
+
     This is useful when cleaning up the molecules from resonance structure generation.
-    In such case, a molecule may have single-double bonds but are marked as aromatic bonds.
+    In such case, a molecule may have single-double bonds but are marked as aromatic
+    bonds.
+
+    Args:
+        mol (Chem.Mol): The molecule to be cleaned up.
+
+    Returns:
+        Chem.Mol: The cleaned up molecule.
     """
     for bond in mol.GetBonds():
         if bond.GetBondType() != Chem.BondType.AROMATIC and bond.GetIsAromatic():
@@ -549,26 +578,37 @@ resonance_sanitize_flag = (
 
 # Pure RDKit
 def sanitize_resonance_mol(
-    mol: "RWMol",
-    sanitize_flag=resonance_sanitize_flag,
-):
-    """
-    A helper function to clean up a molecule from resonance structure generation.
+    mol: Chem.RWMol,
+    sanitize_flag: Chem.SanitizeFlags = resonance_sanitize_flag,
+) -> None:
+    """A helper function to clean up a molecule from resonance structure generation.
 
     Args:
-        mol: The molecule to be sanitized.
-        sanitize_flag: The sanitize flag used to sanitize the molecule.
+        mol (Chem.RWMol): The molecule to be sanitized.
+        sanitize_flag (Chem.SanitizeFlags, optional): The sanitize flag used to sanitize the molecule.
     """
     Chem.SanitizeMol(mol, sanitize_flag)
 
 
-def _find_shortest_path(start, end, path=None, path_idxs=None):
-    """
-    Get the shortest path between two atoms in a molecule.
+def _find_shortest_path(
+    start: Chem.Atom,
+    end: Chem.Atom,
+    path: list[Chem.Atom] | None = None,
+    path_idxs: list[int] | None = None,
+) -> list[Chem.Atom] | None:
+    """Get the shortest path between two atoms in a molecule.
 
+    Args:
+        start (Chem.Atom): The starting atom.
+        end (Chem.Atom): The ending atom.
+        path (list[Chem.Atom] | None, optional): The current path. Defaults to None.
+        path_idxs (list[int] | None, optional): The current path indexes. Defaults to None.
+
+    Returns:
+        list[Chem.Atom] | None: A list of atoms in the shortest path between the two atoms.
     """
     path = path if path else []
-    path_idxs = path_idxs if path else []
+    path_idxs = path_idxs if path_idxs else []
     path = path + [start]
     path_idx = path_idxs + [start.GetIdx()]
     if path_idx[-1] == end.GetIdx():
@@ -584,50 +624,58 @@ def _find_shortest_path(start, end, path=None, path_idxs=None):
     return shortest
 
 
-# Pure RDKit
-def get_shortest_path(mol, idx1, idx2):
-    """
-    Get the shortest path between two atoms in a molecule. The RDKit GetShortestPath
-    has a very long setup time ~ 0.5ms (on test machine) regardless of the size of the molecule.
-    As a comparison, on the same machine, a naive python implementation of DFS (`_find_shortest_path`)
-    takes ~0.5 ms for a 100-C normal alkane end to end. Therefore, it make more sense to use a method
-    with a shorter setup time though scaling worse for smaller molecules while using GetShortestPath
-    for larger molecules.
+def get_shortest_path(mol: Chem.Mol, idx1: int, idx2: int) -> tuple[int, ...]:
+    """Get the shortest path between two atoms in a molecule.
+
+    The RDKit ``GetShortestPath``
+    has a very long setup time ~ 0.5ms (on test machine) regardless of the size of the
+    molecule. As a comparison, on the same machine, a naive python implementation of DFS
+    (`_find_shortest_path`) takes ~0.5 ms for a 100-C normal alkane end to end.
+    Therefore, it make more sense to use a method with a shorter setup time though
+    scaling worse for smaller molecules while using GetShortestPath for larger
+    molecules.
 
     Args:
-        mol (RDKitMol, RWMol): The molecule to be checked.
+        mol (Chem.Mol): The molecule to be checked.
         idx1 (int): The index of the first atom.
         idx2 (int): The index of the second atom.
 
     Returns:
-        list: A list of atoms in the shortest path between the two atoms.
+        tuple[int, ...]: A list of atoms in the shortest path between the two atoms.
     """
-    if mol.GetNumHeavyAtoms() > 100:
+    if mol.GetNumHeavyAtoms() > 100:  # An empirical cutoff
         return Chem.GetShortestPath(mol, idx1, idx2)
 
-    return _find_shortest_path(mol.GetAtomWithIdx(idx1), mol.GetAtomWithIdx(idx2))
+    shortest_path = _find_shortest_path(
+        mol.GetAtomWithIdx(idx1), mol.GetAtomWithIdx(idx2)
+    )
+    if shortest_path is not None:
+        return tuple(atom.GetIdx() for atom in shortest_path)
+    return ()
 
 
 # RDKit / RDMC compatible
 def is_equivalent_structure(
-    ref_mol: Union["RDKitMol", "Mol"],
-    qry_mol: Union["RDKitMol", "Mol"],
+    ref_mol: Chem.Mol,
+    qry_mol: Chem.Mol,
     isomorphic_equivalent: bool = True,
 ) -> bool:
-    """
-    Check if two molecules are equivalent. If `keep_isomorphic` is ``True``, then isomorphic molecules are considered
-    equivalent. Otherwise, the molecules must be identical. This method should be only used for filtering resonance structures,
-    as it doesn't check if molecules have the same set of atoms.
+    """Check if two molecules are equivalent.
+
+    If `isomorphic_equivalent` is ``True``, then
+    isomorphic molecules are considered equivalent. Otherwise, the molecules must be
+    identical. This method should be only used for filtering resonance structures, as it
+    doesn't check if molecules have the same set of atoms.
 
     Args:
-        ref_mol (RDKitMol or Mol): The reference molecule.
-        qry_mol (RDKitMol or Mol): The query molecule.
-        keep_isomorphic (bool, optional): Whether to keep isomorphic molecules. Default is ``False``.
+        ref_mol (Chem.Mol): The reference molecule.
+        qry_mol (Chem.Mol): The query molecule.
+        isomorphic_equivalent (bool, optional): Whether to keep isomorphic molecules. Default is ``False``.
 
     Returns:
         bool: ``True`` if the molecules are equivalent, ``False`` otherwise.
     """
     if isomorphic_equivalent:
-        return tuple(ref_mol.GetSubstructMatch(qry_mol))
+        return ref_mol.HasSubstructMatch(qry_mol)
     else:
         return is_identical(ref_mol, qry_mol)
