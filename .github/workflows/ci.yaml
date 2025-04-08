@@ -66,10 +66,10 @@ jobs:
           mamba run -n rdmc_env mamba list
 
       - name: Install RDMC
-        run: mamba run -n rdmc python -m pip install --no-deps -vv -e ./
+        run: mamba run -n rdmc_env python -m pip install --no-deps -vv -e ./
 
       - name: Run Unit Tests
-        run: mamba run -n rdmc pytest
+        run: mamba run -n rdmc_env pytest
 
       - name: Test notebooks
         run: |
