@@ -1,30 +1,31 @@
-from typing import List, Tuple, Union
+# -*- coding: utf-8 -*-
+"""A module contains functions to compare molecules and complexes."""
+
 import traceback
+from typing import Any, Collection, Literal, Union
 
 import numpy as np
-
 from rdkit import Chem
 from rdkit.Chem.rdMolDescriptors import CalcMolFormula
 
-from rdtools.dist import get_shortest_path, get_adjacency_matrix
+from rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
+from rdtools.dist import get_adjacency_matrix, get_shortest_path
 from rdtools.resonance import generate_resonance_structures
-from rdtools.conversion.xyz import mol_to_xyz, mol_from_xyz
 
 
 def has_matched_mol(
-    mol: "Mol",
-    mols: List["Mol"],
+    mol: Chem.Mol,
+    mols: list[Chem.Mol],
     consider_atommap: bool = False,
 ) -> bool:
-    """
-    Check if a molecule has a isomorphic match in a list of molecules.
+    """Check if a molecule has a isomorphic match in a list of molecules.
 
     Args:
-        mol (RDKitMol): The target molecule.
-        mols (List[RDKitMol]): The list of molecules to be processed.
+        mol (Chem.Mol): The target molecule.
+        mols (list[Chem.Mol]): The list of molecules to be processed.
         consider_atommap (bool, optional): If treat chemically equivalent molecules with
-                                           different atommap numbers as different molecules.
-                                           Defaults to ``False``.
+            different atommap numbers as different molecules.
+            Defaults to ``False``.
 
     Returns:
         bool: if a matched molecules if found.
@@ -43,18 +44,17 @@ def has_matched_mol(
 
 # Todo: Think of a more generic name for this function
 def get_resonance_structure_match(
-    mol1_res: List["Mol"],
-    mol2_res: List["Mol"],
-) -> tuple:
-    """
-    Get the match between two lists of resonance structures.
+    mol1_res: list[Chem.Mol],
+    mol2_res: list[Chem.Mol],
+) -> tuple[int, ...]:
+    """Get the match between two lists of resonance structures.
 
     Args:
-        mol1_res (List['Mol']): The first list of resonance structures.
-        mol2_res (List['Mol']): The second list of resonance structures.
+        mol1_res (list[Chem.Mol]): The first list of resonance structures.
+        mol2_res (list[Chem.Mol]): The second list of resonance structures.
 
     Returns:
-        tuple: The match between the two lists of resonance structures. Empty tuple if no match is found.
+        tuple[int, ...]: The match between the two lists of resonance structures. Empty tuple if no match is found.
     """
     for m1 in mol1_res:
         for m2 in mol2_res:
@@ -65,29 +65,28 @@ def get_resonance_structure_match(
 
 
 def get_unique_mols(
-    mols: List["Mol"],
+    mols: list[Chem.Mol],
     consider_atommap: bool = False,
     same_formula: bool = False,
-):
-    """
-    Find the unique molecules from a list of molecules.
+) -> list[Chem.Mol]:
+    """Find the unique molecules from a list of molecules.
 
     Args:
-        mols (list): The molecules to be processed.
+        mols (list[Chem.Mol]): The molecules to be processed.
         consider_atommap (bool, optional): If treat chemically equivalent molecules with
-                                           different atommap numbers as different molecules.
-                                           Defaults to ``False``.
-        same_formula (bool, opional): If the mols has the same formula you may set it to ``True``
-                                      to save computational time. Defaults to ``False``.
+            different atommap numbers as different molecules.
+            Defaults to ``False``.
+        same_formula (bool, optional): If the mols has the same formula you may set it to ``True``
+            to save computational time. Defaults to ``False``.
 
     Returns:
-        list: A list of unique molecules.
+        list[Chem.Mol]: A list of unique molecules.
     """
     # Dictionary:
     # Keys: chemical formula;
     # Values: list of mols with same formula
     # Use chemical formula to reduce the call of the more expensive graph substructure check
-    unique_formula_mol = {}
+    unique_formula_mol: dict[str, list[Chem.Mol]] = {}
 
     for mol in mols:
         # Get the molecules with the same formula as the query molecule
@@ -107,25 +106,25 @@ def get_unique_mols(
 
 
 def is_same_complex(
-    complex1: Union["Mol", Union[List["Mol"], Tuple["Mol"]]],
-    complex2: Union["Mol", Union[List["Mol"], Tuple["Mol"]]],
+    complex1: Union[Chem.Mol, Collection[Chem.Mol]],
+    complex2: Union[Chem.Mol, Collection[Chem.Mol]],
     resonance: bool = False,
 ) -> bool:
-    """
-    Check if two complexes are the same regardless of the sequence of the molecules
-    and the atom mapping.
+    """Check if two complexes are the same.
+
+    This check is regardless of the atom mapping and the order of the atoms in the molecule.
 
     Args:
-        complex1 (Union['RDKitMol', list['RDKitMol']]): The first complex.
-        complex2 (Union['RDKitMol', list['RDKitMol']]): The second complex.
+        complex1 (Union[Chem.Mol, Collection[Chem.Mol]]): The first complex.
+        complex2 (Union[Chem.Mol, Collection[Chem.Mol]]): The second complex.
         resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
 
     Returns:
         bool: Whether the two complexes are the same.
     """
-    if not isinstance(complex1, (list, tuple)):
+    if isinstance(complex1, Chem.Mol):
         complex1 = list(complex1.GetMolFrags(asMols=True))
-    if not isinstance(complex2, (list, tuple)):
+    if isinstance(complex2, Chem.Mol):
         complex2 = list(complex2.GetMolFrags(asMols=True))
 
     if len(complex1) != len(complex2):
@@ -135,7 +134,7 @@ def is_same_complex(
     mol2s = sorted([(m, m.GetNumAtoms()) for m in complex2], key=lambda x: x[1])
 
     matched = []
-    mol2_res_dict = {}
+    mol2_res_dict: dict[int, list[Chem.Mol]] = {}
 
     for mol1 in mol1s:
         mol1_res = generate_resonance_structures(mol1[0]) if resonance else [mol1[0]]
@@ -165,24 +164,23 @@ def is_same_complex(
 def get_match_and_recover_recipe(
     mol1: Chem.Mol,
     mol2: Chem.Mol,
-) -> Tuple[tuple, dict]:
-    """
-    Get the isomorphism match between two molecules and the recipe to recover
-    mol2 to mol1. If swapping the atom indices in mol2 according to the recipe,
-    mol2 should be the same as mol1.
+) -> tuple[tuple[int, ...], dict[int, int]]:
+    """Get the isomorphism match and the recipe to recover mol2 to mol1.
+
+    If swapping the atom indices in mol2 according to the recipe, mol2 should be
+    the same as mol1.
 
     Args:
-        mol1 (RWMol): The first molecule.
-        mol2 (RWMol): The second molecule.
+        mol1 (Chem.Mol): The first molecule.
+        mol2 (Chem.Mol): The second molecule.
 
     Returns:
-        tuple: The substructure match.
-        dict: A truncated atom mapping of mol2 to mol1.
+        tuple[tuple[int, ...], dict[int, int]]: The substructure match and a truncated atom mapping of mol2 to mol1.
     """
     if mol1.GetNumAtoms() != mol2.GetNumAtoms():
         return (), {}
     match = mol1.GetSubstructMatch(mol2)
-    recipe = {i: j for i, j in enumerate(match) if i != j}
+    recipe: dict[int, int] = {i: j for i, j in enumerate(match) if i != j}
 
     if len(recipe) == 0:
         # Either mol1 and mol2 has identical graph or no match at all
@@ -198,6 +196,8 @@ def get_match_and_recover_recipe(
     equivalent_hs = []
     checked_hs = set()
 
+    i: int
+    j: int | None
     for i in range(len(hs)):
         if i in checked_hs:
             continue
@@ -225,38 +225,39 @@ def get_match_and_recover_recipe(
     return tuple(match), recipe
 
 
-def is_same_connectivity_mol(mol1: "Mol", mol2: "Mol") -> bool:
-    """
-    Check whether the two molecules has the same connectivity. Note, this is not an
-    isomorphic check, and different atom ordering will be treated as "different connectivity".
+def is_same_connectivity_mol(mol1: Chem.Mol, mol2: Chem.Mol) -> bool:
+    """Check whether the two molecules has the same connectivity.
+
+    This is not an isomorphic check, and different atom ordering will be
+    treated as "different connectivity".
 
     Args:
-        mol1 (RDKitMol): The first molecule.
-        mol2 (RDKitMol): The second molecule.
+        mol1 (Chem.Mol): The first molecule.
+        mol2 (Chem.Mol): The second molecule.
 
     Returns:
         bool: Whether the two molecules has the same connectivity.
     """
-    return np.array_equal(
-        get_adjacency_matrix(mol1),
-        get_adjacency_matrix(mol2)
-    )
+    return np.array_equal(get_adjacency_matrix(mol1), get_adjacency_matrix(mol2))
 
 
 def is_same_connectivity_conf(
     mol: Chem.Mol,
     conf_id: int = 0,
-    backend: str = "openbabel",
-    **kwargs,
+    backend: Literal["openbabel", "xyz2mol"] = "openbabel",
+    **kwargs: Any,
 ) -> bool:
-    """
-    Check whether the conformer of the molecule (defined by its spacial coordinates)
-    has the same connectivity as the molecule. Useful sanity check when coordinates are changed.
+    """Check the connectivity of the conformer consistent with the molecule.
+
+    The conformer connectivity is defined by its spacial coordinates.
+    This is an useful sanity check when coordinates are
+    changed.
 
     Args:
+        mol (Chem.Mol): The molecule to be checked.
         conf_id (int, optional): The conformer ID. Defaults to ``0``.
-        backend (str, optional): The backend to use for the comparison. Defaults to ``'openbabel'``.
-        **kwargs: The keyword arguments to pass to the backend.
+        backend (Literal["openbabel", "xyz2mol"], optional): The backend to use for the comparison. Defaults to ``'openbabel'``.
+        **kwargs (Any): The keyword arguments to pass to the backend.
 
     Returns:
         bool: Whether the conformer has the same connectivity as the molecule.
