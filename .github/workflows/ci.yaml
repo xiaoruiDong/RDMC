@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: bash -l {0}
+        shell: ${{ matrix.os == 'windows-latest' && 'cmd' || 'bash -l {0}' }}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }} Subtest
     steps:
       - uses: actions/checkout@v4
