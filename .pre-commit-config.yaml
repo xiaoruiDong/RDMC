@@ -36,6 +36,7 @@ repos:
         types: [python]
         args:
           ["--wrap-summaries", "88", "--wrap-descriptions", "88", "--in-place"]
+        files: ^(rdmc|rdtools)/
         pass_filenames: true
 
       - id: pydoclint
@@ -43,8 +44,9 @@ repos:
         entry: pydoclint
         language: python
         types: [python]
-        pass_filenames: true
         args: ["--style=google"]
+        files: ^(rdmc|rdtools)/
+        pass_filenames: true
 
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
