@@ -1,6 +1,6 @@
 """Module for visualizing chemical reactions using RDKit and Py3Dmol."""
 
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 from rdkit import Chem
 
@@ -21,7 +21,7 @@ _ts_viewer_keys = [
 def reaction_viewer(
     r_mol: Chem.Mol,
     p_mol: Chem.Mol,
-    ts_mol: Chem.Mol | None = None,
+    ts_mol: Optional[Chem.Mol] = None,
     alignment: Literal["horizontal", "vertical"] = "horizontal",
     **kwargs: Any,
 ) -> py3Dmol.view:
@@ -34,9 +34,9 @@ def reaction_viewer(
     Args:
         r_mol (Chem.Mol): The reactant complex.
         p_mol (Chem.Mol): The product complex.
-        ts_mol (Chem.Mol | None, optional): The TS corresponding to r_mol and p_mol. It will be placed in between.
+        ts_mol (Optional[Chem.Mol], optional): The TS corresponding to r_mol and p_mol. It will be placed in between.
         alignment (Literal["horizontal", "vertical"], optional): Indicate if geometries are displayed horizontally (``horizontal``)
-                                    or vertically (``vertical``). Defaults to ``horizontal``.
+            or vertically (``vertical``). Defaults to ``horizontal``.
         **kwargs (Any): Additional keyword arguments to be passed to the viewer.
 
     Returns:
