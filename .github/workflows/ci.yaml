@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: ${{ contains(matrix.os, 'windows') && 'cmd /C CALL' || 'bash -l {0}' }}
+        shell: bash -l {0}
     name: ${{ matrix.os }} Python ${{ matrix.python-version }} Subtest
     steps:
       - uses: actions/checkout@v4
@@ -58,23 +58,22 @@ jobs:
           environment-file: environment.yml
 
       - name: Install Pytest
-        run: mamba install -y pytest pytest-cov nbmake # temporarily remove "pytest-check"
+        run: mamba install -n rdmc_env -y pytest pytest-cov nbmake # temporarily remove "pytest-check"
 
       - name: Mamba info
         run: |
-          mamba info
-          mamba list
+          mamba run -n rdmc_env mamba info
+          mamba run -n rdmc_env mamba list
 
       - name: Install RDMC
-        run: python -m pip install --no-deps -vv -e ./
+        run: mamba run -n rdmc python -m pip install --no-deps -vv -e ./
 
       - name: Run Unit Tests
-        run: pytest
-      
+        run: mamba run -n rdmc pytest
+
       - name: Test notebooks
-        shell: bash -l {0}
         run: |
-          pytest --no-cov -v --nbmake ipython/*.ipynb
+          mamba run -n rdmc pytest --no-cov -v --nbmake ipython/*.ipynb
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
