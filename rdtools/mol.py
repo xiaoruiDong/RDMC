@@ -1,139 +1,113 @@
+"""Molecule manipulation functions."""
+
 import copy
 from collections import Counter
 from functools import lru_cache
 from itertools import product as cartesian_product
-from typing import List, Optional, Union, Sequence
+from typing import List, Optional, Union
 
 import numpy as np
-
+import numpy.typing as npt
 from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Geometry.rdGeometry import Point3D
 
-from rdtools.atommap import has_atom_map_numbers
 from rdtools.atom import get_atom_mass, increment_radical
+from rdtools.atommap import has_atom_map_numbers
 from rdtools.conf import (
     add_null_conformer,
     embed_multiple_null_confs,
-    reflect as _reflect,
     set_conformer_coordinates,
+)
+from rdtools.conf import (
+    reflect as _reflect,
 )
 from rdtools.conversion.xyz import xyz_to_coords
 
 
 def get_spin_multiplicity(mol: Chem.Mol) -> int:
-    """
-    Get spin multiplicity of a molecule. The spin multiplicity is calculated
-    using Hund's rule of maximum multiplicity defined as 2S + 1.
+    """Get spin multiplicity of a molecule.
+
+    The spin multiplicity is calculated using
+    Hund's rule of maximum multiplicity defined as 2S + 1.
 
     Args:
         mol (Chem.Mol): The molecule to get spin multiplicity.
 
     Returns:
-        int : Spin multiplicity.
+        int: Spin multiplicity.
     """
     return 1 + Descriptors.NumRadicalElectrons(mol)
 
 
 def get_formal_charge(mol: Chem.Mol) -> int:
-    """
-    Get formal charge of a molecule.
+    """Get formal charge of a molecule.
 
     Args:
         mol (Chem.Mol): The molecule to get formal charge.
 
     Returns:
-        int : Formal charge.
+        int: Formal charge.
     """
     return Chem.GetFormalCharge(mol)
 
 
-def get_mol_weight(
-    mol: Chem.Mol,
-    exact: bool = False,
-    heavy_atoms: bool = False,
-) -> float:
-    """
-    Get the molecule weight.
-
-    Args:
-        mol (Chem.Mol): The molecule to get the weight.
-        exact (bool, optional): If ``True``, the exact weight is returned.
-            Otherwise, the average weight is returned. Defaults to ``False``.
-        heavy_atoms (bool, optional): If ``True``, the weight is calculated using only heavy atoms.
-            Otherwise, the weight is calculated using all atoms. Defaults to ``False``.
-
-    Returns:
-        float: The weight of the molecule.
-    """
-    if heavy_atoms:
-        return Descriptors.HeavyAtomMolWt(mol)
-    if exact:
-        return Descriptors.ExactMolWt(mol)
-    return Descriptors.MolWt(mol)
-
-
-def get_heavy_atoms(mol: Chem.Mol) -> list:
-    """
-    Get heavy atoms of a molecule.
+def get_heavy_atoms(mol: Chem.Mol) -> list[Chem.Atom]:
+    """Get heavy atoms of a molecule.
 
     Args:
         mol (Chem.Mol): The molecule to get heavy atoms.
 
     Returns:
-        list: the list of heavy atoms.
+        list[Chem.Atom]: the list of heavy atoms.
     """
     return [atom for atom in mol.GetAtoms() if atom.GetAtomicNum() != 1]
 
 
 def get_element_symbols(mol: Chem.Mol) -> List[str]:
-    """
-    Get element symbols of a molecule.
+    """Get element symbols of a molecule.
 
     Args:
         mol (Chem.Mol): The molecule to get element symbols.
 
     Returns:
-        List[str] : List of element symbols (e.g. ``["H", "C", "O",]`` etc.)
+        List[str]: List of element symbols (e.g. ``["H", "C", "O",]`` etc.)
     """
     return [atom.GetSymbol() for atom in mol.GetAtoms()]
 
 
 def get_atomic_nums(mol: Chem.Mol) -> List[int]:
-    """
-    Get atomic numbers of a molecule.
+    """Get atomic numbers of a molecule.
 
     Args:
         mol (Chem.Mol): The molecule to get atomic numbers.
 
     Returns:
-        List[int] : List of atomic numbers (e.g. ``[1, 6, 8, ]`` etc.)
+        List[int]: List of atomic numbers (e.g. ``[1, 6, 8, ]`` etc.)
     """
     return [atom.GetAtomicNum() for atom in mol.GetAtoms()]
 
 
 def get_atom_masses(mol: Chem.Mol) -> List[float]:
-    """
-    Get atomic masses of a molecule.
+    """Get atomic masses of a molecule.
 
     Args:
         mol (Chem.Mol): The molecule to get atomic masses.
 
     Returns:
-        List[float] : List of atomic masses (e.g. ``[1.008, 12.01, 15.999, ]`` etc.)
+        List[float]: List of atomic masses (e.g. ``[1.008, 12.01, 15.999, ]`` etc.)
     """
     return [get_atom_mass(atom) for atom in mol.GetAtoms()]
 
 
-def get_element_counts(mol: Chem.Mol) -> dict:
-    """
-    Get element counts of a molecule.
+def get_element_counts(mol: Chem.Mol) -> dict[str, int]:
+    """Get element counts of a molecule.
 
     Args:
         mol (Chem.Mol): The molecule to get element counts.
 
     Returns:
-        dict: {"element_symbol": count}
+        dict[str, int]: {"element_symbol": count}
     """
     return dict(Counter(get_element_symbols(mol)))
 
@@ -141,29 +115,30 @@ def get_element_counts(mol: Chem.Mol) -> dict:
 def combine_mols(
     mol1: Chem.Mol,
     mol2: Chem.Mol,
-    offset: Optional[np.ndarray] = None,
+    offset: Optional[npt.NDArray[np.float64]] = None,
     c_product: bool = False,
-):
-    """
-    Combine two molecules (``mol1`` and ``mol2``).
-    A new object instance will be created and changes are not made to the current molecule.
+) -> Chem.Mol:
+    r"""Combine two molecules (``mol1`` and ``mol2``).
+
+    A new object instance will be
+    created and changes are not made to the current molecule.
 
     Args:
         mol1 (Chem.Mol): The current molecule.
         mol2 (Chem.Mol): The molecule to be combined.
-        offset (np.ndarray, optional): The offset to be added to the coordinates of ``mol2``. It should be a length-3 array.
-                                       This is not used when any of the molecules has 0 conformer. Defaults to ``None``.
+        offset (Optional[npt.NDArray[np.float64]], optional): The offset to be added to the coordinates of ``mol2``. It should be a length-3 array.
+            This is not used when any of the molecules has 0 conformer. Defaults to ``None``.
         c_product (bool, optional): If ``True``, generate conformers for every possible combination
-                                    between the current molecule and the ``molFrag``. E.g.,
-                                    (1,1), (1,2), ... (1,n), (2,1), ...(m,1), ... (m,n). :math:`N(conformer) = m \\times n.`
+            between the current molecule and the ``molFrag``. E.g.,
+            (1,1), (1,2), ... (1,n), (2,1), ...(m,1), ... (m,n). :math:`N(conformer) = m \\times n.`
 
-                                    Defaults to ``False``, meaning only generate conformers according to
-                                    (1,1), (2,2), ... When ``c_product`` is set to ``False``, if the current
-                                    molecule has 0 conformer, conformers will be embedded to the current molecule first.
-                                    The number of conformers of the combined molecule will be equal to the number of conformers
-                                    of ``molFrag``. Otherwise, the number of conformers of the combined molecule will be equal
-                                    to the number of conformers of the current molecule. Some coordinates may be filled by 0s,
-                                    if the current molecule and ``molFrag`` have different numbers of conformers.
+            Defaults to ``False``, meaning only generate conformers according to
+            (1,1), (2,2), ... When ``c_product`` is set to ``False``, if the current
+            molecule has 0 conformer, conformers will be embedded to the current molecule first.
+            The number of conformers of the combined molecule will be equal to the number of conformers
+            of ``molFrag``. Otherwise, the number of conformers of the combined molecule will be equal
+            to the number of conformers of the current molecule. Some coordinates may be filled by 0s,
+            if the current molecule and ``molFrag`` have different numbers of conformers.
 
     Returns:
         Chem.Mol: The combined molecule.
@@ -191,20 +166,20 @@ def combine_mols(
     return combined_mol
 
 
-def force_no_implicit(mol: Chem.Mol):
-    """
-    Set no implicit hydrogen for atoms without implicit/explicit hydrogens. When
-    manipulating molecules by changing number of radical electrons / charges and then updating the cached properties,
-    additional hydrogens may be added to the molecule. This function helps avoid this problem.
+def force_no_implicit(mol: Chem.Mol) -> None:
+    """Set no implicit hydrogen for atoms without implicit/explicit hydrogens.
+
+    When manipulating molecules by changing number of radical electrons / charges and
+    then updating the cached properties, additional hydrogens may be added to the
+    molecule. This function helps avoid this problem.
     """
     for atom in mol.GetAtoms():
         if atom.GetAtomicNum() > 1 and not atom.GetTotalNumHs():
             atom.SetNoImplicit(True)
 
 
-def reflect(mol: Chem.Mol, conf_id: int = 0):
-    """
-    Reflect the coordinates of the conformer of the molecule.
+def reflect(mol: Chem.Mol, conf_id: int = 0) -> None:
+    """Reflect the coordinates of the conformer of the molecule.
 
     Args:
         mol (Chem.Mol): The molecule to reflect.
@@ -214,10 +189,8 @@ def reflect(mol: Chem.Mol, conf_id: int = 0):
     _reflect(conf)
 
 
-def fast_sanitize(mol: Chem.RWMol):
-    """
-    Only update the molecule's property and ring perception.
-    """
+def fast_sanitize(mol: Chem.RWMol) -> None:
+    """Only update the molecule's property and ring perception."""
     Chem.SanitizeMol(
         mol,
         sanitizeOps=Chem.SanitizeFlags.SANITIZE_PROPERTIES
@@ -225,17 +198,17 @@ def fast_sanitize(mol: Chem.RWMol):
     )
 
 
-def get_writable_copy(mol: Chem.Mol):
-    """
-    Get an writable (editable) copy of the current molecule object.
-    If it is an RWMol, then return a copy with the same type. Otherwise,
-    return a copy in RWMol type.
+def get_writable_copy(mol: Chem.Mol) -> Chem.RWMol:
+    """Get an writable (editable) copy of the current molecule object.
+
+    If it is an RWMol, then return a copy with the same type.
+    Otherwise, return a copy in RWMol type.
 
     Args:
-        mol(Mol): molecule to copy from.
+        mol(Chem.Mol): molecule to copy from.
 
     Returns:
-        RWMol: The writable copy of the molecule
+        Chem.RWMol: The writable copy of the molecule
     """
     if isinstance(mol, Chem.RWMol):
         return copy.copy(mol)  # Write in this way to support RDKitMol defined in rdmc
@@ -248,11 +221,12 @@ def get_closed_shell_mol(
     sanitize: bool = True,
     explicit: bool = True,
     max_num_hs: int = 12,
-) -> "Chem.RWMol":
-    """
-    Get a closed shell molecule by removing all radical electrons and adding
-    H atoms to these radical sites. This method currently only work for radicals
-    and will not work properly for singlet radicals (number of radical electrons = 0).
+) -> Chem.RWMol:
+    """Get a closed shell molecule.
+
+    The modification is done by removing all radical electrons and adding H atoms
+    to these radical sites. This method currently only work for radicals and will not
+    work properly for singlet radicals (number of radical electrons = 0).
 
     Args:
         mol (Chem.RWMol): The radical molecule
@@ -266,7 +240,7 @@ def get_closed_shell_mol(
             Defaults to ``12``, which is equivalent to add as many Hs as possible to the radical site.
 
     Returns:
-        RDKitMol: A closed shell molecule.
+        Chem.RWMol: A closed shell molecule.
     """
     mol = get_writable_copy(mol)
 
@@ -281,9 +255,7 @@ def get_closed_shell_explicit(
     sanitize: bool = True,
     max_num_hs: int = 12,
 ) -> Chem.RWMol:
-    """
-    Get the closed shell molecule of a radical molecule by explicitly adding
-    hydrogen atoms to the molecule.
+    """Get the closed shell molecule by explicitly adding H atoms to the molecule.
 
     Args:
         mol (Chem.RWMol): The radical molecule.
@@ -295,7 +267,6 @@ def get_closed_shell_explicit(
     Returns:
         Chem.RWMol: The closed shell molecule.
     """
-
     h_atom_idx, num_orig_atoms = mol.GetNumAtoms(), mol.GetNumAtoms()
 
     for atom_idx in range(mol.GetNumAtoms()):
@@ -330,10 +301,10 @@ def get_closed_shell_implicit(
     sanitize: bool = True,
     max_num_hs: int = 12,
 ) -> Chem.Mol:
-    """
-    Get the closed shell molecule of a radical molecule. This only adds Hs implicitly
-    and no new atom is actually added to the molecule. This is suggested for the molecule
-    objects with (most) H atoms are not explicitly defined.
+    """Get the closed shell molecule of a radical molecule.
+
+    This only adds Hs implicitly and no new atom is actually added to the molecule.
+    This is suggested for the molecule objects with (most) H atoms are not explicitly defined.
 
     Args:
         mol (Chem.Mol): The radical molecule.
@@ -345,7 +316,6 @@ def get_closed_shell_implicit(
     Returns:
         Chem.Mol: The closed shell molecule.
     """
-
     for atom in mol.GetAtoms():
         if atom.GetNumRadicalElectrons():
             atom.SetNumRadicalElectrons(
@@ -359,20 +329,28 @@ def get_closed_shell_implicit(
 
 
 @lru_cache(maxsize=1)
-def get_heavy_hydrogen_query():
+def get_heavy_hydrogen_query() -> Chem.Mol:
+    """Get the heavy hydrogen query.
+
+    This is used to find the heavy atom and hydrogen pair in the molecule.
+
+    Returns:
+        Chem.Mol: The heavy hydrogen query.
+    """
     return Chem.MolFromSmarts("[*]-[H]")
 
 
 def get_dehydrogenated_mol(
-    mol,
+    mol: Chem.Mol,
     kind: str = "radical",
     once_per_heavy: bool = True,
-    only_on_atoms: Optional[list] = None,
-) -> list:
-    """
-    Generate the molecules that have one less hydrogen atom compared to the reference molecule.
-    This function only supports molecules that have H atoms explicitly defined. Note, this function
-    doesn't filter out equivalent structures.
+    only_on_atoms: Optional[list[int]] = None,
+) -> list[Chem.Mol]:
+    """Get the dehydrogenated molecules.
+
+    Generate the molecules that have one less hydrogen atom compared to the reference
+    molecule. This function only supports molecules that have H atoms explicitly
+    defined. Note, this function doesn't filter out equivalent structures.
 
     Args:
         mol (Chem.Mol): The reference molecule
@@ -382,11 +360,11 @@ def get_dehydrogenated_mol(
             By setting this argument to ``True``, the function will only remove H atom
             once per heavy atoms. Otherwise, the function will comprehensively generate
             dehydrogenated molecule by remove every single H atoms. Defaults to ``True``.
-        only_on_atoms (list, optional): This argument allows only operating on specific atoms.
+        only_on_atoms (Optional[list[int]], optional): This argument allows only operating on specific atoms.
             Defaults to None, operating on all atoms.
 
     Returns:
-        list: a list of dehydrogenated molecules
+        list[Chem.Mol]: a list of dehydrogenated molecules
     """
     tpl = get_heavy_hydrogen_query()
     hvy_h_pairs = mol.GetSubstructMatches(tpl, maxMatches=mol.GetNumAtoms())
@@ -421,19 +399,26 @@ def get_dehydrogenated_mol(
 
 def set_mol_positions(
     mol: Chem.Mol,
-    coords: Union[Sequence, str],
+    coords: Union[
+        str,
+        tuple[tuple[float, float, float], ...],
+        list[list[float]],
+        npt.NDArray[np.float64],
+    ],
     conf_id: int = 0,
     header: bool = False,
-):
-    """
-    Set the positions of atoms to one of the conformer.
+) -> None:
+    """Set the positions of atoms to one of the conformer.
 
     Args:
-        mol (Mol): The molecule object to change positions.
-        coords (Union[sequence, str]): A tuple/list/ndarray containing atom positions;
-                                       or a string with the typical XYZ formating.
-        confId (int, optional): Conformer ID to assign the Positions to. Defaults to ``0``.
-        header (bool): Whether the XYZ string has an header, if feeding in XYZ. Defaults to ``False``.
+        mol (Chem.Mol): The molecule object to change positions.
+        coords (Union[str, tuple[tuple[float, float, float], ...], list[list[float]], npt.NDArray[np.float64]]): A tuple/list/ndarray containing atom positions;
+            or a string with the typical XYZ formating.
+        conf_id (int, optional): Conformer ID to assign the Positions to. Defaults to ``0``.
+        header (bool, optional): Whether the XYZ string has an header, if feeding in XYZ. Defaults to ``False``.
+
+    Raises:
+        ValueError: If the conformer ID is invalid.
     """
     if isinstance(coords, str):
         coords = xyz_to_coords(coords, header=header)
@@ -449,22 +434,25 @@ def set_mol_positions(
         set_conformer_coordinates(conf, coords)
 
 
-def get_mol_weight(mol, heavy: bool = False, exact: bool = False) -> float:
-    """
-    Get molecular weight of the molecule.
+def get_mol_weight(
+    mol: Chem.Mol,
+    exact: bool = False,
+    heavy_atoms: bool = False,
+) -> float:
+    """Get the molecule weight.
 
     Args:
-        heavy (bool, optional): Whether to ignore weight of the hydrogens. Defaults to ``False``.
-        exact (bool, optional): Whether to use exact molecular weight (distinguishing isotopes). Defaults to ``False``.
+        mol (Chem.Mol): The molecule to get the weight.
+        exact (bool, optional): If ``True``, the exact weight is returned.
+            Otherwise, the average weight is returned. Defaults to ``False``.
+        heavy_atoms (bool, optional): If ``True``, the weight is calculated using only heavy atoms.
+            Otherwise, the weight is calculated using all atoms. Defaults to ``False``.
 
     Returns:
-        float : Molecular weight.
+        float: The weight of the molecule.
     """
-    if not heavy and not exact:
-        return Chem.Descriptors.MolWt(mol)
-    elif not heavy and exact:
-        return Chem.Descriptors.ExactMolWt(mol)
-    elif exact:
-        raise NotImplementedError
-    else:
-        return Chem.Descriptors.HeavyAtomMolWt(mol)
+    if heavy_atoms:
+        return Descriptors.HeavyAtomMolWt(mol)
+    if exact:
+        return Descriptors.ExactMolWt(mol)  # type: ignore[attr-defined]
+    return Descriptors.MolWt(mol)  # type: ignore[attr-defined]
