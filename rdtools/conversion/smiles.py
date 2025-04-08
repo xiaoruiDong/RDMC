@@ -1,23 +1,21 @@
+"""Conversion functions for SMILES strings and RDKit molecules."""
+
 from rdkit import Chem
 
 from rdtools.atommap import (
     clear_atom_map_numbers,
     has_atom_map_numbers,
-    map_h_atoms_in_reaction,
     needs_renumber,
     renumber_atoms,
     reset_atom_map_numbers,
 )
 from rdtools.conversion.utils import prepare_output_mol
 
-from rdkit.Chem.rdChemReactions import ChemicalReaction
-
 
 def get_smiles_parser_params(
     remove_hs: bool = True, sanitize: bool = True, allow_cxsmiles: bool = False
 ) -> Chem.SmilesParserParams:
-    """
-    Get the parameters for the RDKit SMILES parser.
+    """Get the parameters for the RDKit SMILES parser.
 
     Args:
         remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule. Defaults to ``True``.
@@ -39,16 +37,19 @@ def process_mol_from_smiles(
     remove_hs: bool = True,
     add_hs: bool = True,
 ) -> Chem.Mol:
-    """
-    A helper function processing molecules generated from MolFromSmiles.
+    """A helper function processing molecules generated from MolFromSmiles.
 
     Args:
         mol (Chem.Mol): The RDKit Mol/RWMol object to be processed.
         remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule. Defaults to ``True``.
         add_hs (bool, optional): Whether to add explicit hydrogen atoms to the molecule. Defaults to ``True``.
             Only functioning when ``removeHs`` is False.
+
     Returns:
         Chem.Mol: The processed RDKit Mol/RWMol object.
+
+    Raises:
+        ValueError: If the provided SMILES is not valid or if there is an error in processing.
     """
     if mol is None:
         raise ValueError("The provided SMILES is not valid. Please double check.")
@@ -77,8 +78,7 @@ def mol_from_smiles(
     assign_atom_map: bool = True,
     atom_order: str = "atom_map",
 ) -> Chem.Mol:
-    """
-    Convert a SMILES string to an Chem.Mol molecule object.
+    """Convert a SMILES string to an Chem.Mol molecule object.
 
     Args:
         smiles (str): A SMILES representation of the molecule.
@@ -119,8 +119,7 @@ def mol_to_smiles(
     remove_atom_map: bool = True,
     remove_hs: bool = True,
 ) -> str:
-    """
-    Convert an RDKit molecule object to a SMILES string.
+    """Convert an RDKit molecule object to a SMILES string.
 
     Args:
         mol (Chem.Mol): An RDKit molecule object.

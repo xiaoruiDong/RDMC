@@ -1,16 +1,21 @@
+"""Convert XYZ to RDKit Mol and vice versa."""
+
 import logging
+from typing import Any, Literal
 
-from rdkit import Chem
 import numpy as np
+import numpy.typing as npt
+from rdkit import Chem
 
+from rdtools.conversion.xyz2mol import (  # type: ignore
+    parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc,
+)
+from rdtools.element import PERIODIC_TABLE
 from rdtools.obabel import (
-    parse_xyz_by_openbabel as xyz_from_openbabel,
     openbabel_mol_to_rdkit_mol,
 )
-
-from rdtools.element import PERIODIC_TABLE
-from rdtools.conversion.xyz2mol import (
-    parse_xyz_by_jensen as parse_xyz_by_xyz2mol_rdmc,
+from rdtools.obabel import (
+    parse_xyz_by_openbabel as xyz_from_openbabel,
 )
 
 logger = logging.getLogger(__name__)
@@ -19,8 +24,8 @@ logger = logging.getLogger(__name__)
 try:
     from rdkit.Chem import rdDetermineBonds
 except ImportError:
-    rdDetermineBonds = None
-    logger.warn(
+    rdDetermineBonds = None  # type: ignore
+    logger.warning(
         "The current version of RDKit does not contain built-in xyz2mol."
         "Using the original python implementation instead."
     )
@@ -33,9 +38,8 @@ def parse_xyz_by_xyz2mol_rdkit_native(
     use_huckel: bool = False,
     embed_chiral: bool = True,
     use_atom_maps: bool = False,
-):
-    """
-    Parse xyz with RDKit's native implementation of xyz2mol.
+) -> Chem.Mol:
+    """Parse xyz with RDKit's native implementation of xyz2mol.
 
     Args:
         xyz (str): The xyz string.
@@ -47,6 +51,9 @@ def parse_xyz_by_xyz2mol_rdkit_native(
 
     Returns:
         Chem.Mol: The RDKit Mol instance.
+
+    Raises:
+        ValueError: If the xyz string cannot be parsed.
     """
     try:
         mol = Chem.Mol(Chem.MolFromXYZBlock(xyz))
@@ -91,17 +98,18 @@ def parse_xyz_by_xyz2mol(
     use_atom_maps: bool = False,
     original: bool = False,
     sanitize: bool = True,
-    **kwargs,
-) -> "Mol":
-    """
-    Perceive a xyz str using `xyz2mol` by Jensen et al. and generate the corresponding RDKit Mol.
+    **kwargs: Any,
+) -> Chem.Mol:
+    """Perceive a xyz str using `xyz2mol` into Mol.
+
     The implementation refers the following blog: https://greglandrum.github.io/rdkit-blog/posts/2022-12-18-introducing-rdDetermineBonds.html
 
     Args:
-        charge: The charge of the species. Defaults to ``0``.
-        allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to False.
-        use_huckel: ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
-        embed_chiral: ``True`` to embed chiral information. Defaults to True.
+        xyz (str): The xyz string.
+        charge (int, optional): The charge of the species. Defaults to ``0``.
+        allow_charged_fragments (bool, optional): ``True`` for charged fragment, ``False`` for radical. Defaults to False.
+        use_huckel (bool, optional): ``True`` to use extended Huckel bond orders to locate bonds. Defaults to False.
+        embed_chiral (bool, optional): ``True`` to embed chiral information. Defaults to True.
         use_atom_maps(bool, optional): ``True`` to set atom map numbers to the molecule. Defaults to ``False``.
         original (bool, optional): Defaults to ``False``. In rare cases, we may hope to use the original
             xyz2mol python implementation (with minor modifications), other than the one available in RDKit.
@@ -109,9 +117,10 @@ def parse_xyz_by_xyz2mol(
             The user may have some flexibility to modify this "original" version located at
             `rdtools.conversion.xyz2mol.py`.
         sanitize (bool, optional): Whether to sanitize the perceived molecule, defaults to ``True``.
+        **kwargs (Any): Additional arguments to be passed to the function. They will be ignored.
 
     Returns:
-        Mol: A RDKit Mol corresponding to the xyz.
+        Chem.Mol: A RDKit Mol corresponding to the xyz.
     """
     if rdDetermineBonds is None or original:
         mol = parse_xyz_by_xyz2mol_rdmc(
@@ -142,9 +151,8 @@ def parse_xyz_by_openbabel(
     xyz: str,
     embed_chiral: bool = True,
     sanitize: bool = True,
-):
-    """
-    Parse xyz with openbabel.
+) -> Chem.Mol:
+    """Parse xyz into RDKit Mol utilizing openbabel.
 
     Args:
         xyz (str): The xyz string.
@@ -153,6 +161,9 @@ def parse_xyz_by_openbabel(
 
     Returns:
         Chem.Mol: The RDKit Mol instance.
+
+    Raises:
+        ImportError: If openbabel is not installed.
     """
     try:
         obmol = xyz_from_openbabel(xyz)
@@ -167,8 +178,7 @@ def parse_xyz_by_openbabel(
 
 
 def add_header_to_xyz(xyz: str, title: str = "") -> str:
-    """
-    Add header to xyz string.
+    """Add header to xyz string.
 
     Args:
         xyz (str): The xyz string to be added header.
@@ -182,26 +192,25 @@ def add_header_to_xyz(xyz: str, title: str = "") -> str:
 
 def mol_from_xyz(
     xyz: str,
-    backend: str = "openbabel",
+    backend: Literal["openbabel", "xyz2mol"] = "openbabel",
     header: bool = True,
     sanitize: bool = True,
     embed_chiral: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> Chem.RWMol:
-    """
-    Convert xyz string to RDKit Chem.RWMol.
+    """Convert xyz string to RDKit Chem.RWMol.
 
     Args:
         xyz (str): A XYZ String.
-        backend (str): The backend used to perceive molecule. Defaults to ``'openbabel'``.
-                       Currently, we only support ``'openbabel'`` and ``'xyz2mol'``.
+        backend ( Literal["openbabel", "xyz2mol"], optional): The backend used to perceive molecule. Defaults to ``'openbabel'``.
+            Currently, we only support ``'openbabel'`` and ``'xyz2mol'``.
         header (bool, optional): If lines of the number of atoms and title are included.
-                                 Defaults to ``True.``
-        sanitize (bool): Sanitize the RDKit molecule during conversion. Helpful to set it to ``False``
-                         when reading in TSs. Defaults to ``True``.
-        embed_chiral: ``True`` to embed chiral information. Defaults to ``True``.
-        supported kwargs:
-            xyz2mol:
+            Defaults to ``True.``
+        sanitize (bool, optional): Sanitize the RDKit molecule during conversion. Helpful to set it to ``False``
+            when reading in TSs. Defaults to ``True``.
+        embed_chiral (bool, optional): ``True`` to embed chiral information. Defaults to ``True``.
+        **kwargs (Any): Additional arguments to be passed to the function. They will be ignored.
+            Supported arguments for the backend ``xyz2mol``:
                 - charge: The charge of the species. Defaults to ``0``.
                 - allow_charged_fragments: ``True`` for charged fragment, ``False`` for radical. Defaults to ``False``.
                 - use_graph: ``True`` to use networkx module for accelerate. Defaults to ``True``.
@@ -212,6 +221,9 @@ def mol_from_xyz(
 
     Returns:
         Chem.RWMol: An RDKit molecule object corresponding to the xyz.
+
+    Raises:
+        NotImplementedError: If the backend is not supported.
     """
     if not header:
         xyz = add_header_to_xyz(xyz, title="")
@@ -238,11 +250,10 @@ def mol_to_xyz(
     header: bool = True,
     comment: str = "",
 ) -> str:
-    """
-    Convert Chem.Mol to a XYZ string.
+    """Convert Chem.Mol to a XYZ string.
 
     Args:
-        mol (RDKitMol): A RDKitMol object.
+        mol (Chem.Mol): A Mol instance to be converted.
         conf_id (int, optional): The index of the conformer to be converted. Defaults to ``-1``, exporting the XYZ of the first conformer.
         header (bool, optional): If lines of the number of atoms and title are included. Defaults to ``True``.
         comment (str, optional): The comment to be added. Defaults to ``''``.
@@ -264,18 +275,18 @@ def mol_to_xyz(
 def xyz_to_coords(
     xyz: str,
     header: bool = False,
-) -> np.ndarray:
-    """
-    Convert xyz string to coordinates in numpy.
+) -> npt.NDArray[np.float64]:
+    """Convert xyz string to coordinates in numpy.
 
     Args:
         xyz (str): A XYZ String.
         header (bool, optional): If lines of the number of atoms and title are included.
-                                 Defaults to ``False.``
+            Defaults to ``False.``
+
     Returns:
-        np.ndarray: the coordinates
+        npt.NDArray[np.float64]: the coordinates of the atoms.
     """
-    xyz_lines = xyz.splitlines()[2:] if header else coords.splitlines()
-    coords = np.array(
-        [[float(atom) for atom in line.strip().split()[1:4]] for line in xyz_lines]
-    )
+    xyz_lines = xyz.splitlines()[2:] if header else xyz.splitlines()
+    return np.array([
+        [float(atom) for atom in line.strip().split()[1:4]] for line in xyz_lines
+    ])

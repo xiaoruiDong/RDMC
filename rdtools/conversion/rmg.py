@@ -1,3 +1,5 @@
+"""Convert RMG Molecule to RDKit Mol and vice versa."""
+
 from rdkit import Chem
 
 from rdtools.utils import get_fake_module
@@ -20,23 +22,22 @@ ORDERS = {
 
 
 def mol_from_rmg_mol(
-    rmgmol: "rmgpy.molecule.Molecule",
+    rmgmol: mm.Molecule,
     remove_hs: bool = False,
     sanitize: bool = True,
 ) -> Chem.RWMol:
-    """
-    Convert a RMG molecular structure to an RDKit Mol object. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
-    Perceives aromaticity.
+    """Convert a RMG Mol to an RDKit Mol object.
+
+    Uses `RDKit <http://rdkit.org/>`_ to perform the conversion.
     Adopted from rmgpy/molecule/converter.py
 
     Args:
-        rmgmol (Molecule): An RMG Molecule object for the conversion.
+        rmgmol (mm.Molecule): An RMG Molecule object for the conversion.
         remove_hs (bool, optional): Whether to remove hydrogen atoms from the molecule, ``True`` to remove.
         sanitize (bool, optional): Whether to sanitize the RDKit molecule, ``True`` to sanitize.
 
     Returns:
-        RWMol: An RWMol molecule object corresponding to the input RMG Molecule object.
+        Chem.RWMol: An RWMol molecule object corresponding to the input RMG Molecule object.
     """
     atom_id_map = {}
 
@@ -112,14 +113,22 @@ def mol_from_rmg_mol(
 
 
 def mol_to_rmg_mol(
-    rdkitmol,
+    rdkitmol: Chem.Mol,
     sort: bool = False,
     raise_atomtype_exception: bool = True,
-) -> "Molecule":
-    """
-    Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
+) -> mm.Molecule:
+    """Convert a RDKit Mol object to an RMG molecular structure.
+
+    Uses `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
+
+    Args:
+        rdkitmol (Chem.Mol): An RDKit Mol object for the conversion.
+        sort (bool, optional): Whether to sort the atoms in the molecule. Defaults to ``False``.
+        raise_atomtype_exception (bool, optional): Whether to raise an exception if atom types cannot be assigned. Defaults to ``True``.
+
+    Returns:
+        mm.Molecule: An RMG Molecule object corresponding to the input RDKit Mol object.
     """
     mol = mm.Molecule()
     mol.vertices = []
@@ -152,7 +161,7 @@ def mol_to_rmg_mol(
         for j in range(0, i):
             rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
             if rdkitbond is not None:
-                order = 0
+                order: int | float = 0
 
                 # Process bond type
                 rdbondtype = rdkitbond.GetBondType()

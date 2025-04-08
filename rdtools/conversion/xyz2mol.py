@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Module for generating rdkit molobj/smiles/molecular graph from free atoms
+# type: ignore
+# ruff: noqa
+"""Module for generating rdkit molobj/smiles/molecular graph from free atoms.
 
 Implementation by Jan H. Jensen based on the following paper and compiled by Xiaorui Dong to make it work with RDKitMol
 
@@ -38,9 +39,9 @@ SOFTWARE.
 """
 
 import copy
-from collections import defaultdict
 import itertools
 import sys
+from collections import defaultdict
 
 import numpy as np
 
@@ -52,8 +53,7 @@ except ImportError:
     nx = get_fake_module("networkx")
 
 from rdkit import Chem
-from rdkit.Chem import AllChem, rdchem, rdEHTTools
-
+from rdkit.Chem import rdchem, rdEHTTools
 
 global __ATOM_LIST__
 __ATOM_LIST__ = [
@@ -189,18 +189,14 @@ atomic_valence_electrons[53] = 7
 
 
 def str_atom(atom):
-    """
-    convert integer atom to string atom
-    """
+    """Convert integer atom to string atom."""
     global __ATOM_LIST__
     atom = __ATOM_LIST__[atom - 1]
     return atom
 
 
 def int_atom(atom):
-    """
-    convert str atom to integer atom
-    """
+    """Convert str atom to integer atom."""
     global __ATOM_LIST__
     # print(atom)
     atom = atom.lower()
@@ -208,7 +204,7 @@ def int_atom(atom):
 
 
 def get_UA(maxValence_list, valence_list):
-    """ """
+    """"""
     UA = []
     DU = []
     for i, (maxValence, valence) in enumerate(zip(maxValence_list, valence_list)):
@@ -220,7 +216,7 @@ def get_UA(maxValence_list, valence_list):
 
 
 def get_BO(AC, UA, DU, valences, UA_pairs, use_graph=True):
-    """ """
+    """"""
     BO = AC.copy()
     DU_save = []
 
@@ -238,7 +234,7 @@ def get_BO(AC, UA, DU, valences, UA_pairs, use_graph=True):
 
 
 def valences_not_too_large(BO, valences):
-    """ """
+    """"""
     number_of_bonds_list = BO.sum(axis=1)
     for valence, number_of_bonds in zip(valences, number_of_bonds_list):
         if number_of_bonds > valence:
@@ -264,7 +260,6 @@ def charge_is_OK(
     q_list = []
 
     if allow_charged_fragments:
-
         BO_valences = list(BO.sum(axis=1))
         for i, atom in enumerate(atoms):
             q = get_atomic_charge(atom, atomic_valence_electrons[atom], BO_valences[i])
@@ -294,10 +289,9 @@ def BO_is_OK(
     valences,
     allow_charged_fragments=True,
 ):
-    """
-    Sanity of bond-orders
+    """Sanity of bond-orders.
 
-    args:
+    Args:
         BO -
         AC -
         charge -
@@ -308,10 +302,9 @@ def BO_is_OK(
         allow_charges_fragments -
 
 
-    returns:
+    Returns:
         boolean - true of molecule is OK, false if not
     """
-
     if not valences_not_too_large(BO, valences):
         return False
 
@@ -334,7 +327,7 @@ def BO_is_OK(
 
 
 def get_atomic_charge(atom, atomic_valence_electrons, BO_valence):
-    """ """
+    """"""
 
     if atom == 1:
         charge = 1 - BO_valence
@@ -359,13 +352,12 @@ def BO2mol(
     allow_charged_fragments=True,
     use_atom_maps=False,
 ):
-    """
-    based on code written by Paolo Toscani
+    """Based on code written by Paolo Toscani.
 
     From bond order, atoms, valence structure and total charge, generate an
     rdkit molecule.
 
-    args:
+    Args:
         mol - rdkit molecule
         BO_matrix - bond order matrix of molecule
         atoms - list of integer atomic symbols
@@ -375,11 +367,9 @@ def BO2mol(
     optional:
         allow_charged_fragments - bool - allow charged fragments
 
-    returns
+    Returns:
         mol - updated rdkit molecule with bond connectivity
-
     """
-
     l1 = len(BO_matrix)
     l2 = len(atoms)
     BO_valences = list(BO_matrix.sum(axis=1))
@@ -434,7 +424,7 @@ def set_atomic_charges(
     mol_charge,
     use_atom_maps,
 ):
-    """ """
+    """"""
     q = 0
     for i, atom in enumerate(atoms):
         a = mol.GetAtomWithIdx(i)
@@ -460,11 +450,7 @@ def set_atomic_charges(
 def set_atomic_radicals(
     mol, atoms, atomic_valence_electrons, BO_valences, use_atom_maps
 ):
-    """
-
-    The number of radical electrons = absolute atomic charge
-
-    """
+    """The number of radical electrons = absolute atomic charge."""
     for i, atom in enumerate(atoms):
         a = mol.GetAtomWithIdx(i)
         if use_atom_maps:
@@ -478,7 +464,7 @@ def set_atomic_radicals(
 
 
 def get_bonds(UA, AC):
-    """ """
+    """"""
     bonds = []
 
     for k, i in enumerate(UA):
@@ -490,7 +476,7 @@ def get_bonds(UA, AC):
 
 
 def get_UA_pairs(UA, AC, use_graph=True):
-    """ """
+    """"""
 
     bonds = get_bonds(UA, AC)
 
@@ -519,18 +505,14 @@ def get_UA_pairs(UA, AC, use_graph=True):
 
 
 def AC2BO(AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
-    """
-
-    implemenation of algorithm shown in Figure 2
+    """Implemenation of algorithm shown in Figure 2.
 
     UA: unsaturated atoms
 
     DU: degree of unsaturation (u matrix in Figure)
 
     best_BO: Bcurr in Figure
-
     """
-
     global atomic_valence
     global atomic_valence_electrons
 
@@ -560,7 +542,6 @@ def AC2BO(AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
     best_BO = AC.copy()
 
     for valences in valences_list:
-
         UA, DU_from_AC = get_UA(valences, AC_valence)
 
         check_len = len(UA) == 0
@@ -626,7 +607,7 @@ def AC2mol(
     use_graph=True,
     use_atom_maps=False,
 ):
-    """ """
+    """"""
 
     # convert AC matrix to bond order (BO) matrix
     BO, atomic_valence_electrons = AC2BO(
@@ -671,7 +652,7 @@ def AC2mol(
 
 
 def get_proto_mol(atoms):
-    """ """
+    """"""
     mol = Chem.MolFromSmarts("[#" + str(atoms[0]) + "]")
     rwMol = Chem.RWMol(mol)
     for i in range(1, len(atoms)):
@@ -684,7 +665,7 @@ def get_proto_mol(atoms):
 
 
 def read_xyz_file(filename, look_for_charge=True):
-    """ """
+    """"""
 
     atomic_symbols = []
     xyz_coordinates = []
@@ -710,11 +691,9 @@ def read_xyz_file(filename, look_for_charge=True):
 
 
 def xyz2AC(atoms, xyz, charge, use_huckel=False):
-    """
+    """Atoms and coordinates to atom connectivity (AC)
 
-    atoms and coordinates to atom connectivity (AC)
-
-    args:
+    Args:
         atoms - int atom types
         xyz - coordinates
         charge - molecule charge
@@ -722,12 +701,10 @@ def xyz2AC(atoms, xyz, charge, use_huckel=False):
     optional:
         use_huckel - Use Huckel method for atom connecitivty
 
-    returns
+    Returns:
         ac - atom connectivity matrix
         mol - rdkit molecule
-
     """
-
     if use_huckel:
         return xyz2AC_huckel(atoms, xyz, charge)
     else:
@@ -735,7 +712,6 @@ def xyz2AC(atoms, xyz, charge, use_huckel=False):
 
 
 def xyz2AC_vdW(atoms, xyz):
-
     # Get mol template
     mol = get_proto_mol(atoms)
 
@@ -751,26 +727,22 @@ def xyz2AC_vdW(atoms, xyz):
 
 
 def get_AC(mol, covalent_factor=1.3):
-    """
-
-    Generate adjacent matrix from atoms and coordinates.
+    """Generate adjacent matrix from atoms and coordinates.
 
     AC is a (num_atoms, num_atoms) matrix with 1 being covalent bond and 0 is not
 
 
     covalent_factor - 1.3 is an arbitrary factor
 
-    args:
+    Args:
         mol - rdkit molobj with 3D conformer
 
     optional
         covalent_factor - increase covalent bond length threshold with facto
 
-    returns:
+    Returns:
         AC - adjacent matrix
-
     """
-
     # Calculate distance matrix
     dMat = Chem.Get3DDistanceMatrix(mol)
 
@@ -792,14 +764,12 @@ def get_AC(mol, covalent_factor=1.3):
 
 
 def xyz2AC_huckel(atomicNumList, xyz, charge):
-    """
-
-    args
+    """args:
         atomicNumList - atom type list
         xyz - coordinates
         charge - molecule charge
 
-    returns
+    Returns:
         ac - atom connectivity
         mol - rdkit molecule
 
@@ -836,12 +806,10 @@ def xyz2AC_huckel(atomicNumList, xyz, charge):
 
 
 def chiral_stereo_check(mol):
-    """
-    Find and embed chiral information into the model based on the coordinates
+    """Find and embed chiral information into the model based on the coordinates.
 
-    args:
+    Args:
         mol - rdkit molecule, with embeded conformer
-
     """
     Chem.SanitizeMol(mol)
     Chem.DetectBondStereochemistry(mol, -1)
@@ -861,10 +829,9 @@ def xyz2mol(
     embed_chiral=True,
     use_atom_maps=False,
 ):
-    """
-    Generate a rdkit molobj from atoms, coordinates and a total_charge.
+    """Generate a rdkit molobj from atoms, coordinates and a total_charge.
 
-    args:
+    Args:
         atoms - list of atom types (int)
         coordinates - 3xN Cartesian coordinates
         charge - total charge of the system (default: 0)
@@ -875,11 +842,9 @@ def xyz2mol(
         use_huckel - Use Huckel method for atom connectivity prediction
         embed_chiral - embed chiral information to the molecule
 
-    returns:
+    Returns:
         mols - list of rdkit molobjects
-
     """
-
     # Get atom connectivity (AC) matrix, list of atomic numbers, molecular charge,
     # and mol object with no connectivity information
     AC, mol = xyz2AC(atoms, coordinates, charge, use_huckel=use_huckel)
@@ -914,9 +879,9 @@ def parse_xyz_by_jensen(
     use_atom_maps: bool = False,
     correct_CO: bool = True,
     **kwargs,
-) -> "Mol":
-    """
-    Perceive a xyz str using `xyz2mol` by Jensen et al. and generate the corresponding RDKit Mol.
+) -> Chem.Mol:
+    """Perceive a xyz str using `xyz2mol` by Jensen et al. and generate the
+    corresponding RDKit Mol.
 
     Args:
         charge: The charge of the species. Defaults to ``0``.
@@ -931,7 +896,7 @@ def parse_xyz_by_jensen(
                                     This function contains a patch to correct that.
 
     Returns:
-        Mol: A RDKit Mol corresponding to the xyz.
+        Chem.Mol: A RDKit Mol corresponding to the xyz.
     """
     atoms, coords = [], []
     for line in xyz.splitlines()[2:]:
@@ -960,12 +925,10 @@ def parse_xyz_by_jensen(
 
 
 def main():
-
     return
 
 
 if __name__ == "__main__":
-
     import argparse
 
     parser = argparse.ArgumentParser(usage="%(prog)s [options] molecule.xyz")

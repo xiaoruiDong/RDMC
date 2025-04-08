@@ -1,16 +1,20 @@
+"""Conversion utilities for RDKit."""
+
 from rdkit import Chem
-from typing import Union
 
 
 def prepare_output_mol(
     mol: Chem.Mol,
     remove_hs: bool = False,
-    sanitize: Union[bool, Chem.SanitizeFlags] = True,
-):
-    """
-    Generate a RDKit Mol instance for output purpose, to ensure that the original molecule is not modified.
+    sanitize: bool | Chem.SanitizeFlags = True,
+) -> Chem.Mol:
+    """Generate a Mol instance for output purpose.
+
+    It is used to avoid modifying the original molecule, while able to adjust the
+    sanitization and hydrogen removal.
 
     Args:
+        mol (Chem.Mol): A Mol instance to be prepared.
         remove_hs (bool, optional): Remove less useful explicit H atoms. E.g., When output SMILES, H atoms,
             if explicitly added, will be included, which reduces the readability. Defaults to ``False``.
             Note, following the Hs are not removed:
@@ -22,11 +26,11 @@ def prepare_output_mol(
                 5. Hs that are part of the definition of double bond Stereochemistry.
                 6. Hs that are not connected to anything else.
 
-        sanitize (bool, optional): Whether to sanitize the molecule. Defaults to ``True``. Using Chem.SanitizeFlags
+        sanitize (bool | Chem.SanitizeFlags, optional): Whether to sanitize the molecule. Defaults to ``True``. Using Chem.SanitizeFlags
             is also acceptable.
 
     Returns:
-        Mol: A Mol instance used for output purpose.
+        Chem.Mol: A Mol instance used for output purpose.
     """
     if remove_hs:
         mol = Chem.RemoveHs(mol, sanitize=False)
