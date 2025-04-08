@@ -22,7 +22,7 @@ ORDERS = {
 
 
 def mol_from_rmg_mol(
-    rmgmol: mm.Molecule,
+    rmgmol: "mm.Molecule",
     remove_hs: bool = False,
     sanitize: bool = True,
 ) -> Chem.RWMol:
@@ -116,7 +116,7 @@ def mol_to_rmg_mol(
     rdkitmol: Chem.Mol,
     sort: bool = False,
     raise_atomtype_exception: bool = True,
-) -> mm.Molecule:
+) -> "mm.Molecule":
     """Convert a RDKit Mol object to an RMG molecular structure.
 
     Uses `RDKit <http://rdkit.org/>`_ to perform the conversion.
