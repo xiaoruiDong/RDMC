@@ -1,4 +1,5 @@
 src = ["rdmc", "rdtools"]
+exclude = ["rdtools/conversion/xyz2mol.py"]
 target-version = "py312"
 line-length = 88
 fix = true
