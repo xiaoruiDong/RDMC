@@ -1,5 +1,7 @@
 """Convert RMG Molecule to RDKit Mol and vice versa."""
 
+from typing import Union
+
 from rdkit import Chem
 
 from rdtools.utils import get_fake_module
@@ -161,7 +163,7 @@ def mol_to_rmg_mol(
         for j in range(0, i):
             rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
             if rdkitbond is not None:
-                order: int | float = 0
+                order: Union[int, float] = 0
 
                 # Process bond type
                 rdbondtype = rdkitbond.GetBondType()

@@ -1,7 +1,7 @@
 """A module of atom map number operations."""
 
 from itertools import permutations
-from typing import Iterable, List, Literal, Optional, Tuple, cast, overload
+from typing import Iterable, List, Literal, Optional, Tuple, Union, cast, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -90,14 +90,14 @@ def _renumber_atoms(
 
 def renumber_atoms(
     mol: Chem.Mol,
-    new_order: Optional[Iterable[int] | dict[int, int]] = None,
+    new_order: Optional[Union[Iterable[int], dict[int, int]]] = None,
     update_atom_map: bool = True,
 ) -> Chem.Mol:
     """Renumber the atoms of the molecule.
 
     Args:
         mol (Chem.Mol): The molecule to renumber atoms.
-        new_order (Optional[Iterable[int] | dict[int, int]], optional):
+        new_order (Optional[Union[Iterable[int], dict[int, int]]], optional):
             The new ordering the atoms.
             - If provided as a list, it should a list of atom indexes
             and should have a length of the number of atoms.
@@ -236,7 +236,7 @@ def reverse_map(map: Iterable[int]) -> List[int]: ...
 
 def reverse_map(
     map: Iterable[int], as_list: bool = True
-) -> npt.NDArray[np.int_] | List[int]:
+) -> Union[npt.NDArray[np.int_], List[int]]:
     """Inverse-transform the index and value relationship in a mapping.
 
     E.g., when doing
@@ -251,7 +251,7 @@ def reverse_map(
             the output is a np.ndarray.
 
     Returns:
-        npt.NDArray[np.int_] | List[int]: An inverted atom map from the given ``match`` atom map
+        Union[npt.NDArray[np.int_], List[int]]: An inverted atom map from the given ``match`` atom map
     """
     if as_list:
         return cast(list[int], np.argsort(map).tolist())  # type: ignore[arg-type]

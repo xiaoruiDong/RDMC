@@ -1,6 +1,6 @@
 """Base viewer functions built on py3Dmol."""
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 try:
     import py3Dmol
@@ -76,7 +76,7 @@ def _set_atom_index_hoverable(viewer: py3Dmol.view) -> None:
 
 
 def base_viewer(
-    obj: str | list[str],
+    obj: Union[str, list[str]],
     model: str = "xyz",
     model_extra: Optional[dict[str, Any]] = None,
     animate: Optional[dict[str, Any]] = None,
@@ -94,7 +94,7 @@ def base_viewer(
     complicated viewers, e.g., freq_viewer.
 
     Args:
-        obj (str | list[str]): A string representation of the molecule can be xyz string,
+        obj (Union[str, list[str]]): A string representation of the molecule can be xyz string,
             sdf string, etc.
         model (str, optional): The format of the molecule representation, e.g., ``'xyz'``.
             Defaults to ``'xyz'``.

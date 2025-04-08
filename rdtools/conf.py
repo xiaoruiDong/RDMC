@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """A module contains functions to manipulate conformers in a molecule."""
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -131,17 +131,17 @@ def reflect(
 
 def set_conformer_coordinates(
     conf: Chem.Conformer,
-    coords: (
-        tuple[tuple[float, float, float], ...]
-        | list[list[float]]
-        | npt.NDArray[np.float64]
-    ),
+    coords: Union[
+        tuple[tuple[float, float, float], ...],
+        list[list[float]],
+        npt.NDArray[np.float64],
+    ],
 ) -> None:
     """Set the Positions of atoms of the conformer.
 
     Args:
         conf (Chem.Conformer): The conformer to be set.
-        coords (tuple[tuple[float, float, float], ...] | list[list[float]] | npt.NDArray[np.float64]): The coordinates to be set.
+        coords (Union[tuple[tuple[float, float, float], ...], list[list[float]], npt.NDArray[np.float64]]): The coordinates to be set.
     """
     if isinstance(coords, (tuple, list)):
         coords = np.array(coords)
@@ -228,7 +228,7 @@ def edit_conf_by_add_bonds(
     conf: Chem.Conformer,
     function_name: str,
     atoms: tuple[int, ...],
-    value: int | float,
+    value: Union[int, float],
 ) -> None:
     """Add bonds to the conformer and modify the internal coordinates.
 
@@ -241,7 +241,7 @@ def edit_conf_by_add_bonds(
         conf (Chem.Conformer): The conformer to be modified.
         function_name (str): The function name of the edit, should be a method provided in rdMolTransforms.
         atoms (tuple[int, ...]): A list of atoms representing the internal coordinates.
-        value (int | float): Value to be set.
+        value (Union[int, float]): Value to be set.
     """
     parent_mol = conf.GetOwningMol()
     all_bonds = get_bonds_as_tuples(parent_mol)
@@ -312,7 +312,7 @@ def get_torsion_deg(
 def set_bond_length(
     conf: Chem.Conformer,
     atom_ids: tuple[int, int],
-    value: int | float,
+    value: Union[int, float],
 ) -> None:
     """Set the distance between two atoms.
 
@@ -324,7 +324,7 @@ def set_bond_length(
     Args:
         conf (Chem.Conformer): The conformer to be set.
         atom_ids (tuple[int, int]): The atom IDs to be set.
-        value (int | float): The value to be set.
+        value (Union[int, float]): The value to be set.
 
     Raises:
         NotImplementedError: If the approach for modifying the bond length is not available.
@@ -345,7 +345,7 @@ def set_bond_length(
 def set_angle_deg(
     conf: Chem.Conformer,
     atom_ids: tuple[int, int, int],
-    value: int | float,
+    value: Union[int, float],
 ) -> None:
     """Set the angle between three atoms in degrees.
 
@@ -357,7 +357,7 @@ def set_angle_deg(
     Args:
         conf (Chem.Conformer): The conformer to be set.
         atom_ids (tuple[int, int, int]): The atom IDs to be set.
-        value (int | float): The value to be set.
+        value (Union[int, float]): The value to be set.
 
     Raises:
         NotImplementedError: If the approach for modifying the angle is not available.
@@ -378,7 +378,7 @@ def set_angle_deg(
 def set_torsion_deg(
     conf: Chem.Conformer,
     atom_ids: tuple[int, int, int, int],
-    value: int | float,
+    value: Union[int, float],
 ) -> None:
     """Set the torsion angle between four atoms in degrees.
 
@@ -390,7 +390,7 @@ def set_torsion_deg(
     Args:
         conf (Chem.Conformer): The conformer to be set.
         atom_ids (tuple[int, int, int, int]): The atom IDs to be set.
-        value (int | float): The value to be set.
+        value (Union[int, float]): The value to be set.
 
     Raises:
         NotImplementedError: If the approach for modifying the torsion is not available.

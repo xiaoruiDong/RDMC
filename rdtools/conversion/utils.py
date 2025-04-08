@@ -1,12 +1,14 @@
 """Conversion utilities for RDKit."""
 
+from typing import Union
+
 from rdkit import Chem
 
 
 def prepare_output_mol(
     mol: Chem.Mol,
     remove_hs: bool = False,
-    sanitize: bool | Chem.SanitizeFlags = True,
+    sanitize: Union[bool, Chem.SanitizeFlags] = True,
 ) -> Chem.Mol:
     """Generate a Mol instance for output purpose.
 
@@ -26,7 +28,7 @@ def prepare_output_mol(
                 5. Hs that are part of the definition of double bond Stereochemistry.
                 6. Hs that are not connected to anything else.
 
-        sanitize (bool | Chem.SanitizeFlags, optional): Whether to sanitize the molecule. Defaults to ``True``. Using Chem.SanitizeFlags
+        sanitize (Union[bool, Chem.SanitizeFlags], optional): Whether to sanitize the molecule. Defaults to ``True``. Using Chem.SanitizeFlags
             is also acceptable.
 
     Returns:

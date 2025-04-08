@@ -45,7 +45,7 @@ which is quite like http://www.chem.ucla.edu/~harding/IGOC/R/resonance_contribut
 
 import logging
 from itertools import combinations, product
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from rdkit import Chem
 
@@ -204,7 +204,7 @@ def get_octet_deviation(
         float: The octet deviation for the molecule.
     """
     # The overall "score" for the molecule, summed across all non-H atoms
-    octet_deviation: int | float = 0
+    octet_deviation: Union[int, float] = 0
     for atom in mol.GetAtoms():
         atomic_num = atom.GetAtomicNum()
         if atomic_num == 1:
