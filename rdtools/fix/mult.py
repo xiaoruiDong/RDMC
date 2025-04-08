@@ -1,11 +1,13 @@
+"""Fix the molecule multiplicity."""
+
+import logging
 from functools import lru_cache
 from itertools import chain
-import logging
 
 from rdkit import Chem
 
 from rdtools.atom import decrement_radical
-from rdtools.bond import increment_bond_order, BOND_ORDERS
+from rdtools.bond import BOND_ORDERS, increment_bond_order
 from rdtools.mol import get_spin_multiplicity
 
 logger = logging.getLogger(__name__)
@@ -15,11 +17,12 @@ def _check_viability(
     cur_mult: int,
     target_mult: int,
 ) -> bool:
-    """
+    """Check the viability of a fix method.
+
     Check whether the molecule is viable to be fixed by saturating methods.
     Saturating methods works by removing 2 radicals to form a bond / lone pair.
-    Therefore, the difference between the current multiplicity and the target multiplicity
-    should be even.
+    Therefore, the difference between the current multiplicity and the target
+    multiplicity should be even.
 
     Args:
         cur_mult (int): The current multiplicity of the molecule.
@@ -35,23 +38,27 @@ def _check_viability(
 
 @lru_cache(maxsize=1)
 def get_biradical_12_query() -> Chem.Mol:
-    """
-    Get a template molecule for 1,2 biradical. The template is two atoms each with >= 1 radical electrons.
+    """Get a template molecule for 1,2 biradical.
+
+    The template is two atoms each with >= 1 radical electrons.
+
+    Returns:
+        Chem.Mol: the structure query.
     """
     query = Chem.MolFromSmarts("*~*")
-    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)
+    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)  # type: ignore
     for atom in query.GetAtoms():
         atom.ExpandQuery(radical_query)
     return query
 
 
 def saturate_biradical_12(
-    mol,
+    mol: Chem.Mol,
     multiplicity: int,
-):
-    """
-    A method help to saturate 1,2 biradicals to match the given
-    molecule spin multiplicity. E.g.::
+) -> None:
+    """Saturate 1,2 biradicals to match the given molecule spin multiplicity.
+
+    E.g.::
 
         *C - C* => C = C
 
@@ -60,8 +67,8 @@ def saturate_biradical_12(
     been tested on nitrogenate.
 
     Args:
+        mol (Chem.Mol): The molecule to be fixed.
         multiplicity (int): The target multiplicity.
-        verbose (bool): Whether to print additional information. Defaults to ``True``.
     """
     cur_mult = get_spin_multiplicity(mol)
     if not _check_viability(cur_mult, multiplicity):
@@ -111,11 +118,15 @@ def saturate_biradical_12(
 
 @lru_cache(maxsize=1)
 def get_carbene_query() -> Chem.Mol:
-    """
-    Get a template molecule for carbene. The template is an atom with >= 2 radical electrons.
+    """Get a template molecule for carbene.
+
+    The template is an atom with >= 2 radical electrons.
+
+    Returns:
+        Chem.Mol: the structure query.
     """
     query = Chem.MolFromSmarts("*")
-    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(1)
+    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(1)  # type: ignore
     query.GetAtomWithIdx(0).ExpandQuery(radical_query)
     return query
 
@@ -123,10 +134,10 @@ def get_carbene_query() -> Chem.Mol:
 def saturate_carbene(
     mol: Chem.Mol,
     multiplicity: int,
-):
-    """
-    A method help to saturate carbenes and nitrenes to match the given
-    molecule spin multiplicity::
+) -> None:
+    """Saturate carbenes and nitrenes to match the given molecule spin multiplicity.
+
+    E.g.::
 
         *C* (triplet) => C(**) (singlet)
 
@@ -135,8 +146,8 @@ def saturate_carbene(
     been tested on nitrogenate.
 
     Args:
+        mol (Chem.Mol): The molecule to be fixed.
         multiplicity (int): The target multiplicity.
-        verbose (int): Whether to print additional information. Defaults to ``True``.
     """
     cur_mult = get_spin_multiplicity(mol)
     if not _check_viability(cur_mult, multiplicity):
@@ -167,20 +178,26 @@ def saturate_carbene(
 
 @lru_cache(maxsize=1)
 def get_radical_site_query() -> Chem.Mol:
-    """
-    Get a template molecule for carbene. The template is an atom with >= 1 radical electrons.
+    """Get a template molecule for carbene.
+
+    The template is an atom with >= 1 radical electrons.
+
+    Returns:
+        Chem.Mol: the structure query.
     """
     query = Chem.MolFromSmarts("*")
-    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)
+    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)  # type: ignore
     query.GetAtomWithIdx(0).ExpandQuery(radical_query)
     return query
 
 
 @lru_cache(maxsize=10)
 def get_biradical_cdb_query(num_segment: int) -> Chem.Mol:
-    """
-    Get a template molecule for 1,4 to 1,N biradical. The template has the two end atoms each with >= 1 radical electrons.
-    The template used is something like '*-,=*=,#*-,=*=,#*-,=*'
+    """Get a template molecule for 1,4 to 1,N biradical.
+
+    The template has the two end
+    atoms each with >= 1 radical electrons. The template used is something like
+    '*-,=*=,#*-,=*=,#*-,=*'.
 
     Args:
         num_segment (int): The number of segments in the template. E.g., 1,4 biradical has 1 segments.
@@ -191,14 +208,17 @@ def get_biradical_cdb_query(num_segment: int) -> Chem.Mol:
     segment = "-,=*=,#*"
     query_str = "*" + segment * num_segment + "-,=*"
     query = Chem.MolFromSmarts(query_str)
-    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)
+    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)  # type: ignore
     query.GetAtomWithIdx(0).ExpandQuery(radical_query)
     query.GetAtomWithIdx(1 + 2 * num_segment).ExpandQuery(radical_query)
     return query
 
 
-def saturate_biradical_cdb(mol: Chem.Mol, multiplicity: int, chain_length: int = 8):
-    """
+def saturate_biradical_cdb(
+    mol: Chem.Mol, multiplicity: int, chain_length: int = 8
+) -> None:
+    """Saturate biradicals with conjugated double bonds to match spin multiplicity.
+
     A method help to saturate biradicals that have conjugated double bond in between
     to match the given molecule spin multiplicity. E.g, 1,4 biradicals can be saturated
     if there is a unsaturated bond between them::
@@ -245,7 +265,7 @@ def saturate_biradical_cdb(mol: Chem.Mol, multiplicity: int, chain_length: int =
                 # Switch over the bond types
                 # E.g., C-C=C-C => C=C-C=C
                 bonds = [
-                    mol.GetBondBetweenAtoms(*path[i: i + 2])
+                    mol.GetBondBetweenAtoms(*path[i : i + 2])
                     for i in range(path_length - 1)
                 ]
 
@@ -260,7 +280,7 @@ def saturate_biradical_cdb(mol: Chem.Mol, multiplicity: int, chain_length: int =
                     continue
 
                 for bond, bond_type in zip(bonds, new_bond_types):
-                    bond.SetBondType(bond_type)
+                    bond.SetBondType(bond_type)  # type: ignore
 
                 # Modify radical site properties
                 for atom in [
@@ -298,10 +318,10 @@ def saturate_mol(
     multiplicity: int = 0,
     chain_length: int = 8,
     verbose: bool = False,
-):
-    """
-    A method help to saturate the molecule to match the given
-    molecule spin multiplicity. This is just a wrapper to call
+) -> None:
+    """Saturate the molecule to match the given molecule spin multiplicity.
+
+    This is just a wrapper to call
     :func:`SaturateBiradicalSites12`, :func:`SaturateBiradicalSitesCDB`, and
     :func:`SaturateCarbene`::
 
@@ -316,9 +336,10 @@ def saturate_mol(
     Args:
         mol (Chem.Mol): The molecule to be fixed.
         multiplicity (int): The target multiplicity. If ``0``, the target multiplicity will be inferred from the number of unpaired electrons.
-                            Defaults to ``0``.
+            Defaults to ``0``.
         chain_length (int): How long the conjugated double bond chain is. A larger value will result in longer computational time.
-                            Defaults to ``8``. It should be an even number >= 4.
+            Defaults to ``8``. It should be an even number >= 4.
+        verbose (bool): If ``True``, print the warning message if the target multiplicity cannot be fulfilled.
     """
     # Infer the possible lowest spin multiplicity from the number of unpaired electrons
     multiplicity = multiplicity or (1 if get_spin_multiplicity(mol) % 2 else 2)

@@ -1,13 +1,17 @@
-"""
-This module includes all the remedies for fixing molecules.
-"""
+"""This module includes all the remedies for fixing molecules."""
 
 from functools import lru_cache
+
 from rdkit.Chem import rdChemReactions
 
 
 @lru_cache(maxsize=1)
-def get_recommend_remedies():
+def get_recommend_remedies() -> list[rdChemReactions.ChemicalReaction]:
+    """Get the recommended remedies for fixing molecules.
+
+    Returns:
+        list[rdChemReactions.ChemicalReaction]: A list of recommended remedies.
+    """
     return [
         # Remedy 1 - Carbon monoxide: [C]=O to [C-]#[O+]
         rdChemReactions.ReactionFromSmarts(
@@ -58,7 +62,12 @@ def get_recommend_remedies():
 
 
 @lru_cache(maxsize=1)
-def get_zwitterion_remedies():
+def get_zwitterion_remedies() -> list[rdChemReactions.ChemicalReaction]:
+    """Get the zwitterion remedies.
+
+    Returns:
+        list[rdChemReactions.ChemicalReaction]: A list of zwitterion remedies.
+    """
     return [
         # Remedy 1 - criegee Intermediate: R[C](R)O[O] to RC=(R)[O+][O-]
         rdChemReactions.ReactionFromSmarts(
@@ -96,7 +105,12 @@ def get_zwitterion_remedies():
 
 
 @lru_cache(maxsize=1)
-def get_ring_remedies():
+def get_ring_remedies() -> list[rdChemReactions.ChemicalReaction]:
+    """Get the remedies for cyclic molecules.
+
+    Returns:
+        list[rdChemReactions.ChemicalReaction]: A list of remedies for cyclic molecules.
+    """
     return [
         # The first four elements' sequence matters
         # TODO: Find a better solution to avoid the impact of sequence
@@ -125,7 +139,12 @@ def get_ring_remedies():
 
 @lru_cache(maxsize=1)
 # This remedy is only used for oxonium species
-def get_oxonium_remedies():
+def get_oxonium_remedies() -> list[rdChemReactions.ChemicalReaction]:
+    """Get the remedies for oxonium species.
+
+    Returns:
+        list[rdChemReactions.ChemicalReaction]: A list of remedies for oxonium species.
+    """
     return [
         # Remedy 1 - R[O](R)[O] to R[O+](R)[O-]
         # This is a case combining two radicals R-O-[O] and [R]
@@ -146,11 +165,9 @@ def get_oxonium_remedies():
 
 
 class RemedyManager:
-    """
-    A class to manage all the remedies.
-    """
+    """A class to manage all the remedies."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.remedies = {
             "recommend": get_recommend_remedies,
             "zwitterion": get_zwitterion_remedies,
@@ -158,35 +175,32 @@ class RemedyManager:
             "oxonium": get_oxonium_remedies,
         }
 
-    def get_remedies(self, remedy_type: str):
-        """
-        Get the remedies of a specific type.
+    def get_remedies(self, remedy_type: str) -> list[rdChemReactions.ChemicalReaction]:
+        """Get the remedies of a specific type.
 
         Args:
             remedy_type (str): The type of remedies to be returned. Currently, only support ``recommend``, ``zwitterion``, ``ring`` and ``oxonium``.
 
         Returns:
-            list: The remedies of the given type.
+            list[rdChemReactions.ChemicalReaction]: The remedies of the given type.
         """
         return self.remedies[remedy_type]() if remedy_type in self.remedies else []
 
     @property
-    def default_remedies(self):
-        """
-        Get the default remedies.
+    def default_remedies(self) -> list[rdChemReactions.ChemicalReaction]:
+        """Get the default remedies.
 
         Returns:
-            list: The default remedies.
+            list[rdChemReactions.ChemicalReaction]: The default remedies.
         """
         return self.get_remedies("recommend")
 
     @property
-    def all_remedies(self):
-        """
-        Get all the remedies.
+    def all_remedies(self) -> list[rdChemReactions.ChemicalReaction]:
+        """Get all the remedies.
 
         Returns:
-            list: All the remedies.
+            list[rdChemReactions.ChemicalReaction]: All the remedies.
         """
         return sum(
             [val() for key, val in self.remedies.items() if key != "oxonium"], []

@@ -1,29 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-"""
-This module contains the helper functions for fixing parsed molecules.
-"""
+"""This module contains the helper functions for fixing parsed molecules."""
 
 import copy
-
 from functools import reduce
 from typing import List, Optional
 
 import numpy as np
-
 from rdkit import Chem
 from rdkit.Chem import BondType
 
 from rdtools.atom import clear_rxn_prop, decrement_radical
 from rdtools.atommap import (
-    update_product_atom_map_after_reaction,
     renumber_atoms as renumber_atoms_,
 )
-from rdtools.dist import get_distance_matrix, get_adjacency_matrix
-from rdtools.fix.remedy import remedy_manager
+from rdtools.atommap import (
+    update_product_atom_map_after_reaction,
+)
+from rdtools.dist import get_adjacency_matrix, get_distance_matrix
 from rdtools.fix.mult import saturate_mol
-from rdtools.mol import get_heavy_atoms, force_no_implicit
+from rdtools.fix.remedy import remedy_manager
+from rdtools.mol import force_no_implicit, get_heavy_atoms
 
 
 def fix_mol_by_remedy(
@@ -32,19 +29,23 @@ def fix_mol_by_remedy(
     max_attempts: int = 10,
     sanitize: bool = True,
 ) -> Chem.Mol:
-    """
-    Fix the molecule according to the given remedies that are defined as RDKit ChemicalReaction.
+    """Fix the molecule according to the given remedies.
+
+    The remedies are are defined as RDKit ChemicalReaction.
 
     Args:
         mol (Chem.Mol): The molecule to be fixed.
-        remedy (ChemicalReaction): The functional group transformation as the remedy to fix the molecule,
-                                   defined as an RDKit ChemicalReaction.
+        remedy (Chem.rdChemReactions.ChemicalReaction): The functional group transformation as the remedy to fix the molecule,
+            defined as an RDKit ChemicalReaction.
         max_attempts (int, optional): The maximum number of attempts to fix the molecule.
-                                      Defaults to ``10``.
+            Defaults to ``10``.
         sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
 
     Returns:
         Chem.Mol: The fixed molecule.
+
+    Raises:
+        RuntimeError: If the maximum number of attempts is reached.
     """
     tmp_mol = mol
     fix_flag = False
@@ -70,7 +71,7 @@ def fix_mol_by_remedy(
             # If the input molecule contains multiple fragments (i.e., isolated graphs),
             # RDKit will only keep the fragment matching the reaction pattern.
             # Therefore we need to append the other fragments back to the molecule.
-            frag_assign = []
+            frag_assign: list[int] = []
             frags = list(
                 Chem.GetMolFrags(
                     tmp_mol, asMols=True, sanitizeFrags=False, frags=frag_assign
@@ -84,7 +85,8 @@ def fix_mol_by_remedy(
             tmp_mol = fix_mol
 
         # Clear reaction properties
-        [clear_rxn_prop(atom) for atom in updated_atoms]
+        for atom in updated_atoms:
+            clear_rxn_prop(atom)
 
         fix_flag = True
 
@@ -108,18 +110,17 @@ def fix_mol_by_remedies(
     max_attempts: int = 10,
     sanitize: bool = True,
 ) -> Chem.Mol:
-    """
-    Fix the molecule according to the given remedy defined as an RDKit ChemicalReaction.
+    """Fix the molecule according to the given remedy.
 
     Args:
         mol (Chem.Mol): The molecule to be fixed.
-        remedies (list): A list of remedies to fix the molecule defined as an RDKit ChemicalReaction.
+        remedies (List[Chem.rdChemReactions.ChemicalReaction]): A list of remedies to fix the molecule defined as an RDKit ChemicalReaction.
         max_attempts (int, optional): The maximum number of attempts to fix the molecule.
-                                      Defaults to ``10``.
+            Defaults to ``10``.
         sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
 
     Returns:
-        Chem.Mol
+        Chem.Mol: The fixed molecule.
     """
     for remedy in remedies:
         mol = fix_mol_by_remedy(mol, remedy, max_attempts=max_attempts, sanitize=False)
@@ -131,33 +132,32 @@ def fix_mol_by_remedies(
 
 
 def fix_mol(
-    mol: "Chem.Mol",
-    remedies: Optional[List["ChemicalReaction"]] = None,
+    mol: Chem.Mol,
+    remedies: Optional[List[Chem.rdChemReactions.ChemicalReaction]] = None,
     max_attempts: int = 10,
     sanitize: bool = True,
     fix_spin_multiplicity: bool = True,
     mult: int = 0,
     renumber_atoms: bool = True,
-) -> "Chem.Mol":
-    """
-    Fix the molecule by applying the given remedies and saturating bi-radical or carbene to fix spin multiplicity.
+) -> Chem.Mol:
+    """Fix the molecule by applying the given remedies and fixing spin multiplicity.
 
     Args:
         mol (Chem.Mol): The molecule to be fixed.
-        remedies (List[ChemicalReaction], optional): The list of remedies to fix the molecule,
-                                                     defined as RDKit ChemicalReaction.
-                                                     Defaults to ``rdmc.fix.DEFAULT_REMEDIES``.
+        remedies (Optional[List[Chem.rdChemReactions.ChemicalReaction]], optional): The list of remedies to fix the molecule,
+            defined as RDKit ChemicalReaction.
+            Defaults to ``rdmc.fix.DEFAULT_REMEDIES``.
         max_attempts (int, optional): The maximum number of attempts to fix the molecule.
-                                        Defaults to ``10``.
+            Defaults to ``10``.
         sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
-                                   Using ``False`` is only recommended for debugging and testing.
+            Using ``False`` is only recommended for debugging and testing.
         fix_spin_multiplicity (bool, optional): Whether to fix the spin multiplicity of the molecule. The fix can only
-                                                reduce the spin multiplicity. Defaults to ``True``.
+            reduce the spin multiplicity. Defaults to ``True``.
         mult (int, optional): The desired spin multiplicity. Defaults to ``0``, which means the lowest possible
-                              spin multiplicity will be inferred from the number of unpaired electrons.
-                              Only used when ``fix_spin_multiplicity`` is ``True``.
+            spin multiplicity will be inferred from the number of unpaired electrons.
+            Only used when ``fix_spin_multiplicity`` is ``True``.
         renumber_atoms (bool, optional): Whether to renumber the atoms after the fix. Defaults to ``True``.
-                                         Turn this off when the atom map number is not important.
+            Turn this off when the atom map number is not important.
 
     Returns:
         Chem.Mol: The fixed molecule.
@@ -193,16 +193,15 @@ def fix_mol(
 def find_oxonium_bonds(
     mol: "Chem.Mol",
     threshold: float = 1.65,
-) -> List[tuple]:
-    """
-    Find the potential oxonium atom.
+) -> List[tuple[int, int]]:
+    """Find the potential oxonium atom.
 
     Args:
         mol (Chem.Mol): The molecule to be fixed.
         threshold (float, optional): The threshold to determine if two atoms are connected.
 
     Returns:
-        List[tuple]: a list of (oxygen atom index, the other atom index).
+        List[tuple[int, int]]: a list of (oxygen atom index, the other atom index).
     """
     heavy_idxs = [atom.GetIdx() for atom in get_heavy_atoms(mol)]
     oxygen_idxs = [i for i in heavy_idxs if mol.GetAtomWithIdx(i).GetAtomicNum() == 8]
@@ -232,15 +231,16 @@ def fix_oxonium_bonds(
     threshold: float = 1.65,
     sanitize: bool = True,
 ) -> "Chem.Mol":
-    """
-    Fix the oxonium atom. Openbabel and Jensen perception algorithm do not perceive the oxonium atom correctly.
+    """Fix the oxonium atom.
+
+    Openbabel and Jensen perception algorithm do not perceive the oxonium atom correctly.
     This is a fix to detect if the molecule contains oxonium atom and fix it.
 
     Args:
         mol (Chem.Mol): The molecule to be fixed.
         threshold (float, optional): The threshold to determine if two atoms are connected.
         sanitize (bool, optional): Whether to sanitize the molecule after the fix. Defaults to ``True``.
-                                   Using ``False`` is only recommended for debugging and testing.
+            Using ``False`` is only recommended for debugging and testing.
 
     Returns:
         Chem.Mol: The fixed molecule.
