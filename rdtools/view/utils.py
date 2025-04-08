@@ -1,11 +1,22 @@
-from typing import List, Tuple
+"""A collection of helper functions for the viewer."""
 
 from rdkit import Chem
 
 
-def clean_ts(mol, broken_bonds, formed_bonds):
-    """
-    A helper function remove changing bonds in the TS.
+def clean_ts(
+    mol: Chem.Mol,
+    broken_bonds: list[tuple[int, int]],
+    formed_bonds: list[tuple[int, int]],
+) -> Chem.Mol:
+    """Remove changing bonds in the TS.
+
+    Args:
+        mol (Chem.Mol): The molecule to be cleaned.
+        broken_bonds (list[tuple[int, int]]): The bonds that are broken.
+        formed_bonds (list[tuple[int, int]]): The bonds that are formed.
+
+    Returns:
+        Chem.Mol: The cleaned molecule.
     """
     if isinstance(mol, Chem.RWMol):
         mol = mol.__copy__()
@@ -22,9 +33,20 @@ def clean_ts(mol, broken_bonds, formed_bonds):
 
 # The following two functions have duplicates in rdtools
 # These are copied over in preparation of making view completely standalone
-def get_broken_formed_bonds(r_mol, p_mol):
-    """
-    A helper function to get the broken and formed bonds.
+def get_broken_formed_bonds(
+    r_mol: Chem.Mol, p_mol: Chem.Mol
+) -> tuple[
+    list[tuple[int, int]],
+    list[tuple[int, int]],
+]:
+    """A helper function to get the broken and formed bonds.
+
+    Args:
+        r_mol (Chem.Mol): The reactant molecule.
+        p_mol (Chem.Mol): The product molecule.
+
+    Returns:
+        tuple[list[tuple[int, int]], list[tuple[int, int]]]: The broken and formed bonds.
     """
     r_bonds = set(get_bonds_as_tuples(r_mol))
     p_bonds = set(get_bonds_as_tuples(p_mol))
@@ -32,15 +54,14 @@ def get_broken_formed_bonds(r_mol, p_mol):
     return list(r_bonds - p_bonds), list(p_bonds - r_bonds)
 
 
-def get_bonds_as_tuples(mol: "Mol") -> List[Tuple[int, int]]:
-    """
-    Get the bonds of a molecule as a list of tuples.
+def get_bonds_as_tuples(mol: Chem.Mol) -> list[tuple[int, int]]:
+    """Get the bonds of a molecule as a list of tuples.
 
     Args:
-        mol (Mol): The molecule whose bonds are to be returned.
+        mol (Chem.Mol): The molecule whose bonds are to be returned.
 
     Returns:
-        List[Tuple[int, int]]: The bonds of the molecule as a list of tuples.
+        list[tuple[int, int]]: The bonds of the molecule as a list of tuples.
     """
     return [
         tuple(sorted((b.GetBeginAtomIdx(), b.GetEndAtomIdx()))) for b in mol.GetBonds()
@@ -49,15 +70,15 @@ def get_bonds_as_tuples(mol: "Mol") -> List[Tuple[int, int]]:
 
 def merge_xyz_dxdydz(
     xyz: str,
-    dxdydz: list,
+    dxdydz: list[list[float]],
 ) -> str:
-    """
-    A helper function to create input for freq_viewer.
-    Merge the xyz string with the dxdydz information.
+    """A helper function to create input for freq_viewer.
+
+    It merges the xyz string with the dxdydz information.
 
     Args:
         xyz (str): The xyz string.
-        dxdydz (list): The dx dy dz in a 3 x N matrix like list or array.
+        dxdydz (list[list[float]]): The dx dy dz in a 3 x N matrix-like list or array.
 
     Returns:
         str: The xyz string with dxdydz information.

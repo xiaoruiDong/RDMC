@@ -1,40 +1,52 @@
-from typing import Optional, Tuple, Union
+"""Module for visualizing chemical reactions using RDKit and Py3Dmol."""
 
-from rdtools.view.base import grid_viewer
+from typing import Any, Literal
+
+from rdkit import Chem
+
+from rdtools.view.base import grid_viewer, py3Dmol
 from rdtools.view.mol import mol_viewer, ts_viewer
 from rdtools.view.utils import get_broken_formed_bonds
 
-
 _ts_viewer_keys = [
-    "broken_bonds", "formed_bonds",
-    "broken_bond_color", "formed_bond_color",
-    "broken_bond_width", "formed_bond_width"
+    "broken_bonds",
+    "formed_bonds",
+    "broken_bond_color",
+    "formed_bond_color",
+    "broken_bond_width",
+    "formed_bond_width",
 ]
 
 
 def reaction_viewer(
-    r_mol: "Mol",
-    p_mol: "Mol",
-    ts_mol: Optional["Mol"] = None,
-    alignment: str = 'horizontal',
-    **kwargs
-) -> "py3Dmol.view":
-    """
-    View reactant, product and ts of a given reaction. The broken bonds in the TS will be shown with red
+    r_mol: Chem.Mol,
+    p_mol: Chem.Mol,
+    ts_mol: Chem.Mol | None = None,
+    alignment: Literal["horizontal", "vertical"] = "horizontal",
+    **kwargs: Any,
+) -> py3Dmol.view:
+    """View reactant, product and ts of a given reaction.
+
+    The broken bonds in the TS will be shown with red
     lines while the formed bonds in the TS will be shown with green lines. Uses keywords from mol_viewer
     function, so all arguments of that function are available here.
 
     Args:
-        r_mol (Mol): The reactant complex.
-        p_mol (Mol): The product complex.
-        ts_mol (Mol, optional): The ts corresponding to r_mol and p_mol. It will be placed in between.
-        alignment (list, optional): Indicate if geometries are displayed horizontally (``horizontal``)
+        r_mol (Chem.Mol): The reactant complex.
+        p_mol (Chem.Mol): The product complex.
+        ts_mol (Chem.Mol | None, optional): The TS corresponding to r_mol and p_mol. It will be placed in between.
+        alignment (Literal["horizontal", "vertical"], optional): Indicate if geometries are displayed horizontally (``horizontal``)
                                     or vertically (``vertical``). Defaults to ``horizontal``.
-        alignment_direction (str optional): Reactant, product, and TS are vertically aligned. Defaults to `True`.
-                                            Only valid when `only_ts` is `False`.
+        **kwargs (Any): Additional keyword arguments to be passed to the viewer.
+
+    Returns:
+        py3Dmol.view: The viewer.
     """
     # Check if TS is provided
-    grid = ['r', 'p'] if ts_mol is None else ['r', 'ts', 'p']
+    grid = ["r", "p"] if ts_mol is None else ["r", "ts", "p"]
+    mols = {"r": r_mol, "p": p_mol}
+    if ts_mol is not None:
+        mols["ts"] = ts_mol
 
     ts_kwargs = {}
     # Remove the ts_viewer's key from kwargs
@@ -46,23 +58,25 @@ def reaction_viewer(
     if "viewer" in kwargs:
         viewer = kwargs["viewer"]
     else:
-        # Set up a grid viewer if not provided
-        grid_arguments = {}
-        grid_arguments["viewer_grid"] = (1, len(grid)) if alignment == 'horizontal' else (len(grid), 1)
+        viewer_grid = (1, len(grid)) if alignment == "horizontal" else (len(grid), 1)
         if "viewer_size" in kwargs:
-            grid_arguments["viewer_size"] = (
-                grid_arguments["viewer_grid"][0] * kwargs["viewer_size"][0],
-                grid_arguments["viewer_grid"][1] * kwargs["viewer_size"][1],
+            indivial_viewer_size: tuple[int, int] = kwargs["viewer_size"]
+            viewer_size = (
+                viewer_grid[0] * indivial_viewer_size[0],
+                viewer_grid[1] * indivial_viewer_size[1],
             )  # Find out the correct viewer size for the whole grid
-        grid_arguments["linked"] = kwargs.pop("linked") if "linked" in kwargs else True
-        viewer = grid_viewer(**grid_arguments)
+        if "linked" in kwargs:
+            linked: bool = kwargs.pop("linked")
+        else:
+            linked = True
+        viewer = grid_viewer(viewer_grid, linked, viewer_size)
 
     # Clean up TS by removing formed and broken bonds
-    ts_kwargs['broken_bonds'], ts_kwargs['formed_bonds'] = get_broken_formed_bonds(r_mol, p_mol)
+    ts_kwargs["broken_bonds"], ts_kwargs["formed_bonds"] = get_broken_formed_bonds(
+        r_mol, p_mol
+    )
 
-    mols = {"r": r_mol, "p": p_mol, "ts": ts_mol}
     for i, label in enumerate(grid):
-
         mol = mols[label]
         viewer_loc = (0, i) if alignment == "horizontal" else (i, 0)
         plot_kwargs = {**kwargs, **{"viewer": viewer, "viewer_loc": viewer_loc}}
