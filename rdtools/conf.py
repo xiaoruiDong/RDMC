@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """A module contains functions to manipulate conformers in a molecule."""
 
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -14,19 +14,19 @@ from rdtools.bond import add_bonds, get_bonds_as_tuples
 
 def add_conformer(
     mol: Chem.RWMol,
-    conf: Chem.Conformer | None = None,
-    coords: npt.NDArray[np.float64] | None = None,
-    conf_id: int | None = None,
+    conf: Optional[Chem.Conformer] = None,
+    coords: Optional[npt.NDArray[np.float64]] = None,
+    conf_id: Optional[int] = None,
 ) -> int:
     """Add a conformer to the current `RDKitMol`.
 
     Args:
         mol (Chem.RWMol): The molecule to be set.
-        conf (Chem.Conformer | None, optional): A user may provide a predefined ``conformer`` and add it to the ``mol``. Defaults to ``None``,
+        conf (Optional[Chem.Conformer], optional): A user may provide a predefined ``conformer`` and add it to the ``mol``. Defaults to ``None``,
             but either ``conf`` or ``coords`` must be provided.
-        coords (npt.NDArray[np.float64] | None, optional): Instead of feeding a conformer, a user may provide the coordinates of the conformer to be added.
+        coords (Optional[npt.NDArray[np.float64]], optional): Instead of feeding a conformer, a user may provide the coordinates of the conformer to be added.
             Defaults to ``None``, but either ``conf`` or ``coords`` must be provided.
-        conf_id (int | None, optional): Which ID to set for the conformer (will be added as the last conformer by default). Defaults to ``None``.
+        conf_id (Optional[int], optional): Which ID to set for the conformer (will be added as the last conformer by default). Defaults to ``None``.
 
     Returns:
         int: The conformer ID added.
@@ -47,7 +47,7 @@ def add_conformer(
 
 def add_null_conformer(
     mol: Chem.RWMol,
-    conf_id: int | None = None,
+    conf_id: Optional[int] = None,
     random: bool = True,
 ) -> int:
     """Embed a conformer with null atom coordinates.
@@ -56,7 +56,7 @@ def add_null_conformer(
 
     Args:
         mol (Chem.RWMol): The molecule to be set.
-        conf_id (int | None, optional): Which ID to set for the conformer (will be added as the last conformer by default).
+        conf_id (Optional[int], optional): Which ID to set for the conformer (will be added as the last conformer by default).
         random (bool, optional): Whether set coordinates to random numbers. Otherwise, set to all-zero
             coordinates. Defaults to ``True``.
 
@@ -73,13 +73,13 @@ def add_null_conformer(
 
 def create_conformer(
     coords: npt.NDArray[np.float64],
-    conf_id: int | None = None,
+    conf_id: Optional[int] = None,
 ) -> Chem.Conformer:
     """Create a conformer with the given coordinates.
 
     Args:
         coords (npt.NDArray[np.float64]): The coordinates to be set.
-        conf_id (int | None, optional): Which ID to set for the conformer. Defaults to ``0``.
+        conf_id (Optional[int], optional): Which ID to set for the conformer. Defaults to ``0``.
 
     Returns:
         Chem.Conformer: The conformer created.

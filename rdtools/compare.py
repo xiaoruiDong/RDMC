@@ -2,7 +2,7 @@
 """A module contains functions to compare molecules and complexes."""
 
 import traceback
-from typing import Any, Collection, Literal, Union
+from typing import Any, Collection, Literal, Optional, Union
 
 import numpy as np
 from rdkit import Chem
@@ -197,7 +197,7 @@ def get_match_and_recover_recipe(
     checked_hs = set()
 
     i: int
-    j: int | None
+    j: Optional[int]
     for i in range(len(hs)):
         if i in checked_hs:
             continue

@@ -1,7 +1,7 @@
 """Module for viewing RDKit Molecules using py3Dmol."""
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from rdkit import Chem
 
@@ -42,7 +42,7 @@ def mol_viewer(
 
 def mol_animation(
     mols: list[Chem.Mol],
-    conf_ids: list[int] | None = None,
+    conf_ids: Optional[list[int]] = None,
     interval: int = 1000,  # more proper to look at different molecules
     **kwargs: Any,
 ) -> py3Dmol.view:
@@ -53,7 +53,7 @@ def mol_animation(
 
     Args:
         mols (list[Chem.Mol]): A list of RDKit Molecules, each assumes to contain at least one conformer.
-        conf_ids (list[int] | None, optional): A list of IDs of the conformers to view. If ``None``, the first conformer of
+        conf_ids (Optional[list[int]], optional): A list of IDs of the conformers to view. If ``None``, the first conformer of
             each molecule will be displayed. Defaults to None.
         interval (int, optional): The time interval between each frame in millisecond. Defaults to ``1000``.
         **kwargs (Any): Additional keyword arguments to be passed to the viewer.

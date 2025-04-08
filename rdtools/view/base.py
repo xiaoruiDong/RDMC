@@ -1,6 +1,6 @@
 """Base viewer functions built on py3Dmol."""
 
-from typing import Any
+from typing import Any, Optional
 
 try:
     import py3Dmol
@@ -28,13 +28,13 @@ default_label_spec = {
 
 def _set_atom_index(
     viewer: py3Dmol.view,
-    viewer_loc: tuple[int, int] | None = None,
+    viewer_loc: Optional[tuple[int, int]] = None,
 ) -> None:
     """Set atom index as labels.
 
     Args:
         viewer (py3Dmol.view): The py3Dmol viewer.
-        viewer_loc (tuple[int, int] | None, optional): The location of the viewer in the grid.
+        viewer_loc (Optional[tuple[int, int]], optional): The location of the viewer in the grid.
     """
     viewer.addPropertyLabels(
         "index",  # property name
@@ -78,13 +78,13 @@ def _set_atom_index_hoverable(viewer: py3Dmol.view) -> None:
 def base_viewer(
     obj: str | list[str],
     model: str = "xyz",
-    model_extra: dict[str, Any] | None = None,
-    animate: dict[str, Any] | None = None,
+    model_extra: Optional[dict[str, Any]] = None,
+    animate: Optional[dict[str, Any]] = None,
     atom_index: bool = True,
-    style_spec: dict[str, Any] | None = None,
-    viewer: py3Dmol.view | None = None,
+    style_spec: Optional[dict[str, Any]] = None,
+    viewer: Optional[py3Dmol.view] = None,
     viewer_size: tuple[int, int] = (400, 400),
-    viewer_loc: tuple[int, int] | None = None,
+    viewer_loc: Optional[tuple[int, int]] = None,
     as_frames: bool = False,
 ) -> py3Dmol.view:
     """General function to view a molecule.
@@ -98,13 +98,13 @@ def base_viewer(
             sdf string, etc.
         model (str, optional): The format of the molecule representation, e.g., ``'xyz'``.
             Defaults to ``'xyz'``.
-        model_extra (dict[str, Any] | None, optional): Extra specs for the model (format). E.g., frequency specs.
+        model_extra (Optional[dict[str, Any]], optional): Extra specs for the model (format). E.g., frequency specs.
             Default to ``None``
-        animate (dict[str, Any] | None, optional): Specs for animation. E.g., ``{'loop': 'backAndForth'}``.
+        animate (Optional[dict[str, Any]], optional): Specs for animation. E.g., ``{'loop': 'backAndForth'}``.
         atom_index (bool, optional): Whether to show atom index persistently. Defaults to ``True``.
             Otherwise, atom index can be viewed by hovering the mouse
             onto the atom and stay a while.
-        style_spec (dict[str, Any] | None, optional): Style of the shown molecule. The default is showing atom as spheres and
+        style_spec (Optional[dict[str, Any]], optional): Style of the shown molecule. The default is showing atom as spheres and
             bond as rods. The default setting is:
 
             .. code-block:: javascript
@@ -115,10 +115,10 @@ def base_viewer(
 
             which set both bond width/color and atom sizes. For more details, please refer to the
             original APIs in `3DMol.js <https://3dmol.org/doc/tutorial-home.html>`_.
-        viewer (py3Dmol.view | None, optional): Provide an existing viewer, instead of create a new one.
+        viewer (Optional[py3Dmol.view], optional): Provide an existing viewer, instead of create a new one.
         viewer_size (tuple[int, int], optional): Set the viewer size. Only useful if ``viewer`` is not provided.
             Defaults to ``(400, 400)``.
-        viewer_loc (tuple[int, int] | None, optional): The location of the viewer in the grid. E.g., (0, 1). Defaults to None.
+        viewer_loc (Optional[tuple[int, int]], optional): The location of the viewer in the grid. E.g., (0, 1). Defaults to None.
         as_frames (bool, optional): If add object as frames of an animation. Defaults to ``False``.
 
     Returns:
@@ -166,7 +166,7 @@ def base_viewer(
 def grid_viewer(
     viewer_grid: tuple[int, int],
     linked: bool = False,
-    viewer_size: tuple[int, int] | None = None,
+    viewer_size: Optional[tuple[int, int]] = None,
 ) -> py3Dmol.view:
     """Create a empty grid viewer.
 
@@ -175,7 +175,7 @@ def grid_viewer(
     Args:
         viewer_grid (tuple[int, int]): The layout of the grid, e.g., (1, 4) or (2, 2).
         linked (bool, optional): Whether changes in different sub viewers are linked. Defaults to ``False``.
-        viewer_size (tuple[int, int] | None, optional): The size of the viewer in (width, height). By Default, each block
+        viewer_size (Optional[tuple[int, int]], optional): The size of the viewer in (width, height). By Default, each block
             is 250 width and 400 height.
 
     Returns:

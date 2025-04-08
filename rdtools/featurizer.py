@@ -3,7 +3,7 @@
 """This module contains functions for generating molecular fingerprints."""
 
 from functools import lru_cache
-from typing import Any, Callable, Protocol
+from typing import Any, Callable, Optional, Protocol
 
 import numpy as np
 import numpy.typing as npt
@@ -21,7 +21,7 @@ from rdkit.Chem.rdMolDescriptors import GetMACCSKeysFingerprint
 
 def rdkit_vector_to_array(
     vector: DataStructs.ExplicitBitVect | DataStructs.UIntSparseIntVect,
-    num_bits: int | None = None,
+    num_bits: Optional[int] = None,
     dtype: str = "int32",
 ) -> npt.NDArray[np.int_]:
     """Convert a RDKit vector to a numpy array.
@@ -32,7 +32,7 @@ def rdkit_vector_to_array(
 
     Args:
         vector (DataStructs.ExplicitBitVect | DataStructs.UIntSparseIntVect): RDkit Vector generated from fingerprint algorithms.
-        num_bits (int | None, optional): The length of the vector, defaults to ``None``.
+        num_bits (Optional[int], optional): The length of the vector, defaults to ``None``.
         dtype (str, optional):
             The data type of the output numpy array. Defaults to ``'int32'``.
 

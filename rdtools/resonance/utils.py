@@ -4,6 +4,7 @@
 
 import itertools
 import math
+from typing import Optional
 
 from rdkit import Chem
 from rdkit.Chem import Lipinski, rdqueries
@@ -593,19 +594,19 @@ def sanitize_resonance_mol(
 def _find_shortest_path(
     start: Chem.Atom,
     end: Chem.Atom,
-    path: list[Chem.Atom] | None = None,
-    path_idxs: list[int] | None = None,
-) -> list[Chem.Atom] | None:
+    path: Optional[list[Chem.Atom]] = None,
+    path_idxs: Optional[list[int]] = None,
+) -> Optional[list[Chem.Atom]]:
     """Get the shortest path between two atoms in a molecule.
 
     Args:
         start (Chem.Atom): The starting atom.
         end (Chem.Atom): The ending atom.
-        path (list[Chem.Atom] | None, optional): The current path. Defaults to None.
-        path_idxs (list[int] | None, optional): The current path indexes. Defaults to None.
+        path (Optional[list[Chem.Atom]], optional): The current path. Defaults to None.
+        path_idxs (Optional[list[int]], optional): The current path indexes. Defaults to None.
 
     Returns:
-        list[Chem.Atom] | None: A list of atoms in the shortest path between the two atoms.
+        Optional[list[Chem.Atom]]: A list of atoms in the shortest path between the two atoms.
     """
     path = path if path else []
     path_idxs = path_idxs if path_idxs else []

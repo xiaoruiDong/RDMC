@@ -1,6 +1,6 @@
 """Module for viewing conformers of RDKit molecules."""
 
-from typing import Any
+from typing import Any, Optional
 
 from rdkit import Chem
 
@@ -9,8 +9,8 @@ from rdtools.view.base import animation_viewer, base_viewer, default_style_spec,
 
 def conformer_viewer(
     mol: Chem.Mol,
-    conf_ids: list[int] | None = None,
-    highlight_ids: list[int] | None = None,
+    conf_ids: Optional[list[int]] = None,
+    highlight_ids: Optional[list[int]] = None,
     conf_opacity: float = 0.5,
     **kwargs: Any,
 ) -> py3Dmol.view:
@@ -22,9 +22,9 @@ def conformer_viewer(
 
     Args:
         mol (Chem.Mol): An Mol object with embedded conformers.
-        conf_ids (list[int] | None, optional): A list of conformer ids (as ``int``) to be overlaid and viewed.
+        conf_ids (Optional[list[int]], optional): A list of conformer ids (as ``int``) to be overlaid and viewed.
             If not provided, all embedded conformers will be used.
-        highlight_ids (list[int] | None, optional): It is possible to highlight some of the conformers while greying out
+        highlight_ids (Optional[list[int]], optional): It is possible to highlight some of the conformers while greying out
             other conformers by providing the conformer IDs you want to highlight. Default to None.
         conf_opacity (float, optional): Set the opacity of the non-highlighted conformers and is only used with the highlighting feature.
             the value should be a ``float`` between ``0.0`` to ``1.0``. The default value is ``0.5``.
@@ -69,7 +69,7 @@ def conformer_viewer(
 
 def conformer_animation(
     mol: Chem.Mol,
-    conf_ids: list[int] | None = None,
+    conf_ids: Optional[list[int]] = None,
     **kwargs: Any,
 ) -> py3Dmol.view:
     """Create an animation viewer for viewing the RDKit Molecules.
@@ -79,7 +79,7 @@ def conformer_animation(
 
     Args:
         mol (Chem.Mol): An RDKitMol object with embedded conformers.
-        conf_ids (list[int] | None): A list of IDs of the conformers to view.
+        conf_ids (Optional[list[int]]): A list of IDs of the conformers to view.
             If None (default), all conformers will be shown.
         **kwargs (Any): Additional keyword arguments to be passed to the viewer.
 
