@@ -73,3 +73,13 @@ exclude = ["docs*", "ipython*", "test*"]
 
 [tool.setuptools.dynamic]
 version = { attr = "rdmc.__version__" }
+
+[tool.pydoclint]
+style = "google"
+exclude = 'xyz2mol\.py'
+
+[tool.docformatter]
+wrap-summaries = 88
+wrap-descriptions = 88
+in-place = true
+style = "google"

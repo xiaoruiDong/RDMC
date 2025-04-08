@@ -34,8 +34,7 @@ repos:
         entry: docformatter
         language: python
         types: [python]
-        args:
-          ["--wrap-summaries", "88", "--wrap-descriptions", "88", "--in-place"]
+        args: ["--config", "pyproject.toml"]
         files: ^(rdmc|rdtools)/
         pass_filenames: true
 
@@ -44,7 +43,7 @@ repos:
         entry: pydoclint
         language: python
         types: [python]
-        args: ["--style=google"]
+        args: ["--config", "pyproject.toml"]
         files: ^(rdmc|rdtools)/
         pass_filenames: true
 
