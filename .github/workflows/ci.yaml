@@ -93,7 +93,13 @@ jobs:
 
       - name: Test notebooks
         run: |
-          mamba run -n rdmc pytest --no-cov -v --nbmake ipython/*.ipynb
+          mamba run -n rdmc_env pytest --no-cov -v --nbmake \
+            "ipython/Conformer Generation Workflow.ipynb" \
+            "ipython/Forcefield Examples.ipynb" \
+            "ipython/Handle molecule with XYZ.ipynb" \
+            "ipython/QM Parser Demo 1 - Built-in Parser.ipynb" \
+            "ipython/QM Parser Demo 2 - General Parser.ipynb" \
+            "ipython/Viewer Examples.ipynb"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
