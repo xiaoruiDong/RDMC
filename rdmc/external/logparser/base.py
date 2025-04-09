@@ -995,7 +995,7 @@ class CclibLog(BaseLog):
         """
         scf_e = self.get_scf_energies(converged=converged)
         e_diff = np.diff(scf_e)
-        if np.alltrue(e_diff < 0):
+        if np.all(e_diff < 0):
             # There is no midpoint
             return
         return np.argmax(e_diff) + 1
