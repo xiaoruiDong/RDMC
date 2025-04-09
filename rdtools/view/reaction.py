@@ -65,6 +65,8 @@ def reaction_viewer(
                 viewer_grid[0] * indivial_viewer_size[0],
                 viewer_grid[1] * indivial_viewer_size[1],
             )  # Find out the correct viewer size for the whole grid
+        else:
+            viewer_size = None
         if "linked" in kwargs:
             linked: bool = kwargs.pop("linked")
         else:
