@@ -6,6 +6,7 @@ A module contains functions to write ORCA input files.
 """
 
 from typing import Optional
+
 from rdmc.external.inpwriter._register import register_qm_writer
 from rdmc.external.inpwriter.utils import _get_mult_and_chrg
 
@@ -23,23 +24,24 @@ anhess_dict = {
 }
 
 
-def write_orca_opt(mol,
-                   conf_id: int = 0,
-                   ts: bool = False,
-                   charge: Optional[int] = None,
-                   mult: Optional[int] = None,
-                   memory: int = 1,
-                   nprocs: int = 1,
-                   method: str = "xtb2",
-                   max_iter: int = 100,
-                   coord_type: str = "redundant",
-                   modify_internal: Optional[dict] = None,
-                   scf_level: str = "tight",
-                   opt_level: str = "normal",
-                   hess: Optional[str] = None,
-                   follow_freq: bool = False,
-                   **kwargs,
-                   ) -> str:
+def write_orca_opt(
+    mol,
+    conf_id: int = 0,
+    ts: bool = False,
+    charge: Optional[int] = None,
+    mult: Optional[int] = None,
+    memory: int = 1,
+    nprocs: int = 1,
+    method: str = "xtb2",
+    max_iter: int = 100,
+    coord_type: str = "redundant",
+    modify_internal: Optional[dict] = None,
+    scf_level: str = "tight",
+    opt_level: str = "normal",
+    hess: Optional[str] = None,
+    follow_freq: bool = False,
+    **kwargs,
+) -> str:
     """
     Write the input file for ORCA optimization calculation.
 
@@ -71,17 +73,16 @@ def write_orca_opt(mol,
         hess_str += "    calc_hess true\n    recalc_hess 5"
     else:
         hess_str += hess
-    if (ts or 'true' in hess_str) \
-            and (not anhess_dict.get(method.lower(), True)):
+    if (ts or "true" in hess_str) and (not anhess_dict.get(method.lower(), True)):
         hess_str += "    numhess true\n"
 
     if modify_internal is not None:
         raise NotImplementedError("modify_internal is not implemented yet.")
 
     if follow_freq and anhess_dict.get(method.lower(), True):
-        opt += ' anfreq'
+        opt += " anfreq"
     elif follow_freq:
-        opt += ' numfreq'
+        opt += " numfreq"
 
     # GeomString
     orca_opt_input = f"""! {method} {opt}
@@ -105,15 +106,16 @@ end
     return orca_opt_input
 
 
-def write_orca_freq(mol,
-                    conf_id: int = 0,
-                    charge: Optional[int] = None,
-                    mult: Optional[int] = None,
-                    memory: int = 1,
-                    nprocs: int = 1,
-                    method: str = "xtb2",
-                    **kwargs,
-                    ):
+def write_orca_freq(
+    mol,
+    conf_id: int = 0,
+    charge: Optional[int] = None,
+    mult: Optional[int] = None,
+    memory: int = 1,
+    nprocs: int = 1,
+    method: str = "xtb2",
+    **kwargs,
+):
     """
     Write the input file for ORCA frequency calculation.
 
@@ -136,8 +138,7 @@ def write_orca_freq(mol,
     else:
         freq = "numfreq"
 
-    orca_freq_input = \
-        f"""
+    orca_freq_input = f"""
 ! {method} {freq}
 %maxcore {memory * 1024}
 %pal
@@ -146,26 +147,26 @@ end
 %scf
     convergence tight
 end
-*xyz {charge } {mult}
+*xyz {charge} {mult}
 {mol.ToXYZ(header=False, confId=conf_id)}
 *
 """
     return orca_freq_input
 
 
-def write_orca_irc(mol,
-                   conf_id: int = 0,
-                   charge: Optional[int] = None,
-                   mult: Optional[int] = None,
-                   memory: int = 1,
-                   nprocs: int = 1,
-                   method: str = "xtb2",
-                   direction: str = "both",
-                   max_iter: int = 100,
-                   **kwargs,
-                   ):
-    """
-    Write the input file for ORCA IRC calculation
+def write_orca_irc(
+    mol,
+    conf_id: int = 0,
+    charge: Optional[int] = None,
+    mult: Optional[int] = None,
+    memory: int = 1,
+    nprocs: int = 1,
+    method: str = "xtb2",
+    direction: str = "both",
+    max_iter: int = 100,
+    **kwargs,
+):
+    """Write the input file for ORCA IRC calculation
 
     Args:
         mol (RDKitMol): The molecule to be run
@@ -201,7 +202,7 @@ end
     direction {direction}
     {hess}
     maxiter {max_iter}
-*xyz {charge } {mult}
+*xyz {charge} {mult}
 {mol.ToXYZ(header=False, confId=conf_id)}
 *
 """
@@ -209,12 +210,14 @@ end
 
 
 def write_orca_gsm(method="XTB2", memory=1, nprocs=1):
-
-    if method.upper() in ['AM1', 'PM3']:  # NDO methods cannot be used in parallel runs yet
+    if method.upper() in [
+        "AM1",
+        "PM3",
+    ]:  # NDO methods cannot be used in parallel runs yet
         nprocs = 1
 
     orca_gsm_input = f"""! {method} Engrad TightSCF
-%maxcore {memory*1024}
+%maxcore {memory * 1024}
 %pal
 nprocs {nprocs}
 end

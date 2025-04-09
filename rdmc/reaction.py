@@ -5,22 +5,30 @@
 Module for Reaction
 """
 
-from collections import Counter
 from functools import reduce, wraps
-from itertools import chain, product
+from itertools import product
 from typing import List, Optional, Tuple, Union
 
+from rdkit import Chem
 from rdkit.Chem import rdChemReactions, rdFMCS
-from rdkit.Chem.Draw import rdMolDraw2D
 
 from rdmc import RDKitMol
-from rdmc.mol_compare import is_same_complex, is_equivalent_reaction
-from rdmc.resonance import generate_resonance_structures
-from rdmc.ts import get_all_changing_bonds
+from rdtools.bond import get_all_changing_bonds, get_atoms_in_bonds
+from rdtools.compare import is_same_complex
+from rdtools.featurizer import get_rxn_fingerprint
+from rdtools.mol import get_element_counts
+from rdtools.reaction import draw_reaction, map_h_atoms_in_reaction
+from rdtools.reaction.analysis import (
+    is_num_atoms_balanced,
+    is_element_balanced,
+    is_charge_balanced,
+    is_mult_equal,
+)
+from rdtools.resonance import generate_resonance_structures
+from rdtools.view import reaction_viewer
 
 
 class Reaction:
-
     """
     The Reaction class that stores the reactant, product, and transition state information.
     """
@@ -137,52 +145,42 @@ class Reaction:
         """
         Whether the number of atoms in the reactant(s) and product(s) are balanced.
         """
-        return self.reactant_complex.GetNumAtoms() == self.product_complex.GetNumAtoms()
+        return is_num_atoms_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def reactant_element_count(self) -> dict:
         """
         The element count in the reactant(s) and product(s).
         """
-        return dict(Counter(self.reactant_complex.GetElementSymbols()))
+        return get_element_counts(self.reactant_complex)
 
     @property
     def product_element_count(self) -> dict:
         """
         The element count in the reactant(s) and product(s).
         """
-        return dict(Counter(self.product_complex.GetElementSymbols()))
+        return get_element_counts(self.product_complex)
 
     @property
     def is_element_balanced(self) -> bool:
         """
         Whether the elements in the reactant(s) and product(s) are balanced.
         """
-        if self.is_num_atoms_balanced:
-            return Counter(self.reactant_complex.GetElementSymbols()) == Counter(
-                self.product_complex.GetElementSymbols()
-            )
-        return False
+        return is_element_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def is_charge_balanced(self) -> bool:
         """
         Whether the charge in the reactant(s) and product(s) are balanced.
         """
-        return (
-            self.reactant_complex.GetFormalCharge()
-            == self.product_complex.GetFormalCharge()
-        )
+        return is_charge_balanced(self.reactant_complex, self.product_complex)
 
     @property
     def is_mult_equal(self) -> bool:
         """
         Whether the spin multiplicity in the reactant(s) and product(s) are equal.
         """
-        return (
-            self.reactant_complex.GetSpinMultiplicity()
-            == self.product_complex.GetSpinMultiplicity()
-        )
+        return is_mult_equal(self.reactant_complex, self.product_complex)
 
     @property
     def num_atoms(self) -> bool:
@@ -193,6 +191,16 @@ class Reaction:
             self.is_num_atoms_balanced
         ), "The number of atoms in the reactant(s) and product(s) are not balanced."
         return self.reactant_complex.GetNumAtoms()
+
+    @property
+    def num_heavy_atoms(self) -> bool:
+        """
+        The number of heavy atoms involved in the reaction.
+        """
+        assert (
+            self.is_num_atoms_balanced
+        ), "The number of atoms in the reactant(s) and product(s) are not balanced."
+        return self.reactant_complex.GetNumHeavyAtoms()
 
     @property
     def num_reactants(self) -> int:
@@ -229,8 +237,8 @@ class Reaction:
                     self._broken_bonds,
                     self._changed_bonds,
                 ) = get_all_changing_bonds(
-                    r_mol=self.reactant_complex,
-                    p_mol=self.product_complex,
+                    self.reactant_complex,
+                    self.product_complex,
                 )
                 return func(self, *args, **kwargs)
 
@@ -245,8 +253,8 @@ class Reaction:
             self._broken_bonds,
             self._changed_bonds,
         ) = get_all_changing_bonds(
-            r_mol=self.reactant_complex,
-            p_mol=self.product_complex,
+            rmol=self.reactant_complex,
+            pmol=self.product_complex,
         )
 
     @property
@@ -319,7 +327,7 @@ class Reaction:
         """
         The atoms involved in the bonds broken and formed in the reaction.
         """
-        return list(set(chain(*self.active_bonds)))
+        return get_atoms_in_bonds(self.active_bonds)
 
     @property
     @require_bond_analysis
@@ -327,14 +335,14 @@ class Reaction:
         """
         The atoms involved in the bonds broken and formed in the reaction.
         """
-        return list(set(chain(*self.involved_bonds)))
+        return get_atoms_in_bonds(self.involved_bonds)
 
     @property
     def is_resonance_corrected(self) -> bool:
         """
         Whether the reaction is resonance corrected.
         """
-        return getattr(self, '_is_resonance_corrected', False)
+        return getattr(self, "_is_resonance_corrected", False)
 
     def apply_resonance_correction(
         self,
@@ -349,15 +357,21 @@ class Reaction:
             # TODO: when the reactant and product are changed
             return self
         try:
-            rcps = generate_resonance_structures(
-                self.reactant_complex,
-            )
+            rcps = [
+                RDKitMol(m)
+                for m in generate_resonance_structures(
+                    self.reactant_complex,
+                )
+            ]
         except BaseException:
             rcps = [self.reactant_complex]
         try:
-            pcps = generate_resonance_structures(
-                self.product_complex,
-            )
+            pcps = [
+                RDKitMol(m)
+                for m in generate_resonance_structures(
+                    self.product_complex,
+                )
+            ]
         except BaseException:
             pcps = [self.product_complex]
 
@@ -417,7 +431,7 @@ class Reaction:
         This method assumes that the reactant complex and product complex are atom-mapped
         already.
         """
-        self.ts = self.reactant_complex.AddRedundantBonds(self.formed_bonds)
+        self.ts = self.reactant_complex.AddBonds(self.formed_bonds, inplace=False)
         return self.ts
 
     def _update_ts(self):
@@ -454,10 +468,13 @@ class Reaction:
         """
         Convert the reaction to RDKit ChemicalReaction.
         """
-        return rdChemReactions.ReactionFromSmarts(self.to_smiles(), useSmiles=True)
+        rxn = rdChemReactions.ReactionFromSmarts(self.to_smiles(), useSmiles=True)
+        rxn.Initialize()
+        return rxn
 
     def draw_2d(
         self,
+        figsize: Tuple[int, int] = (800, 300),
         font_scale: float = 1.0,
         highlight_by_reactant: bool = True,
     ) -> str:
@@ -471,27 +488,23 @@ class Reaction:
         Returns:
             str: The SVG string. To display the SVG, use IPython.display.SVG(svg_string).
         """
+        return draw_reaction(
+            self.to_rdkit_reaction(),
+            figsize=figsize,
+            font_scale=font_scale,
+            highlight_by_reactant=highlight_by_reactant,
+        )
 
-        def move_atommaps_to_notes(mol):
-            for atom in mol.GetAtoms():
-                if atom.GetAtomMapNum():
-                    atom.SetProp("atomNote", str(atom.GetAtomMapNum()))
-
-        rxn = self.to_rdkit_reaction()
-
-        # move atom maps to be annotations:
-        for mol in rxn.GetReactants():
-            move_atommaps_to_notes(mol)
-        for mol in rxn.GetProducts():
-            move_atommaps_to_notes(mol)
-
-        d2d = rdMolDraw2D.MolDraw2DSVG(800, 300)
-        d2d.drawOptions().annotationFontScale = font_scale
-        d2d.DrawReaction(rxn, highlightByReactant=highlight_by_reactant)
-
-        d2d.FinishDrawing()
-
-        return d2d.GetDrawingText()
+    def draw_3d(
+        self,
+        **kwargs,
+    ):
+        """
+        Display the reaction in 3D.
+        """
+        return reaction_viewer(
+            self.reactant_complex, self.product_complex, self.ts, **kwargs
+        )
 
     def has_same_reactants(
         self,
@@ -562,6 +575,7 @@ class Reaction:
     def is_equivalent(
         self,
         reaction: "Reaction",
+        resonance: bool = False,
         both_directions: bool = False,
     ) -> bool:
         """
@@ -569,15 +583,147 @@ class Reaction:
 
         Args:
             reaction (Reaction): The reaction to compare.
+            resonance (bool, optional): Whether to consider resonance structures. Defaults to ``False``.
             both_directions (bool, optional): Whether to check both directions. Defaults to ``False``.
 
         Returns:
             bool: Whether the reaction is equivalent to the given reaction.
         """
-        equiv = is_equivalent_reaction(self, reaction)
+        if resonance:
+            cur_rxn = self.apply_resonance_correction(inplace=False)
+            qry_rxn = reaction.apply_resonance_correction(inplace=False)
+        else:
+            cur_rxn = self
+            qry_rxn = reaction
+        equiv = is_equivalent_reaction(cur_rxn, qry_rxn)
 
         if both_directions and not equiv:
-            tmp_reaction = self.get_reverse_reaction()
-            equiv = is_equivalent_reaction(tmp_reaction, reaction)
+            rev_rxn = cur_rxn.get_reverse_reaction()
+            equiv = is_equivalent_reaction(rev_rxn, qry_rxn)
 
         return equiv
+
+    def get_fingerprint(
+        self,
+        mode: str = "REAC_DIFF",
+        fp_type: str = "morgan",
+        count: bool = False,
+        num_bits: int = 2048,
+        **kwargs,
+    ) -> "np.array":
+        """
+        Get the fingerprint of the reaction.
+
+        Args:
+            mode (str): The fingerprint combination of ``'REAC'`` (reactant), ``'PROD'`` (product),
+                ``'DIFF'`` (reactant - product), ``'REVD'`` (product - reactant), ``'SUM'`` (reactant + product),
+                separated by ``'_'``. Defaults to ``REAC_DIFF``, with the fingerprint to be a concatenation of
+                reactant fingerprint and the difference between the reactant complex and the product complex.
+            fp_type (str,  optional): The type of fingerprint to generate. Options are:
+                ``'atom_pair'``, ``'morgan'`` (default), ``'rdkit'``,
+                ``'topological_torsion'``, ``'avalon'``, and ``'maccs'``.
+            num_bits (int, optional): The length of the molecular fingerprint. For a mode with N blocks, the eventual length
+                is ``num_bits * N``. Default is ``2048``. It has no effect on ``'maccs'`` generator.
+            dtype (str, optional): The data type of the output numpy array. Defaults to ``'int32'``.
+        """
+        return get_rxn_fingerprint(
+            self.reactant_complex,
+            self.product_complex,
+            mode=mode,
+            fp_type=fp_type,
+            count=count,
+            num_bits=num_bits,
+            **kwargs,
+        )
+
+    def map_h_atoms(
+        self,
+        add_hs: bool = False,
+    ) -> "Reaction":
+        """
+        Atom map H atoms. This is useful if the reactions are initialized with only heavy atoms
+        or the reactant and product complex only has heavy atom mapped.
+
+        Args:
+            add_hs (bool, optional): If the reaction is initialized with only heavy atoms presenting,
+                set it to ``True``. Defaults to ``False``.
+
+        Returns:
+            Reaction: a new reaction instance with h atoms mapped.
+        """
+        rmol, pmol = self.reactant_complex, self.product_complex
+        if add_hs:
+            rmol, pmol = Chem.AddHs(rmol), Chem.AddHs(pmol)
+        new_rmol, new_pmol = map_h_atoms_in_reaction(rmol, pmol)
+        return Reaction(
+            RDKitMol(new_rmol),
+            RDKitMol(new_pmol),
+        )
+
+
+def is_equivalent_reaction(
+    rxn1: "Reaction",
+    rxn2: "Reaction",
+) -> bool:
+    """
+    If two reactions has equivalent transformation regardless of atom mapping. This can be useful when filtering
+    out duplicate reactions that are generated from different atom mapping.
+
+    Args:
+        rxn1 (Reaction): The first reaction.
+        rxn2 (Reaction): The second reaction.
+
+    Returns:
+        bool: Whether the two reactions are equivalent.
+    """
+    equiv = (
+        (rxn1.num_formed_bonds == rxn2.num_formed_bonds)
+        and (rxn1.num_broken_bonds == rxn2.num_broken_bonds)
+        and (rxn1.num_changed_bonds == rxn2.num_changed_bonds)
+    )
+
+    if not equiv:
+        return False
+
+    match_r, recipe_r = rxn1.reactant_complex.GetMatchAndRecoverRecipe(
+        rxn2.reactant_complex
+    )
+    match_p, recipe_p = rxn1.product_complex.GetMatchAndRecoverRecipe(
+        rxn2.product_complex
+    )
+
+    if not match_r or not match_p:
+        # Reactant and product not matched
+        return False
+
+    elif recipe_r == recipe_p:
+        # Both can match and can be recovered with the same recipe,
+        # meaning we can simply recover the other reaction by swapping the index of these reactions
+        # Note, this also includes the case recipes are empty, meaning things are perfectly matched
+        # and no recovery operation is needed.
+        return True
+
+    elif not recipe_r:
+        # The reactants are perfectly matched
+        # Then we need to see if r/p match after the r/p are renumbered based on the product recipe,
+        new_rxn2_rcomplex = rxn2.reactant_complex.RenumberAtoms(recipe_p)
+        new_rxn2_pcomplex = rxn2.product_complex.RenumberAtoms(recipe_p)
+
+    elif not recipe_p:
+        # The products are perfectly matched
+        # Then we need to see if r/p match after the r/p are renumbered based on the reactant recipe,
+        new_rxn2_rcomplex = rxn2.reactant_complex.RenumberAtoms(recipe_r)
+        new_rxn2_pcomplex = rxn2.product_complex.RenumberAtoms(recipe_r)
+
+    else:
+        # TODO: this condition hasn't been fully investigated and tested yet.
+        # TODO: Usually this will results in a non-equivalent reaction.
+        # TODO: for now, we just renumber based on recipe_r
+        new_rxn2_rcomplex = rxn2.reactant_complex.RenumberAtoms(recipe_r)
+        new_rxn2_pcomplex = rxn2.product_complex.RenumberAtoms(recipe_r)
+
+    # To check if not recipe is the same
+    _, recipe_r = rxn1.reactant_complex.GetMatchAndRecoverRecipe(new_rxn2_rcomplex)
+    _, recipe_p = rxn1.product_complex.GetMatchAndRecoverRecipe(new_rxn2_pcomplex)
+
+    return recipe_r == recipe_p

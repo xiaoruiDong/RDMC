@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
 from typing import Optional, Tuple
+
+
+XTB_GAUSSIAN_PERL_PATH = Path(__file__).parent / 'xtb_gaussian.pl'
 
 
 def _avoid_empty_line(str_block: str,

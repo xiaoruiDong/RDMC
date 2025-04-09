@@ -1,0 +1,18 @@
+src = ["rdmc", "rdtools"]
+exclude = ["rdtools/conversion/xyz2mol.py"]
+target-version = "py312"
+line-length = 88
+fix = true
+preview = true
+
+[lint]
+select = ["D", "E", "F", "I", "DOC"]
+pydocstyle.convention = "google"
+ignore = [
+    "E203", # Whitespace before ':'
+    "E231", # trailing whitespace
+    "E501", # Line too long
+    "D107", # Missing docstring in __init__
+]
+[lint.extend-per-file-ignores]
+"__init__.py" = ["F401"]

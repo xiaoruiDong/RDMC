@@ -1,0 +1,55 @@
+default_language_version:
+  python: python3.12
+
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        entry: ruff format
+        language: python
+        types: [python]
+        pass_filenames: true
+
+      - id: ruff-check
+        name: ruff-check
+        entry: ruff check
+        language: python
+        types: [python]
+        pass_filenames: true
+
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: python
+        types: [python]
+        pass_filenames: true
+
+      - id: docformatter
+        name: docformatter
+        entry: docformatter
+        language: python
+        types: [python]
+        args: ["--config", "pyproject.toml"]
+        files: ^(rdmc|rdtools)/
+        pass_filenames: true
+
+      - id: pydoclint
+        name: pydoclint
+        entry: pydoclint
+        language: python
+        types: [python]
+        args: ["--config", "pyproject.toml"]
+        files: ^(rdmc|rdtools)/
+        pass_filenames: true
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []
