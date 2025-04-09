@@ -5,6 +5,7 @@ from functools import lru_cache
 from itertools import chain
 
 from rdkit import Chem
+from rdkit.Chem import rdqueries
 
 from rdtools.atom import decrement_radical
 from rdtools.bond import BOND_ORDERS, increment_bond_order
@@ -46,7 +47,7 @@ def get_biradical_12_query() -> Chem.Mol:
         Chem.Mol: the structure query.
     """
     query = Chem.MolFromSmarts("*~*")
-    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)  # type: ignore
+    radical_query = rdqueries.NumRadicalElectronsGreaterQueryAtom(0)
     for atom in query.GetAtoms():
         atom.ExpandQuery(radical_query)
     return query
@@ -126,7 +127,7 @@ def get_carbene_query() -> Chem.Mol:
         Chem.Mol: the structure query.
     """
     query = Chem.MolFromSmarts("*")
-    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(1)  # type: ignore
+    radical_query = rdqueries.NumRadicalElectronsGreaterQueryAtom(1)
     query.GetAtomWithIdx(0).ExpandQuery(radical_query)
     return query
 
@@ -186,7 +187,7 @@ def get_radical_site_query() -> Chem.Mol:
         Chem.Mol: the structure query.
     """
     query = Chem.MolFromSmarts("*")
-    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)  # type: ignore
+    radical_query = rdqueries.NumRadicalElectronsGreaterQueryAtom(0)
     query.GetAtomWithIdx(0).ExpandQuery(radical_query)
     return query
 
@@ -208,7 +209,7 @@ def get_biradical_cdb_query(num_segment: int) -> Chem.Mol:
     segment = "-,=*=,#*"
     query_str = "*" + segment * num_segment + "-,=*"
     query = Chem.MolFromSmarts(query_str)
-    radical_query = Chem.rdqueries.NumRadicalElectronsGreaterQueryAtom(0)  # type: ignore
+    radical_query = rdqueries.NumRadicalElectronsGreaterQueryAtom(0)
     query.GetAtomWithIdx(0).ExpandQuery(radical_query)
     query.GetAtomWithIdx(1 + 2 * num_segment).ExpandQuery(radical_query)
     return query
