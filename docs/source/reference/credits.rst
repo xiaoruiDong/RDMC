@@ -5,11 +5,12 @@ Credits
 
 The main contributors are:
 
-- Xiaorui Dong (|github_xiaorui|_ \| |linkedin_xiaorui|_ \| |gs_xiaorui|_),
+- Dr. Xiaorui Dong (|github_xiaorui|_ \| |linkedin_xiaorui|_ \| |gs_xiaorui|_),
 - Dr. Lagnajit Pattanaik (|github_lucky|_ \| |linkedin_lucky|_ \| |gs_lucky|_),
 - Dr. Shih-Cheng Li (|github_shihcheng|_ \| |linkedin_shihcheng|_ \| |gs_shihcheng|_),
 - Dr. Kevin Spiekermann (|github_kevin|_ \| |linkedin_kevin|_ \| |gs_kevin|_),
-- Hao-Wei Pang (|github_haowei|_ \| |linkedin_haowei|_ \| |gs_haowei|_),
+- Dr. Hao-Wei Pang (|github_haowei|_ \| |linkedin_haowei|_ \| |gs_haowei|_),
+- Jonathan W. Zheng (|github_jwz|_ \| |linkedin_jwz|_ \| |gs_jwz|_),
 - Prof. William H. Green (|linkedin_bill|_ \| |gs_bill|_)
 
 
@@ -25,6 +26,8 @@ The main contributors are:
 .. _github_kevin: https://github.com/kspieks
 .. |github_haowei| replace:: |github|
 .. _github_haowei: https://github.com/hwpang
+.. |github_jwz| replace:: |github|
+.. _github_jwz: https://github.com/jonwzheng
 
 .. |linkedin| image:: ../_static/LinkedIn_icon.svg
     :class: social-icon
@@ -38,6 +41,8 @@ The main contributors are:
 .. _linkedin_kevin: https://www.linkedin.com/in/kspiekermann/
 .. |linkedin_haowei| replace:: |linkedin|
 .. _linkedin_haowei: https://www.linkedin.com/in/hao-wei-pang/
+.. |linkedin_jwz| replace:: |linkedin|
+.. _linkedin_jwz: https://www.linkedin.com/in/mitjonathanzheng/
 .. |linkedin_bill| replace:: |linkedin|
 .. _linkedin_bill: https://www.linkedin.com/in/william-green-63a9a218/
 
@@ -53,5 +58,7 @@ The main contributors are:
 .. _gs_kevin: https://scholar.google.com/citations?hl=en&user=qg2LmbgAAAAJ
 .. |gs_haowei| replace:: |google_scholar|
 .. _gs_haowei: https://scholar.google.com/citations?hl=en&user=hmkEmtcAAAAJ
+.. |gs_jwz| replace:: |google_scholar|
+.. _gs_jwz: https://scholar.google.com/citations?user=lVcULZwAAAAJ&hl=en
 .. |gs_bill| replace:: |google_scholar|
 .. _gs_bill: https://scholar.google.com/citations?hl=en&user=PGQTLWwAAAAJ
