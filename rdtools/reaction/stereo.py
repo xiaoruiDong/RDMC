@@ -1,28 +1,30 @@
-import numpy as np
+"""Functions for analyzing stereochemistry of reactions."""
 
+import numpy as np
 from rdkit import Chem
 
 from rdtools.bond import get_all_changing_bonds
 
 
-def is_DA_rxn_endo(
-    rmol: 'RDKitMol',
-    pmol: 'RDKitMol',
-    embed: bool = False
-) -> bool:
-    """
-    Determine the Diels Alder reaction stereo type (endo or exo),
-    based on the provided reactants and products. The two molecules must be atom
-    mapped.
+def is_DA_rxn_endo(rmol: Chem.Mol, pmol: Chem.Mol, embed: bool = False) -> bool:
+    """Determine the Diels Alder reaction stereo type.
+
+    Diels ALder reaction has two stereo types: endo and exo. It can be determined
+    based on the provided reactants and products.
+    The two molecules must be atom mapped.
 
     Args:
-        r_mol (RDKitMol): the reactant complex.
-        p_mol (RDKitMol): the product complex.
+        rmol (Chem.Mol): the reactant complex.
+        pmol (Chem.Mol): the product complex.
         embed (bool): bool. If the DA product has no conformer embedded.
-                            Whether to embed a conformer. Defaults to ``False``.
+            Whether to embed a conformer. Defaults to ``False``.
 
     Returns:
-        bool: if the reaction has an endo configuration
+        bool: if the reaction has an endo configuration.
+
+    Raises:
+        ValueError: If the provided DA product has no geometry available
+            and embed is False.
     """
     frags = Chem.GetMolFrags(rmol)
 
@@ -39,8 +41,8 @@ def is_DA_rxn_endo(
             pmol.EmbedConformer()
         else:
             raise ValueError(
-                'The provided DA product has no geometry available'
-                'Cannot determine the stereotype of the DA reaction'
+                "The provided DA product has no geometry available"
+                "Cannot determine the stereotype of the DA reaction"
             )
 
     # Analyze the reaction center
@@ -50,15 +52,13 @@ def is_DA_rxn_endo(
     # `fbond_atoms` are atoms in the formed bonds
     fbond_atoms = set([atom for bond in formed for atom in bond])
     for bond in changing:
-        bond = set(bond)
-        if len(bond & fbond_atoms) == 0:
+        _bond = set(bond)
+        if len(_bond & fbond_atoms) == 0:
             # Find the single bond in the diene
             dien_sb = list(bond)
-        elif len(bond & fbond_atoms) == 2:
+        elif len(_bond & fbond_atoms) == 2:
             # Find the double bond of the dienophile
             dinp_db = list(bond)
-    # Make `fbond_atoms` for convenience in slicing
-    fbond_atoms = list(fbond_atoms)
 
     # Find the atom indexes in diene and dienophile
     _, dienophile = frags if dien_sb[0] in frags[0] else frags[::-1]
@@ -67,7 +67,7 @@ def is_DA_rxn_endo(
     # Create a reference plane from atoms in formed bonds
     # The reference point is chosen to be the center of the plane
     xyz = pmol.GetConformer().GetPositions()
-    ref_plane = xyz[fbond_atoms]
+    ref_plane = xyz[list(fbond_atoms)]
     ref_pt = ref_plane.mean(axis=0, keepdims=True)
 
     # Use the total least square algorithm to find
@@ -84,7 +84,7 @@ def is_DA_rxn_endo(
     # excluding atom in dienophile's double bond
     atom_scope = [atom for atom in dienophile if atom not in dinp_db]
     mass_vec = [rmol.GetAtomWithIdx(i).GetMass() for i in atom_scope]
-    wt_xyz = (xyz[atom_scope, :] * np.reshape(mass_vec, (-1, 1)))
+    wt_xyz = xyz[atom_scope, :] * np.reshape(mass_vec, (-1, 1))
     dinp_vec = wt_xyz.mean(axis=0, keepdims=True) - ref_pt
 
     # Endo is determined by if dien_vec has the same direction as the dinp_vec

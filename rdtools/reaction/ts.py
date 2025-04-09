@@ -1,19 +1,22 @@
+"""Functions for analyzing transition states of reactions."""
+
 from copy import copy
-from typing import Union, Sequence, List, Tuple
+from typing import Any, Literal, Sequence, Union
 
 import numpy as np
+import numpy.typing as npt
 from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 
 from rdtools.atommap import reset_atom_map_numbers
 from rdtools.bond import (
-    get_formed_and_broken_bonds,
     get_all_changing_bonds,
     get_bonds_as_tuples,
+    get_formed_and_broken_bonds,
 )
-from rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
-from rdtools.conf import add_conformer, set_conformer_coordinates
 from rdtools.compare import is_same_connectivity_mol
+from rdtools.conf import add_conformer, set_conformer_coordinates
+from rdtools.conversion.xyz import mol_from_xyz, mol_to_xyz
 from rdtools.dist import get_adjacency_matrix
 from rdtools.element import get_atom_mass, get_covalent_radius
 from rdtools.fix import saturate_mol
@@ -22,37 +25,35 @@ from rdtools.mol import get_atom_masses, get_element_symbols
 
 
 def guess_rxn_from_normal_mode(
-    xyz: np.ndarray,
+    xyz: npt.NDArray[np.float64],
     symbols: Sequence[str],
-    disp: np.ndarray,
-    amplitude: Union[float, List[float]] = 0.25,
-    weights: Union[bool, np.ndarray] = True,
-    backend: str = "openbabel",
+    disp: npt.NDArray[np.float64],
+    amplitude: Union[int, float, list[float]] = 0.25,
+    weights: Union[bool, npt.NDArray[np.float64]] = True,
+    backend: Literal["openbabel", "xyz2mol"] = "openbabel",
     multiplicity: int = 1,
-) -> Tuple[list, list]:
-    """
-    Guess reaction according to the normal mode analysis for a transition state.
+) -> tuple[list[Chem.Mol], list[Chem.Mol]]:
+    r"""Guess reaction according to the normal mode analysis for a transition state.
 
     Args:
-        xyz (np.ndarray): The xyz coordinates of the transition state. It should have a
-                         size of :math:`N \\times 3`. You can get it from mol.GetConformer().GetPositions().
-        symbols (Sequence): The symbols of each atoms. It should have a size of :math:`N`. You can get the symbols
-                            by rdmc.rdtools.mol.get_element_symbols.
-        disp (np.ndarray): The displacement of the normal mode. It should have a size of
-                           :math:`N \\times 3`. You can get it from cclib.vib
-        amplitude (float or List[float]): The amplitude of the motion. If a single value is provided then the guess
-                           will be unique (if available). ``0.25`` will be the default. Otherwise, a list
-                           can be provided, and all possible results will be returned.
-        weights (bool or np.ndarray): If ``True``, use the :math:`\\sqrt(atom mass)` as a scaling factor to the displacement.
-                                    If ``False``, use the identity weights. If a :math:`N \\times 1` ``np.ndarray`` is provided,
-                                    then use the provided weights. The concern is that light atoms (e.g., H)
-                                    tend to have larger motions than heavier atoms.
-        backend (str): The backend used to perceive xyz. Defaults to ``'openbabel'``.
-        multiplicity (int): The spin multiplicity of the transition states. Defaults to ``1``.
+        xyz (npt.NDArray[np.float64]): The xyz coordinates of the transition state. It should have a
+            size of :math:`N \\times 3`. You can get it from mol.GetConformer().GetPositions().
+        symbols (Sequence[str]): The symbols of each atoms. It should have a size of :math:`N`. You can get the symbols
+            by rdmc.rdtools.mol.get_element_symbols.
+        disp (npt.NDArray[np.float64]): The displacement of the normal mode. It should have a size of
+            :math:`N \\times 3`. You can get it from cclib.vib
+        amplitude (Union[int, float, list[float]], optional): The amplitude of the motion. If a single value is provided then the guess
+            will be unique (if available). ``0.25`` will be the default. Otherwise, a list
+            can be provided, and all possible results will be returned.
+        weights (Union[bool, npt.NDArray[np.float64]]): If ``True``, use the :math:`\\sqrt(atom mass)` as a scaling factor to the displacement.
+            If ``False``, use the identity weights. If a :math:`N \\times 1` ``np.ndarray`` is provided,
+            then use the provided weights. The concern is that light atoms (e.g., H)
+            tend to have larger motions than heavier atoms.
+        backend (Literal["openbabel", "xyz2mol"], optional): The backend used to perceive xyz. Defaults to ``'openbabel'``.
+        multiplicity (int, optional): The spin multiplicity of the transition states. Defaults to ``1``.
 
     Returns:
-        list: Potential reactants
-        list: Potential products
+        tuple[list[Chem.Mol], list[Chem.Mol]]: Potential reactants and products.
     """
     # Generate weights
     if isinstance(weights, bool) and weights:
@@ -63,9 +64,9 @@ def guess_rxn_from_normal_mode(
     elif isinstance(weights, bool) and not weights:
         weights = np.ones((xyz.shape[0], 1))
 
-    mols = {"r": [], "p": []}
-    amplitude = [amplitude] if isinstance(amplitude, float) else amplitude
-    for amp in amplitude:
+    mols: dict[str, list[Chem.Mol]] = {"r": [], "p": []}
+    amplitudes = [amplitude] if isinstance(amplitude, (int, float)) else amplitude
+    for amp in amplitudes:
         xyzs = xyz - amp * disp * weights, xyz + amp * disp * weights
 
         # Create the reactant complex and the product complex
@@ -73,7 +74,7 @@ def guess_rxn_from_normal_mode(
             xyz_str = ""
             for symbol, coords in zip(symbols, xyz_mod):
                 xyz_str += (
-                    f"{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n"
+                    f"{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n"  # type: ignore
                 )
             try:
                 mols[side].append(mol_from_xyz(xyz_str, header=False, backend=backend))
@@ -96,44 +97,45 @@ def guess_rxn_from_normal_mode(
                     prune.append(j)
         mols[side] = [mol for i, mol in enumerate(ms) if i not in prune]
 
-    return tuple(mols.values())
+    return mols["r"], mols["p"]
 
 
 def examine_normal_mode(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-    ts_xyz: np.ndarray,
-    disp: np.ndarray,
-    amplitude: Union[float, List[float]] = 0.25,
-    weights: Union[bool, np.ndarray] = True,
+    ts_xyz: npt.NDArray[np.float64],
+    disp: npt.NDArray[np.float64],
+    amplitude: Union[float, list[float]] = 0.25,
+    weights: Union[bool, npt.NDArray[np.float64]] = True,
     verbose: bool = True,
     as_factors: bool = True,
-):
-    """
-    Examine a TS's imaginary frequency given a known reactant complex and a
-    product complex. The function checks if the bond changes are corresponding
-    to the most significant change in the normal mode. The reactant and product
-    complex need to be atom mapped.
+) -> Union[bool, tuple[float, float, float]]:
+    """Examine a TS's imaginary frequency given known reactant and product complexes.
+
+    The function checks if the bond changes are corresponding to the most
+    significant change in the normal mode. The reactant and product complex need to be
+    atom mapped.
 
     Args:
         rmol (Chem.Mol): the reactant complex.
         pmol (Chem.Mol): the product complex.
-        ts_xyz (np.array): The xyz coordinates of the transition state. It should have a
-                           size of N x 3.
-        disp (np.array): The displacement of the normal mode. It should have a size of
-                         N x 3.
-        amplitude (float): The amplitude of the motion. Defaults to ``0.25``.
-        weights (bool or np.array): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
-                                    If ``False``, use the identity weights. If a N x 1 ``np.array`` is provided, then
-                                    The concern is that light atoms (e.g., H) tend to have larger motions
-                                    than heavier atoms.
-        verbose (bool): If print detailed information. Defaults to ``True``.
-        as_factors (bool): If return the value of factors instead of a judgment.
-                           Defaults to ``False``
+        ts_xyz (npt.NDArray[np.float64]): The xyz coordinates of the transition state. It should have a
+            size of N x 3.
+        disp (npt.NDArray[np.float64]): The displacement of the normal mode. It should have a size of
+            N x 3.
+        amplitude (Union[float, list[float]]): The amplitude of the motion. Defaults to ``0.25``.
+        weights (Union[bool, npt.NDArray[np.float64]], optional): If ``True``, use the sqrt(atom mass) as a scaling factor to the displacement.
+            If ``False``, use the identity weights. If a N x 1 ``npt.NDArray[np.float64]`` is provided, then
+            The concern is that light atoms (e.g., H) tend to have larger motions
+            than heavier atoms.
+        verbose (bool, optional): If print detailed information. Defaults to ``True``.
+        as_factors (bool, optional): If return the value of factors instead of a judgment.
+            Defaults to ``False``
 
     Returns:
-        - bool: ``True`` for pass the examination, ``False`` otherwise.
-        - list: If `as_factors == True`, two factors will be returned.
+        Union[bool, tuple[float, float, float]]: The return value depends on the value of `as_factors`.
+            If `as_factors` is ``True``, return the factors of the bond distance change.
+            Otherwise, return a boolean value.
     """
     # Analyze connectivity
     broken, formed, changed = get_all_changing_bonds(rmol, pmol)
@@ -175,10 +177,12 @@ def examine_normal_mode(
     # other bonds due to the change of atom hybridization or bond conjugation.
     baseline = np.max(other_bonds_diff)
     std = np.std(other_bonds_diff)
-    larger_factor = (np.min(formed_and_broken_diff) - baseline) / std
+    larger_factor = float((np.min(formed_and_broken_diff) - baseline) / std)
     # There might be no bond that only changes its order
-    smaller_factor = (np.min(changed_diff) - baseline) / std if changed_diff else 0
-    other_factor = baseline / std
+    smaller_factor = (
+        float((np.min(changed_diff) - baseline) / std) if changed_diff else 0.0
+    )
+    other_factor = float(baseline / std)
 
     if verbose:
         print(
@@ -203,50 +207,54 @@ def examine_normal_mode(
 def is_valid_habs_ts(
     rmol: Chem.Mol,
     pmol: Chem.Mol,
-    ts_xyz: np.ndarray,
-    disp: np.ndarray,
+    ts_xyz: npt.NDArray[np.float64],
+    disp: npt.NDArray[np.float64],
     single_score: bool = True,
-    **kwargs,
-):
-    """
-    Check if the TS belonging to a H atom abstraction reactions. This function assumes the TS, rmol,
-    and pmol have the same atom order. This may be extended to general substitution reaction.
+    **kwargs: Any,
+) -> Union[bool, tuple[bool, bool]]:
+    """Check if the TS belonging to a H atom abstraction reactions.
+
+    This function assumes the TS, rmol, and pmol have the same atom order. This may be extended to
+    general substitution reaction.
 
     Args:
         rmol (Chem.Mol): the reactant complex.
         pmol (Chem.Mol): the product complex.
-        ts_xyz (np.ndarray): The xyz coordinates of the transition state. It should have a size of
+        ts_xyz (npt.NDArray[np.float64]): The xyz coordinates of the transition state. It should have a size of
             N x 3.
-        disp (np.array): The displacement of the normal mode. It should have a size of
+        disp (npt.NDArray[np.float64]): The displacement of the normal mode. It should have a size of
             N x 3.
-        single_score (bool): If return a single score (True or False). Defaults to ``True``.
+        single_score (bool, optional): If return a single score (True or False). Defaults to ``True``.
             Otherwise, return the check results (True or False) for both side of the reaction
+        **kwargs (Any): Additional arguments for the molecule generation.
 
     Returns:
-        - bool: ``True`` for pass the examination, ``False`` otherwise.
-        - tuple: if the reactant side or the product side pass the examination.
+        Union[bool, tuple[bool, bool]]: The return value depends on the value of `single_score`.
+            If `single_score` is ``True``, return a single score (``True`` or ``False``).
+            Otherwise, return the check results (``True`` or ``False``) for both side of the reaction.
     """
 
     def get_well_xyz(
         atom1_idx: int,
         atom2_idx: int,
-        positions: np.ndarray,
-        freq_modes: np.ndarray,
+        positions: npt.NDArray[np.float64],
+        freq_modes: npt.NDArray[np.float64],
         target: float,
-    ) -> np.ndarray:
-        """
-        Adjust the position by the frequency mode, so that the distance between
-        the H atom and the bonding atom is equal to the target value.
+    ) -> npt.NDArray[np.float64]:
+        """Get the well molecule atom coordinates.
+
+        Adjust the position by the frequency mode, so that the distance between the H
+        atom and the bonding atom is equal to the target value.
 
         Args:
-            atom1_idx: atom index of the H atom or its bonding atom
-            atom2_idx: atom index of the other atom
-            positions: xyz coordinates of the atoms of the TS
-            freq_modes: frequency modes of the imaginary frequency
-            target: target distance between the H atom and the bonding atom
+            atom1_idx (int): atom index of the H atom or its bonding atom
+            atom2_idx (int): atom index of the other atom
+            positions (npt.NDArray[np.float64]): xyz coordinates of the atoms of the TS
+            freq_modes (npt.NDArray[np.float64]): frequency modes of the imaginary frequency
+            target (float): target distance between the H atom and the bonding atom
 
         Returns:
-            np.ndarray: new xyz coordinates of the atoms
+            npt.NDArray[np.float64]: new xyz coordinates of the atoms
         """
         # Knowing the distance between Atom A and B
         # as well as the distance change between Atom A and B due the to the frequency,
@@ -259,14 +267,16 @@ def is_valid_habs_ts(
         magnitude = m1 if abs(m1) < abs(m2) else m2
         return positions - freq_modes * magnitude
 
-    def check_bond_in_mult_three_member_ring(mol: Chem.Mol, bond: tuple):
-        """
-        Check if the bond is in multiple three member rings. Perception algorithm
-        currently is confused at this condition.
+    def check_bond_in_mult_three_member_ring(
+        mol: Chem.Mol, bond: tuple[int, int]
+    ) -> bool:
+        """Check if the bond is in multiple three member rings.
+
+        Perception algorithm currently is confused at this condition.
 
         Args:
             mol (Chem.Mol): the molecule
-            bond (tuple): the bond
+            bond (tuple[int, int]): the bond
 
         Returns:
             bool: ``True`` if the bond is in multiple three member rings, ``False`` otherwise
@@ -284,10 +294,10 @@ def is_valid_habs_ts(
     # Obtain the information of the reaction center
     formed, broken = get_formed_and_broken_bonds(rmol, pmol)
     assert len(formed) == 1 and len(broken) == 1, "The TS should be b1f1."
-    formed, broken = set(formed[0]), set(broken[0])
-    H_idx = (formed & broken).pop()  # the H atom index in both sides
-    atom1_idx = (formed - {H_idx}).pop()  # the radical site in reactant
-    atom2_idx = (broken - {H_idx}).pop()  # the radical site in product
+    _formed, _broken = set(formed[0]), set(broken[0])
+    H_idx = (_formed & _broken).pop()  # the H atom index in both sides
+    atom1_idx = (_formed - {H_idx}).pop()  # the radical site in reactant
+    atom2_idx = (_broken - {H_idx}).pop()  # the radical site in product
     atom1_atomic_num = rmol.GetAtomWithIdx(atom1_idx).GetAtomicNum()
     atom2_atomic_num = pmol.GetAtomWithIdx(atom2_idx).GetAtomicNum()
 
@@ -295,7 +305,7 @@ def is_valid_habs_ts(
     symbols = get_element_symbols(rmol)
     xyz_str = ""
     for symbol, coords in zip(symbols, ts_xyz):
-        xyz_str += f"{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n"
+        xyz_str += f"{symbol:4}{coords[0]:14.8f}{coords[1]:14.8f}{coords[2]:14.8f}\n"  # type: ignore
     mol = mol_from_xyz(
         xyz_str, **{**{"sanitize": False, "header": False}, **kwargs}
     )  # force sanitize to be False for the TS structure
