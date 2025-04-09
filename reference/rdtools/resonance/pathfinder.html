@@ -1,0 +1,1414 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="240x240" href="../../../_static/RDMC_icon_simple_240x240.png" type="image/png">
+    <title>rdtools.resonance.pathfinder &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=188e8da4" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/rdtools/resonance/pathfinder';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="rdtools.resonance.rdkit_backend" href="rdkit_backend.html" />
+    <link rel="prev" title="rdtools.resonance.filtration" href="filtration.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <img src="../../../_static/RDMC_icon.svg" class="logo__image only-dark pst-js-only" alt="RDMC 0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../conversion/index.html">rdtools.conversion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../conversion/smiles.html">rdtools.conversion.smiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conversion/xyz.html">rdtools.conversion.xyz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conversion/rmg.html">rdtools.conversion.rmg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../view/index.html">rdtools.view</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../view/base.html">rdtools.view.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/mol.html">rdtools.view.mol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/conf.html">rdtools.view.conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/freq.html">rdtools.view.freq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/reaction.html">rdtools.view.reaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/interact.html">rdtools.view.interact</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../fix/index.html">rdtools.fix</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../fix/fix.html">rdtools.fix.fix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fix/mult.html">rdtools.fix.mult</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fix/remedy.html">rdtools.fix.remedy</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">rdtools.resonance</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="base.html">rdtools.resonance.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="filtration.html">rdtools.resonance.filtration</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">rdtools.resonance.pathfinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rdkit_backend.html">rdtools.resonance.rdkit_backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rmg_backend.html">rdtools.resonance.rmg_backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reaction/index.html">rdtools.reaction</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reaction/draw.html">rdtools.reaction.draw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reaction/stereo.html">rdtools.reaction.stereo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reaction/ts.html">rdtools.reaction.ts</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../atom.html">rdtools.atom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../atommap.html">rdtools.atommap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bond.html">rdtools.bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../compare.html">rdtools.compare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../conf.html">rdtools.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dist.html">rdtools.dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../element.html">rdtools.element</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../featurizer.html">rdtools.featurizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mol.html">rdtools.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../obabel.html">rdtools.obabel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../torsion.html">rdtools.torsion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">rdtools.utils</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../rdtools.html" class="nav-link">RDtools APIs</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">rdtools.resonance</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">rdtools.resonance.pathfinder</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-rdtools.resonance.pathfinder">
+<span id="rdtools-resonance-pathfinder"></span><h1>rdtools.resonance.pathfinder<a class="headerlink" href="#module-rdtools.resonance.pathfinder" title="Link to this heading">#</a></h1>
+<p>This module includes an RDKit-based rewrite of the RMG resonance pathfinder.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">AdjacentLonePairRadicalPathFinder</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathFinder</span></code></a></p>
+<p>Find Adjacent Lone Pair Radical Path.</p>
+<p>Find all the delocalization paths of lone electron pairs next to the radical
+center. Used to generate resonance isomers in adjacent N/O/S atoms.</p>
+<p>The radical site (atom1) could be either:</p>
+<ul class="simple">
+<li><p><cite>N u1 p0</cite>, eg O=[N.+][:::O-]</p></li>
+<li><p><cite>N u1 p1</cite>, eg R[:NH][:NH.]</p></li>
+<li><p><cite>O u1 p1</cite>, eg [:O.+]=[::N-]; not allowed when adjacent to another O atom</p></li>
+<li><p><cite>O u1 p2</cite>, eg O=N[::O.]; not allowed when adjacent to another O atom</p></li>
+<li><p><cite>S u1 p0</cite>, eg O[S.+]([O-])=O</p></li>
+<li><p><cite>S u1 p1</cite>, eg O[:S.+][O-]</p></li>
+<li><p><cite>S u1 p2</cite>, eg O=N[::S.]</p></li>
+<li><p>any of the above with more than 1 radical where possible</p></li>
+</ul>
+<p>The non-radical site (atom2) could respectively be:</p>
+<ul class="simple">
+<li><p><cite>N u0 p1</cite></p></li>
+<li><p><cite>N u0 p2</cite></p></li>
+<li><p><cite>O u0 p2</cite></p></li>
+<li><p><cite>O u0 p3</cite></p></li>
+<li><p><cite>S u0 p1</cite></p></li>
+<li><p><cite>S u0 p2</cite></p></li>
+<li><p><cite>S u0 p3</cite></p></li>
+</ul>
+<p>(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-’ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] &lt;=&gt; [::O]=[:N.]</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'AdjacentLonePairRadicalPathFinder'</span></em><a class="headerlink" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse_abbr">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'adj_lone_pair_radical'</span></em><a class="headerlink" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse_abbr" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.template">
+<span class="sig-name descname"><span class="pre">template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mol</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;rdkit.Chem.rdchem.Mol</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.template" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.transform">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.transform" title="Link to this definition">#</a></dt>
+<dd><p>Wrapper function to handle resonance structure generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to be processed.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The path of the resonance structure.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Additional arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Optional[Chem.Mol]</strong> – The transformed molecule if successful, otherwise None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.verify">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.verify" title="Link to this definition">#</a></dt>
+<dd><p>Verify that the adjacent lone pair radical delocalization path is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to search.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The adjacent lone pair radical delocalization path to verify.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – True if the adjacent lone pair radical delocalization path is valid, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AllylRadicalPathFinder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">AllylRadicalPathFinder</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathFinder</span></code></a></p>
+<p>A finder to find all the delocalization paths allyl to the radical center.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'AllylRadicalPathFinder'</span></em><a class="headerlink" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse_abbr">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'allyl_radical'</span></em><a class="headerlink" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse_abbr" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AllylRadicalPathFinder.template">
+<span class="sig-name descname"><span class="pre">template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mol</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;rdkit.Chem.rdchem.Mol</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.template" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AllylRadicalPathFinder.transform">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.transform" title="Link to this definition">#</a></dt>
+<dd><p>Wrapper function to handle resonance structure generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to be processed.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The path of the resonance structure.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Additional arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Optional[Chem.Mol]</strong> – The transformed molecule if successful, otherwise None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.AllylRadicalPathFinder.verify">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.verify" title="Link to this definition">#</a></dt>
+<dd><p>Verify that the allyl delocalization path is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to search.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The allyl delocalization path to verify.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – True if the allyl delocalization path is valid, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathFinder</span></code></a></p>
+<p>Find Forward Adjacent Lone Pair Multiple Bond Path.</p>
+<p>Find all the delocalization paths of atom1 that has a lonePair and is bonded by a single/double bond
+e.g., [::NH-]-[CH2+] &lt;=&gt; [:NH]=[CH2].</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.template">
+<span class="sig-name descname"><span class="pre">template</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.template" title="Link to this definition">#</a></dt>
+<dd><p>The SMARTS pattern for the path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chem.Mol</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse" title="Link to this definition">#</a></dt>
+<dd><p>The name of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr" title="Link to this definition">#</a></dt>
+<dd><p>The abbreviation of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">reverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ReverseAdjacentLonePairMultipleBondPathFinder'</span></em><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'reverse_adj_lone_pair_multiple_bond'</span></em><a class="headerlink" href="#id1" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mol</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;rdkit.Chem.rdchem.Mol</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#id2" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.transform">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.transform" title="Link to this definition">#</a></dt>
+<dd><p>Wrapper function to handle resonance structure generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to be processed.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The path of the resonance structure.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Additional arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Optional[Chem.Mol]</strong> – The transformed molecule if successful, otherwise None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.verify">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.verify" title="Link to this definition">#</a></dt>
+<dd><p>Verify that the path is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to search.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The adjacent lone pair multiple bond delocalization path to verify.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathFinder</span></code></a></p>
+<p>Find Forward Adjacent Lone Pair Radical Multiple Bond Path.</p>
+<p>Find all the delocalization paths of atom1 which has a lonePair and is bonded by
+a single/double bond to a radical atom.</p>
+<p>For example: [::N]-[.CH2] &lt;=&gt; [:N.]=[CH2]</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template">
+<span class="sig-name descname"><span class="pre">template</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template" title="Link to this definition">#</a></dt>
+<dd><p>The SMARTS pattern for the path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chem.Mol</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse" title="Link to this definition">#</a></dt>
+<dd><p>The name of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr" title="Link to this definition">#</a></dt>
+<dd><p>The abbreviation of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">reverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ReverseAdjacentLonePairRadicalMultipleBondPathFinder'</span></em><a class="headerlink" href="#id3" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'reverse_adj_lone_pair_radical_multiple_bond'</span></em><a class="headerlink" href="#id4" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mol</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;rdkit.Chem.rdchem.Mol</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#id5" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.transform">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.transform" title="Link to this definition">#</a></dt>
+<dd><p>Wrapper function to handle resonance structure generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to be processed.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The path of the resonance structure.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Additional arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Optional[Chem.Mol]</strong> – The transformed molecule if successful, otherwise None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.verify">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.verify" title="Link to this definition">#</a></dt>
+<dd><p>Verify that the path is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to search.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The ÷÷÷÷≥≥adjacent lone pair multiple bond delocalization path to verify.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">LonePairMultipleBondPathFinder</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathFinder</span></code></a></p>
+<p>Find all the delocalization paths of lone pair and multiple bond.</p>
+<p>A finder to find all the delocalization paths between lone electron pair and
+multiple bond in a 3-atom system.</p>
+<p>Examples:
+- N2O (N#[N+][O-] &lt;-&gt; [N-]=[N+]=O)
+- Azide (N#[N+][NH-] &lt;-&gt; [N-]=[N+]=N &lt;-&gt; [N-2][N+]#[NH+])
+- N#N group on sulfur (O[S-](O)[N+]#N &lt;-&gt; OS(O)=[N+]=[N-] &lt;-&gt; O[S+](O)#[N+][N-2])
+- N[N+]([O-])=O &lt;=&gt; N[N+](=O)[O-], these structures are isomorphic but not identical, this transition is</p>
+<blockquote>
+<div><p>important for correct degeneracy calculations</p>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.template">
+<span class="sig-name descname"><span class="pre">template</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.template" title="Link to this definition">#</a></dt>
+<dd><p>The SMARTS pattern for the path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chem.Mol</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse" title="Link to this definition">#</a></dt>
+<dd><p>The name of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse_abbr">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse_abbr" title="Link to this definition">#</a></dt>
+<dd><p>The abbreviation of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">reverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LonePairMultipleBondPathFinder'</span></em><a class="headerlink" href="#id6" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'lone_pair_multiple_bond'</span></em><a class="headerlink" href="#id7" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mol</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;rdkit.Chem.rdchem.Mol</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#id8" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.transform">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.transform" title="Link to this definition">#</a></dt>
+<dd><p>Wrapper function to handle resonance structure generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to be processed.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The path of the resonance structure.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Additional arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Optional[Chem.Mol]</strong> – The transformed molecule if successful, otherwise None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.verify">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.verify" title="Link to this definition">#</a></dt>
+<dd><p>Verify that the lone pair multiple bond path is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to search.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The lone pair multiple bond path to verify.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – True if the lone pair multiple bond path is valid, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">PathFinder</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for path finders.</p>
+<p>This class provides a template for finding and transforming resonance structures
+in molecules. Subclasses should implement the <cite>verify</cite> and <cite>transform</cite> methods
+to define specific resonance structures.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinder.template">
+<span class="sig-name descname"><span class="pre">template</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinder.template" title="Link to this definition">#</a></dt>
+<dd><p>The SMARTS pattern for the path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chem.Mol</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinder.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinder.reverse" title="Link to this definition">#</a></dt>
+<dd><p>The name of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinder.reverse_abbr">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinder.reverse_abbr" title="Link to this definition">#</a></dt>
+<dd><p>The abbreviation of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinder.find">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinder.find" title="Link to this definition">#</a></dt>
+<dd><p>Find the paths for according to the template of class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to search.</p></li>
+<li><p><strong>max_matches</strong> (<em>int</em>) – The maximum number of matches to return. Defaults to 1000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Set[Tuple[int, …]]</strong> – A set of tuples containing the atom indices of the paths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">reverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#id9" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#id10" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mol</span></em><a class="headerlink" href="#id11" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinder.transform">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinder.transform" title="Link to this definition">#</a></dt>
+<dd><p>Abstract method that transoforms the resonance structures.</p>
+<p>This needs to be implemented by subclasses.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinder.verify">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinder.verify" title="Link to this definition">#</a></dt>
+<dd><p>Abstract method that should return True if the path is valid.</p>
+<p>This needs to be implemented by subclasses.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinderRegistry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">PathFinderRegistry</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinderRegistry" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Registry for path finders.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinderRegistry.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><span class="pre">PathFinder</span></a></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinderRegistry.get" title="Link to this definition">#</a></dt>
+<dd><p>Get a path finder class by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the path finder.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>PathFinder</strong> – The path finder class, or None if not found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.PathFinderRegistry.register">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><span class="pre">PathFinder</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.PathFinderRegistry.register" title="Link to this definition">#</a></dt>
+<dd><p>Decorator to register a path finder class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the path finder.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Callable[…, PathFinder]</strong> – A decorator that registers the class.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathFinder</span></code></a></p>
+<p>Find Reversed Adjacent Lone Pair Multiple Bond Path.</p>
+<p>Find all the delocalization paths of atom1 which either can obtain a lonePair and
+is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]).</p>
+<p>For example, [:NH]=[CH2] &lt;=&gt; [::NH-]-[CH2+]</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.template">
+<span class="sig-name descname"><span class="pre">template</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.template" title="Link to this definition">#</a></dt>
+<dd><p>The SMARTS pattern for the path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chem.Mol</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse" title="Link to this definition">#</a></dt>
+<dd><p>The name of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr" title="Link to this definition">#</a></dt>
+<dd><p>The abbreviation of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">reverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ForwardAdjacentLonePairMultipleBondPathFinder'</span></em><a class="headerlink" href="#id12" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'forward_adj_lone_pair_multiple_bond'</span></em><a class="headerlink" href="#id13" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mol</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;rdkit.Chem.rdchem.Mol</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#id14" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.transform">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.transform" title="Link to this definition">#</a></dt>
+<dd><p>Wrapper function to handle resonance structure generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to be processed.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The path of the resonance structure.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Additional arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Optional[Chem.Mol]</strong> – The transformed molecule if successful, otherwise None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.verify">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.verify" title="Link to this definition">#</a></dt>
+<dd><p>Verify the path is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to search.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The adjacent lone pair multiple bond delocalization path to verify.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#rdtools.resonance.pathfinder.PathFinder" title="rdtools.resonance.pathfinder.PathFinder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathFinder</span></code></a></p>
+<p>Find Reversed Adjacent Lone Pair Radical Multiple Bond Path.</p>
+<p>This is the reverse of the <cite>ForwardAdjacentLonePairRadicalMultipleBondPathFinder</cite>
+class. It is used to find the delocalization paths of atom1 which either can obtain a lonePair,
+has a radical, and is bonded by a double/triple bond.</p>
+<p>For example, [:N.]=[CH2] &lt;=&gt; [::N]-[.CH2]</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template">
+<span class="sig-name descname"><span class="pre">template</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template" title="Link to this definition">#</a></dt>
+<dd><p>The SMARTS pattern for the path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Chem.Mol</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse" title="Link to this definition">#</a></dt>
+<dd><p>The name of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr" title="Link to this definition">#</a></dt>
+<dd><p>The abbreviation of the reverse path finder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">reverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ForwardAdjacentLonePairRadicalMultipleBondPathFinder'</span></em><a class="headerlink" href="#id15" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">reverse_abbr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'forward_adj_lone_pair_radical_multiple_bond'</span></em><a class="headerlink" href="#id16" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mol</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;rdkit.Chem.rdchem.Mol</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#id17" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.transform">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.transform" title="Link to this definition">#</a></dt>
+<dd><p>Wrapper function to handle resonance structure generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to be processed.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The path of the resonance structure.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Additional arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Optional[Chem.Mol]</strong> – The transformed molecule if successful, otherwise None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.verify">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.verify" title="Link to this definition">#</a></dt>
+<dd><p>Verify that the delocalization path is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to search.</p></li>
+<li><p><strong>path</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>) – The adjacent lone pair multiple bond delocalization path to verify.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – True if the adjacent lone pair multiple bond delocalization path is valid, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.pathfinder.transform_pre_and_post_process">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.pathfinder.</span></span><span class="sig-name descname"><span class="pre">transform_pre_and_post_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.pathfinder.transform_pre_and_post_process" title="Link to this definition">#</a></dt>
+<dd><p>A decorator for resonance structure generation functions that require a radical.</p>
+<p>This decorator handles the pre- and post-processing of the input molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fun</strong> (<em>Callable</em><em>[</em><em>...</em><em>, </em><em>Any</em><em>]</em>) – The function to be decorated.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Callable[…, Any]</strong> – The decorated function.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="filtration.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">rdtools.resonance.filtration</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="rdkit_backend.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">rdtools.resonance.rdkit_backend</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.template"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.transform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.template"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.transform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.AllylRadicalPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinder"><code class="docutils literal notranslate"><span class="pre">PathFinder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinder.template"><code class="docutils literal notranslate"><span class="pre">PathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">PathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">PathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinder.find"><code class="docutils literal notranslate"><span class="pre">PathFinder.find()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9"><code class="docutils literal notranslate"><span class="pre">PathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10"><code class="docutils literal notranslate"><span class="pre">PathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">PathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinder.transform"><code class="docutils literal notranslate"><span class="pre">PathFinder.transform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinder.verify"><code class="docutils literal notranslate"><span class="pre">PathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinderRegistry"><code class="docutils literal notranslate"><span class="pre">PathFinderRegistry</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinderRegistry.get"><code class="docutils literal notranslate"><span class="pre">PathFinderRegistry.get()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.PathFinderRegistry.register"><code class="docutils literal notranslate"><span class="pre">PathFinderRegistry.register()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.pathfinder.transform_pre_and_post_process"><code class="docutils literal notranslate"><span class="pre">transform_pre_and_post_process()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/reference/rdtools/resonance/pathfinder.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

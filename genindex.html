@@ -13,27 +13,30 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-
-  
-  <link href="_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=362ab14a" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=188e8da4" />
   
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="_static/documentation_options.js?v=2709fde1"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
@@ -43,6 +46,7 @@
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -50,31 +54,16 @@
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="search.html"
       method="get">
@@ -82,7 +71,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search the docs ..."
          aria-label="Search the docs ..."
          autocomplete="off"
@@ -90,20 +78,27 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
-  </label>
+  </button>
   
   
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="index.html">
@@ -118,7 +113,7 @@
     
     
     <img src="_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
-    <script>document.write(`<img src="_static/RDMC_icon.svg" class="logo__image only-dark" alt="RDMC 0.1 documentation - Home"/>`);</script>
+    <img src="_static/RDMC_icon.svg" class="logo__image only-dark pst-js-only" alt="RDMC 0.1 documentation - Home"/>
   
   
 </a></div>
@@ -130,36 +125,43 @@
     <div class="me-auto navbar-header-items__center">
       
         <div class="navbar-item">
-<nav class="navbar-nav">
+<nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="reference/rdmc.html">
-                        RDMC APIs
-                      </a>
-                    </li>
-                
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
 
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="reference/credits.html">
-                        Credits
-                      </a>
-                    </li>
-                
 
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="reference/cite.html">
-                        How to cite RDMC
-                      </a>
-                    </li>
-                
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/rdtools/rdtools.html">
+    RDtools APIs
+  </a>
+</li>
 
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="reference/license.html">
-                        Licence
-                      </a>
-                    </li>
-                
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/license.html">
+    Licence
+  </a>
+</li>
+
   </ul>
 </nav></div>
       
@@ -171,31 +173,23 @@
         <div class="navbar-item navbar-persistent--container">
           
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
         </div>
       
       
         <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+        <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
         <li class="nav-item">
           
@@ -206,7 +200,7 @@ document.write(`
           
           
           
-          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
@@ -218,15 +212,11 @@ document.write(`
   
     <div class="navbar-persistent--mobile">
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
     </div>
   
 
@@ -243,7 +233,8 @@ document.write(`
       
         
       
-      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
         
 
   
@@ -252,39 +243,49 @@ document.write(`
     
       <div class="sidebar-header-items__center">
         
-          <div class="navbar-item">
-<nav class="navbar-nav">
+          
+          
+            <div class="navbar-item">
+<nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="reference/rdmc.html">
-                        RDMC APIs
-                      </a>
-                    </li>
-                
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
 
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="reference/credits.html">
-                        Credits
-                      </a>
-                    </li>
-                
 
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="reference/cite.html">
-                        How to cite RDMC
-                      </a>
-                    </li>
-                
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/rdtools/rdtools.html">
+    RDtools APIs
+  </a>
+</li>
 
-                    <li class="nav-item">
-                      <a class="nav-link nav-internal" href="reference/license.html">
-                        Licence
-                      </a>
-                    </li>
-                
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="reference/license.html">
+    Licence
+  </a>
+</li>
+
   </ul>
 </nav></div>
+          
         
       </div>
     
@@ -294,17 +295,13 @@ document.write(`
         
           <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
         
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+          <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
         <li class="nav-item">
           
@@ -315,7 +312,7 @@ document.write(`
           
           
           
-          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
@@ -326,20 +323,25 @@ document.write(`
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article"></div>
+              <div class="bd-header-article d-print-none"></div>
               
               
               
@@ -352,6 +354,7 @@ document.write(`
 
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
@@ -359,56 +362,104 @@ document.write(`
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
- | <a href="#K"><strong>K</strong></a>
+ | <a href="#J"><strong>J</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
+ | <a href="#X"><strong>X</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.add_angle_constraint">add_angle_constraint() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.active_atoms">active_atoms (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.active_bonds">active_bonds (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.add_angle_constraint">add_angle_constraint() (rdmc.forcefield.OpenBabelFF method)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.add_angle_constraint">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.add_angle_constraint">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.add_distance_constraint">add_distance_constraint() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.add_bond">add_bond() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.add_bonds">add_bonds() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.add_conformer">add_conformer() (in module rdtools.conf)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.add_distance_constraint">add_distance_constraint() (rdmc.forcefield.OpenBabelFF method)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.add_distance_constraint">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.add_distance_constraint">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.add_torsion_constraint">add_torsion_constraint() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdtools/conversion/xyz.html#rdtools.conversion.xyz.add_header_to_xyz">add_header_to_xyz() (in module rdtools.conversion.xyz)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.add_null_conformer">add_null_conformer() (in module rdtools.conf)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.add_torsion_constraint">add_torsion_constraint() (rdmc.forcefield.OpenBabelFF method)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.add_torsion_constraint">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.add_torsion_constraint">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.AddNullConformer">AddNullConformer() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder">AdjacentLonePairRadicalPathFinder (class in rdtools.resonance.pathfinder)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.AddRedundantBonds">AddRedundantBonds() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.align_reactant_fragments">align_reactant_fragments() (in module rdmc.conformer_generation.align)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.AlignMol">AlignMol() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.all_geometries">all_geometries (rdmc.external.logparser.base.CclibLog property)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.AssignStereochemistryFrom3D">AssignStereochemistryFrom3D() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/fix/remedy.html#rdtools.fix.remedy.RemedyManager.all_remedies">all_remedies (rdtools.fix.remedy.RemedyManager property)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.available_force_field">available_force_field (rdmc.forcefield.OpenBabelFF attribute)</a>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder">AllylRadicalPathFinder (class in rdtools.resonance.pathfinder)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.analyze_molecule">analyze_molecule() (in module rdtools.resonance.rmg_backend)</a>
+</li>
+      <li><a href="reference/rdtools/view/base.html#rdtools.view.base.animation_viewer">animation_viewer() (in module rdtools.view.base)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.apply_resonance_correction">apply_resonance_correction() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.aromaticity_filtration">aromaticity_filtration() (in module rdtools.resonance.filtration)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.auto_update_prop">auto_update_prop() (rdmc.external.logparser.base.BaseLog method)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.available_force_field">available_force_field (rdmc.forcefield.OpenBabelFF attribute)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.available_force_field">(rdmc.forcefield.RDKitFF attribute)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.available_force_field">(rdmc.forcefield.RDKitFF attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.available_solver">available_solver (rdmc.forcefield.OpenBabelFF attribute)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.available_solver">available_solver (rdmc.forcefield.OpenBabelFF attribute)</a>
+</li>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.AvalonGenerator">AvalonGenerator (class in rdtools.featurizer)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdtools/view/base.html#rdtools.view.base.base_viewer">base_viewer() (in module rdtools.view.base)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog">BaseLog (class in rdmc.external.logparser.base)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.bond_analysis">bond_analysis() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.broken_bonds">broken_bonds (rdmc.reaction.Reaction property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -416,15 +467,55 @@ document.write(`
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.CalcRMSD">CalcRMSD() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/external/logparser/utils.html#rdmc.external.logparser.utils.cached_property">cached_property (class in rdmc.external.logparser.utils)</a>
 </li>
-      <li><a href="reference/external/rmg.html#rdmc.external.rmg.check_isomorphic_molecules">check_isomorphic_molecules() (in module rdmc.external.rmg)</a>
+      <li><a href="reference/rdmc/conformer_generation/workflow/metrics.html#rdmc.conformer_generation.metrics.SCGMetric.calculate_entropy">calculate_entropy() (rdmc.conformer_generation.metrics.SCGMetric method)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/metrics.html#rdmc.conformer_generation.metrics.SCGMetric.calculate_metric">calculate_metric() (rdmc.conformer_generation.metrics.SCGMetric method)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/metrics.html#rdmc.conformer_generation.metrics.SCGMetric.calculate_partition_function">calculate_partition_function() (rdmc.conformer_generation.metrics.SCGMetric method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.Canonicalize">Canonicalize() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.cclib_results">cclib_results (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog">CclibLog (class in rdmc.external.logparser.base)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.changed_bonds">changed_bonds (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.charge">charge (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.charge_filtration">charge_filtration() (in module rdtools.resonance.filtration)</a>
+</li>
+      <li><a href="reference/rdmc/external/rmg.html#rdmc.external.rmg.check_isomorphic_molecules">check_isomorphic_molecules() (in module rdmc.external.rmg)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/metrics.html#rdmc.conformer_generation.metrics.SCGMetric.check_metric">check_metric() (rdmc.conformer_generation.metrics.SCGMetric method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.CombineMol">CombineMol() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.clear_atom_map_numbers">clear_atom_map_numbers() (in module rdtools.atommap)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.Copy">Copy() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.clear_rxn_prop">clear_rxn_prop() (in module rdtools.atom)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/utils.html#rdmc.conformer_generation.utils.cluster_confs">cluster_confs() (in module rdmc.conformer_generation.utils)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.combine_mols">combine_mols() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/greedymin.html#rdmc.mathlib.greedymin.compare_to_adjacent_point">compare_to_adjacent_point() (in module rdmc.mathlib.greedymin)</a>
+</li>
+      <li><a href="reference/rdtools/view/conf.html#rdtools.view.conf.conformer_animation">conformer_animation() (in module rdtools.view.conf)</a>
+</li>
+      <li><a href="reference/rdtools/view/conf.html#rdtools.view.conf.conformer_viewer">conformer_viewer() (in module rdtools.view.conf)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/generators.html#rdmc.conformer_generation.generators.ConformerGenerator">ConformerGenerator (class in rdmc.conformer_generation.generators)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/postprocessing/solvation.html#rdmc.conformer_generation.solvation.ConfSolv">ConfSolv (class in rdmc.conformer_generation.solvation)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.converged_geometries">converged_geometries (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/utils.html#rdmc.conformer_generation.utils.convert_log_to_mol">convert_log_to_mol() (in module rdmc.conformer_generation.utils)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.create_conformer">create_conformer() (in module rdtools.conf)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -432,7 +523,25 @@ document.write(`
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/utils.html#rdmc.utils.determine_smallest_atom_index_in_torsion">determine_smallest_atom_index_in_torsion() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.decrement_bond_order">decrement_bond_order() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.decrement_radical">decrement_radical() (in module rdtools.atom)</a>
+</li>
+      <li><a href="reference/rdtools/fix/remedy.html#rdtools.fix.remedy.RemedyManager.default_remedies">default_remedies (rdtools.fix.remedy.RemedyManager property)</a>
+</li>
+      <li><a href="reference/rdtools/torsion.html#rdtools.torsion.determine_smallest_atom_index_in_torsion">determine_smallest_atom_index_in_torsion() (in module rdtools.torsion)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdmc/conformer_generation/utils.html#rdmc.conformer_generation.utils.dict_to_mol">dict_to_mol() (in module rdmc.conformer_generation.utils)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.dist">dist (rdmc.conformer_generation.align.NaiveAlign attribute)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.draw_2d">draw_2d() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.draw_3d">draw_3d() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdtools/reaction/draw.html#rdtools.reaction.draw.draw_reaction">draw_reaction() (in module rdtools.reaction.draw)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -440,15 +549,27 @@ document.write(`
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.EmbedConformer">EmbedConformer() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.edit_conf_by_add_bonds">edit_conf_by_add_bonds() (in module rdtools.conf)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.EmbedMultipleConfs">EmbedMultipleConfs() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer">EditableConformer (class in rdmc.conf)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.embed_conformer">embed_conformer() (in module rdtools.conf)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.embed_multiple_confs">embed_multiple_confs() (in module rdtools.conf)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.EmbedMultipleNullConfs">EmbedMultipleNullConfs() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.embed_multiple_null_confs">embed_multiple_null_confs() (in module rdtools.conf)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.EmbedNullConformer">EmbedNullConformer() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conformer_generation/workflow/generators.html#rdmc.conformer_generation.generators.ConformerGenerator.embed_stable_species">embed_stable_species() (rdmc.conformer_generation.generators.ConformerGenerator method)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/workflow/ts_generators.html#rdmc.conformer_generation.ts_generators.TSConformerGenerator.embed_stable_species">(rdmc.conformer_generation.ts_generators.TSConformerGenerator method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdmc/conformer_generation/postprocessing/solvation.html#rdmc.conformer_generation.solvation.Estimator">Estimator (class in rdmc.conformer_generation.solvation)</a>
+</li>
+      <li><a href="reference/rdtools/reaction/ts.html#rdtools.reaction.ts.examine_normal_mode">examine_normal_mode() (in module rdtools.reaction.ts)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -456,39 +577,69 @@ document.write(`
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/utils.html#rdmc.utils.find_internal_torsions">find_internal_torsions() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/utils.html#rdtools.utils.FakeModule">FakeModule (class in rdtools.utils)</a>
 </li>
-      <li><a href="reference/external/rmg.html#rdmc.external.rmg.find_reaction_family">find_reaction_family() (in module rdmc.external.rmg)</a>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.fast_sanitize">fast_sanitize() (in module rdtools.mol)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.find_ring_torsions">find_ring_torsions() (in module rdmc.utils)</a>
+      <li><a href="reference/rdmc/utils.html#rdmc.utils.filter_kwargs">filter_kwargs() (in module rdmc.utils)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.fix_atom">fix_atom() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.filter_structures">filter_structures() (in module rdtools.resonance.filtration)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.find">find() (rdtools.resonance.pathfinder.PathFinder class method)</a>
+</li>
+      <li><a href="reference/rdtools/torsion.html#rdtools.torsion.find_internal_torsions">find_internal_torsions() (in module rdtools.torsion)</a>
+</li>
+      <li><a href="reference/rdtools/fix/fix.html#rdtools.fix.fix.find_oxonium_bonds">find_oxonium_bonds() (in module rdtools.fix.fix)</a>
+</li>
+      <li><a href="reference/rdmc/external/rmg.html#rdmc.external.rmg.find_reaction_family">find_reaction_family() (in module rdmc.external.rmg)</a>
+</li>
+      <li><a href="reference/rdtools/torsion.html#rdtools.torsion.find_ring_torsions">find_ring_torsions() (in module rdtools.torsion)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.finished">finished (rdmc.external.logparser.base.BaseLog property)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/curvefit.html#rdmc.mathlib.curvefit.FourierSeries1D.fit">fit() (rdmc.mathlib.curvefit.FourierSeries1D method)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.fix_atom">fix_atom() (rdmc.forcefield.OpenBabelFF method)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.fix_atom">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.fix_atom">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/external/rmg.html#rdmc.external.rmg.from_rdkit_mol">from_rdkit_mol() (in module rdmc.external.rmg)</a>
+      <li><a href="reference/rdtools/fix/fix.html#rdtools.fix.fix.fix_mol">fix_mol() (in module rdtools.fix.fix)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromFile">FromFile() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdtools/fix/fix.html#rdtools.fix.fix.fix_mol_by_remedies">fix_mol_by_remedies() (in module rdtools.fix.fix)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromInchi">FromInchi() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdtools/fix/fix.html#rdtools.fix.fix.fix_mol_by_remedy">fix_mol_by_remedy() (in module rdtools.fix.fix)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromMol">FromMol() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdtools/fix/fix.html#rdtools.fix.fix.fix_oxonium_bonds">fix_oxonium_bonds() (in module rdtools.fix.fix)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromOBMol">FromOBMol() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.force_no_implicit">force_no_implicit() (in module rdtools.mol)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromRMGMol">FromRMGMol() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.formed_bonds">formed_bonds (rdmc.reaction.Reaction property)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromSDF">FromSDF() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder">ForwardAdjacentLonePairMultipleBondPathFinder (class in rdtools.resonance.pathfinder)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromSmarts">FromSmarts() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder">ForwardAdjacentLonePairRadicalMultipleBondPathFinder (class in rdtools.resonance.pathfinder)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromSmiles">FromSmiles() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdmc/mathlib/curvefit.html#rdmc.mathlib.curvefit.FourierSeries1D">FourierSeries1D (class in rdmc.mathlib.curvefit)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.FromXYZ">FromXYZ() (rdmc.mol.RDKitMol class method)</a>
+      <li><a href="reference/rdtools/view/freq.html#rdtools.view.freq.freq_viewer">freq_viewer() (in module rdtools.view.freq)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.freqs">freqs (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.from_complex">from_complex() (rdmc.conformer_generation.align.NaiveAlign class method)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.from_r_and_p_complex">from_r_and_p_complex() (rdmc.conformer_generation.align.NaiveAlign class method)</a>
+</li>
+      <li><a href="reference/rdmc/external/rmg.html#rdmc.external.rmg.from_rdkit_mol">from_rdkit_mol() (in module rdmc.external.rmg)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.from_reactant_and_product_smiles">from_reactant_and_product_smiles() (rdmc.reaction.Reaction class method)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.from_reactants">from_reactants() (rdmc.conformer_generation.align.NaiveAlign class method)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.from_reaction_smiles">from_reaction_smiles() (rdmc.reaction.Reaction class method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -496,107 +647,339 @@ document.write(`
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/external/rmg.html#rdmc.external.rmg.generate_reaction_complex">generate_reaction_complex() (in module rdmc.external.rmg)</a>
+      <li><a href="reference/rdmc/external/logparser/gaussian.html#rdmc.external.logparser.gaussian.GaussianLog">GaussianLog (class in rdmc.external.logparser.gaussian)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.generate_vdw_mat">generate_vdw_mat() (in module rdmc.mol)</a>
+      <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_aromatic_resonance_structure">generate_aromatic_resonance_structure() (in module rdtools.resonance.rmg_backend)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.get_atom_masses">get_atom_masses() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_aryne_resonance_structures">generate_aryne_resonance_structures() (in module rdtools.resonance.rmg_backend)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.get_closed_shell_by_add_hs">get_closed_shell_by_add_hs() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/resonance/rdkit_backend.html#rdtools.resonance.rdkit_backend.generate_charged_resonance_structures">generate_charged_resonance_structures() (in module rdtools.resonance.rdkit_backend)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.get_closed_shell_cheap">get_closed_shell_cheap() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_clar_structures">generate_clar_structures() (in module rdtools.resonance.rmg_backend)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.get_conformer_energies">get_conformer_energies() (rdmc.forcefield.RDKitFF method)</a>
+      <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_kekule_structure">generate_kekule_structure() (in module rdtools.resonance.rmg_backend)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.get_element_symbols">get_element_symbols() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_optimal_aromatic_resonance_structures">generate_optimal_aromatic_resonance_structures() (in module rdtools.resonance.rmg_backend)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.get_energy">get_energy() (rdmc.forcefield.RDKitFF method)</a>
+      <li><a href="reference/rdtools/resonance/rdkit_backend.html#rdtools.resonance.rdkit_backend.generate_radical_resonance_structures">generate_radical_resonance_structures() (in module rdtools.resonance.rdkit_backend)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.get_internal_coords">get_internal_coords() (in module rdmc.utils)</a>
+      <li><a href="reference/rdmc/external/rmg.html#rdmc.external.rmg.generate_reaction_complex">generate_reaction_complex() (in module rdmc.external.rmg)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.get_obmol_coords">get_obmol_coords() (in module rdmc.utils)</a>
-</li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.get_optimized_mol">get_optimized_mol() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdtools/resonance/base.html#rdtools.resonance.base.generate_resonance_structures">generate_resonance_structures() (in module rdtools.resonance.base)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.get_optimized_mol">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdtools/resonance/rdkit_backend.html#rdtools.resonance.rdkit_backend.generate_resonance_structures">(in module rdtools.resonance.rdkit_backend)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_resonance_structures">(in module rdtools.resonance.rmg_backend)</a>
 </li>
       </ul></li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.get_roo_radical_atoms">get_roo_radical_atoms() (in module rdmc.forcefield)</a>
+      <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_resonance_structures_with_pathfinder">generate_resonance_structures_with_pathfinder() (in module rdtools.resonance.rmg_backend)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.get_substruct_match_and_recover_recipe">get_substruct_match_and_recover_recipe() (in module rdmc.utils)</a>
+      <li><a href="reference/rdmc/conformer_generation/workflow/ts_generators.html#rdmc.conformer_generation.ts_generators.TSConformerGenerator.generate_seed_mols">generate_seed_mols() (rdmc.conformer_generation.ts_generators.TSConformerGenerator method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetAdjacencyMatrix">GetAdjacencyMatrix() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/resonance/base.html#rdtools.resonance.base.ResonanceAlgoRegistry.get">get() (rdtools.resonance.base.ResonanceAlgoRegistry class method)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinderRegistry.get">(rdtools.resonance.pathfinder.PathFinderRegistry class method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetAllConformers">GetAllConformers() (rdmc.mol.RDKitMol method)</a>
+      </ul></li>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.get_adjacency_matrix">get_adjacency_matrix() (in module rdtools.dist)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetAtomicNumbers">GetAtomicNumbers() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.get_alignment_coords">get_alignment_coords() (rdmc.conformer_generation.align.NaiveAlign method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetAtomMapNumbers">GetAtomMapNumbers() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.get_all_changing_bonds">get_all_changing_bonds() (in module rdtools.bond)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetAtomMasses">GetAtomMasses() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.get_angle_deg">get_angle_deg() (in module rdtools.conf)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetAtoms">GetAtoms() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.get_atom_map_numbers">get_atom_map_numbers() (in module rdtools.atommap)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetBestAlign">GetBestAlign() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.get_atom_mass">get_atom_mass() (in module rdtools.atom)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/element.html#rdtools.element.get_atom_mass">(in module rdtools.element)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_atom_masses">get_atom_masses() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdtools/element.html#rdtools.element.get_atomic_num">get_atomic_num() (in module rdtools.element)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_atomic_nums">get_atomic_nums() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.get_atoms_in_bonds">get_atoms_in_bonds() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_best_opt_geom">get_best_opt_geom() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdtools/fix/mult.html#rdtools.fix.mult.get_biradical_12_query">get_biradical_12_query() (in module rdtools.fix.mult)</a>
+</li>
+      <li><a href="reference/rdtools/fix/mult.html#rdtools.fix.mult.get_biradical_cdb_query">get_biradical_cdb_query() (in module rdtools.fix.mult)</a>
+</li>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.get_bond_distance_matrix">get_bond_distance_matrix() (in module rdtools.dist)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.get_bond_length">get_bond_length() (in module rdtools.conf)</a>
+</li>
+      <li><a href="reference/rdtools/element.html#rdtools.element.get_bond_radius">get_bond_radius() (in module rdtools.element)</a>
+</li>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.get_bonds_as_tuples">get_bonds_as_tuples() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.get_bonds_with_BO_changed">get_bonds_with_BO_changed() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.get_broken_bonds">get_broken_bonds() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdtools/fix/mult.html#rdtools.fix.mult.get_carbene_query">get_carbene_query() (in module rdtools.fix.mult)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/geom.html#rdmc.mathlib.geom.get_centroid">get_centroid() (in module rdmc.mathlib.geom)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.get_charge_distance">get_charge_distance() (in module rdtools.resonance.filtration)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.get_charge_span_list">get_charge_span_list() (in module rdtools.resonance.filtration)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_closed_shell_explicit">get_closed_shell_explicit() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_closed_shell_implicit">get_closed_shell_implicit() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_closed_shell_mol">get_closed_shell_mol() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.get_colliding_atoms">get_colliding_atoms() (in module rdtools.dist)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/utils.html#rdmc.conformer_generation.utils.get_conf_failure_mode">get_conf_failure_mode() (in module rdmc.conformer_generation.utils)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.get_conformer_energies">get_conformer_energies() (rdmc.forcefield.RDKitFF method)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/sampler.html#rdmc.conformer_generation.sampler.TorsionalSampler.get_conformers_by_change_torsions">get_conformers_by_change_torsions() (rdmc.conformer_generation.sampler.TorsionalSampler method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_converged_geom_idx">get_converged_geom_idx() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.get_covalent_distance_matrix">get_covalent_distance_matrix() (in module rdtools.dist)</a>
+</li>
+      <li><a href="reference/rdtools/element.html#rdtools.element.get_covalent_radius">get_covalent_radius() (in module rdtools.element)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_dehydrogenated_mol">get_dehydrogenated_mol() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.get_distance_matrix">get_distance_matrix() (in module rdtools.dist)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/geom.html#rdmc.mathlib.geom.get_distances_from_a_point">get_distances_from_a_point() (in module rdmc.mathlib.geom)</a>
+</li>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.get_electronegativity">get_electronegativity() (in module rdtools.atom)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/element.html#rdtools.element.get_electronegativity">(in module rdtools.element)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_element_counts">get_element_counts() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.get_element_symbol">get_element_symbol() (in module rdtools.atom)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/element.html#rdtools.element.get_element_symbol">(in module rdtools.element)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_element_symbols">get_element_symbols() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/sampler.html#rdmc.conformer_generation.sampler.get_energy">get_energy() (in module rdmc.conformer_generation.sampler)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/mathlib/greedymin.html#rdmc.mathlib.greedymin.get_energy">(in module rdmc.mathlib.greedymin)</a>
+</li>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.get_energy">(rdmc.forcefield.RDKitFF method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/utils.html#rdtools.utils.get_fake_module">get_fake_module() (in module rdtools.utils)</a>
+</li>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.get_fingerprint">get_fingerprint() (in module rdtools.featurizer)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.get_fingerprint">(rdmc.reaction.Reaction method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.get_fingerprint_generator">get_fingerprint_generator() (in module rdtools.featurizer)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_formal_charge">get_formal_charge() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.get_formed_and_broken_bonds">get_formed_and_broken_bonds() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.get_formed_bonds">get_formed_bonds() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.get_fragment_radii">get_fragment_radii() (rdmc.conformer_generation.align.NaiveAlign method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetBondsAsTuples">GetBondsAsTuples() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conformer_generation/utils.html#rdmc.conformer_generation.utils.get_frames_from_freq">get_frames_from_freq() (in module rdmc.conformer_generation.utils)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetClosedShellMol">GetClosedShellMol() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_heavy_atoms">get_heavy_atoms() (in module rdtools.mol)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetConformer">GetConformer() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_heavy_hydrogen_query">get_heavy_hydrogen_query() (in module rdtools.mol)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetConformers">GetConformers() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_irc_midpoint">get_irc_midpoint() (rdmc.external.logparser.base.CclibLog method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetDistanceMatrix">GetDistanceMatrix() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.get_lone_pair">get_lone_pair() (in module rdtools.atom)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetElementCounts">GetElementCounts() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_lowest_e_geometry">get_lowest_e_geometry() (rdmc.external.logparser.base.CclibLog method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetElementSymbols">GetElementSymbols() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/mathlib/geom.html#rdmc.mathlib.geom.get_mass_center">get_mass_center() (in module rdmc.mathlib.geom)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetFingerprint">GetFingerprint() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/compare.html#rdtools.compare.get_match_and_recover_recipe">get_match_and_recover_recipe() (in module rdtools.compare)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetFormalCharge">GetFormalCharge() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/mathlib/geom.html#rdmc.mathlib.geom.get_max_distance_from_center">get_max_distance_from_center() (in module rdmc.mathlib.geom)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetHeavyAtoms">GetHeavyAtoms() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.get_missing_bonds">get_missing_bonds() (in module rdtools.dist)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetInternalCoordinates">GetInternalCoordinates() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_mol">get_mol() (rdmc.external.logparser.base.CclibLog method)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/qchem.html#rdmc.external.logparser.qchem.QChemLog.get_mol">(rdmc.external.logparser.qchem.QChemLog method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetMolFrags">GetMolFrags() (rdmc.mol.RDKitMol method)</a>
+      </ul></li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_mol_weight">get_mol_weight() (in module rdtools.mol)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetPositions">GetPositions() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.get_n_outer_electrons">get_n_outer_electrons() (in module rdtools.atom)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/element.html#rdtools.element.get_n_outer_electrons">(in module rdtools.element)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSpinMultiplicity">GetSpinMultiplicity() (rdmc.mol.RDKitMol method)</a>
+      </ul></li>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.get_num_occupied_orbitals">get_num_occupied_orbitals() (in module rdtools.atom)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSubstructMatch">GetSubstructMatch() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/obabel.html#rdtools.obabel.get_obmol_coords">get_obmol_coords() (in module rdtools.obabel)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSubstructMatchAndRecipe">GetSubstructMatchAndRecipe() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.get_octet_deviation">get_octet_deviation() (in module rdtools.resonance.filtration)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSubstructMatches">GetSubstructMatches() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.get_octet_deviation_list">get_octet_deviation_list() (in module rdtools.resonance.filtration)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetSymmSSSR">GetSymmSSSR() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.get_optimized_mol">get_optimized_mol() (rdmc.forcefield.OpenBabelFF method)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.get_optimized_mol">(rdmc.forcefield.RDKitFF method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetTorsionalModes">GetTorsionalModes() (rdmc.mol.RDKitMol method)</a>
+      </ul></li>
+      <li><a href="reference/rdtools/fix/remedy.html#rdtools.fix.remedy.get_oxonium_remedies">get_oxonium_remedies() (in module rdtools.fix.remedy)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetTorsionTops">GetTorsionTops() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/fix/mult.html#rdtools.fix.mult.get_radical_site_query">get_radical_site_query() (in module rdtools.fix.mult)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.GetVdwMatrix">GetVdwMatrix() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.get_reacting_atoms_in_fragments">get_reacting_atoms_in_fragments() (rdmc.conformer_generation.align.NaiveAlign method)</a>
 </li>
+      <li><a href="reference/rdtools/fix/remedy.html#rdtools.fix.remedy.get_recommend_remedies">get_recommend_remedies() (in module rdtools.fix.remedy)</a>
+</li>
+      <li><a href="reference/rdtools/fix/remedy.html#rdtools.fix.remedy.RemedyManager.get_remedies">get_remedies() (rdtools.fix.remedy.RemedyManager method)</a>
+</li>
+      <li><a href="reference/rdtools/compare.html#rdtools.compare.get_resonance_structure_match">get_resonance_structure_match() (in module rdtools.compare)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.get_reverse_reaction">get_reverse_reaction() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdtools/fix/remedy.html#rdtools.fix.remedy.get_ring_remedies">get_ring_remedies() (in module rdtools.fix.remedy)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.get_roo_radical_atoms">get_roo_radical_atoms() (in module rdmc.forcefield)</a>
+</li>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.get_rxn_fingerprint">get_rxn_fingerprint() (in module rdtools.featurizer)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_scannames">get_scannames() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_scanparams">get_scanparams() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_scf_energies">get_scf_energies() (rdmc.external.logparser.base.CclibLog method)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/qchem.html#rdmc.external.logparser.qchem.QChemLog.get_scf_energies">(rdmc.external.logparser.qchem.QChemLog method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/sampler.html#rdmc.conformer_generation.sampler.get_separable_angle_list">get_separable_angle_list() (in module rdmc.conformer_generation.sampler)</a>
+</li>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.get_shortest_path">get_shortest_path() (in module rdtools.dist)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/smiles.html#rdtools.conversion.smiles.get_smiles_parser_params">get_smiles_parser_params() (in module rdtools.conversion.smiles)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_spin_multiplicity">get_spin_multiplicity() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/greedymin.html#rdmc.mathlib.greedymin.get_step_to_adjacent_points">get_step_to_adjacent_points() (in module rdmc.mathlib.greedymin)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.get_torsion_deg">get_torsion_deg() (in module rdtools.conf)</a>
+</li>
+      <li><a href="reference/rdtools/torsion.html#rdtools.torsion.get_torsion_tops">get_torsion_tops() (in module rdtools.torsion)</a>
+</li>
+      <li><a href="reference/rdtools/torsion.html#rdtools.torsion.get_torsional_modes">get_torsional_modes() (in module rdtools.torsion)</a>
+</li>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.get_total_bond_order">get_total_bond_order() (in module rdtools.atom)</a>
+</li>
+      <li><a href="reference/rdtools/compare.html#rdtools.compare.get_unique_mols">get_unique_mols() (in module rdtools.compare)</a>
+</li>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.get_vdw_distance_matrix">get_vdw_distance_matrix() (in module rdtools.dist)</a>
+</li>
+      <li><a href="reference/rdtools/element.html#rdtools.element.get_vdw_radius">get_vdw_radius() (in module rdtools.element)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/geom.html#rdmc.mathlib.geom.get_weighted_center">get_weighted_center() (in module rdmc.mathlib.geom)</a>
+</li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.get_writable_copy">get_writable_copy() (in module rdtools.mol)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.get_xyzs">get_xyzs() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdtools/fix/remedy.html#rdtools.fix.remedy.get_zwitterion_remedies">get_zwitterion_remedies() (in module rdtools.fix.remedy)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetAllTorsionsDeg">GetAllTorsionsDeg() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetAngleDeg">GetAngleDeg() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetAngleRad">GetAngleRad() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.GetAvalonGenerator">GetAvalonGenerator() (in module rdtools.featurizer)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetBondLength">GetBondLength() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetCentroid">GetCentroid() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.AvalonGenerator.GetCountFingerprintAsNumPy">GetCountFingerprintAsNumPy() (rdtools.featurizer.AvalonGenerator static method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetDistanceMatrix">GetDistanceMatrix() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.AvalonGenerator.GetFingerprintAsNumPy">GetFingerprintAsNumPy() (rdtools.featurizer.AvalonGenerator static method)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.MACCSGenerator.GetFingerprintAsNumPy">(rdtools.featurizer.MACCSGenerator static method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.GetMACCSGenerator">GetMACCSGenerator() (in module rdtools.featurizer)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetOwningMol">GetOwningMol() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetPrincipalAxesAndMoments">GetPrincipalAxesAndMoments() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetTorsionalModes">GetTorsionalModes() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.GetTorsionDeg">GetTorsionDeg() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdtools/view/base.html#rdtools.view.base.grid_viewer">grid_viewer() (in module rdtools.view.base)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.guess_rxn_from_irc">guess_rxn_from_irc() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdtools/reaction/ts.html#rdtools.reaction.ts.guess_rxn_from_normal_mode">guess_rxn_from_normal_mode() (in module rdtools.reaction.ts)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.guess_rxn_from_normal_mode">(rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.HasCollidingAtoms">HasCollidingAtoms() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.has_atom_map_numbers">has_atom_map_numbers() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdtools/dist.html#rdtools.dist.has_colliding_atoms">has_colliding_atoms() (in module rdtools.dist)</a>
+</li>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.has_empty_orbitals">has_empty_orbitals() (in module rdtools.atom)</a>
+</li>
+      <li><a href="reference/rdtools/compare.html#rdtools.compare.has_matched_mol">has_matched_mol() (in module rdtools.compare)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.HasSameConnectivity">HasSameConnectivity() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.has_same_products">has_same_products() (rdmc.reaction.Reaction method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.HasSameConnectivityConformer">HasSameConnectivityConformer() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.has_same_reactants">has_same_reactants() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.has_unique_sites">has_unique_sites() (in module rdtools.resonance.filtration)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.HasCollidingAtoms">HasCollidingAtoms() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.HasOwningMol">HasOwningMol() (rdmc.conf.EditableConformer method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -604,19 +987,75 @@ document.write(`
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.is_optimizable">is_optimizable() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdtools/bond.html#rdtools.bond.increment_bond_order">increment_bond_order() (in module rdtools.bond)</a>
+</li>
+      <li><a href="reference/rdtools/atom.html#rdtools.atom.increment_radical">increment_radical() (in module rdtools.atom)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.init_reactant_product">init_reactant_product() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.initial_geometry">initial_geometry (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.initialize_align">initialize_align() (rdmc.conformer_generation.align.NaiveAlign method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.interact_freq">interact_freq() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.interact_irc">interact_irc() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.interact_opt">interact_opt() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.interact_scan">interact_scan() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdtools/view/interact.html#rdtools.view.interact.interactive_conformer_viewer">interactive_conformer_viewer() (in module rdtools.view.interact)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.involved_atoms">involved_atoms (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.involved_bonds">involved_bonds (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.is_charge_balanced">is_charge_balanced (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdtools/reaction/stereo.html#rdtools.reaction.stereo.is_DA_rxn_endo">is_DA_rxn_endo() (in module rdtools.reaction.stereo)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.is_element_balanced">is_element_balanced (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.is_equivalent">is_equivalent() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.is_equivalent_reaction">is_equivalent_reaction() (in module rdmc.reaction)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.is_mult_equal">is_mult_equal (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.is_num_atoms_balanced">is_num_atoms_balanced (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.is_optimizable">is_optimizable() (rdmc.forcefield.OpenBabelFF method)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.is_optimizable">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.is_optimizable">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.is_resonance_corrected">is_resonance_corrected (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdtools/compare.html#rdtools.compare.is_same_complex">is_same_complex() (in module rdtools.compare)</a>
+</li>
+      <li><a href="reference/rdtools/compare.html#rdtools.compare.is_same_connectivity_conf">is_same_connectivity_conf() (in module rdtools.compare)</a>
+</li>
+      <li><a href="reference/rdtools/compare.html#rdtools.compare.is_same_connectivity_mol">is_same_connectivity_mol() (in module rdtools.compare)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.is_same_products">is_same_products() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.is_same_reactants">is_same_reactants() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.is_ts">is_ts (rdmc.external.logparser.base.BaseLog property)</a>
+</li>
+      <li><a href="reference/rdtools/reaction/ts.html#rdtools.reaction.ts.is_valid_habs_ts">is_valid_habs_ts() (in module rdtools.reaction.ts)</a>
+</li>
   </ul></td>
 </tr></table>
 
-<h2 id="K">K</h2>
+<h2 id="J">J</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.Kekulize">Kekulize() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.job_type">job_type (rdmc.external.logparser.base.BaseLog property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -624,11 +1063,13 @@ document.write(`
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/external/rmg.html#rdmc.external.rmg.load_rmg_database">load_rmg_database() (in module rdmc.external.rmg)</a>
+      <li><a href="reference/rdmc/external/rmg.html#rdmc.external.rmg.load_rmg_database">load_rmg_database() (in module rdmc.external.rmg)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/external/rmg.html#rdmc.external.rmg.load_rxn_family_database">load_rxn_family_database() (in module rdmc.external.rmg)</a>
+      <li><a href="reference/rdmc/external/rmg.html#rdmc.external.rmg.load_rxn_family_database">load_rxn_family_database() (in module rdmc.external.rmg)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder">LonePairMultipleBondPathFinder (class in rdtools.resonance.pathfinder)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -636,62 +1077,276 @@ document.write(`
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.make_optimizable">make_optimizable() (rdmc.forcefield.RDKitFF method)</a>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.MACCSGenerator">MACCSGenerator (class in rdtools.featurizer)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.make_optimizable">make_optimizable() (rdmc.forcefield.RDKitFF method)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.make_ts">make_ts() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.map_h_atoms">map_h_atoms() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.map_h_atoms_in_reaction">map_h_atoms_in_reaction() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/curvefit.html#rdmc.mathlib.curvefit.FourierSeries1D.max_num_term">max_num_term (rdmc.mathlib.curvefit.FourierSeries1D attribute)</a>
 </li>
       <li>
     module
 
       <ul>
-        <li><a href="reference/external/index.html#module-rdmc.external">rdmc.external</a>
+        <li><a href="reference/rdmc/rdmc.html#module-rdmc">rdmc</a>
 </li>
-        <li><a href="reference/external/inpwriter/index.html#module-rdmc.external.inpwriter">rdmc.external.inpwriter</a>
+        <li><a href="reference/rdmc/conf.html#module-rdmc.conf">rdmc.conf</a>
 </li>
-        <li><a href="reference/external/inpwriter/gaussian.html#module-rdmc.external.inpwriter.gaussian">rdmc.external.inpwriter.gaussian</a>
+        <li><a href="reference/rdmc/conformer_generation/index.html#module-rdmc.conformer_generation">rdmc.conformer_generation</a>
 </li>
-        <li><a href="reference/external/inpwriter/orca.html#module-rdmc.external.inpwriter.orca">rdmc.external.inpwriter.orca</a>
+        <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#module-rdmc.conformer_generation.align">rdmc.conformer_generation.align</a>
 </li>
-        <li><a href="reference/external/inpwriter/qchem.html#module-rdmc.external.inpwriter.qchem">rdmc.external.inpwriter.qchem</a>
+        <li><a href="reference/rdmc/conformer_generation/embedding_geometries/embedders.html#module-rdmc.conformer_generation.embedders">rdmc.conformer_generation.embedders</a>
 </li>
-        <li><a href="reference/external/inpwriter/utils.html#module-rdmc.external.inpwriter.utils">rdmc.external.inpwriter.utils</a>
+        <li><a href="reference/rdmc/conformer_generation/workflow/generators.html#module-rdmc.conformer_generation.generators">rdmc.conformer_generation.generators</a>
 </li>
-        <li><a href="reference/external/rmg.html#module-rdmc.external.rmg">rdmc.external.rmg</a>
+        <li><a href="reference/rdmc/conformer_generation/workflow/metrics.html#module-rdmc.conformer_generation.metrics">rdmc.conformer_generation.metrics</a>
 </li>
-        <li><a href="reference/forcefield.html#module-rdmc.forcefield">rdmc.forcefield</a>
+        <li><a href="reference/rdmc/conformer_generation/geometry_optimization/optimizers.html#module-rdmc.conformer_generation.optimizers">rdmc.conformer_generation.optimizers</a>
 </li>
-        <li><a href="reference/mol.html#module-rdmc.mol">rdmc.mol</a>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/pruners.html#module-rdmc.conformer_generation.pruners">rdmc.conformer_generation.pruners</a>
 </li>
-        <li><a href="reference/utils.html#module-rdmc.utils">rdmc.utils</a>
+        <li><a href="reference/rdmc/conformer_generation/workflow/sampler.html#module-rdmc.conformer_generation.sampler">rdmc.conformer_generation.sampler</a>
+</li>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/solvation.html#module-rdmc.conformer_generation.solvation">rdmc.conformer_generation.solvation</a>
+</li>
+        <li><a href="reference/rdmc/conformer_generation/workflow/ts_generators.html#module-rdmc.conformer_generation.ts_generators">rdmc.conformer_generation.ts_generators</a>
+</li>
+        <li><a href="reference/rdmc/conformer_generation/embedding_geometries/ts_guessers.html#module-rdmc.conformer_generation.ts_guessers">rdmc.conformer_generation.ts_guessers</a>
+</li>
+        <li><a href="reference/rdmc/conformer_generation/geometry_optimization/ts_optimizers.html#module-rdmc.conformer_generation.ts_optimizers">rdmc.conformer_generation.ts_optimizers</a>
+</li>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/ts_verifiers.html#module-rdmc.conformer_generation.ts_verifiers">rdmc.conformer_generation.ts_verifiers</a>
+</li>
+        <li><a href="reference/rdmc/conformer_generation/utils.html#module-rdmc.conformer_generation.utils">rdmc.conformer_generation.utils</a>
+</li>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/verifiers.html#module-rdmc.conformer_generation.verifiers">rdmc.conformer_generation.verifiers</a>
+</li>
+        <li><a href="reference/rdmc/external/index.html#module-rdmc.external">rdmc.external</a>
+</li>
+        <li><a href="reference/rdmc/external/inpwriter/index.html#module-rdmc.external.inpwriter">rdmc.external.inpwriter</a>
+</li>
+        <li><a href="reference/rdmc/external/inpwriter/gaussian.html#module-rdmc.external.inpwriter.gaussian">rdmc.external.inpwriter.gaussian</a>
+</li>
+        <li><a href="reference/rdmc/external/inpwriter/orca.html#module-rdmc.external.inpwriter.orca">rdmc.external.inpwriter.orca</a>
+</li>
+        <li><a href="reference/rdmc/external/inpwriter/qchem.html#module-rdmc.external.inpwriter.qchem">rdmc.external.inpwriter.qchem</a>
+</li>
+        <li><a href="reference/rdmc/external/inpwriter/utils.html#module-rdmc.external.inpwriter.utils">rdmc.external.inpwriter.utils</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/index.html#module-rdmc.external.logparser">rdmc.external.logparser</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/base.html#module-rdmc.external.logparser.base">rdmc.external.logparser.base</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/gaussian.html#module-rdmc.external.logparser.gaussian">rdmc.external.logparser.gaussian</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/orca.html#module-rdmc.external.logparser.orca">rdmc.external.logparser.orca</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/qchem.html#module-rdmc.external.logparser.qchem">rdmc.external.logparser.qchem</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/utils.html#module-rdmc.external.logparser.utils">rdmc.external.logparser.utils</a>
+</li>
+        <li><a href="reference/rdmc/external/rmg.html#module-rdmc.external.rmg">rdmc.external.rmg</a>
+</li>
+        <li><a href="reference/rdmc/forcefield.html#module-rdmc.forcefield">rdmc.forcefield</a>
+</li>
+        <li><a href="reference/rdmc/mathlib/index.html#module-rdmc.mathlib">rdmc.mathlib</a>
+</li>
+        <li><a href="reference/rdmc/mathlib/curvefit.html#module-rdmc.mathlib.curvefit">rdmc.mathlib.curvefit</a>
+</li>
+        <li><a href="reference/rdmc/mathlib/geom.html#module-rdmc.mathlib.geom">rdmc.mathlib.geom</a>
+</li>
+        <li><a href="reference/rdmc/mathlib/greedymin.html#module-rdmc.mathlib.greedymin">rdmc.mathlib.greedymin</a>
+</li>
+        <li><a href="reference/rdmc/mol.html#module-rdmc.mol">rdmc.mol</a>
+</li>
+        <li><a href="reference/rdmc/reaction.html#module-rdmc.reaction">rdmc.reaction</a>
+</li>
+        <li><a href="reference/rdmc/utils.html#module-rdmc.utils">rdmc.utils</a>
+</li>
+        <li><a href="reference/rdtools/rdtools.html#module-rdtools">rdtools</a>
+</li>
+        <li><a href="reference/rdtools/atom.html#module-rdtools.atom">rdtools.atom</a>
+</li>
+        <li><a href="reference/rdtools/atommap.html#module-rdtools.atommap">rdtools.atommap</a>
+</li>
+        <li><a href="reference/rdtools/bond.html#module-rdtools.bond">rdtools.bond</a>
+</li>
+        <li><a href="reference/rdtools/compare.html#module-rdtools.compare">rdtools.compare</a>
+</li>
+        <li><a href="reference/rdtools/conf.html#module-rdtools.conf">rdtools.conf</a>
+</li>
+        <li><a href="reference/rdtools/conversion/rmg.html#module-rdtools.conversion.rmg">rdtools.conversion.rmg</a>
+</li>
+        <li><a href="reference/rdtools/conversion/smiles.html#module-rdtools.conversion.smiles">rdtools.conversion.smiles</a>
+</li>
+        <li><a href="reference/rdtools/conversion/xyz.html#module-rdtools.conversion.xyz">rdtools.conversion.xyz</a>
+</li>
+        <li><a href="reference/rdtools/dist.html#module-rdtools.dist">rdtools.dist</a>
+</li>
+        <li><a href="reference/rdtools/element.html#module-rdtools.element">rdtools.element</a>
+</li>
+        <li><a href="reference/rdtools/featurizer.html#module-rdtools.featurizer">rdtools.featurizer</a>
+</li>
+        <li><a href="reference/rdtools/fix/fix.html#module-rdtools.fix.fix">rdtools.fix.fix</a>
+</li>
+        <li><a href="reference/rdtools/fix/mult.html#module-rdtools.fix.mult">rdtools.fix.mult</a>
+</li>
+        <li><a href="reference/rdtools/fix/remedy.html#module-rdtools.fix.remedy">rdtools.fix.remedy</a>
+</li>
+        <li><a href="reference/rdtools/mol.html#module-rdtools.mol">rdtools.mol</a>
+</li>
+        <li><a href="reference/rdtools/obabel.html#module-rdtools.obabel">rdtools.obabel</a>
+</li>
+        <li><a href="reference/rdtools/reaction/draw.html#module-rdtools.reaction.draw">rdtools.reaction.draw</a>
+</li>
+        <li><a href="reference/rdtools/reaction/stereo.html#module-rdtools.reaction.stereo">rdtools.reaction.stereo</a>
+</li>
+        <li><a href="reference/rdtools/reaction/ts.html#module-rdtools.reaction.ts">rdtools.reaction.ts</a>
+</li>
+        <li><a href="reference/rdtools/resonance/base.html#module-rdtools.resonance.base">rdtools.resonance.base</a>
+</li>
+        <li><a href="reference/rdtools/resonance/filtration.html#module-rdtools.resonance.filtration">rdtools.resonance.filtration</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#module-rdtools.resonance.pathfinder">rdtools.resonance.pathfinder</a>
+</li>
+        <li><a href="reference/rdtools/resonance/rdkit_backend.html#module-rdtools.resonance.rdkit_backend">rdtools.resonance.rdkit_backend</a>
+</li>
+        <li><a href="reference/rdtools/resonance/rmg_backend.html#module-rdtools.resonance.rmg_backend">rdtools.resonance.rmg_backend</a>
+</li>
+        <li><a href="reference/rdtools/torsion.html#module-rdtools.torsion">rdtools.torsion</a>
+</li>
+        <li><a href="reference/rdtools/utils.html#module-rdtools.utils">rdtools.utils</a>
+</li>
+        <li><a href="reference/rdtools/view/base.html#module-rdtools.view.base">rdtools.view.base</a>
+</li>
+        <li><a href="reference/rdtools/view/conf.html#module-rdtools.view.conf">rdtools.view.conf</a>
+</li>
+        <li><a href="reference/rdtools/view/freq.html#module-rdtools.view.freq">rdtools.view.freq</a>
+</li>
+        <li><a href="reference/rdtools/view/interact.html#module-rdtools.view.interact">rdtools.view.interact</a>
+</li>
+        <li><a href="reference/rdtools/view/mol.html#module-rdtools.view.mol">rdtools.view.mol</a>
+</li>
+        <li><a href="reference/rdtools/view/reaction.html#module-rdtools.view.reaction">rdtools.view.reaction</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.mol">mol (rdmc.forcefield.OpenBabelFF property)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.mol">mol (rdmc.forcefield.OpenBabelFF property)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.mol">(rdmc.forcefield.RDKitFF property)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.mol">(rdmc.forcefield.RDKitFF property)</a>
 </li>
       </ul></li>
+      <li><a href="reference/rdtools/view/mol.html#rdtools.view.mol.mol_animation">mol_animation() (in module rdtools.view.mol)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/rmg.html#rdtools.conversion.rmg.mol_from_rmg_mol">mol_from_rmg_mol() (in module rdtools.conversion.rmg)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/smiles.html#rdtools.conversion.smiles.mol_from_smiles">mol_from_smiles() (in module rdtools.conversion.smiles)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/xyz.html#rdtools.conversion.xyz.mol_from_xyz">mol_from_xyz() (in module rdtools.conversion.xyz)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/utils.html#rdmc.conformer_generation.utils.mol_to_dict">mol_to_dict() (in module rdmc.conformer_generation.utils)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/rmg.html#rdtools.conversion.rmg.mol_to_rmg_mol">mol_to_rmg_mol() (in module rdtools.conversion.rmg)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/smiles.html#rdtools.conversion.smiles.mol_to_smiles">mol_to_smiles() (in module rdtools.conversion.smiles)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/xyz.html#rdtools.conversion.xyz.mol_to_xyz">mol_to_xyz() (in module rdtools.conversion.xyz)</a>
+</li>
+      <li><a href="reference/rdtools/view/mol.html#rdtools.view.mol.mol_viewer">mol_viewer() (in module rdtools.view.mol)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.move_atommaps_to_notes">move_atommaps_to_notes() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.move_notes_to_atommaps">move_notes_to_atommaps() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.multiplicity">multiplicity (rdmc.external.logparser.base.CclibLog property)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/orca.html#rdmc.external.logparser.orca.ORCALog.multiplicity">(rdmc.external.logparser.orca.ORCALog property)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.multiplicity_filtration">multiplicity_filtration() (in module rdtools.resonance.filtration)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign">NaiveAlign (class in rdmc.conformer_generation.align)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.needs_renumber">needs_renumber() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.neg_freqs">neg_freqs (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.num_all_geoms">num_all_geoms (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.num_atoms">num_atoms (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.num_broken_bonds">num_broken_bonds (rdmc.reaction.Reaction property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.num_changed_bonds">num_changed_bonds (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.num_converged_geoms">num_converged_geoms (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.num_formed_bonds">num_formed_bonds (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.num_heavy_atoms">num_heavy_atoms (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.num_neg_freqs">num_neg_freqs (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.num_products">num_products (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.num_reactants">num_reactants (rdmc.reaction.Reaction property)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/utils.html#rdmc.utils.openbabel_mol_to_rdkit_mol">openbabel_mol_to_rdkit_mol() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.octet_filtration">octet_filtration() (in module rdtools.resonance.filtration)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF">OpenBabelFF (class in rdmc.forcefield)</a>
+      <li><a href="reference/rdtools/obabel.html#rdtools.obabel.openbabel_mol_to_rdkit_mol">openbabel_mol_to_rdkit_mol() (in module rdtools.obabel)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.optimize">optimize() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF">OpenBabelFF (class in rdmc.forcefield)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.opt_convergence">opt_convergence (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.opt_criteria">opt_criteria (rdmc.external.logparser.base.BaseLog attribute)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.optimize">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdmc/external/logparser/gaussian.html#rdmc.external.logparser.gaussian.GaussianLog.opt_criteria">(rdmc.external.logparser.gaussian.GaussianLog attribute)</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/orca.html#rdmc.external.logparser.orca.ORCALog.opt_criteria">(rdmc.external.logparser.orca.ORCALog attribute)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.optimize_confs">optimize_confs() (rdmc.forcefield.RDKitFF method)</a>
+      <li><a href="reference/rdmc/external/logparser/qchem.html#rdmc.external.logparser.qchem.QChemLog.opt_critieria">opt_critieria (rdmc.external.logparser.qchem.QChemLog attribute)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.optimize_mol">optimize_mol() (in module rdmc.forcefield)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.optimize">optimize() (rdmc.forcefield.OpenBabelFF method)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.optimize">(rdmc.forcefield.RDKitFF method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.optimize_confs">optimize_confs() (rdmc.forcefield.RDKitFF method)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.optimize_mol">optimize_mol() (in module rdmc.forcefield)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.optstatus">optstatus (rdmc.external.logparser.base.CclibLog property)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/orca.html#rdmc.external.logparser.orca.ORCALog">ORCALog (class in rdmc.external.logparser.orca)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -699,15 +1354,55 @@ document.write(`
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/utils.html#rdmc.utils.parse_xyz_by_jensen">parse_xyz_by_jensen() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/conversion/xyz.html#rdtools.conversion.xyz.parse_xyz_by_openbabel">parse_xyz_by_openbabel() (in module rdtools.conversion.xyz)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/obabel.html#rdtools.obabel.parse_xyz_by_openbabel">(in module rdtools.obabel)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.parse_xyz_by_openbabel">parse_xyz_by_openbabel() (in module rdmc.utils)</a>
+      </ul></li>
+      <li><a href="reference/rdtools/conversion/xyz.html#rdtools.conversion.xyz.parse_xyz_by_xyz2mol">parse_xyz_by_xyz2mol() (in module rdtools.conversion.xyz)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/xyz.html#rdtools.conversion.xyz.parse_xyz_by_xyz2mol_rdkit_native">parse_xyz_by_xyz2mol_rdkit_native() (in module rdtools.conversion.xyz)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder">PathFinder (class in rdtools.resonance.pathfinder)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinderRegistry">PathFinderRegistry (class in rdtools.resonance.pathfinder)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/sampler.html#rdmc.conformer_generation.sampler.plot_heat_map">plot_heat_map() (in module rdmc.conformer_generation.sampler)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.plot_irc_energies">plot_irc_energies() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.plot_opt_convergence">plot_opt_convergence() (rdmc.external.logparser.base.CclibLog method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.parse_xyz_or_smiles_list">parse_xyz_or_smiles_list() (in module rdmc.mol)</a>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.plot_scan_energies">plot_scan_energies() (rdmc.external.logparser.base.CclibLog method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.PrepareOutputMol">PrepareOutputMol() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/resonance/rmg_backend.html#rdtools.resonance.rmg_backend.populate_resonance_algorithms">populate_resonance_algorithms() (in module rdtools.resonance.rmg_backend)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/curvefit.html#rdmc.mathlib.curvefit.FourierSeries1D.predict">predict() (rdmc.mathlib.curvefit.FourierSeries1D method)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/postprocessing/solvation.html#rdmc.conformer_generation.solvation.ConfSolv.predict_energies">predict_energies() (rdmc.conformer_generation.solvation.ConfSolv method)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/solvation.html#rdmc.conformer_generation.solvation.Estimator.predict_energies">(rdmc.conformer_generation.solvation.Estimator method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.prepare_mols">prepare_mols() (in module rdmc.conformer_generation.align)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/sampler.html#rdmc.conformer_generation.sampler.preprocess_energies">preprocess_energies() (in module rdmc.conformer_generation.sampler)</a>
+</li>
+      <li><a href="reference/rdtools/conversion/smiles.html#rdtools.conversion.smiles.process_mol_from_smiles">process_mol_from_smiles() (in module rdtools.conversion.smiles)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.product_element_count">product_element_count (rdmc.reaction.Reaction property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdmc/external/logparser/qchem.html#rdmc.external.logparser.qchem.QChemLog">QChemLog (class in rdmc.external.logparser.qchem)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -715,97 +1410,600 @@ document.write(`
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/utils.html#rdmc.utils.rdkit_mol_to_openbabel_mol">rdkit_mol_to_openbabel_mol() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/obabel.html#rdtools.obabel.rdkit_mol_to_openbabel_mol">rdkit_mol_to_openbabel_mol() (in module rdtools.obabel)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.rdkit_mol_to_openbabel_mol_manual">rdkit_mol_to_openbabel_mol_manual() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/obabel.html#rdtools.obabel.rdkit_mol_to_openbabel_mol_manual">rdkit_mol_to_openbabel_mol_manual() (in module rdtools.obabel)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF">RDKitFF (class in rdmc.forcefield)</a>
+      <li><a href="reference/rdtools/featurizer.html#rdtools.featurizer.rdkit_vector_to_array">rdkit_vector_to_array() (in module rdtools.featurizer)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol">RDKitMol (class in rdmc.mol)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF">RDKitFF (class in rdmc.forcefield)</a>
 </li>
+      <li>
+    rdmc
+
+      <ul>
+        <li><a href="reference/rdmc/rdmc.html#module-rdmc">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conf
+
+      <ul>
+        <li><a href="reference/rdmc/conf.html#module-rdmc.conf">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/index.html#module-rdmc.conformer_generation">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.align
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#module-rdmc.conformer_generation.align">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.embedders
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/embedding_geometries/embedders.html#module-rdmc.conformer_generation.embedders">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.generators
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/workflow/generators.html#module-rdmc.conformer_generation.generators">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.metrics
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/workflow/metrics.html#module-rdmc.conformer_generation.metrics">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.optimizers
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/geometry_optimization/optimizers.html#module-rdmc.conformer_generation.optimizers">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.pruners
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/pruners.html#module-rdmc.conformer_generation.pruners">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.sampler
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/workflow/sampler.html#module-rdmc.conformer_generation.sampler">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.solvation
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/solvation.html#module-rdmc.conformer_generation.solvation">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.ts_generators
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/workflow/ts_generators.html#module-rdmc.conformer_generation.ts_generators">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.ts_guessers
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/embedding_geometries/ts_guessers.html#module-rdmc.conformer_generation.ts_guessers">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.ts_optimizers
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/geometry_optimization/ts_optimizers.html#module-rdmc.conformer_generation.ts_optimizers">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.ts_verifiers
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/ts_verifiers.html#module-rdmc.conformer_generation.ts_verifiers">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.utils
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/utils.html#module-rdmc.conformer_generation.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.conformer_generation.verifiers
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/postprocessing/verifiers.html#module-rdmc.conformer_generation.verifiers">module</a>
+</li>
+      </ul></li>
       <li>
     rdmc.external
 
       <ul>
-        <li><a href="reference/external/index.html#module-rdmc.external">module</a>
+        <li><a href="reference/rdmc/external/index.html#module-rdmc.external">module</a>
 </li>
       </ul></li>
       <li>
     rdmc.external.inpwriter
 
       <ul>
-        <li><a href="reference/external/inpwriter/index.html#module-rdmc.external.inpwriter">module</a>
+        <li><a href="reference/rdmc/external/inpwriter/index.html#module-rdmc.external.inpwriter">module</a>
 </li>
       </ul></li>
       <li>
     rdmc.external.inpwriter.gaussian
 
       <ul>
-        <li><a href="reference/external/inpwriter/gaussian.html#module-rdmc.external.inpwriter.gaussian">module</a>
+        <li><a href="reference/rdmc/external/inpwriter/gaussian.html#module-rdmc.external.inpwriter.gaussian">module</a>
 </li>
       </ul></li>
       <li>
     rdmc.external.inpwriter.orca
 
       <ul>
-        <li><a href="reference/external/inpwriter/orca.html#module-rdmc.external.inpwriter.orca">module</a>
+        <li><a href="reference/rdmc/external/inpwriter/orca.html#module-rdmc.external.inpwriter.orca">module</a>
 </li>
       </ul></li>
       <li>
     rdmc.external.inpwriter.qchem
 
       <ul>
-        <li><a href="reference/external/inpwriter/qchem.html#module-rdmc.external.inpwriter.qchem">module</a>
+        <li><a href="reference/rdmc/external/inpwriter/qchem.html#module-rdmc.external.inpwriter.qchem">module</a>
 </li>
       </ul></li>
       <li>
     rdmc.external.inpwriter.utils
 
       <ul>
-        <li><a href="reference/external/inpwriter/utils.html#module-rdmc.external.inpwriter.utils">module</a>
+        <li><a href="reference/rdmc/external/inpwriter/utils.html#module-rdmc.external.inpwriter.utils">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    rdmc.external.logparser
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/index.html#module-rdmc.external.logparser">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.external.logparser.base
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/base.html#module-rdmc.external.logparser.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.external.logparser.gaussian
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/gaussian.html#module-rdmc.external.logparser.gaussian">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.external.logparser.orca
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/orca.html#module-rdmc.external.logparser.orca">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.external.logparser.qchem
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/qchem.html#module-rdmc.external.logparser.qchem">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.external.logparser.utils
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/utils.html#module-rdmc.external.logparser.utils">module</a>
+</li>
+      </ul></li>
       <li>
     rdmc.external.rmg
 
       <ul>
-        <li><a href="reference/external/rmg.html#module-rdmc.external.rmg">module</a>
+        <li><a href="reference/rdmc/external/rmg.html#module-rdmc.external.rmg">module</a>
 </li>
       </ul></li>
       <li>
     rdmc.forcefield
 
       <ul>
-        <li><a href="reference/forcefield.html#module-rdmc.forcefield">module</a>
+        <li><a href="reference/rdmc/forcefield.html#module-rdmc.forcefield">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.mathlib
+
+      <ul>
+        <li><a href="reference/rdmc/mathlib/index.html#module-rdmc.mathlib">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.mathlib.curvefit
+
+      <ul>
+        <li><a href="reference/rdmc/mathlib/curvefit.html#module-rdmc.mathlib.curvefit">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.mathlib.geom
+
+      <ul>
+        <li><a href="reference/rdmc/mathlib/geom.html#module-rdmc.mathlib.geom">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.mathlib.greedymin
+
+      <ul>
+        <li><a href="reference/rdmc/mathlib/greedymin.html#module-rdmc.mathlib.greedymin">module</a>
 </li>
       </ul></li>
       <li>
     rdmc.mol
 
       <ul>
-        <li><a href="reference/mol.html#module-rdmc.mol">module</a>
+        <li><a href="reference/rdmc/mol.html#module-rdmc.mol">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdmc.reaction
+
+      <ul>
+        <li><a href="reference/rdmc/reaction.html#module-rdmc.reaction">module</a>
 </li>
       </ul></li>
       <li>
     rdmc.utils
 
       <ul>
-        <li><a href="reference/utils.html#module-rdmc.utils">module</a>
+        <li><a href="reference/rdmc/utils.html#module-rdmc.utils">module</a>
 </li>
       </ul></li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.recover_mol">recover_mol() (rdmc.forcefield.RDKitFF method)</a>
+      <li>
+    rdtools
+
+      <ul>
+        <li><a href="reference/rdtools/rdtools.html#module-rdtools">module</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.Reflect">Reflect() (rdmc.mol.RDKitMol method)</a>
+      </ul></li>
+      <li>
+    rdtools.atom
+
+      <ul>
+        <li><a href="reference/rdtools/atom.html#module-rdtools.atom">module</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.RemoveHs">RemoveHs() (rdmc.mol.RDKitMol method)</a>
+      </ul></li>
+      <li>
+    rdtools.atommap
+
+      <ul>
+        <li><a href="reference/rdtools/atommap.html#module-rdtools.atommap">module</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.RenumberAtoms">RenumberAtoms() (rdmc.mol.RDKitMol method)</a>
+      </ul></li>
+      <li>
+    rdtools.bond
+
+      <ul>
+        <li><a href="reference/rdtools/bond.html#module-rdtools.bond">module</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.reverse_map">reverse_map() (in module rdmc.utils)</a>
+      </ul></li>
+      <li>
+    rdtools.compare
+
+      <ul>
+        <li><a href="reference/rdtools/compare.html#module-rdtools.compare">module</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.rmg_mol_to_rdkit_mol">rmg_mol_to_rdkit_mol() (in module rdmc.utils)</a>
+      </ul></li>
+      <li>
+    rdtools.conf
+
+      <ul>
+        <li><a href="reference/rdtools/conf.html#module-rdtools.conf">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.conversion.rmg
+
+      <ul>
+        <li><a href="reference/rdtools/conversion/rmg.html#module-rdtools.conversion.rmg">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    rdtools.conversion.smiles
+
+      <ul>
+        <li><a href="reference/rdtools/conversion/smiles.html#module-rdtools.conversion.smiles">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.conversion.xyz
+
+      <ul>
+        <li><a href="reference/rdtools/conversion/xyz.html#module-rdtools.conversion.xyz">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.dist
+
+      <ul>
+        <li><a href="reference/rdtools/dist.html#module-rdtools.dist">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.element
+
+      <ul>
+        <li><a href="reference/rdtools/element.html#module-rdtools.element">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.featurizer
+
+      <ul>
+        <li><a href="reference/rdtools/featurizer.html#module-rdtools.featurizer">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.fix.fix
+
+      <ul>
+        <li><a href="reference/rdtools/fix/fix.html#module-rdtools.fix.fix">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.fix.mult
+
+      <ul>
+        <li><a href="reference/rdtools/fix/mult.html#module-rdtools.fix.mult">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.fix.remedy
+
+      <ul>
+        <li><a href="reference/rdtools/fix/remedy.html#module-rdtools.fix.remedy">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.mol
+
+      <ul>
+        <li><a href="reference/rdtools/mol.html#module-rdtools.mol">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.obabel
+
+      <ul>
+        <li><a href="reference/rdtools/obabel.html#module-rdtools.obabel">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.reaction.draw
+
+      <ul>
+        <li><a href="reference/rdtools/reaction/draw.html#module-rdtools.reaction.draw">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.reaction.stereo
+
+      <ul>
+        <li><a href="reference/rdtools/reaction/stereo.html#module-rdtools.reaction.stereo">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.reaction.ts
+
+      <ul>
+        <li><a href="reference/rdtools/reaction/ts.html#module-rdtools.reaction.ts">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.resonance.base
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/base.html#module-rdtools.resonance.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.resonance.filtration
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/filtration.html#module-rdtools.resonance.filtration">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.resonance.pathfinder
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#module-rdtools.resonance.pathfinder">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.resonance.rdkit_backend
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/rdkit_backend.html#module-rdtools.resonance.rdkit_backend">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.resonance.rmg_backend
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/rmg_backend.html#module-rdtools.resonance.rmg_backend">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.torsion
+
+      <ul>
+        <li><a href="reference/rdtools/torsion.html#module-rdtools.torsion">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.utils
+
+      <ul>
+        <li><a href="reference/rdtools/utils.html#module-rdtools.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.view.base
+
+      <ul>
+        <li><a href="reference/rdtools/view/base.html#module-rdtools.view.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.view.conf
+
+      <ul>
+        <li><a href="reference/rdtools/view/conf.html#module-rdtools.view.conf">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.view.freq
+
+      <ul>
+        <li><a href="reference/rdtools/view/freq.html#module-rdtools.view.freq">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.view.interact
+
+      <ul>
+        <li><a href="reference/rdtools/view/interact.html#module-rdtools.view.interact">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.view.mol
+
+      <ul>
+        <li><a href="reference/rdtools/view/mol.html#module-rdtools.view.mol">module</a>
+</li>
+      </ul></li>
+      <li>
+    rdtools.view.reaction
+
+      <ul>
+        <li><a href="reference/rdtools/view/reaction.html#module-rdtools.view.reaction">module</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.reactant_element_count">reactant_element_count (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction">Reaction (class in rdmc.reaction)</a>
+</li>
+      <li><a href="reference/rdtools/view/reaction.html#rdtools.view.reaction.reaction_viewer">reaction_viewer() (in module rdtools.view.reaction)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.recover_mol">recover_mol() (rdmc.forcefield.RDKitFF method)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.reflect">reflect() (in module rdtools.conf)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/mol.html#rdtools.mol.reflect">(in module rdtools.mol)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/resonance/base.html#rdtools.resonance.base.ResonanceAlgoRegistry.register">register() (rdtools.resonance.base.ResonanceAlgoRegistry class method)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinderRegistry.register">(rdtools.resonance.pathfinder.PathFinderRegistry class method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/fix/remedy.html#rdtools.fix.remedy.RemedyManager">RemedyManager (class in rdtools.fix.remedy)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.renumber_atoms">renumber_atoms() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.renumber_atoms_by_atom_map_numbers">renumber_atoms_by_atom_map_numbers() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.renumber_atoms_by_map_dict">renumber_atoms_by_map_dict() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.renumber_atoms_by_substruct_match_result">renumber_atoms_by_substruct_match_result() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.require_bond_analysis">require_bond_analysis() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.require_job_type">require_job_type() (rdmc.external.logparser.base.BaseLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.require_ts">require_ts() (rdmc.external.logparser.base.BaseLog method)</a>
+</li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.reset_atom_map_numbers">reset_atom_map_numbers() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.reset_pmol">reset_pmol() (in module rdmc.conformer_generation.align)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/base.html#rdtools.resonance.base.ResonanceAlgoRegistry">ResonanceAlgoRegistry (class in rdtools.resonance.base)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse">reverse (rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder attribute)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse">(rdtools.resonance.pathfinder.AllylRadicalPathFinder attribute)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id0">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id3">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id6">(rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id9">(rdtools.resonance.pathfinder.PathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.reverse">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id12">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id15">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse_abbr">reverse_abbr (rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder attribute)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse_abbr">(rdtools.resonance.pathfinder.AllylRadicalPathFinder attribute)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id1">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id4">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id7">(rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse_abbr">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id10">(rdtools.resonance.pathfinder.PathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.reverse_abbr">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id13">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id16">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.reverse_map">reverse_map() (in module rdtools.atommap)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder">ReverseAdjacentLonePairMultipleBondPathFinder (class in rdtools.resonance.pathfinder)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder">ReverseAdjacentLonePairRadicalMultipleBondPathFinder (class in rdtools.resonance.pathfinder)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/geom.html#rdmc.mathlib.geom.rotate">rotate() (in module rdmc.mathlib.geom)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.rotate_fragment_separately">rotate_fragment_separately() (rdmc.conformer_generation.align.NaiveAlign method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -813,35 +2011,81 @@ document.write(`
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.Sanitize">Sanitize() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/fix/mult.html#rdtools.fix.mult.saturate_biradical_12">saturate_biradical_12() (in module rdtools.fix.mult)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.SaturateBiradicalSites12">SaturateBiradicalSites12() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/fix/mult.html#rdtools.fix.mult.saturate_biradical_cdb">saturate_biradical_cdb() (in module rdtools.fix.mult)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.SaturateBiradicalSitesCDB">SaturateBiradicalSitesCDB() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/fix/mult.html#rdtools.fix.mult.saturate_carbene">saturate_carbene() (in module rdtools.fix.mult)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.SaturateCarbene">SaturateCarbene() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/fix/mult.html#rdtools.fix.mult.saturate_mol">saturate_mol() (in module rdtools.fix.mult)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.SaturateMol">SaturateMol() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conformer_generation/workflow/metrics.html#rdmc.conformer_generation.metrics.SCGMetric">SCGMetric (class in rdmc.conformer_generation.metrics)</a>
 </li>
-      <li><a href="reference/utils.html#rdmc.utils.set_obmol_coords">set_obmol_coords() (in module rdmc.utils)</a>
+      <li><a href="reference/rdmc/external/logparser/utils.html#rdmc.external.logparser.utils.scheme_to_dict">scheme_to_dict() (in module rdmc.external.logparser.utils)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.schemes">schemes (rdmc.external.logparser.base.BaseLog property)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/embedding_geometries/align.html#rdmc.conformer_generation.align.NaiveAlign.score_bimolecule">score_bimolecule() (rdmc.conformer_generation.align.NaiveAlign method)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/greedymin.html#rdmc.mathlib.greedymin.search_for_a_minimum">search_for_a_minimum() (in module rdmc.mathlib.greedymin)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/greedymin.html#rdmc.mathlib.greedymin.search_minimum">search_minimum() (in module rdmc.mathlib.greedymin)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.set_angle_deg">set_angle_deg() (in module rdtools.conf)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.set_bond_length">set_bond_length() (in module rdtools.conf)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/generators.html#rdmc.conformer_generation.generators.StochasticConformerGenerator.set_config">set_config() (rdmc.conformer_generation.generators.StochasticConformerGenerator method)</a>
+</li>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.set_conformer_coordinates">set_conformer_coordinates() (in module rdtools.conf)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/generators.html#rdmc.conformer_generation.generators.ConformerGenerator.set_filter">set_filter() (rdmc.conformer_generation.generators.ConformerGenerator method)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/conformer_generation/workflow/ts_generators.html#rdmc.conformer_generation.ts_generators.TSConformerGenerator.set_filter">(rdmc.conformer_generation.ts_generators.TSConformerGenerator method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/mol.html#rdtools.mol.set_mol_positions">set_mol_positions() (in module rdtools.mol)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/utils.html#rdmc.utils.set_rdconf_coordinates">set_rdconf_coordinates() (in module rdmc.utils)</a>
+      <li><a href="reference/rdtools/obabel.html#rdtools.obabel.set_obmol_coords">set_obmol_coords() (in module rdtools.obabel)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.set_solver">set_solver() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.set_solver">set_solver() (rdmc.forcefield.OpenBabelFF method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.SetAtomMapNumbers">SetAtomMapNumbers() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/conf.html#rdtools.conf.set_torsion_deg">set_torsion_deg() (in module rdtools.conf)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.SetPositions">SetPositions() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.SetAllTorsionsDeg">SetAllTorsionsDeg() (rdmc.conf.EditableConformer method)</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.setup">setup() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.SetAngleDeg">SetAngleDeg() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.SetAngleRad">SetAngleRad() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.SetBondLength">SetBondLength() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.SetOwningMol">SetOwningMol() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.SetPositions">SetPositions() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.SetTorsionalModes">SetTorsionalModes() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.SetTorsionDeg">SetTorsionDeg() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.setup">setup() (rdmc.forcefield.OpenBabelFF method)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.setup">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.setup">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.SetVdwMatrix">SetVdwMatrix() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.stabilize_charges_by_electronegativity">stabilize_charges_by_electronegativity() (in module rdtools.resonance.filtration)</a>
+</li>
+      <li><a href="reference/rdtools/resonance/filtration.html#rdtools.resonance.filtration.stabilize_charges_by_proximity">stabilize_charges_by_proximity() (in module rdtools.resonance.filtration)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/generators.html#rdmc.conformer_generation.generators.StochasticConformerGenerator">StochasticConformerGenerator (class in rdmc.conformer_generation.generators)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/utils.html#rdmc.conformer_generation.utils.subprocess_runner">subprocess_runner() (in module rdmc.conformer_generation.utils)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.success">success (rdmc.external.logparser.base.BaseLog property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -849,32 +2093,84 @@ document.write(`
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToAtoms">ToAtoms() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.template">template (rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder attribute)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.template">(rdtools.resonance.pathfinder.AllylRadicalPathFinder attribute)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToGraph">ToGraph() (rdmc.mol.RDKitMol method)</a>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id2">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.template">[1]</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToInchi">ToInchi() (rdmc.mol.RDKitMol method)</a>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id5">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template">[1]</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToMolBlock">ToMolBlock() (rdmc.mol.RDKitMol method)</a>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id8">(rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.template">[1]</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToOBMol">ToOBMol() (rdmc.mol.RDKitMol method)</a>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id11">(rdtools.resonance.pathfinder.PathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.template">[1]</a>
 </li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.torsional_scan_1d">torsional_scan_1d() (rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id14">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.template">[1]</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#id17">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder attribute)</a>, <a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.termination_time">termination_time (rdmc.external.logparser.base.BaseLog property)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.BaseLog.time_regex">time_regex (rdmc.external.logparser.base.BaseLog attribute)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/external/logparser/gaussian.html#rdmc.external.logparser.gaussian.GaussianLog.time_regex">(rdmc.external.logparser.gaussian.GaussianLog attribute)</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/orca.html#rdmc.external.logparser.orca.ORCALog.time_regex">(rdmc.external.logparser.orca.ORCALog attribute)</a>
+</li>
+        <li><a href="reference/rdmc/external/logparser/qchem.html#rdmc.external.logparser.qchem.QChemLog.time_regex">(rdmc.external.logparser.qchem.QChemLog attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.to_rdkit_reaction">to_rdkit_reaction() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.to_smiles">to_smiles() (rdmc.reaction.Reaction method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.ToConformer">ToConformer() (rdmc.conf.EditableConformer method)</a>
+</li>
+      <li><a href="reference/rdmc/conf.html#rdmc.conf.EditableConformer.ToMol">ToMol() (rdmc.conf.EditableConformer method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToRWMol">ToRWMol() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.torsional_scan_1d">torsional_scan_1d() (rdmc.forcefield.RDKitFF method)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToSDFFile">ToSDFFile() (rdmc.mol.RDKitMol method)</a>
+      <li><a href="reference/rdmc/conformer_generation/workflow/sampler.html#rdmc.conformer_generation.sampler.TorsionalSampler">TorsionalSampler (class in rdmc.conformer_generation.sampler)</a>
 </li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToSmiles">ToSmiles() (rdmc.mol.RDKitMol method)</a>
-</li>
-      <li><a href="reference/mol.html#rdmc.mol.RDKitMol.ToXYZ">ToXYZ() (rdmc.mol.RDKitMol method)</a>
-</li>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.type">type (rdmc.forcefield.OpenBabelFF property)</a>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.transform">transform() (rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder static method)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.type">(rdmc.forcefield.RDKitFF property)</a>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.transform">(rdtools.resonance.pathfinder.AllylRadicalPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.transform">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.transform">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.transform">(rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.transform">(rdtools.resonance.pathfinder.PathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.transform">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.transform">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder static method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.transform_pre_and_post_process">transform_pre_and_post_process() (in module rdtools.resonance.pathfinder)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/geom.html#rdmc.mathlib.geom.translate">translate() (in module rdmc.mathlib.geom)</a>
+</li>
+      <li><a href="reference/rdmc/mathlib/geom.html#rdmc.mathlib.geom.translate_centroid">translate_centroid() (in module rdmc.mathlib.geom)</a>
+</li>
+      <li><a href="reference/rdmc/reaction.html#rdmc.reaction.Reaction.ts">ts (rdmc.reaction.Reaction property)</a>
+</li>
+      <li><a href="reference/rdtools/view/mol.html#rdtools.view.mol.ts_viewer">ts_viewer() (in module rdtools.view.mol)</a>
+</li>
+      <li><a href="reference/rdmc/conformer_generation/workflow/ts_generators.html#rdmc.conformer_generation.ts_generators.TSConformerGenerator">TSConformerGenerator (class in rdmc.conformer_generation.ts_generators)</a>
+</li>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.type">type (rdmc.forcefield.OpenBabelFF property)</a>
+
+      <ul>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.type">(rdmc.forcefield.RDKitFF property)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -883,45 +2179,89 @@ document.write(`
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/forcefield.html#rdmc.forcefield.OpenBabelFF.update_atom_idx">update_atom_idx() (rdmc.forcefield.OpenBabelFF method)</a>
+      <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.OpenBabelFF.update_atom_idx">update_atom_idx() (rdmc.forcefield.OpenBabelFF method)</a>
 
       <ul>
-        <li><a href="reference/forcefield.html#rdmc.forcefield.RDKitFF.update_atom_idx">(rdmc.forcefield.RDKitFF method)</a>
+        <li><a href="reference/rdmc/forcefield.html#rdmc.forcefield.RDKitFF.update_atom_idx">(rdmc.forcefield.RDKitFF method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdtools/atommap.html#rdtools.atommap.update_product_atom_map_after_reaction">update_product_atom_map_after_reaction() (in module rdtools.atommap)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.verify">verify() (rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder static method)</a>
+
+      <ul>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.verify">(rdtools.resonance.pathfinder.AllylRadicalPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.verify">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.verify">(rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.verify">(rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.verify">(rdtools.resonance.pathfinder.PathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.verify">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder static method)</a>
+</li>
+        <li><a href="reference/rdtools/resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.verify">(rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder static method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.view_freq">view_freq() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.view_mol">view_mol() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
+      <li><a href="reference/rdmc/external/logparser/base.html#rdmc.external.logparser.base.CclibLog.view_traj">view_traj() (rdmc.external.logparser.base.CclibLog method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_config">write_gaussian_config() (in module rdmc.external.inpwriter.gaussian)</a>
+      <li><a href="reference/rdmc/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_config">write_gaussian_config() (in module rdmc.external.inpwriter.gaussian)</a>
 </li>
-      <li><a href="reference/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_freq">write_gaussian_freq() (in module rdmc.external.inpwriter.gaussian)</a>
+      <li><a href="reference/rdmc/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_freq">write_gaussian_freq() (in module rdmc.external.inpwriter.gaussian)</a>
 </li>
-      <li><a href="reference/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_gsm">write_gaussian_gsm() (in module rdmc.external.inpwriter.gaussian)</a>
+      <li><a href="reference/rdmc/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_gsm">write_gaussian_gsm() (in module rdmc.external.inpwriter.gaussian)</a>
 </li>
-      <li><a href="reference/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_inp">write_gaussian_inp() (in module rdmc.external.inpwriter.gaussian)</a>
+      <li><a href="reference/rdmc/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_inp">write_gaussian_inp() (in module rdmc.external.inpwriter.gaussian)</a>
 </li>
-      <li><a href="reference/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_irc">write_gaussian_irc() (in module rdmc.external.inpwriter.gaussian)</a>
+      <li><a href="reference/rdmc/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_irc">write_gaussian_irc() (in module rdmc.external.inpwriter.gaussian)</a>
 </li>
-      <li><a href="reference/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_opt">write_gaussian_opt() (in module rdmc.external.inpwriter.gaussian)</a>
+      <li><a href="reference/rdmc/external/inpwriter/gaussian.html#rdmc.external.inpwriter.gaussian.write_gaussian_opt">write_gaussian_opt() (in module rdmc.external.inpwriter.gaussian)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/external/inpwriter/orca.html#rdmc.external.inpwriter.orca.write_orca_freq">write_orca_freq() (in module rdmc.external.inpwriter.orca)</a>
+      <li><a href="reference/rdmc/external/inpwriter/orca.html#rdmc.external.inpwriter.orca.write_orca_freq">write_orca_freq() (in module rdmc.external.inpwriter.orca)</a>
 </li>
-      <li><a href="reference/external/inpwriter/orca.html#rdmc.external.inpwriter.orca.write_orca_gsm">write_orca_gsm() (in module rdmc.external.inpwriter.orca)</a>
+      <li><a href="reference/rdmc/external/inpwriter/orca.html#rdmc.external.inpwriter.orca.write_orca_gsm">write_orca_gsm() (in module rdmc.external.inpwriter.orca)</a>
 </li>
-      <li><a href="reference/external/inpwriter/orca.html#rdmc.external.inpwriter.orca.write_orca_irc">write_orca_irc() (in module rdmc.external.inpwriter.orca)</a>
+      <li><a href="reference/rdmc/external/inpwriter/orca.html#rdmc.external.inpwriter.orca.write_orca_irc">write_orca_irc() (in module rdmc.external.inpwriter.orca)</a>
 </li>
-      <li><a href="reference/external/inpwriter/orca.html#rdmc.external.inpwriter.orca.write_orca_opt">write_orca_opt() (in module rdmc.external.inpwriter.orca)</a>
+      <li><a href="reference/rdmc/external/inpwriter/orca.html#rdmc.external.inpwriter.orca.write_orca_opt">write_orca_opt() (in module rdmc.external.inpwriter.orca)</a>
 </li>
-      <li><a href="reference/external/inpwriter/qchem.html#rdmc.external.inpwriter.qchem.write_qchem_freq">write_qchem_freq() (in module rdmc.external.inpwriter.qchem)</a>
+      <li><a href="reference/rdmc/external/inpwriter/qchem.html#rdmc.external.inpwriter.qchem.write_qchem_freq">write_qchem_freq() (in module rdmc.external.inpwriter.qchem)</a>
 </li>
-      <li><a href="reference/external/inpwriter/qchem.html#rdmc.external.inpwriter.qchem.write_qchem_irc">write_qchem_irc() (in module rdmc.external.inpwriter.qchem)</a>
+      <li><a href="reference/rdmc/external/inpwriter/qchem.html#rdmc.external.inpwriter.qchem.write_qchem_irc">write_qchem_irc() (in module rdmc.external.inpwriter.qchem)</a>
 </li>
-      <li><a href="reference/external/inpwriter/qchem.html#rdmc.external.inpwriter.qchem.write_qchem_opt">write_qchem_opt() (in module rdmc.external.inpwriter.qchem)</a>
+      <li><a href="reference/rdmc/external/inpwriter/qchem.html#rdmc.external.inpwriter.qchem.write_qchem_opt">write_qchem_opt() (in module rdmc.external.inpwriter.qchem)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/rdtools/conversion/xyz.html#rdtools.conversion.xyz.xyz_to_coords">xyz_to_coords() (in module rdtools.conversion.xyz)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -934,7 +2274,7 @@ document.write(`
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
 </div>
@@ -943,8 +2283,6 @@ document.write(`
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"></div>
               
             
           </div>
@@ -957,8 +2295,8 @@ document.write(`
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -969,7 +2307,7 @@ document.write(`
 
   <p class="copyright">
     
-      © Copyright 2020-2024, Xiaorui Dong.
+      © Copyright 2020-2025, Xiaorui Dong.
       <br/>
     
   </p>
@@ -991,7 +2329,8 @@ document.write(`
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
 </p></div>
       
     </div>

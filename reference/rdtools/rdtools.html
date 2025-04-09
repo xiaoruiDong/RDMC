@@ -1,0 +1,964 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="240x240" href="../../_static/RDMC_icon_simple_240x240.png" type="image/png">
+    <title>RDtools APIs &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=188e8da4" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/rdtools/rdtools';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rdtools.conversion" href="conversion/index.html" />
+    <link rel="prev" title="rdmc.utils" href="../rdmc/utils.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <img src="../../_static/RDMC_icon.svg" class="logo__image only-dark pst-js-only" alt="RDMC 0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="conversion/index.html">rdtools.conversion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="conversion/smiles.html">rdtools.conversion.smiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversion/xyz.html">rdtools.conversion.xyz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversion/rmg.html">rdtools.conversion.rmg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="view/index.html">rdtools.view</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="view/base.html">rdtools.view.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/mol.html">rdtools.view.mol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/conf.html">rdtools.view.conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/freq.html">rdtools.view.freq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/reaction.html">rdtools.view.reaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/interact.html">rdtools.view.interact</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="fix/index.html">rdtools.fix</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="fix/fix.html">rdtools.fix.fix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fix/mult.html">rdtools.fix.mult</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fix/remedy.html">rdtools.fix.remedy</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="resonance/index.html">rdtools.resonance</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="resonance/base.html">rdtools.resonance.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/filtration.html">rdtools.resonance.filtration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/pathfinder.html">rdtools.resonance.pathfinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/rdkit_backend.html">rdtools.resonance.rdkit_backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/rmg_backend.html">rdtools.resonance.rmg_backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reaction/index.html">rdtools.reaction</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="reaction/draw.html">rdtools.reaction.draw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction/stereo.html">rdtools.reaction.stereo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction/ts.html">rdtools.reaction.ts</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="atom.html">rdtools.atom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="atommap.html">rdtools.atommap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bond.html">rdtools.bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">rdtools.compare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">rdtools.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist.html">rdtools.dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="element.html">rdtools.element</a></li>
+<li class="toctree-l1"><a class="reference internal" href="featurizer.html">rdtools.featurizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mol.html">rdtools.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="obabel.html">rdtools.obabel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torsion.html">rdtools.torsion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">rdtools.utils</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">RDtools APIs</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-rdtools">
+<span id="rdtools-apis"></span><h1>RDtools APIs<a class="headerlink" href="#module-rdtools" title="Link to this heading">#</a></h1>
+<p>RDTools package.</p>
+<p>This package provides tool functions that can directly applied onto RDKit objects.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="conversion/index.html">rdtools.conversion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="conversion/smiles.html">rdtools.conversion.smiles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversion/smiles.html#rdtools.conversion.smiles.get_smiles_parser_params"><code class="docutils literal notranslate"><span class="pre">get_smiles_parser_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/smiles.html#rdtools.conversion.smiles.mol_from_smiles"><code class="docutils literal notranslate"><span class="pre">mol_from_smiles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/smiles.html#rdtools.conversion.smiles.mol_to_smiles"><code class="docutils literal notranslate"><span class="pre">mol_to_smiles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/smiles.html#rdtools.conversion.smiles.process_mol_from_smiles"><code class="docutils literal notranslate"><span class="pre">process_mol_from_smiles()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conversion/xyz.html">rdtools.conversion.xyz</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversion/xyz.html#rdtools.conversion.xyz.add_header_to_xyz"><code class="docutils literal notranslate"><span class="pre">add_header_to_xyz()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/xyz.html#rdtools.conversion.xyz.mol_from_xyz"><code class="docutils literal notranslate"><span class="pre">mol_from_xyz()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/xyz.html#rdtools.conversion.xyz.mol_to_xyz"><code class="docutils literal notranslate"><span class="pre">mol_to_xyz()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/xyz.html#rdtools.conversion.xyz.parse_xyz_by_openbabel"><code class="docutils literal notranslate"><span class="pre">parse_xyz_by_openbabel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/xyz.html#rdtools.conversion.xyz.parse_xyz_by_xyz2mol"><code class="docutils literal notranslate"><span class="pre">parse_xyz_by_xyz2mol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/xyz.html#rdtools.conversion.xyz.parse_xyz_by_xyz2mol_rdkit_native"><code class="docutils literal notranslate"><span class="pre">parse_xyz_by_xyz2mol_rdkit_native()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/xyz.html#rdtools.conversion.xyz.xyz_to_coords"><code class="docutils literal notranslate"><span class="pre">xyz_to_coords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conversion/rmg.html">rdtools.conversion.rmg</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversion/rmg.html#rdtools.conversion.rmg.mol_from_rmg_mol"><code class="docutils literal notranslate"><span class="pre">mol_from_rmg_mol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversion/rmg.html#rdtools.conversion.rmg.mol_to_rmg_mol"><code class="docutils literal notranslate"><span class="pre">mol_to_rmg_mol()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="view/index.html">rdtools.view</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="view/base.html">rdtools.view.base</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="view/base.html#rdtools.view.base.animation_viewer"><code class="docutils literal notranslate"><span class="pre">animation_viewer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="view/base.html#rdtools.view.base.base_viewer"><code class="docutils literal notranslate"><span class="pre">base_viewer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="view/base.html#rdtools.view.base.grid_viewer"><code class="docutils literal notranslate"><span class="pre">grid_viewer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="view/mol.html">rdtools.view.mol</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="view/mol.html#rdtools.view.mol.mol_animation"><code class="docutils literal notranslate"><span class="pre">mol_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="view/mol.html#rdtools.view.mol.mol_viewer"><code class="docutils literal notranslate"><span class="pre">mol_viewer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="view/mol.html#rdtools.view.mol.ts_viewer"><code class="docutils literal notranslate"><span class="pre">ts_viewer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="view/conf.html">rdtools.view.conf</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="view/conf.html#rdtools.view.conf.conformer_animation"><code class="docutils literal notranslate"><span class="pre">conformer_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="view/conf.html#rdtools.view.conf.conformer_viewer"><code class="docutils literal notranslate"><span class="pre">conformer_viewer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="view/freq.html">rdtools.view.freq</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="view/freq.html#rdtools.view.freq.freq_viewer"><code class="docutils literal notranslate"><span class="pre">freq_viewer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="view/reaction.html">rdtools.view.reaction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="view/reaction.html#rdtools.view.reaction.reaction_viewer"><code class="docutils literal notranslate"><span class="pre">reaction_viewer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="view/interact.html">rdtools.view.interact</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="view/interact.html#rdtools.view.interact.interactive_conformer_viewer"><code class="docutils literal notranslate"><span class="pre">interactive_conformer_viewer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fix/index.html">rdtools.fix</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fix/fix.html">rdtools.fix.fix</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fix/fix.html#rdtools.fix.fix.find_oxonium_bonds"><code class="docutils literal notranslate"><span class="pre">find_oxonium_bonds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/fix.html#rdtools.fix.fix.fix_mol"><code class="docutils literal notranslate"><span class="pre">fix_mol()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/fix.html#rdtools.fix.fix.fix_mol_by_remedies"><code class="docutils literal notranslate"><span class="pre">fix_mol_by_remedies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/fix.html#rdtools.fix.fix.fix_mol_by_remedy"><code class="docutils literal notranslate"><span class="pre">fix_mol_by_remedy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/fix.html#rdtools.fix.fix.fix_oxonium_bonds"><code class="docutils literal notranslate"><span class="pre">fix_oxonium_bonds()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fix/mult.html">rdtools.fix.mult</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fix/mult.html#rdtools.fix.mult.get_biradical_12_query"><code class="docutils literal notranslate"><span class="pre">get_biradical_12_query()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/mult.html#rdtools.fix.mult.get_biradical_cdb_query"><code class="docutils literal notranslate"><span class="pre">get_biradical_cdb_query()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/mult.html#rdtools.fix.mult.get_carbene_query"><code class="docutils literal notranslate"><span class="pre">get_carbene_query()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/mult.html#rdtools.fix.mult.get_radical_site_query"><code class="docutils literal notranslate"><span class="pre">get_radical_site_query()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/mult.html#rdtools.fix.mult.saturate_biradical_12"><code class="docutils literal notranslate"><span class="pre">saturate_biradical_12()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/mult.html#rdtools.fix.mult.saturate_biradical_cdb"><code class="docutils literal notranslate"><span class="pre">saturate_biradical_cdb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/mult.html#rdtools.fix.mult.saturate_carbene"><code class="docutils literal notranslate"><span class="pre">saturate_carbene()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/mult.html#rdtools.fix.mult.saturate_mol"><code class="docutils literal notranslate"><span class="pre">saturate_mol()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fix/remedy.html">rdtools.fix.remedy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fix/remedy.html#rdtools.fix.remedy.RemedyManager"><code class="docutils literal notranslate"><span class="pre">RemedyManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="fix/remedy.html#rdtools.fix.remedy.RemedyManager.all_remedies"><code class="docutils literal notranslate"><span class="pre">RemedyManager.all_remedies</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fix/remedy.html#rdtools.fix.remedy.RemedyManager.default_remedies"><code class="docutils literal notranslate"><span class="pre">RemedyManager.default_remedies</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="fix/remedy.html#rdtools.fix.remedy.RemedyManager.get_remedies"><code class="docutils literal notranslate"><span class="pre">RemedyManager.get_remedies()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fix/remedy.html#rdtools.fix.remedy.get_oxonium_remedies"><code class="docutils literal notranslate"><span class="pre">get_oxonium_remedies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/remedy.html#rdtools.fix.remedy.get_recommend_remedies"><code class="docutils literal notranslate"><span class="pre">get_recommend_remedies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/remedy.html#rdtools.fix.remedy.get_ring_remedies"><code class="docutils literal notranslate"><span class="pre">get_ring_remedies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fix/remedy.html#rdtools.fix.remedy.get_zwitterion_remedies"><code class="docutils literal notranslate"><span class="pre">get_zwitterion_remedies()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="resonance/index.html">rdtools.resonance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resonance/base.html">rdtools.resonance.base</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="resonance/base.html#rdtools.resonance.base.ResonanceAlgoRegistry"><code class="docutils literal notranslate"><span class="pre">ResonanceAlgoRegistry</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/base.html#rdtools.resonance.base.ResonanceAlgoRegistry.get"><code class="docutils literal notranslate"><span class="pre">ResonanceAlgoRegistry.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/base.html#rdtools.resonance.base.ResonanceAlgoRegistry.register"><code class="docutils literal notranslate"><span class="pre">ResonanceAlgoRegistry.register()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/base.html#rdtools.resonance.base.generate_resonance_structures"><code class="docutils literal notranslate"><span class="pre">generate_resonance_structures()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/filtration.html">rdtools.resonance.filtration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.aromaticity_filtration"><code class="docutils literal notranslate"><span class="pre">aromaticity_filtration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.charge_filtration"><code class="docutils literal notranslate"><span class="pre">charge_filtration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.filter_structures"><code class="docutils literal notranslate"><span class="pre">filter_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.get_charge_distance"><code class="docutils literal notranslate"><span class="pre">get_charge_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.get_charge_span_list"><code class="docutils literal notranslate"><span class="pre">get_charge_span_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.get_octet_deviation"><code class="docutils literal notranslate"><span class="pre">get_octet_deviation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.get_octet_deviation_list"><code class="docutils literal notranslate"><span class="pre">get_octet_deviation_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.has_unique_sites"><code class="docutils literal notranslate"><span class="pre">has_unique_sites()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.multiplicity_filtration"><code class="docutils literal notranslate"><span class="pre">multiplicity_filtration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.octet_filtration"><code class="docutils literal notranslate"><span class="pre">octet_filtration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.stabilize_charges_by_electronegativity"><code class="docutils literal notranslate"><span class="pre">stabilize_charges_by_electronegativity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/filtration.html#rdtools.resonance.filtration.stabilize_charges_by_proximity"><code class="docutils literal notranslate"><span class="pre">stabilize_charges_by_proximity()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/pathfinder.html">rdtools.resonance.pathfinder</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.template"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AdjacentLonePairRadicalPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">AdjacentLonePairRadicalPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.template"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.AllylRadicalPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">AllylRadicalPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id0"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id1"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id2"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id3"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id4"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id5"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ForwardAdjacentLonePairRadicalMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">ForwardAdjacentLonePairRadicalMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id6"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id7"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id8"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.LonePairMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">LonePairMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder"><code class="docutils literal notranslate"><span class="pre">PathFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.template"><code class="docutils literal notranslate"><span class="pre">PathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">PathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">PathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.find"><code class="docutils literal notranslate"><span class="pre">PathFinder.find()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id9"><code class="docutils literal notranslate"><span class="pre">PathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id10"><code class="docutils literal notranslate"><span class="pre">PathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id11"><code class="docutils literal notranslate"><span class="pre">PathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.transform"><code class="docutils literal notranslate"><span class="pre">PathFinder.transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinder.verify"><code class="docutils literal notranslate"><span class="pre">PathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinderRegistry"><code class="docutils literal notranslate"><span class="pre">PathFinderRegistry</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinderRegistry.get"><code class="docutils literal notranslate"><span class="pre">PathFinderRegistry.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.PathFinderRegistry.register"><code class="docutils literal notranslate"><span class="pre">PathFinderRegistry.register()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id12"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id13"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id14"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id15"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id16"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.reverse_abbr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#id17"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.transform"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.ReverseAdjacentLonePairRadicalMultipleBondPathFinder.verify"><code class="docutils literal notranslate"><span class="pre">ReverseAdjacentLonePairRadicalMultipleBondPathFinder.verify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/pathfinder.html#rdtools.resonance.pathfinder.transform_pre_and_post_process"><code class="docutils literal notranslate"><span class="pre">transform_pre_and_post_process()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/rdkit_backend.html">rdtools.resonance.rdkit_backend</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rdkit_backend.html#rdtools.resonance.rdkit_backend.generate_charged_resonance_structures"><code class="docutils literal notranslate"><span class="pre">generate_charged_resonance_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rdkit_backend.html#rdtools.resonance.rdkit_backend.generate_radical_resonance_structures"><code class="docutils literal notranslate"><span class="pre">generate_radical_resonance_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rdkit_backend.html#rdtools.resonance.rdkit_backend.generate_resonance_structures"><code class="docutils literal notranslate"><span class="pre">generate_resonance_structures()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/rmg_backend.html">rdtools.resonance.rmg_backend</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.analyze_molecule"><code class="docutils literal notranslate"><span class="pre">analyze_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_aromatic_resonance_structure"><code class="docutils literal notranslate"><span class="pre">generate_aromatic_resonance_structure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_aryne_resonance_structures"><code class="docutils literal notranslate"><span class="pre">generate_aryne_resonance_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_clar_structures"><code class="docutils literal notranslate"><span class="pre">generate_clar_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_kekule_structure"><code class="docutils literal notranslate"><span class="pre">generate_kekule_structure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_optimal_aromatic_resonance_structures"><code class="docutils literal notranslate"><span class="pre">generate_optimal_aromatic_resonance_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_resonance_structures"><code class="docutils literal notranslate"><span class="pre">generate_resonance_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.generate_resonance_structures_with_pathfinder"><code class="docutils literal notranslate"><span class="pre">generate_resonance_structures_with_pathfinder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="resonance/rmg_backend.html#rdtools.resonance.rmg_backend.populate_resonance_algorithms"><code class="docutils literal notranslate"><span class="pre">populate_resonance_algorithms()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reaction/index.html">rdtools.reaction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reaction/draw.html">rdtools.reaction.draw</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reaction/draw.html#rdtools.reaction.draw.draw_reaction"><code class="docutils literal notranslate"><span class="pre">draw_reaction()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reaction/stereo.html">rdtools.reaction.stereo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reaction/stereo.html#rdtools.reaction.stereo.is_DA_rxn_endo"><code class="docutils literal notranslate"><span class="pre">is_DA_rxn_endo()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reaction/ts.html">rdtools.reaction.ts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reaction/ts.html#rdtools.reaction.ts.examine_normal_mode"><code class="docutils literal notranslate"><span class="pre">examine_normal_mode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reaction/ts.html#rdtools.reaction.ts.guess_rxn_from_normal_mode"><code class="docutils literal notranslate"><span class="pre">guess_rxn_from_normal_mode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reaction/ts.html#rdtools.reaction.ts.is_valid_habs_ts"><code class="docutils literal notranslate"><span class="pre">is_valid_habs_ts()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="atom.html">rdtools.atom</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.clear_rxn_prop"><code class="docutils literal notranslate"><span class="pre">clear_rxn_prop()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.decrement_radical"><code class="docutils literal notranslate"><span class="pre">decrement_radical()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.get_atom_mass"><code class="docutils literal notranslate"><span class="pre">get_atom_mass()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.get_electronegativity"><code class="docutils literal notranslate"><span class="pre">get_electronegativity()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.get_element_symbol"><code class="docutils literal notranslate"><span class="pre">get_element_symbol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.get_lone_pair"><code class="docutils literal notranslate"><span class="pre">get_lone_pair()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.get_n_outer_electrons"><code class="docutils literal notranslate"><span class="pre">get_n_outer_electrons()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.get_num_occupied_orbitals"><code class="docutils literal notranslate"><span class="pre">get_num_occupied_orbitals()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.get_total_bond_order"><code class="docutils literal notranslate"><span class="pre">get_total_bond_order()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.has_empty_orbitals"><code class="docutils literal notranslate"><span class="pre">has_empty_orbitals()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atom.html#rdtools.atom.increment_radical"><code class="docutils literal notranslate"><span class="pre">increment_radical()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="atommap.html">rdtools.atommap</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.clear_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">clear_atom_map_numbers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.get_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">get_atom_map_numbers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.has_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">has_atom_map_numbers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.map_h_atoms_in_reaction"><code class="docutils literal notranslate"><span class="pre">map_h_atoms_in_reaction()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.move_atommaps_to_notes"><code class="docutils literal notranslate"><span class="pre">move_atommaps_to_notes()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.move_notes_to_atommaps"><code class="docutils literal notranslate"><span class="pre">move_notes_to_atommaps()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.needs_renumber"><code class="docutils literal notranslate"><span class="pre">needs_renumber()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.renumber_atoms"><code class="docutils literal notranslate"><span class="pre">renumber_atoms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.renumber_atoms_by_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">renumber_atoms_by_atom_map_numbers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.renumber_atoms_by_map_dict"><code class="docutils literal notranslate"><span class="pre">renumber_atoms_by_map_dict()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.renumber_atoms_by_substruct_match_result"><code class="docutils literal notranslate"><span class="pre">renumber_atoms_by_substruct_match_result()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.reset_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">reset_atom_map_numbers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.reverse_map"><code class="docutils literal notranslate"><span class="pre">reverse_map()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atommap.html#rdtools.atommap.update_product_atom_map_after_reaction"><code class="docutils literal notranslate"><span class="pre">update_product_atom_map_after_reaction()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bond.html">rdtools.bond</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.add_bond"><code class="docutils literal notranslate"><span class="pre">add_bond()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.add_bonds"><code class="docutils literal notranslate"><span class="pre">add_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.decrement_bond_order"><code class="docutils literal notranslate"><span class="pre">decrement_bond_order()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.get_all_changing_bonds"><code class="docutils literal notranslate"><span class="pre">get_all_changing_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.get_atoms_in_bonds"><code class="docutils literal notranslate"><span class="pre">get_atoms_in_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.get_bonds_as_tuples"><code class="docutils literal notranslate"><span class="pre">get_bonds_as_tuples()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.get_bonds_with_BO_changed"><code class="docutils literal notranslate"><span class="pre">get_bonds_with_BO_changed()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.get_broken_bonds"><code class="docutils literal notranslate"><span class="pre">get_broken_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.get_formed_and_broken_bonds"><code class="docutils literal notranslate"><span class="pre">get_formed_and_broken_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.get_formed_bonds"><code class="docutils literal notranslate"><span class="pre">get_formed_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="bond.html#rdtools.bond.increment_bond_order"><code class="docutils literal notranslate"><span class="pre">increment_bond_order()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">rdtools.compare</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="compare.html#rdtools.compare.get_match_and_recover_recipe"><code class="docutils literal notranslate"><span class="pre">get_match_and_recover_recipe()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="compare.html#rdtools.compare.get_resonance_structure_match"><code class="docutils literal notranslate"><span class="pre">get_resonance_structure_match()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="compare.html#rdtools.compare.get_unique_mols"><code class="docutils literal notranslate"><span class="pre">get_unique_mols()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="compare.html#rdtools.compare.has_matched_mol"><code class="docutils literal notranslate"><span class="pre">has_matched_mol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="compare.html#rdtools.compare.is_same_complex"><code class="docutils literal notranslate"><span class="pre">is_same_complex()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="compare.html#rdtools.compare.is_same_connectivity_conf"><code class="docutils literal notranslate"><span class="pre">is_same_connectivity_conf()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="compare.html#rdtools.compare.is_same_connectivity_mol"><code class="docutils literal notranslate"><span class="pre">is_same_connectivity_mol()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">rdtools.conf</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.add_conformer"><code class="docutils literal notranslate"><span class="pre">add_conformer()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.add_null_conformer"><code class="docutils literal notranslate"><span class="pre">add_null_conformer()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.create_conformer"><code class="docutils literal notranslate"><span class="pre">create_conformer()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.edit_conf_by_add_bonds"><code class="docutils literal notranslate"><span class="pre">edit_conf_by_add_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.embed_conformer"><code class="docutils literal notranslate"><span class="pre">embed_conformer()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.embed_multiple_confs"><code class="docutils literal notranslate"><span class="pre">embed_multiple_confs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.embed_multiple_null_confs"><code class="docutils literal notranslate"><span class="pre">embed_multiple_null_confs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.get_angle_deg"><code class="docutils literal notranslate"><span class="pre">get_angle_deg()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.get_bond_length"><code class="docutils literal notranslate"><span class="pre">get_bond_length()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.get_torsion_deg"><code class="docutils literal notranslate"><span class="pre">get_torsion_deg()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.reflect"><code class="docutils literal notranslate"><span class="pre">reflect()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.set_angle_deg"><code class="docutils literal notranslate"><span class="pre">set_angle_deg()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.set_bond_length"><code class="docutils literal notranslate"><span class="pre">set_bond_length()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.set_conformer_coordinates"><code class="docutils literal notranslate"><span class="pre">set_conformer_coordinates()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="conf.html#rdtools.conf.set_torsion_deg"><code class="docutils literal notranslate"><span class="pre">set_torsion_deg()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dist.html">rdtools.dist</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.get_adjacency_matrix"><code class="docutils literal notranslate"><span class="pre">get_adjacency_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.get_bond_distance_matrix"><code class="docutils literal notranslate"><span class="pre">get_bond_distance_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.get_colliding_atoms"><code class="docutils literal notranslate"><span class="pre">get_colliding_atoms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.get_covalent_distance_matrix"><code class="docutils literal notranslate"><span class="pre">get_covalent_distance_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.get_distance_matrix"><code class="docutils literal notranslate"><span class="pre">get_distance_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.get_missing_bonds"><code class="docutils literal notranslate"><span class="pre">get_missing_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.get_shortest_path"><code class="docutils literal notranslate"><span class="pre">get_shortest_path()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.get_vdw_distance_matrix"><code class="docutils literal notranslate"><span class="pre">get_vdw_distance_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dist.html#rdtools.dist.has_colliding_atoms"><code class="docutils literal notranslate"><span class="pre">has_colliding_atoms()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="element.html">rdtools.element</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="element.html#rdtools.element.get_atom_mass"><code class="docutils literal notranslate"><span class="pre">get_atom_mass()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="element.html#rdtools.element.get_atomic_num"><code class="docutils literal notranslate"><span class="pre">get_atomic_num()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="element.html#rdtools.element.get_bond_radius"><code class="docutils literal notranslate"><span class="pre">get_bond_radius()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="element.html#rdtools.element.get_covalent_radius"><code class="docutils literal notranslate"><span class="pre">get_covalent_radius()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="element.html#rdtools.element.get_electronegativity"><code class="docutils literal notranslate"><span class="pre">get_electronegativity()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="element.html#rdtools.element.get_element_symbol"><code class="docutils literal notranslate"><span class="pre">get_element_symbol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="element.html#rdtools.element.get_n_outer_electrons"><code class="docutils literal notranslate"><span class="pre">get_n_outer_electrons()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="element.html#rdtools.element.get_vdw_radius"><code class="docutils literal notranslate"><span class="pre">get_vdw_radius()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="featurizer.html">rdtools.featurizer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="featurizer.html#rdtools.featurizer.AvalonGenerator"><code class="docutils literal notranslate"><span class="pre">AvalonGenerator</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="featurizer.html#rdtools.featurizer.AvalonGenerator.GetCountFingerprintAsNumPy"><code class="docutils literal notranslate"><span class="pre">AvalonGenerator.GetCountFingerprintAsNumPy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="featurizer.html#rdtools.featurizer.AvalonGenerator.GetFingerprintAsNumPy"><code class="docutils literal notranslate"><span class="pre">AvalonGenerator.GetFingerprintAsNumPy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="featurizer.html#rdtools.featurizer.GetAvalonGenerator"><code class="docutils literal notranslate"><span class="pre">GetAvalonGenerator()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="featurizer.html#rdtools.featurizer.GetMACCSGenerator"><code class="docutils literal notranslate"><span class="pre">GetMACCSGenerator()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="featurizer.html#rdtools.featurizer.MACCSGenerator"><code class="docutils literal notranslate"><span class="pre">MACCSGenerator</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="featurizer.html#rdtools.featurizer.MACCSGenerator.GetFingerprintAsNumPy"><code class="docutils literal notranslate"><span class="pre">MACCSGenerator.GetFingerprintAsNumPy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="featurizer.html#rdtools.featurizer.get_fingerprint"><code class="docutils literal notranslate"><span class="pre">get_fingerprint()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="featurizer.html#rdtools.featurizer.get_fingerprint_generator"><code class="docutils literal notranslate"><span class="pre">get_fingerprint_generator()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="featurizer.html#rdtools.featurizer.get_rxn_fingerprint"><code class="docutils literal notranslate"><span class="pre">get_rxn_fingerprint()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="featurizer.html#rdtools.featurizer.rdkit_vector_to_array"><code class="docutils literal notranslate"><span class="pre">rdkit_vector_to_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mol.html">rdtools.mol</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.combine_mols"><code class="docutils literal notranslate"><span class="pre">combine_mols()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.fast_sanitize"><code class="docutils literal notranslate"><span class="pre">fast_sanitize()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.force_no_implicit"><code class="docutils literal notranslate"><span class="pre">force_no_implicit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_atom_masses"><code class="docutils literal notranslate"><span class="pre">get_atom_masses()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_atomic_nums"><code class="docutils literal notranslate"><span class="pre">get_atomic_nums()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_closed_shell_explicit"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_explicit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_closed_shell_implicit"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_implicit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_closed_shell_mol"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_mol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_dehydrogenated_mol"><code class="docutils literal notranslate"><span class="pre">get_dehydrogenated_mol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_element_counts"><code class="docutils literal notranslate"><span class="pre">get_element_counts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_element_symbols"><code class="docutils literal notranslate"><span class="pre">get_element_symbols()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_formal_charge"><code class="docutils literal notranslate"><span class="pre">get_formal_charge()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_heavy_atoms"><code class="docutils literal notranslate"><span class="pre">get_heavy_atoms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_heavy_hydrogen_query"><code class="docutils literal notranslate"><span class="pre">get_heavy_hydrogen_query()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_mol_weight"><code class="docutils literal notranslate"><span class="pre">get_mol_weight()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_spin_multiplicity"><code class="docutils literal notranslate"><span class="pre">get_spin_multiplicity()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.get_writable_copy"><code class="docutils literal notranslate"><span class="pre">get_writable_copy()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.reflect"><code class="docutils literal notranslate"><span class="pre">reflect()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mol.html#rdtools.mol.set_mol_positions"><code class="docutils literal notranslate"><span class="pre">set_mol_positions()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="obabel.html">rdtools.obabel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obabel.html#rdtools.obabel.get_obmol_coords"><code class="docutils literal notranslate"><span class="pre">get_obmol_coords()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="obabel.html#rdtools.obabel.openbabel_mol_to_rdkit_mol"><code class="docutils literal notranslate"><span class="pre">openbabel_mol_to_rdkit_mol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="obabel.html#rdtools.obabel.parse_xyz_by_openbabel"><code class="docutils literal notranslate"><span class="pre">parse_xyz_by_openbabel()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="obabel.html#rdtools.obabel.rdkit_mol_to_openbabel_mol"><code class="docutils literal notranslate"><span class="pre">rdkit_mol_to_openbabel_mol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="obabel.html#rdtools.obabel.rdkit_mol_to_openbabel_mol_manual"><code class="docutils literal notranslate"><span class="pre">rdkit_mol_to_openbabel_mol_manual()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="obabel.html#rdtools.obabel.set_obmol_coords"><code class="docutils literal notranslate"><span class="pre">set_obmol_coords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="torsion.html">rdtools.torsion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="torsion.html#rdtools.torsion.determine_smallest_atom_index_in_torsion"><code class="docutils literal notranslate"><span class="pre">determine_smallest_atom_index_in_torsion()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="torsion.html#rdtools.torsion.find_internal_torsions"><code class="docutils literal notranslate"><span class="pre">find_internal_torsions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="torsion.html#rdtools.torsion.find_ring_torsions"><code class="docutils literal notranslate"><span class="pre">find_ring_torsions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="torsion.html#rdtools.torsion.get_torsion_tops"><code class="docutils literal notranslate"><span class="pre">get_torsion_tops()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="torsion.html#rdtools.torsion.get_torsional_modes"><code class="docutils literal notranslate"><span class="pre">get_torsional_modes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">rdtools.utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#rdtools.utils.FakeModule"><code class="docutils literal notranslate"><span class="pre">FakeModule</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#rdtools.utils.get_fake_module"><code class="docutils literal notranslate"><span class="pre">get_fake_module()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../rdmc/utils.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">rdmc.utils</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="conversion/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">rdtools.conversion</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/reference/rdtools/rdtools.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

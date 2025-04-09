@@ -1,0 +1,910 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="240x240" href="../../_static/RDMC_icon_simple_240x240.png" type="image/png">
+    <title>rdtools.mol &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=188e8da4" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/rdtools/mol';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rdtools.obabel" href="obabel.html" />
+    <link rel="prev" title="rdtools.featurizer" href="featurizer.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <img src="../../_static/RDMC_icon.svg" class="logo__image only-dark pst-js-only" alt="RDMC 0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="conversion/index.html">rdtools.conversion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="conversion/smiles.html">rdtools.conversion.smiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversion/xyz.html">rdtools.conversion.xyz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversion/rmg.html">rdtools.conversion.rmg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="view/index.html">rdtools.view</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="view/base.html">rdtools.view.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/mol.html">rdtools.view.mol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/conf.html">rdtools.view.conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/freq.html">rdtools.view.freq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/reaction.html">rdtools.view.reaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/interact.html">rdtools.view.interact</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="fix/index.html">rdtools.fix</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="fix/fix.html">rdtools.fix.fix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fix/mult.html">rdtools.fix.mult</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fix/remedy.html">rdtools.fix.remedy</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="resonance/index.html">rdtools.resonance</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="resonance/base.html">rdtools.resonance.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/filtration.html">rdtools.resonance.filtration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/pathfinder.html">rdtools.resonance.pathfinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/rdkit_backend.html">rdtools.resonance.rdkit_backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/rmg_backend.html">rdtools.resonance.rmg_backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reaction/index.html">rdtools.reaction</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="reaction/draw.html">rdtools.reaction.draw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction/stereo.html">rdtools.reaction.stereo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction/ts.html">rdtools.reaction.ts</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="atom.html">rdtools.atom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="atommap.html">rdtools.atommap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bond.html">rdtools.bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">rdtools.compare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">rdtools.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist.html">rdtools.dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="element.html">rdtools.element</a></li>
+<li class="toctree-l1"><a class="reference internal" href="featurizer.html">rdtools.featurizer</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">rdtools.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="obabel.html">rdtools.obabel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torsion.html">rdtools.torsion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">rdtools.utils</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="rdtools.html" class="nav-link">RDtools APIs</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">rdtools.mol</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-rdtools.mol">
+<span id="rdtools-mol"></span><h1>rdtools.mol<a class="headerlink" href="#module-rdtools.mol" title="Link to this heading">#</a></h1>
+<p>Molecule manipulation functions.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.combine_mols">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">combine_mols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mol2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_product</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdtools.mol.combine_mols" title="Link to this definition">#</a></dt>
+<dd><p>Combine two molecules (<code class="docutils literal notranslate"><span class="pre">mol1</span></code> and <code class="docutils literal notranslate"><span class="pre">mol2</span></code>).</p>
+<p>A new object instance will be
+created and changes are not made to the current molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol1</strong> (<em>Chem.Mol</em>) – The current molecule.</p></li>
+<li><p><strong>mol2</strong> (<em>Chem.Mol</em>) – The molecule to be combined.</p></li>
+<li><p><strong>offset</strong> (<em>Optional</em><em>[</em><em>npt.NDArray</em><em>[</em><em>np.float64</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – The offset to be added to the coordinates of <code class="docutils literal notranslate"><span class="pre">mol2</span></code>. It should be a length-3 array.
+This is not used when any of the molecules has 0 conformer. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>c_product</strong> (<em>bool</em><em>, </em><em>optional</em>) – <p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, generate conformers for every possible combination
+between the current molecule and the <code class="docutils literal notranslate"><span class="pre">molFrag</span></code>. E.g.,
+(1,1), (1,2), … (1,n), (2,1), …(m,1), … (m,n). <span class="math notranslate nohighlight">\(N(conformer) = m \\times n.\)</span></p>
+<p>Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>, meaning only generate conformers according to
+(1,1), (2,2), … When <code class="docutils literal notranslate"><span class="pre">c_product</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, if the current
+molecule has 0 conformer, conformers will be embedded to the current molecule first.
+The number of conformers of the combined molecule will be equal to the number of conformers
+of <code class="docutils literal notranslate"><span class="pre">molFrag</span></code>. Otherwise, the number of conformers of the combined molecule will be equal
+to the number of conformers of the current molecule. Some coordinates may be filled by 0s,
+if the current molecule and <code class="docutils literal notranslate"><span class="pre">molFrag</span></code> have different numbers of conformers.</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.Mol</strong> – The combined molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.fast_sanitize">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">fast_sanitize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RWMol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.mol.fast_sanitize" title="Link to this definition">#</a></dt>
+<dd><p>Only update the molecule’s property and ring perception.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.force_no_implicit">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">force_no_implicit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.mol.force_no_implicit" title="Link to this definition">#</a></dt>
+<dd><p>Set no implicit hydrogen for atoms without implicit/explicit hydrogens.</p>
+<p>When manipulating molecules by changing number of radical electrons / charges and
+then updating the cached properties, additional hydrogens may be added to the
+molecule. This function helps avoid this problem.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_atom_masses">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_atom_masses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.mol.get_atom_masses" title="Link to this definition">#</a></dt>
+<dd><p>Get atomic masses of a molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get atomic masses.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>List[float]</strong> – List of atomic masses (e.g. <code class="docutils literal notranslate"><span class="pre">[1.008,</span> <span class="pre">12.01,</span> <span class="pre">15.999,</span> <span class="pre">]</span></code> etc.)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_atomic_nums">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_atomic_nums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.mol.get_atomic_nums" title="Link to this definition">#</a></dt>
+<dd><p>Get atomic numbers of a molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get atomic numbers.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>List[int]</strong> – List of atomic numbers (e.g. <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">6,</span> <span class="pre">8,</span> <span class="pre">]</span></code> etc.)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_closed_shell_explicit">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_closed_shell_explicit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RWMol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_hs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RWMol</span></span></span><a class="headerlink" href="#rdtools.mol.get_closed_shell_explicit" title="Link to this definition">#</a></dt>
+<dd><p>Get the closed shell molecule by explicitly adding H atoms to the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.RWMol</em>) – The radical molecule.</p></li>
+<li><p><strong>sanitize</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to sanitize the molecule. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>max_num_hs</strong> (<em>int</em><em>, </em><em>optional</em>) – The max number of Hs to add on a single atom. This option allows partial
+saturation for a bi- or tri-radical site. E.g., [CH] =&gt; [CH3].
+Defaults to <code class="docutils literal notranslate"><span class="pre">12</span></code>, which is equivalent to add as many Hs as possible to the radical site.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.RWMol</strong> – The closed shell molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_closed_shell_implicit">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_closed_shell_implicit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_hs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdtools.mol.get_closed_shell_implicit" title="Link to this definition">#</a></dt>
+<dd><p>Get the closed shell molecule of a radical molecule.</p>
+<p>This only adds Hs implicitly and no new atom is actually added to the molecule.
+This is suggested for the molecule objects with (most) H atoms are not explicitly defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The radical molecule.</p></li>
+<li><p><strong>sanitize</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to sanitize the molecule. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>max_num_hs</strong> (<em>int</em><em>, </em><em>optional</em>) – The max number of Hs to add on a single atom. This option allows partial
+saturation for a bi- or tri-radical site. E.g., [CH] =&gt; [CH3].
+Defaults to <code class="docutils literal notranslate"><span class="pre">12</span></code>, which is equivalent to add as many Hs as possible to the radical site.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.Mol</strong> – The closed shell molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_closed_shell_mol">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_closed_shell_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RWMol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explicit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_hs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RWMol</span></span></span><a class="headerlink" href="#rdtools.mol.get_closed_shell_mol" title="Link to this definition">#</a></dt>
+<dd><p>Get a closed shell molecule.</p>
+<p>The modification is done by removing all radical electrons and adding H atoms
+to these radical sites. This method currently only work for radicals and will not
+work properly for singlet radicals (number of radical electrons = 0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.RWMol</em>) – The radical molecule</p></li>
+<li><p><strong>sanitize</strong> (<em>bool</em>) – Whether to sanitize the molecule. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>explicit</strong> (<em>bool</em>) – Whether to use add H atoms explicitly.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>, which is best used with radical molecules with
+hydrogen atoms explicitly defined. Setting it to <code class="docutils literal notranslate"><span class="pre">False</span></code>, if the
+hydrogen atoms are implicitly defined.</p></li>
+<li><p><strong>max_num_hs</strong> (<em>int</em><em>, </em><em>optional</em>) – The max number of Hs to add on a single atom. This option allows partial
+saturation for a bi- or tri-radical site. E.g., [CH] =&gt; [CH3].
+Defaults to <code class="docutils literal notranslate"><span class="pre">12</span></code>, which is equivalent to add as many Hs as possible to the radical site.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.RWMol</strong> – A closed shell molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_dehydrogenated_mol">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_dehydrogenated_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'radical'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">once_per_heavy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_on_atoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.mol.get_dehydrogenated_mol" title="Link to this definition">#</a></dt>
+<dd><p>Get the dehydrogenated molecules.</p>
+<p>Generate the molecules that have one less hydrogen atom compared to the reference
+molecule. This function only supports molecules that have H atoms explicitly
+defined. Note, this function doesn’t filter out equivalent structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The reference molecule</p></li>
+<li><p><strong>kind</strong> (<em>str</em><em>, </em><em>optional</em>) – The kind of generated molecules. The available options are
+“radical”, “cation”, and “anion”.</p></li>
+<li><p><strong>once_per_heavy</strong> (<em>bool</em><em>, </em><em>optional</em>) – There can be multiple Hs on a single heavy atom.
+By setting this argument to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the function will only remove H atom
+once per heavy atoms. Otherwise, the function will comprehensively generate
+dehydrogenated molecule by remove every single H atoms. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>only_on_atoms</strong> (<em>Optional</em><em>[</em><em>list</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – This argument allows only operating on specific atoms.
+Defaults to None, operating on all atoms.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Mol]</strong> – a list of dehydrogenated molecules</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_element_counts">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_element_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.mol.get_element_counts" title="Link to this definition">#</a></dt>
+<dd><p>Get element counts of a molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get element counts.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dict[str, int]</strong> – {“element_symbol”: count}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_element_symbols">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_element_symbols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.mol.get_element_symbols" title="Link to this definition">#</a></dt>
+<dd><p>Get element symbols of a molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get element symbols.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>List[str]</strong> – List of element symbols (e.g. <code class="docutils literal notranslate"><span class="pre">[&quot;H&quot;,</span> <span class="pre">&quot;C&quot;,</span> <span class="pre">&quot;O&quot;,]</span></code> etc.)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_formal_charge">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_formal_charge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#rdtools.mol.get_formal_charge" title="Link to this definition">#</a></dt>
+<dd><p>Get formal charge of a molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get formal charge.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>int</strong> – Formal charge.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_heavy_atoms">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_heavy_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Atom</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.mol.get_heavy_atoms" title="Link to this definition">#</a></dt>
+<dd><p>Get heavy atoms of a molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get heavy atoms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Atom]</strong> – the list of heavy atoms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_heavy_hydrogen_query">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_heavy_hydrogen_query</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdtools.mol.get_heavy_hydrogen_query" title="Link to this definition">#</a></dt>
+<dd><p>Get the heavy hydrogen query.</p>
+<p>This is used to find the heavy atom and hydrogen pair in the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Chem.Mol</strong> – The heavy hydrogen query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_mol_weight">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_mol_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heavy_atoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdtools.mol.get_mol_weight" title="Link to this definition">#</a></dt>
+<dd><p>Get the molecule weight.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get the weight.</p></li>
+<li><p><strong>exact</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the exact weight is returned.
+Otherwise, the average weight is returned. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>heavy_atoms</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the weight is calculated using only heavy atoms.
+Otherwise, the weight is calculated using all atoms. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>float</strong> – The weight of the molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_spin_multiplicity">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_spin_multiplicity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#rdtools.mol.get_spin_multiplicity" title="Link to this definition">#</a></dt>
+<dd><p>Get spin multiplicity of a molecule.</p>
+<p>The spin multiplicity is calculated using
+Hund’s rule of maximum multiplicity defined as 2S + 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get spin multiplicity.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>int</strong> – Spin multiplicity.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.get_writable_copy">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">get_writable_copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RWMol</span></span></span><a class="headerlink" href="#rdtools.mol.get_writable_copy" title="Link to this definition">#</a></dt>
+<dd><p>Get an writable (editable) copy of the current molecule object.</p>
+<p>If it is an RWMol, then return a copy with the same type.
+Otherwise, return a copy in RWMol type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – molecule to copy from.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.RWMol</strong> – The writable copy of the molecule</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.reflect">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">reflect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.mol.reflect" title="Link to this definition">#</a></dt>
+<dd><p>Reflect the coordinates of the conformer of the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to reflect.</p></li>
+<li><p><strong>conf_id</strong> (<em>int</em><em>, </em><em>optional</em>) – The conformer ID to reflect.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.mol.set_mol_positions">
+<span class="sig-prename descclassname"><span class="pre">rdtools.mol.</span></span><span class="sig-name descname"><span class="pre">set_mol_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.mol.set_mol_positions" title="Link to this definition">#</a></dt>
+<dd><p>Set the positions of atoms to one of the conformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule object to change positions.</p></li>
+<li><p><strong>coords</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>tuple</em><em>[</em><em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>...</em><em>]</em><em>, </em><em>list</em><em>[</em><em>list</em><em>[</em><em>float</em><em>]</em><em>]</em><em>, </em><em>npt.NDArray</em><em>[</em><em>np.float64</em><em>]</em><em>]</em>) – A tuple/list/ndarray containing atom positions;
+or a string with the typical XYZ formating.</p></li>
+<li><p><strong>conf_id</strong> (<em>int</em><em>, </em><em>optional</em>) – Conformer ID to assign the Positions to. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+<li><p><strong>header</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the XYZ string has an header, if feeding in XYZ. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the conformer ID is invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="featurizer.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">rdtools.featurizer</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="obabel.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">rdtools.obabel</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.combine_mols"><code class="docutils literal notranslate"><span class="pre">combine_mols()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.fast_sanitize"><code class="docutils literal notranslate"><span class="pre">fast_sanitize()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.force_no_implicit"><code class="docutils literal notranslate"><span class="pre">force_no_implicit()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_atom_masses"><code class="docutils literal notranslate"><span class="pre">get_atom_masses()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_atomic_nums"><code class="docutils literal notranslate"><span class="pre">get_atomic_nums()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_closed_shell_explicit"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_explicit()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_closed_shell_implicit"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_implicit()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_closed_shell_mol"><code class="docutils literal notranslate"><span class="pre">get_closed_shell_mol()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_dehydrogenated_mol"><code class="docutils literal notranslate"><span class="pre">get_dehydrogenated_mol()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_element_counts"><code class="docutils literal notranslate"><span class="pre">get_element_counts()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_element_symbols"><code class="docutils literal notranslate"><span class="pre">get_element_symbols()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_formal_charge"><code class="docutils literal notranslate"><span class="pre">get_formal_charge()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_heavy_atoms"><code class="docutils literal notranslate"><span class="pre">get_heavy_atoms()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_heavy_hydrogen_query"><code class="docutils literal notranslate"><span class="pre">get_heavy_hydrogen_query()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_mol_weight"><code class="docutils literal notranslate"><span class="pre">get_mol_weight()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_spin_multiplicity"><code class="docutils literal notranslate"><span class="pre">get_spin_multiplicity()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.get_writable_copy"><code class="docutils literal notranslate"><span class="pre">get_writable_copy()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.reflect"><code class="docutils literal notranslate"><span class="pre">reflect()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.mol.set_mol_positions"><code class="docutils literal notranslate"><span class="pre">set_mol_positions()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/reference/rdtools/mol.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

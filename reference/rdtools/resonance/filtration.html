@@ -1,0 +1,858 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="240x240" href="../../../_static/RDMC_icon_simple_240x240.png" type="image/png">
+    <title>rdtools.resonance.filtration &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=188e8da4" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/rdtools/resonance/filtration';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="rdtools.resonance.pathfinder" href="pathfinder.html" />
+    <link rel="prev" title="rdtools.resonance.base" href="base.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <img src="../../../_static/RDMC_icon.svg" class="logo__image only-dark pst-js-only" alt="RDMC 0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../conversion/index.html">rdtools.conversion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../conversion/smiles.html">rdtools.conversion.smiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conversion/xyz.html">rdtools.conversion.xyz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conversion/rmg.html">rdtools.conversion.rmg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../view/index.html">rdtools.view</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../view/base.html">rdtools.view.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/mol.html">rdtools.view.mol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/conf.html">rdtools.view.conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/freq.html">rdtools.view.freq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/reaction.html">rdtools.view.reaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../view/interact.html">rdtools.view.interact</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../fix/index.html">rdtools.fix</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../fix/fix.html">rdtools.fix.fix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fix/mult.html">rdtools.fix.mult</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fix/remedy.html">rdtools.fix.remedy</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">rdtools.resonance</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="base.html">rdtools.resonance.base</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">rdtools.resonance.filtration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pathfinder.html">rdtools.resonance.pathfinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rdkit_backend.html">rdtools.resonance.rdkit_backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rmg_backend.html">rdtools.resonance.rmg_backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reaction/index.html">rdtools.reaction</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reaction/draw.html">rdtools.reaction.draw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reaction/stereo.html">rdtools.reaction.stereo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reaction/ts.html">rdtools.reaction.ts</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../atom.html">rdtools.atom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../atommap.html">rdtools.atommap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bond.html">rdtools.bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../compare.html">rdtools.compare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../conf.html">rdtools.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dist.html">rdtools.dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../element.html">rdtools.element</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../featurizer.html">rdtools.featurizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mol.html">rdtools.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../obabel.html">rdtools.obabel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../torsion.html">rdtools.torsion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">rdtools.utils</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../rdtools.html" class="nav-link">RDtools APIs</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">rdtools.resonance</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">rdtools.resonance.filtration</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-rdtools.resonance.filtration">
+<span id="rdtools-resonance-filtration"></span><h1>rdtools.resonance.filtration<a class="headerlink" href="#module-rdtools.resonance.filtration" title="Link to this heading">#</a></h1>
+<p>Module for filtering resonance structures.</p>
+<p>This module contains functions for filtering a list of Molecules representing a single Species,
+keeping only the representative structures. Relevant for filtration of negligible mesomerism contributing structures.</p>
+<p>The rules this module follows are (by order of importance):</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Minimum overall deviation from the Octet Rule (elaborated for Dectet for sulfur as a third row element)</p></li>
+<li><p>Additional charge separation is only allowed for radicals if it makes a new radical site in the species</p></li>
+<li><dl class="simple">
+<dt>If a structure must have charge separation, negative charges will be assigned to more electronegative atoms,</dt><dd><p>whereas positive charges will be assigned to less electronegative atoms (charge stabilization)</p>
+</dd>
+</dl>
+</li>
+<li><p>Opposite charges will be as close as possible to one another, and vice versa (charge stabilization)</p></li>
+</ol>
+</div></blockquote>
+<p>(inspired by <a class="reference external" href="http://web.archive.org/web/20140310074727/http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html">http://web.archive.org/web/20140310074727/http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html</a>
+which is quite like <a class="reference external" href="http://www.chem.ucla.edu/~harding/IGOC/R/resonance_contributor_preference_rules.html">http://www.chem.ucla.edu/~harding/IGOC/R/resonance_contributor_preference_rules.html</a>)</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.aromaticity_filtration">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">aromaticity_filtration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_polycyclic_aromatic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.aromaticity_filtration" title="Link to this definition">#</a></dt>
+<dd><p>Filter molecules by heuristics.</p>
+<p>For monocyclic aromatics, Kekule structures are removed, with the
+assumption that an equivalent aromatic structure exists. Non-aromatic
+structures are maintained if they present new radical sites. Instead of
+explicitly checking the radical sites, we only check for the SDSDSD bond
+motif since radical delocalization will disrupt that pattern.</p>
+<p>For polycyclic aromatics, structures without any benzene bonds are removed.
+The idea is that radical delocalization into the aromatic pi system is
+unfavorable because it disrupts aromaticity. Therefore, structures where
+the radical is delocalized so far into the molecule such that none of the
+rings are aromatic anymore are not representative. While this isn’t strictly
+true, it helps reduce the number of representative structures by focusing
+on the most important ones.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to filter.</p></li>
+<li><p><strong>is_polycyclic_aromatic</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the species is polycyclic aromatic. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Mol]</strong> – The filtered list of molecules.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.charge_filtration">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">charge_filtration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.charge_filtration" title="Link to this definition">#</a></dt>
+<dd><p>Filtered based on charge_span, electronegativity and proximity.</p>
+<p>If structures with an additional charge layer introduce
+new reactive sites (i.e., radicals or multiple bonds) they will also be considered.
+For example:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Both of NO2’s resonance structures will be kept: [O]N=O &lt;=&gt; O=[N+.][O-]</p></li>
+<li><dl class="simple">
+<dt>NCO will only have two resonance structures [N.]=C=O &lt;=&gt; N#C[O.], and will loose the third structure which has</dt><dd><p>the same octet deviation, has a charge separation, but the radical site has already been considered: [N+.]#C[O-]</p>
+</dd>
+</dl>
+</li>
+<li><p>CH2NO keeps all three structures, since a new radical site is introduced: [CH2.]N=O &lt;=&gt; C=N[O.] &lt;=&gt; C=[N+.][O-]</p></li>
+<li><p>NH2CHO has two structures, one of which is charged since it introduces a multiple bond: NC=O &lt;=&gt; [NH2+]=C[O-]</p></li>
+</ul>
+</div></blockquote>
+<p>However, if the species is not a radical, or multiple bonds do not alter, we only keep the structures with the
+minimal charge span. For example:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>NSH will only keep the N#S form and not [N-]=[SH+]</p></li>
+<li><dl class="simple">
+<dt>The following species will loose two thirds of its resonance structures, which are charged: CS(=O)SC &lt;=&gt;</dt><dd><p>CS(=O)#SC &lt;=&gt; C[S+]([O-]SC &lt;=&gt; CS([O-])=[S+]C &lt;=&gt; C[S+]([O-])#SC &lt;=&gt; C[S+](=O)=[S-]C</p>
+</dd>
+</dl>
+</li>
+<li><p>Azide is know to have three resonance structures: [NH-][N+]#N &lt;=&gt; N=[N+]=[N-] &lt;=&gt; [NH+]#[N+][N-2];</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to filter.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Mol]</strong> – The filtered list of molecules.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.filter_structures">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">filter_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.filter_structures" title="Link to this definition">#</a></dt>
+<dd><p>Filter a list of molecules to keep only the representative structures.</p>
+<p>This function filters them out by minimizing the number of C/N/O/S atoms without
+a full octet, non-preferred charge separation, and non-preferred aromatic
+structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to filter.</p></li>
+<li><p><strong>allow_expanded_octet</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to allow expanded octets for third row elements.
+Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>features</strong> (<em>Optional</em><em>[</em><em>dict</em><em>[</em><em>str</em><em>, </em><em>bool</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – A list of features of the species. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments. They are ignored, but included for compatibility.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Mol]</strong> – The filtered list of molecules.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RuntimeError</strong> – If no representative structures are found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.get_charge_distance">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">get_charge_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.get_charge_distance" title="Link to this definition">#</a></dt>
+<dd><p>Get the cumulated charge distance for similar charge and difference charge pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tuple[int, int]</strong> – The cumulated charge distance for similar charge and difference charge pairs, respectively.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.get_charge_span_list">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">get_charge_span_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.get_charge_span_list" title="Link to this definition">#</a></dt>
+<dd><p>Get the list of charge spans for a list of molecules.</p>
+<p>This is also calculated in
+the octet_filtration() function along with the octet filtration process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to get the charge spans for.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[float]</strong> – The charge spans for the molecules in <cite>mol_list</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.get_octet_deviation">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">get_octet_deviation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.get_octet_deviation" title="Link to this definition">#</a></dt>
+<dd><p>Returns the octet deviation for a molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get the octet deviation for.</p></li>
+<li><p><strong>allow_expanded_octet</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to allow expanded octets for third row elements.
+if <cite>allow_expanded_octet</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code> (by default),
+then the function also considers dectet for third row elements.
+Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>float</strong> – The octet deviation for the molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.get_octet_deviation_list">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">get_octet_deviation_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.get_octet_deviation_list" title="Link to this definition">#</a></dt>
+<dd><p>Get the octet deviations for a list of molecules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to get the octet deviations for.</p></li>
+<li><p><strong>allow_expanded_octet</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to allow expanded octets for third row elements.
+Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[float]</strong> – The octet deviations for the molecules in <code class="docutils literal notranslate"><span class="pre">mol_list</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.has_unique_sites">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">has_unique_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad_idxs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mul_bond_idxs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.has_unique_sites" title="Link to this definition">#</a></dt>
+<dd><p>Check if a resonance structure has unique sites.</p>
+<p>Check if a resonance structure has unique radical and multiple bond sites that
+are not present in other structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to check.</p></li>
+<li><p><strong>rad_idxs</strong> (<em>set</em><em>[</em><em>int</em><em>]</em>) – The set of radical sites in the other structures.</p></li>
+<li><p><strong>mul_bond_idxs</strong> (<em>set</em><em>[</em><em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em><em>]</em>) – The set of multiple bond sites in the other structures.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the structure has unique radical and multiple bond sites, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.multiplicity_filtration">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">multiplicity_filtration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.multiplicity_filtration" title="Link to this definition">#</a></dt>
+<dd><p>Filter a list of molecules based on their multiplicity.</p>
+<p>Returns a filtered list based on the multiplicity of the species. The
+multiplicity of the species is determined by the number of radical electrons in the
+species and only the one with the same multiplicity as the reference species (the
+first by default) is kept.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to filter. Can be either RDKit Mol or RDMC RDKitMol.</p></li>
+<li><p><strong>ref_idx</strong> (<em>int</em><em>, </em><em>optional</em>) – The index of the reference molecule in <code class="docutils literal notranslate"><span class="pre">mol_list</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Mol]</strong> – The filtered list of molecules.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.octet_filtration">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">octet_filtration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.octet_filtration" title="Link to this definition">#</a></dt>
+<dd><p>Filter unrepresentative mol by the octet deviation criterion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to filter.</p></li>
+<li><p><strong>allow_expanded_octet</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to allow expanded octets for third row elements.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Mol]</strong> – The filtered list of molecules.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.stabilize_charges_by_electronegativity">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">stabilize_charges_by_electronegativity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_empty_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.stabilize_charges_by_electronegativity" title="Link to this definition">#</a></dt>
+<dd><p>Only keep structures that obey the electronegativity rule.</p>
+<p>If a structure must
+have charge separation, negative charges will be assigned to more electronegative
+atoms, and vice versa.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to filter.</p></li>
+<li><p><strong>allow_empty_list</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to allow an empty list to be returned. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.
+If allow_empty_list is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, and all structures in <cite>mol_list</cite> violate the
+electronegativity heuristic, this function will return the original <code class="docutils literal notranslate"><span class="pre">mol_list</span></code>.
+(examples: [C-]#[O+], CS, [NH+]#[C-], [OH+]=[N-], [C-][S+]=C violate this heuristic).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Mol]</strong> – The filtered list of molecules.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.resonance.filtration.stabilize_charges_by_proximity">
+<span class="sig-prename descclassname"><span class="pre">rdtools.resonance.filtration.</span></span><span class="sig-name descname"><span class="pre">stabilize_charges_by_proximity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.resonance.filtration.stabilize_charges_by_proximity" title="Link to this definition">#</a></dt>
+<dd><p>Only keep structures that obey the charge proximity rule.</p>
+<p>Opposite charges will be as close as possible to one another, and vice versa.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol_list</strong> (<em>list</em><em>[</em><em>Chem.Mol</em><em>]</em>) – The list of molecules to filter.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Mol]</strong> – The filtered list of molecules.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="base.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">rdtools.resonance.base</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pathfinder.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">rdtools.resonance.pathfinder</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.aromaticity_filtration"><code class="docutils literal notranslate"><span class="pre">aromaticity_filtration()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.charge_filtration"><code class="docutils literal notranslate"><span class="pre">charge_filtration()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.filter_structures"><code class="docutils literal notranslate"><span class="pre">filter_structures()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.get_charge_distance"><code class="docutils literal notranslate"><span class="pre">get_charge_distance()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.get_charge_span_list"><code class="docutils literal notranslate"><span class="pre">get_charge_span_list()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.get_octet_deviation"><code class="docutils literal notranslate"><span class="pre">get_octet_deviation()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.get_octet_deviation_list"><code class="docutils literal notranslate"><span class="pre">get_octet_deviation_list()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.has_unique_sites"><code class="docutils literal notranslate"><span class="pre">has_unique_sites()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.multiplicity_filtration"><code class="docutils literal notranslate"><span class="pre">multiplicity_filtration()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.octet_filtration"><code class="docutils literal notranslate"><span class="pre">octet_filtration()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.stabilize_charges_by_electronegativity"><code class="docutils literal notranslate"><span class="pre">stabilize_charges_by_electronegativity()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.resonance.filtration.stabilize_charges_by_proximity"><code class="docutils literal notranslate"><span class="pre">stabilize_charges_by_proximity()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/reference/rdtools/resonance/filtration.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

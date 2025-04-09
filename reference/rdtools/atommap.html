@@ -1,0 +1,848 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="240x240" href="../../_static/RDMC_icon_simple_240x240.png" type="image/png">
+    <title>rdtools.atommap &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=188e8da4" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/rdtools/atommap';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rdtools.bond" href="bond.html" />
+    <link rel="prev" title="rdtools.atom" href="atom.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <img src="../../_static/RDMC_icon.svg" class="logo__image only-dark pst-js-only" alt="RDMC 0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../rdmc/rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="conversion/index.html">rdtools.conversion</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="conversion/smiles.html">rdtools.conversion.smiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversion/xyz.html">rdtools.conversion.xyz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversion/rmg.html">rdtools.conversion.rmg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="view/index.html">rdtools.view</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="view/base.html">rdtools.view.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/mol.html">rdtools.view.mol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/conf.html">rdtools.view.conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/freq.html">rdtools.view.freq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/reaction.html">rdtools.view.reaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="view/interact.html">rdtools.view.interact</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="fix/index.html">rdtools.fix</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="fix/fix.html">rdtools.fix.fix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fix/mult.html">rdtools.fix.mult</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fix/remedy.html">rdtools.fix.remedy</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="resonance/index.html">rdtools.resonance</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="resonance/base.html">rdtools.resonance.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/filtration.html">rdtools.resonance.filtration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/pathfinder.html">rdtools.resonance.pathfinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/rdkit_backend.html">rdtools.resonance.rdkit_backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resonance/rmg_backend.html">rdtools.resonance.rmg_backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reaction/index.html">rdtools.reaction</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="reaction/draw.html">rdtools.reaction.draw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction/stereo.html">rdtools.reaction.stereo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction/ts.html">rdtools.reaction.ts</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="atom.html">rdtools.atom</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">rdtools.atommap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bond.html">rdtools.bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare.html">rdtools.compare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conf.html">rdtools.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist.html">rdtools.dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="element.html">rdtools.element</a></li>
+<li class="toctree-l1"><a class="reference internal" href="featurizer.html">rdtools.featurizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mol.html">rdtools.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="obabel.html">rdtools.obabel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torsion.html">rdtools.torsion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">rdtools.utils</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="rdtools.html" class="nav-link">RDtools APIs</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">rdtools.atommap</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-rdtools.atommap">
+<span id="rdtools-atommap"></span><h1>rdtools.atommap<a class="headerlink" href="#module-rdtools.atommap" title="Link to this heading">#</a></h1>
+<p>A module of atom map number operations.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.clear_atom_map_numbers">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">clear_atom_map_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.atommap.clear_atom_map_numbers" title="Link to this definition">#</a></dt>
+<dd><p>Clear atom map numbers of the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to clear atom map numbers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.get_atom_map_numbers">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">get_atom_map_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.atommap.get_atom_map_numbers" title="Link to this definition">#</a></dt>
+<dd><p>Get atom map numbers of the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to get atom map numbers.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[int]</strong> – The atom map numbers of the molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.has_atom_map_numbers">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">has_atom_map_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.atommap.has_atom_map_numbers" title="Link to this definition">#</a></dt>
+<dd><p>Check whether the molecule has atom map numbers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – Whether the molecule has atom map numbers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.map_h_atoms_in_reaction">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">map_h_atoms_in_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rmol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Mol</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Mol</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.atommap.map_h_atoms_in_reaction" title="Link to this definition">#</a></dt>
+<dd><p>Map H atoms in a reaction given that heavy atoms are mapped already.</p>
+<p>The function
+only applies to the case where each atom in rmol paired to an atom in pmol and vise
+verse. Atom map numbers are assumed to start from 1. This is originally work for the
+results from rxnmapper, and viability to other input is unknown.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rmol</strong> (<em>Chem.Mol</em>) – The reactant molecule.</p></li>
+<li><p><strong>pmol</strong> (<em>Chem.Mol</em>) – The product molecule.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Tuple[Chem.Mol, Chem.Mol]</strong> – The reactant and product molecule with mapped H atoms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.move_atommaps_to_notes">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">move_atommaps_to_notes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clear_atommap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.atommap.move_atommaps_to_notes" title="Link to this definition">#</a></dt>
+<dd><p>Move atom map numbers to the <cite>atomNote</cite> property.</p>
+<p>This helps to make the display slightly cleaner.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to move atom map numbers to the <cite>atomNote</cite> property.</p></li>
+<li><p><strong>clear_atommap</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to clear the atom map numbers after moving.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the atom map numbers will be cleared.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.move_notes_to_atommaps">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">move_notes_to_atommaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.atommap.move_notes_to_atommaps" title="Link to this definition">#</a></dt>
+<dd><p>Move atom map numbers from <cite>atomNote</cite> to the <cite>atomMap</cite> property.</p>
+<p>This is only valid if there is no other info in atomNote.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to move atom map numbers to the <cite>atomMap</cite> property.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.needs_renumber">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">needs_renumber</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rdtools.atommap.needs_renumber" title="Link to this definition">#</a></dt>
+<dd><p>Check whether the molecule needs renumbering.</p>
+<p>Expect atom map numbers to be non-zero and monotonically
+increasing but not necessarily continuous.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bool</strong> – Whether the molecule needs renumbering.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.renumber_atoms">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">renumber_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_atom_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdtools.atommap.renumber_atoms" title="Link to this definition">#</a></dt>
+<dd><p>Renumber the atoms of the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to renumber atoms.</p></li>
+<li><p><strong>new_order</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Iterable</em><em>[</em><em>int</em><em>]</em><em>, </em><em>dict</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – The new ordering the atoms.
+- If provided as a list, it should a list of atom indexes
+and should have a length of the number of atoms.
+E.g., if newOrder is <code class="docutils literal notranslate"><span class="pre">[3,2,0,1]</span></code>, then atom <code class="docutils literal notranslate"><span class="pre">3</span></code>
+in the original molecule will be atom <code class="docutils literal notranslate"><span class="pre">0</span></code> in the new one.
+- If provided as a dict, it should be a mapping between atoms. E.g.,
+if newOrder is <code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">1:</span> <span class="pre">1,</span> <span class="pre">2:</span> <span class="pre">2,</span> <span class="pre">3:</span> <span class="pre">0}</span></code>, then atom <code class="docutils literal notranslate"><span class="pre">0</span></code> in the
+original molecule will be atom <code class="docutils literal notranslate"><span class="pre">3</span></code> in the new one. Unlike the list case,
+the newOrder can be a partial mapping, but one should make sure all the pairs
+are consistent. E.g.,``{0: 3}`` and <code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">3:</span> <span class="pre">0}</span></code> are also acceptable
+input for <code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">1:</span> <span class="pre">1,</span> <span class="pre">2:</span> <span class="pre">2,</span> <span class="pre">3:</span> <span class="pre">0}</span></code>, but you can’t have inconsistent ones like
+<code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">3:</span> <span class="pre">2}</span></code>.
+- If no value provided (default), then the molecule
+will be renumbered based on the current atom map numbers. It is helpful
+when the sequence of atom map numbers and atom indexes are inconsistent.</p></li>
+<li><p><strong>update_atom_map</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to update the atom map numbers of the molecule.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.Mol</strong> – The molecule with renumbered atoms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.renumber_atoms_by_atom_map_numbers">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">renumber_atoms_by_atom_map_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_atom_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdtools.atommap.renumber_atoms_by_atom_map_numbers" title="Link to this definition">#</a></dt>
+<dd><p>Renumber the atoms according to the atom map numbers in the molecule.</p>
+<p>It is okay if the atom map number is not continuous, as the renumbering is
+based on the ordering of the atom map number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to renumber atoms.</p></li>
+<li><p><strong>update_atom_map</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to update the atom map numbers of the molecule.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the atom map numbers will be kept.
+If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the atom map numbers will be reset be consistent with atomic number.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.Mol</strong> – The molecule with renumbered atoms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.renumber_atoms_by_map_dict">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">renumber_atoms_by_map_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_atom_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdtools.atommap.renumber_atoms_by_map_dict" title="Link to this definition">#</a></dt>
+<dd><p>Renumber the atoms of the molecule according to a dict-based mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to renumber atoms.</p></li>
+<li><p><strong>new_order</strong> (<em>dict</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The dict-based mapping, it should be a mapping between atoms. E.g.,
+if newOrder is <code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">1:</span> <span class="pre">1,</span> <span class="pre">2:</span> <span class="pre">2,</span> <span class="pre">3:</span> <span class="pre">0}</span></code>, then atom <code class="docutils literal notranslate"><span class="pre">0</span></code> in the
+original molecule will be atom <code class="docutils literal notranslate"><span class="pre">3</span></code> in the new one. Unlike the list case,
+the newOrder can be a partial mapping, but one should make sure all the pairs
+are consistent. E.g.,``{0: 3}`` and <code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">3:</span> <span class="pre">0}</span></code> are also acceptable
+input for <code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">1:</span> <span class="pre">1,</span> <span class="pre">2:</span> <span class="pre">2,</span> <span class="pre">3:</span> <span class="pre">0}</span></code>, but you can’t have inconsistent ones like
+<code class="docutils literal notranslate"><span class="pre">{0:</span> <span class="pre">3,</span> <span class="pre">3:</span> <span class="pre">2}</span></code>.</p></li>
+<li><p><strong>update_atom_map</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to update the atom map numbers of the molecule.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.Mol</strong> – The molecule with renumbered atoms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.renumber_atoms_by_substruct_match_result">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">renumber_atoms_by_substruct_match_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substruct_match_result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_ref</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_atom_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mol</span></span></span><a class="headerlink" href="#rdtools.atommap.renumber_atoms_by_substruct_match_result" title="Link to this definition">#</a></dt>
+<dd><p>Renumber the atoms of the molecule according to the substruct match result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to renumber atoms.</p></li>
+<li><p><strong>substruct_match_result</strong> (<em>Iterable</em><em>[</em><em>int</em><em>]</em>) – The substruct match result. it should be a tuple of
+atom indices. E.g., if the substruct match result is
+<code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">2,</span> <span class="pre">3)</span></code>, then atom <code class="docutils literal notranslate"><span class="pre">0</span></code> in the original molecule
+will be atom <code class="docutils literal notranslate"><span class="pre">0</span></code> in the new one, atom <code class="docutils literal notranslate"><span class="pre">2</span></code> in the
+original molecule will be atom <code class="docutils literal notranslate"><span class="pre">1</span></code> in the new one, and
+atom <code class="docutils literal notranslate"><span class="pre">3</span></code> in the original molecule will be atom <code class="docutils literal notranslate"><span class="pre">2</span></code> in
+the new one.</p></li>
+<li><p><strong>as_ref</strong> (<em>bool</em><em>, </em><em>optional</em>) – The molecule to renumber is used as the reference molecule during
+the substructure match (i.e., <code class="docutils literal notranslate"><span class="pre">mol</span></code> is the query molecule).</p></li>
+<li><p><strong>update_atom_map</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to update the atom map numbers of the molecule.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Chem.Mol</strong> – The molecule with renumbered atoms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.reset_atom_map_numbers">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">reset_atom_map_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#rdtools.atommap.reset_atom_map_numbers" title="Link to this definition">#</a></dt>
+<dd><p>Reset atom map numbers according to the atom indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Chem.Mol</em>) – The molecule to reset atom map numbers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.reverse_map">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">reverse_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="k"><span class="pre">True</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.atommap.reverse_map" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">reverse_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="k"><span class="pre">False</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">int64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">reverse_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Inverse-transform the index and value relationship in a mapping.</p>
+<p>E.g., when doing
+a subgraph match, RDKit will returns a list that the indexes correspond to the
+reference molecule and the values correspond to the probing molecule. To recover the
+reference molecule, one needs to get the reverse map and renumber the atoms of
+probing molecule with the reverse map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map</strong> (<em>Iterable</em><em>[</em><em>int</em><em>]</em>) – An atom mapping as a list (1D array).</p></li>
+<li><p><strong>as_list</strong> (<em>bool</em><em>, </em><em>optional</em>) – Output result as a <cite>list</cite> object. Otherwise,
+the output is a np.ndarray.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Union[npt.NDArray[np.int_], List[int]]</strong> – An inverted atom map from the given <code class="docutils literal notranslate"><span class="pre">match</span></code> atom map</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rdtools.atommap.update_product_atom_map_after_reaction">
+<span class="sig-prename descclassname"><span class="pre">rdtools.atommap.</span></span><span class="sig-name descname"><span class="pre">update_product_atom_map_after_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_mol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Atom</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#rdtools.atommap.update_product_atom_map_after_reaction" title="Link to this definition">#</a></dt>
+<dd><p>Update the atom map number of the product molecule after reaction.</p>
+<p>The renumbering is according to
+the reference molecule (usually the reactant). The operation is in-place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Chem.Mol</em>) – The product molecule after reaction.</p></li>
+<li><p><strong>ref_mol</strong> (<em>Chem.Mol</em>) – The reference molecule (usually the reactant).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>list[Chem.Atom]</strong> – atoms that are updated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="atom.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">rdtools.atom</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="bond.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">rdtools.bond</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.clear_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">clear_atom_map_numbers()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.get_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">get_atom_map_numbers()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.has_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">has_atom_map_numbers()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.map_h_atoms_in_reaction"><code class="docutils literal notranslate"><span class="pre">map_h_atoms_in_reaction()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.move_atommaps_to_notes"><code class="docutils literal notranslate"><span class="pre">move_atommaps_to_notes()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.move_notes_to_atommaps"><code class="docutils literal notranslate"><span class="pre">move_notes_to_atommaps()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.needs_renumber"><code class="docutils literal notranslate"><span class="pre">needs_renumber()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.renumber_atoms"><code class="docutils literal notranslate"><span class="pre">renumber_atoms()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.renumber_atoms_by_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">renumber_atoms_by_atom_map_numbers()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.renumber_atoms_by_map_dict"><code class="docutils literal notranslate"><span class="pre">renumber_atoms_by_map_dict()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.renumber_atoms_by_substruct_match_result"><code class="docutils literal notranslate"><span class="pre">renumber_atoms_by_substruct_match_result()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.reset_atom_map_numbers"><code class="docutils literal notranslate"><span class="pre">reset_atom_map_numbers()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.reverse_map"><code class="docutils literal notranslate"><span class="pre">reverse_map()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdtools.atommap.update_product_atom_map_after_reaction"><code class="docutils literal notranslate"><span class="pre">update_product_atom_map_after_reaction()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/reference/rdtools/atommap.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

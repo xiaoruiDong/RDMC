@@ -1,0 +1,915 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="240x240" href="../../_static/RDMC_icon_simple_240x240.png" type="image/png">
+    <title>rdmc.conf &#8212; RDMC 0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=188e8da4" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/rdmc/conf';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rdmc.forcefield" href="forcefield.html" />
+    <link rel="prev" title="rdmc.reaction" href="reaction.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/RDMC_icon.svg" class="logo__image only-light" alt="RDMC 0.1 documentation - Home"/>
+    <img src="../../_static/RDMC_icon.svg" class="logo__image only-dark pst-js-only" alt="RDMC 0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../rdtools/rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="rdmc.html">
+    RDMC APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../rdtools/rdtools.html">
+    RDtools APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../cite.html">
+    How to cite RDMC
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../license.html">
+    Licence
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/xiaoruidong/rdmc" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="external/index.html">rdmc.external</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="external/rmg.html">rdmc.external.rmg</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="external/inpwriter/index.html">rdmc.external.inpwriter</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="external/inpwriter/gaussian.html">rdmc.external.inpwriter.gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="external/inpwriter/qchem.html">rdmc.external.inpwriter.qchem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="external/inpwriter/orca.html">rdmc.external.inpwriter.orca</a></li>
+<li class="toctree-l3"><a class="reference internal" href="external/inpwriter/utils.html">rdmc.external.inpwriter.utils</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="external/logparser/index.html">rdmc.external.logparser</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="external/logparser/base.html">rdmc.external.logparser.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="external/logparser/gaussian.html">rdmc.external.logparser.gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="external/logparser/qchem.html">rdmc.external.logparser.qchem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="external/logparser/orca.html">rdmc.external.logparser.orca</a></li>
+<li class="toctree-l3"><a class="reference internal" href="external/logparser/utils.html">rdmc.external.logparser.utils</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="mathlib/index.html">rdmc.mathlib</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="mathlib/geom.html">rdmc.mathlib.geom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mathlib/curvefit.html">rdmc.mathlib.curvefit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mathlib/greedymin.html">rdmc.mathlib.greedymin</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="conformer_generation/index.html">rdmc.conformer_generation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="conformer_generation/embedding_geometries/index.html">Embedding Geometries</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/embedding_geometries/embedders.html">rdmc.conformer_generation.embedders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/embedding_geometries/align.html">rdmc.conformer_generation.align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/embedding_geometries/ts_guessers.html">rdmc.conformer_generation.ts_guessers</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="conformer_generation/geometry_optimization/index.html">Geometry Optimization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/geometry_optimization/optimizers.html">rdmc.conformer_generation.optimizers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/geometry_optimization/ts_optimizers.html">rdmc.conformer_generation.ts_optimizers</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="conformer_generation/postprocessing/index.html">Postprocessing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/postprocessing/verifiers.html">rdmc.conformer_generation.verifiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/postprocessing/ts_verifiers.html">rdmc.conformer_generation.ts_verifiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/postprocessing/pruners.html">rdmc.conformer_generation.pruners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/postprocessing/solvation.html">rdmc.conformer_generation.solvation</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="conformer_generation/workflow/index.html">Workflow</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/workflow/generators.html">rdmc.conformer_generation.generators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/workflow/ts_generators.html">rdmc.conformer_generation.ts_generators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/workflow/metrics.html">rdmc.conformer_generation.metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conformer_generation/workflow/sampler.html">rdmc.conformer_generation.sampler</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="conformer_generation/utils.html">Utils</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="mol.html">rdmc.mol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reaction.html">rdmc.reaction</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">rdmc.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forcefield.html">rdmc.forcefield</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">rdmc.utils</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="rdmc.html" class="nav-link">RDMC APIs</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">rdmc.conf</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-rdmc.conf">
+<span id="rdmc-conf"></span><h1>rdmc.conf<a class="headerlink" href="#module-rdmc.conf" title="Link to this heading">#</a></h1>
+<p>This module provides class and methods for dealing with RDKit Conformer.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rdmc.conf.</span></span><span class="sig-name descname"><span class="pre">EditableConformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A wrapper for rdchem.Conformer.</p>
+<p>The method nomenclature follows the Camel style to be consistent with RDKit.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.Canonicalize">
+<span class="sig-name descname"><span class="pre">Canonicalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignoreHs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.Canonicalize" title="Link to this definition">#</a></dt>
+<dd><p>Canonicalize the Conformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ignoreHs</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether ignore hydrogens. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetAllTorsionsDeg">
+<span class="sig-name descname"><span class="pre">GetAllTorsionsDeg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetAllTorsionsDeg" title="Link to this definition">#</a></dt>
+<dd><p>Get the dihedral angles of all torsional modes (rotors) of the Conformer. The sequence of the
+values are corresponding to the torsions of the molecule (<code class="docutils literal notranslate"><span class="pre">GetTorsionalModes</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>list</strong> – A list of dihedral angles of all torsional modes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetAngleDeg">
+<span class="sig-name descname"><span class="pre">GetAngleDeg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomIds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetAngleDeg" title="Link to this definition">#</a></dt>
+<dd><p>Get the angle between atoms in degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atomIds</strong> (<em>Sequence</em>) – A 3-element sequence object containing atom indexes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>float</strong> – Angle value in degrees.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetAngleRad">
+<span class="sig-name descname"><span class="pre">GetAngleRad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomIds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetAngleRad" title="Link to this definition">#</a></dt>
+<dd><p>Get the angle between atoms in rads.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atomIds</strong> (<em>Sequence</em>) – A 3-element sequence object containing atom indexes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>float</strong> – Angle value in rads.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetBondLength">
+<span class="sig-name descname"><span class="pre">GetBondLength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomIds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetBondLength" title="Link to this definition">#</a></dt>
+<dd><p>Get the bond length between atoms in Angstrom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atomIds</strong> (<em>Sequence</em>) – A 3-element sequence object containing atom indexes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>float</strong> – Bond length in Angstrom.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetCentroid">
+<span class="sig-name descname"><span class="pre">GetCentroid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignoreHs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetCentroid" title="Link to this definition">#</a></dt>
+<dd><p>Get the centroid of the conformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ignoreHs</strong> (<em>bool</em>) – Whether ignore hydrogens. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>array</strong> – The centroid of the conformer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetDistanceMatrix">
+<span class="sig-name descname"><span class="pre">GetDistanceMatrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetDistanceMatrix" title="Link to this definition">#</a></dt>
+<dd><p>Get the distance matrix of the conformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>array</strong> – n x n distance matrix such that n is the number of atom.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetOwningMol">
+<span class="sig-name descname"><span class="pre">GetOwningMol</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetOwningMol" title="Link to this definition">#</a></dt>
+<dd><p>Get the owning molecule of the conformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Union[Mol, RWMol, RDKitMol]</strong> – The owning molecule</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetPrincipalAxesAndMoments">
+<span class="sig-name descname"><span class="pre">GetPrincipalAxesAndMoments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignoreHs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetPrincipalAxesAndMoments" title="Link to this definition">#</a></dt>
+<dd><p>Get the principal axes and moments of the conformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ignoreHs</strong> (<em>bool</em>) – Whether ignore hydrogens. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tuple</strong> – A tuple containing the principal axes and moments.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetTorsionDeg">
+<span class="sig-name descname"><span class="pre">GetTorsionDeg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">torsion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetTorsionDeg" title="Link to this definition">#</a></dt>
+<dd><p>Get the dihedral angle of the torsion in degrees. The torsion can be defined
+by any atoms in the molecule (not necessarily bonded atoms.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>torsion</strong> (<em>list</em>) – A list of four atom indexes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>float</strong> – The dihedral angle of the torsion.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.GetTorsionalModes">
+<span class="sig-name descname"><span class="pre">GetTorsionalModes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indexed1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excludeMethyl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includeRings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.GetTorsionalModes" title="Link to this definition">#</a></dt>
+<dd><p>Get all of the torsional modes (rotors) of the Conformer. This information
+is obtained from its owning molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indexed1</strong> – The atom index in RDKit starts from 0. If you want to have
+indexed 1 atom indexes, please set this argument to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>excludeMethyl</strong> (<em>bool</em>) – Whether exclude the torsions with methyl groups. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>includeRings</strong> (<em>bool</em>) – Whether or not to include ring torsions. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Optinal[list]</strong> – A list of four-atom-indice to indicating the torsional modes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.HasCollidingAtoms">
+<span class="sig-name descname"><span class="pre">HasCollidingAtoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.HasCollidingAtoms" title="Link to this definition">#</a></dt>
+<dd><p>Whether has atoms are too close together (colliding).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>threshold</strong> – float indicating the threshold to use in the vdw matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.HasOwningMol">
+<span class="sig-name descname"><span class="pre">HasOwningMol</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.HasOwningMol" title="Link to this definition">#</a></dt>
+<dd><p>Whether the conformer has a owning molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bool</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the conformer has a owning molecule.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.SetAllTorsionsDeg">
+<span class="sig-name descname"><span class="pre">SetAllTorsionsDeg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.SetAllTorsionsDeg" title="Link to this definition">#</a></dt>
+<dd><p>Set the dihedral angles of all torsional modes (rotors) of the Conformer. The sequence of the
+values are corresponding to the torsions of the molecule (<code class="docutils literal notranslate"><span class="pre">GetTorsionalModes</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>angles</strong> (<em>list</em>) – A list of dihedral angles of all torsional modes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.SetAngleDeg">
+<span class="sig-name descname"><span class="pre">SetAngleDeg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomIds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.SetAngleDeg" title="Link to this definition">#</a></dt>
+<dd><p>Set the angle between atoms in degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atomIds</strong> (<em>Sequence</em>) – A 3-element sequence object containing atom indexes.</p></li>
+<li><p><strong>value</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – Bond angle in degrees.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.SetAngleRad">
+<span class="sig-name descname"><span class="pre">SetAngleRad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomIds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.SetAngleRad" title="Link to this definition">#</a></dt>
+<dd><p>Set the angle between atoms in rads.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atomIds</strong> (<em>Sequence</em>) – A 3-element sequence object containing atom indexes.</p></li>
+<li><p><strong>value</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – Bond angle in rads.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.SetBondLength">
+<span class="sig-name descname"><span class="pre">SetBondLength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomIds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.SetBondLength" title="Link to this definition">#</a></dt>
+<dd><p>Set the bond length between atoms in Angstrom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atomIds</strong> (<em>Sequence</em>) – A 3-element sequence object containing atom indexes.</p></li>
+<li><p><strong>value</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – Bond length in Angstrom.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.SetOwningMol">
+<span class="sig-name descname"><span class="pre">SetOwningMol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">owningMol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RDKitMol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Mol</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RWMol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.SetOwningMol" title="Link to this definition">#</a></dt>
+<dd><p>Set the owning molecule of the conformer. It can be either RDKitMol
+or Chem.rdchem.Mol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>owningMol</strong> – Union[RDKitMol, Chem.rdchem.Mol] The owning molecule of the conformer.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Not a valid <code class="docutils literal notranslate"><span class="pre">owning_mol</span></code> input, when giving something else.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.SetPositions">
+<span class="sig-name descname"><span class="pre">SetPositions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.SetPositions" title="Link to this definition">#</a></dt>
+<dd><p>Set the Positions of atoms of the conformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coords</strong> – a list of tuple of atom coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.SetTorsionDeg">
+<span class="sig-name descname"><span class="pre">SetTorsionDeg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">torsion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.SetTorsionDeg" title="Link to this definition">#</a></dt>
+<dd><p>Set the dihedral angle of the torsion in degrees. The torsion can only be defined
+by a chain of bonded atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>torsion</strong> (<em>list</em>) – A list of four atom indexes.</p></li>
+<li><p><strong>degree</strong> (<em>float</em><em>, </em><em>int</em>) – The dihedral angle of the torsion.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.SetTorsionalModes">
+<span class="sig-name descname"><span class="pre">SetTorsionalModes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">torsions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rdmc.conf.EditableConformer.SetTorsionalModes" title="Link to this definition">#</a></dt>
+<dd><p>Set the torsional modes (rotors) of the Conformer. This is useful when the
+default torsion is not correct.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>torsions</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A list of four-atom-lists indicating the torsional modes.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – The torsional mode used is not valid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.ToConformer">
+<span class="sig-name descname"><span class="pre">ToConformer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Conformer</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.ToConformer" title="Link to this definition">#</a></dt>
+<dd><p>Get its backend RDKit Conformer object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Conformer</strong> – The backend conformer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rdmc.conf.EditableConformer.ToMol">
+<span class="sig-name descname"><span class="pre">ToMol</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RDKitMol</span></span></span><a class="headerlink" href="#rdmc.conf.EditableConformer.ToMol" title="Link to this definition">#</a></dt>
+<dd><p>Convert conformer to mol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RDKitMol</strong> – The new mol generated from the conformer</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="reaction.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">rdmc.reaction</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="forcefield.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">rdmc.forcefield</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer"><code class="docutils literal notranslate"><span class="pre">EditableConformer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.Canonicalize"><code class="docutils literal notranslate"><span class="pre">EditableConformer.Canonicalize()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetAllTorsionsDeg"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetAllTorsionsDeg()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetAngleDeg"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetAngleDeg()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetAngleRad"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetAngleRad()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetBondLength"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetBondLength()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetCentroid"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetCentroid()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetDistanceMatrix"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetDistanceMatrix()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetOwningMol"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetOwningMol()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetPrincipalAxesAndMoments"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetPrincipalAxesAndMoments()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetTorsionDeg"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetTorsionDeg()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.GetTorsionalModes"><code class="docutils literal notranslate"><span class="pre">EditableConformer.GetTorsionalModes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.HasCollidingAtoms"><code class="docutils literal notranslate"><span class="pre">EditableConformer.HasCollidingAtoms()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.HasOwningMol"><code class="docutils literal notranslate"><span class="pre">EditableConformer.HasOwningMol()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.SetAllTorsionsDeg"><code class="docutils literal notranslate"><span class="pre">EditableConformer.SetAllTorsionsDeg()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.SetAngleDeg"><code class="docutils literal notranslate"><span class="pre">EditableConformer.SetAngleDeg()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.SetAngleRad"><code class="docutils literal notranslate"><span class="pre">EditableConformer.SetAngleRad()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.SetBondLength"><code class="docutils literal notranslate"><span class="pre">EditableConformer.SetBondLength()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.SetOwningMol"><code class="docutils literal notranslate"><span class="pre">EditableConformer.SetOwningMol()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.SetPositions"><code class="docutils literal notranslate"><span class="pre">EditableConformer.SetPositions()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.SetTorsionDeg"><code class="docutils literal notranslate"><span class="pre">EditableConformer.SetTorsionDeg()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.SetTorsionalModes"><code class="docutils literal notranslate"><span class="pre">EditableConformer.SetTorsionalModes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.ToConformer"><code class="docutils literal notranslate"><span class="pre">EditableConformer.ToConformer()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rdmc.conf.EditableConformer.ToMol"><code class="docutils literal notranslate"><span class="pre">EditableConformer.ToMol()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/reference/rdmc/conf.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Xiaorui Dong.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
