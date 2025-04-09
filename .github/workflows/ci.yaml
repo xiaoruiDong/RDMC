@@ -93,6 +93,7 @@ jobs:
 
       - name: Test notebooks
         run: |
+          mamba run -n rdmc_env python -m pip install ipywidgets  # to allow interactive widgets
           mamba run -n rdmc_env pytest --no-cov -v --nbmake \
             "ipython/Conformer Generation Workflow.ipynb" \
             "ipython/Forcefield Examples.ipynb" \
