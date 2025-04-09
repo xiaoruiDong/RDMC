@@ -92,6 +92,8 @@ jobs:
         run: mamba run -n rdmc_env pytest
 
       - name: Test notebooks
+        if: ${{ matrix.os == 'ubuntu-latest' or matrix.os == 'macos-latest' }}
+        # running on Windows complains about the notebook path, deactivate it for now
         run: |
           mamba run -n rdmc_env python -m pip install ipywidgets  # to allow interactive widgets
           mamba run -n rdmc_env pytest --no-cov -v --nbmake \
